@@ -7,4 +7,8 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="BinaryIOExtension.cs" />
+  </ItemGroup>
+
 </Project>
