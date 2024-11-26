@@ -154,11 +154,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BinaryIO.h" />
+    <ClInclude Include="BinaryReaderIO.h" />
+    <ClInclude Include="BinaryWriterIO.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BinaryIO.cpp" />
+    <ClCompile Include="BinaryReaderIO.cpp" />
+    <ClCompile Include="BinaryWriterIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
