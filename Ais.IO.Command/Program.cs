@@ -57,10 +57,12 @@ namespace Ais.IO.Command
                 var @float = BinaryIOInterop.ReadFloat(reader);
                 var @double = BinaryIOInterop.ReadDouble(reader);
 
-                StringBuilder stringBuffer = new StringBuilder(2048);
-                BinaryIOInterop.ReadString(reader, stringBuffer, stringBuffer.Capacity);
-                byte[] bytesBuffer = new byte[2048];
-                BinaryIOInterop.ReadBytes(reader, bytesBuffer, bytesBuffer.Length);
+                int nextLength = BinaryIOInterop.NextLength(reader);
+                StringBuilder stringBuffer = new StringBuilder(nextLength);
+                BinaryIOInterop.ReadString(reader, stringBuffer, nextLength);
+                nextLength = BinaryIOInterop.NextLength(reader);
+                byte[] bytesBuffer = new byte[nextLength];
+                BinaryIOInterop.ReadBytes(reader, bytesBuffer, nextLength);
 
                 string[] messageArray =
                 [
@@ -76,7 +78,7 @@ namespace Ais.IO.Command
                     $"float = {@float}",
                     $"double = {@double}",
                     $"string = {stringBuffer}",
-                    $"bytes = {bytesBuffer}",
+                    $"bytes = {Encoding.UTF8.GetString(bytesBuffer)}",
                 ];
                 Console.WriteLine(string.Join("\n", messageArray));
             }

@@ -16,10 +16,6 @@
 #define READ_CAST reinterpret_cast<char*>
 #endif // !READ_CAST
 
-#ifndef STATIC_CAST
-#define STATIC_CAST static_cast
-#endif // !STATIC_CAST
-
 // BinaryReader Class
 class BinaryReader {
 public:
@@ -38,7 +34,7 @@ public:
         if (!InputStream.is_open()) {
             throw std::runtime_error("Input stream is not open.");
         }
-        return STATIC_CAST<size_t>(InputStream.tellg());
+        return static_cast<size_t>(InputStream.tellg());
     }
 
     size_t GetLength() {
@@ -47,8 +43,22 @@ public:
         }
         std::streampos currentPos = InputStream.tellg();
         InputStream.seekg(0, std::ios::end);
-        size_t length = STATIC_CAST<size_t>(InputStream.tellg());
+        size_t length = static_cast<size_t>(InputStream.tellg());
         InputStream.seekg(currentPos, std::ios::beg);
+        return length;
+    }
+
+    size_t NextLength() {
+        if (!InputStream.is_open()) {
+            throw std::runtime_error("Input stream is not open.");
+        }
+        std::streampos currentPos = InputStream.tellg();
+        size_t length;
+        InputStream.read(READ_CAST(&length), sizeof(length));
+        InputStream.seekg(currentPos, std::ios::beg);
+        if (InputStream.fail()) {
+            throw std::runtime_error("Failed to read length.");
+        }
         return length;
     }
 
@@ -60,13 +70,13 @@ public:
 
     unsigned char ReadByte() {
         unsigned char value;
-        InputStream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     signed char ReadSByte() {
         signed char value;
-        InputStream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
@@ -78,7 +88,7 @@ public:
 
     unsigned short ReadUShort() {
         unsigned short value;
-        InputStream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
@@ -90,7 +100,7 @@ public:
 
     unsigned int ReadUInt() {
         unsigned int value;
-        InputStream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
@@ -102,7 +112,7 @@ public:
 
     unsigned long long ReadULong() {
         unsigned long long value;
-        InputStream.read(reinterpret_cast<char*>(&value), sizeof(value));
+        InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
@@ -157,7 +167,7 @@ public:
     size_t GetPosition() {
         if (!OutputStream.is_open())
             throw std::runtime_error("Output stream is not open.");
-        return STATIC_CAST<size_t>(OutputStream.tellp());
+        return static_cast<size_t>(OutputStream.tellp());
     }
 
     size_t GetLength() {
@@ -165,7 +175,7 @@ public:
             throw std::runtime_error("Output stream is not open.");
         std::streampos currentPos = OutputStream.tellp();
         OutputStream.seekp(0, std::ios::end);
-        size_t length = STATIC_CAST<size_t>(OutputStream.tellp());
+        size_t length = static_cast<size_t>(OutputStream.tellp());
         OutputStream.seekp(currentPos, std::ios::beg);
         return length;
     }
@@ -175,11 +185,11 @@ public:
     }
 
     void WriteByte(unsigned char value) {
-        OutputStream.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteSByte(signed char value) {
-        OutputStream.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteShort(short value) {
@@ -187,7 +197,7 @@ public:
     }
 
     void WriteUShort(unsigned short value) {
-        OutputStream.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteInt(int value) {
@@ -195,7 +205,7 @@ public:
     }
 
     void WriteUInt(unsigned int value) {
-        OutputStream.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteLong(long long value) {
@@ -203,7 +213,7 @@ public:
     }
 
     void WriteULong(unsigned long long value) {
-        OutputStream.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteFloat(float value) {
@@ -229,6 +239,12 @@ private:
     std::ofstream OutputStream;
 };
 
+/* Get Next Length */
+
+size_t NextLength(void* reader) {
+    return static_cast<BinaryReader*>(reader)->NextLength();
+}
+
 /* Reader Interface */
 
 void* CreateBinaryReader(const char* filePath) {
@@ -241,7 +257,7 @@ void* CreateBinaryReader(const char* filePath) {
 }
 
 void DestroyBinaryReader(void* reader) {
-    delete STATIC_CAST<BinaryReader*>(reader);
+    delete static_cast<BinaryReader*>(reader);
 }
 
 size_t GetReaderPosition(void* reader) {
@@ -253,7 +269,7 @@ size_t GetReaderLength(void* reader) {
 }
 
 bool ReadBoolean(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadBoolean();
+    return static_cast<BinaryReader*>(reader)->ReadBoolean();
 }
 
 unsigned char ReadByte(void* reader) {
@@ -265,7 +281,7 @@ signed char ReadSByte(void* reader) {
 }
 
 short ReadShort(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadShort();
+    return static_cast<BinaryReader*>(reader)->ReadShort();
 }
 
 unsigned short ReadUShort(void* reader) {
@@ -273,7 +289,7 @@ unsigned short ReadUShort(void* reader) {
 }
 
 int ReadInt(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadInt();
+    return static_cast<BinaryReader*>(reader)->ReadInt();
 }
 
 unsigned int ReadUInt(void* reader) {
@@ -281,7 +297,7 @@ unsigned int ReadUInt(void* reader) {
 }
 
 long long ReadLong(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadLong();
+    return static_cast<BinaryReader*>(reader)->ReadLong();
 }
 
 unsigned long long ReadULong(void* reader) {
@@ -289,19 +305,19 @@ unsigned long long ReadULong(void* reader) {
 }
 
 float ReadFloat(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadFloat();
+    return static_cast<BinaryReader*>(reader)->ReadFloat();
 }
 
 double ReadDouble(void* reader) {
-    return STATIC_CAST<BinaryReader*>(reader)->ReadDouble();
+    return static_cast<BinaryReader*>(reader)->ReadDouble();
 }
 
 void ReadBytes(void* reader, char* buffer, size_t length) {
-    STATIC_CAST<BinaryReader*>(reader)->ReadBytes(buffer, length);
+    static_cast<BinaryReader*>(reader)->ReadBytes(buffer, length);
 }
 
 void ReadString(void* reader, char* buffer, int bufferSize) {
-    std::string result = STATIC_CAST<BinaryReader*>(reader)->ReadString();
+    std::string result = static_cast<BinaryReader*>(reader)->ReadString();
     strncpy_s(buffer, bufferSize, result.c_str(), _TRUNCATE);
     buffer[bufferSize - 1] = '\0';
 }
@@ -318,7 +334,7 @@ void* CreateBinaryWriter(const char* filePath) {
 }
 
 void DestroyBinaryWriter(void* writer) {
-    delete STATIC_CAST<BinaryWriter*>(writer);
+    delete static_cast<BinaryWriter*>(writer);
 }
 
 size_t GetWriterPosition(void* writer) {
@@ -330,7 +346,7 @@ size_t GetWriterLength(void* writer) {
 }
 
 void WriteBoolean(void* writer, bool value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteBoolean(value);
+    static_cast<BinaryWriter*>(writer)->WriteBoolean(value);
 }
 
 void WriteByte(void* writer, unsigned char value) {
@@ -342,7 +358,7 @@ void WriteSByte(void* writer, signed char value) {
 }
 
 void WriteShort(void* writer, short value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteShort(value);
+    static_cast<BinaryWriter*>(writer)->WriteShort(value);
 }
 
 void WriteUShort(void* writer, unsigned short value) {
@@ -350,7 +366,7 @@ void WriteUShort(void* writer, unsigned short value) {
 }
 
 void WriteInt(void* writer, int value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteInt(value);
+    static_cast<BinaryWriter*>(writer)->WriteInt(value);
 }
 
 void WriteUInt(void* writer, unsigned int value) {
@@ -358,7 +374,7 @@ void WriteUInt(void* writer, unsigned int value) {
 }
 
 void WriteLong(void* writer, long long value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteLong(value);
+    static_cast<BinaryWriter*>(writer)->WriteLong(value);
 }
 
 void WriteULong(void* writer, unsigned long long value) {
@@ -366,17 +382,17 @@ void WriteULong(void* writer, unsigned long long value) {
 }
 
 void WriteFloat(void* writer, float value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteFloat(value);
+    static_cast<BinaryWriter*>(writer)->WriteFloat(value);
 }
 
 void WriteDouble(void* writer, double value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteDouble(value);
+    static_cast<BinaryWriter*>(writer)->WriteDouble(value);
 }
 
 void WriteBytes(void* writer, const char* bytes, size_t length) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteBytes(bytes, length);
+    static_cast<BinaryWriter*>(writer)->WriteBytes(bytes, length);
 }
 
 void WriteString(void* writer, const char* value) {
-    STATIC_CAST<BinaryWriter*>(writer)->WriteString(std::string(value));
+    static_cast<BinaryWriter*>(writer)->WriteString(std::string(value));
 }

@@ -12,6 +12,9 @@ namespace Ais.IO
         private const string DllName = "Ais.IO.Source.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int NextLength(IntPtr reader);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern nint CreateBinaryReader(string filePath);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

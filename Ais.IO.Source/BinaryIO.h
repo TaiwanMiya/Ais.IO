@@ -11,6 +11,8 @@
 
 EXT {
 
+	BINARYIO_API size_t NextLength(void* reader);
+
 	BINARYIO_API void* CreateBinaryReader(const char* filePath);
 	BINARYIO_API void DestroyBinaryReader(void* reader);
 	BINARYIO_API size_t GetReaderPosition(void* reader);
