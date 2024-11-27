@@ -11,6 +11,8 @@ namespace Ais.IO.Command
             {
                 WriteRelease();
                 ReadRelease();
+                Console.WriteLine("Press Any Key To Continue...");
+                Console.ReadKey();
             }
             catch (Exception ex)
             {
