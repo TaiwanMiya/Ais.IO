@@ -6,9 +6,12 @@ $directoriesToDelete = @(
     "bin",
     "packages",
     "Ais.IO\obj",
+    "Ais.IO\Debug",
+    "Ais.IO\Release",
     "Ais.IO.Command\obj",
-    "Ais.IO.Source\Debug",
-    "Ais.IO.Source\Release"
+    "Ais.IO.Csharp\obj",
+    "Ais.IO.Win32.Console\Debug",
+    "Ais.IO.Win32.Console\Release"
 )
 
 foreach ($dir in $directoriesToDelete) {
