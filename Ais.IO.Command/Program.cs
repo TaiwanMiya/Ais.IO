@@ -1,4 +1,4 @@
-﻿using Ais.IO;
+﻿using Ais.IO.Csharp;
 using System.Text;
 
 namespace Ais.IO.Command
@@ -35,7 +35,7 @@ namespace Ais.IO.Command
             BinaryIOInterop.WriteString(writer, "This is Ais.IO Release Function String.");
 
             byte[] byteArray = Encoding.UTF8.GetBytes("This is Ais.IO Release Function Byte Array.");
-            BinaryIOInterop.WriteBytes(writer, byteArray, byteArray.Length);
+            BinaryIOInterop.WriteBytes(writer, byteArray);
             BinaryIOInterop.DestroyBinaryWriter(writer);
         }
 
@@ -57,12 +57,13 @@ namespace Ais.IO.Command
                 var @float = BinaryIOInterop.ReadFloat(reader);
                 var @double = BinaryIOInterop.ReadDouble(reader);
 
-                int nextLength = BinaryIOInterop.NextLength(reader);
-                StringBuilder stringBuffer = new StringBuilder(nextLength);
-                BinaryIOInterop.ReadString(reader, stringBuffer, nextLength);
-                nextLength = BinaryIOInterop.NextLength(reader);
-                byte[] bytesBuffer = new byte[nextLength];
-                BinaryIOInterop.ReadBytes(reader, bytesBuffer, nextLength);
+                ulong stringLength = BinaryIOInterop.NextLength(reader);
+                StringBuilder stringBuffer = new StringBuilder((int)stringLength);
+                BinaryIOInterop.ReadString(reader, stringBuffer, (uint)stringLength);
+
+                ulong bytesLength = BinaryIOInterop.NextLength(reader);
+                byte[] bytesBuffer = new byte[bytesLength];
+                BinaryIOInterop.ReadBytes(reader, bytesBuffer, bytesLength);
 
                 string[] messageArray =
                 [
