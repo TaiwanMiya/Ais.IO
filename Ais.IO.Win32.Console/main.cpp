@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
 #if _WIN32
     HMODULE lib = LOAD_LIBRARY("Ais.IO.dll");
 #else
-    void* lib = LOAD_LIBRARY("Ais.IO.dll");
+    void* lib = LOAD_LIBRARY("./Ais.IO.so");
 #endif
     if (!lib) {
         std::cerr << "Failed to load Ais.IO library\n";
@@ -254,6 +254,7 @@ int main(int argc, char* argv[]) {
     // Load function pointers (example: Load WriteBoolean, WriteInt, etc.)
     std::unordered_map<std::string, void*> writeFunctions;
     std::unordered_map<std::string, void*> readFunctions;
+    std::unordered_map<std::string, void*> encodeFunctions;
 
     writeFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
     writeFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
@@ -285,6 +286,16 @@ int main(int argc, char* argv[]) {
     readFunctions["-string"] = GET_PROC_ADDRESS(lib, "ReadString");
     readFunctions["-next-length"] = GET_PROC_ADDRESS(lib, "NextLength");
     // Load all other read functions...
+
+    encodeFunctions["-b16-encode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b16-decode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b32-encode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b32-decode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b64-encode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b64-decode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b85-encode"] = GET_PROC_ADDRESS(lib, "");
+    encodeFunctions["-b85-decode"] = GET_PROC_ADDRESS(lib, "");
+    // Load all other encoding functions...
 
     if (mode == "--write") {
         void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());

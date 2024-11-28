@@ -11,9 +11,12 @@ namespace Ais.IO.Csharp
     {
         private const string DllName = "..\\Ais.IO.dll";
 
+        #region BinaryIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong NextLength(IntPtr reader);
+        #endregion
 
+        #region BinaryReaderIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateBinaryReader(string filePath);
 
@@ -64,7 +67,9 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReadString(IntPtr reader, StringBuilder buffer, ulong bufferSize);
+        #endregion
 
+        #region BinaryWriterIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateBinaryWriter(string filePath);
 
@@ -115,5 +120,32 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void WriteString(IntPtr writer, string value);
+        #endregion
+
+        #region EncoderIO.h
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base16Encode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base16Decode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base32Encode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base32Decode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base64Encode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base64Decode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base85Encode(byte[] input, byte[] output, int outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base85Decode(byte[] input, byte[] output, int outputSize);
+        #endregion
     }
 }

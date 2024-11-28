@@ -13,8 +13,4 @@
 #define EXT extern "C"
 #endif
 
-EXT {
-
-	BINARYIO_API uint64_t NextLength(void* reader);
-
-}
+EXT BINARYIO_API uint64_t NextLength(void* reader);

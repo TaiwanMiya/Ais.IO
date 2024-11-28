@@ -156,6 +156,7 @@
     <ClInclude Include="BinaryIO.h" />
     <ClInclude Include="BinaryReaderIO.h" />
     <ClInclude Include="BinaryWriterIO.h" />
+    <ClInclude Include="EncoderIO.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="BinaryReaderIO.cpp" />
     <ClCompile Include="BinaryWriterIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EncoderIO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
