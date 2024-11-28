@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "EncoderIO.h"
 
-#include <iostream>
-
 static const char base16_chars[] = 
     "0123456789ABCDEF";
 
@@ -178,36 +176,51 @@ int Base16Decode(const char* input, char* output, int outputSize) {
 int Base32Encode(const char* input, char* output, int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
-    int inputLen = std::strlen(input); // 輸入長度
-    int requiredSize = ((inputLen + 4) / 5) * 8; // 每 5 字節對應 8 個 Base32 字符
+    const unsigned char* data = reinterpret_cast<const unsigned char*>(input);
+    size_t inputLength = std::strlen(input); // 輸入長度
+    size_t outputNeeded = ((inputLength + 4) / 5) * 8; // 每 5 字節對應 8 個 Base32 字符
 
-    if (outputSize < requiredSize + 1) // 包含結尾的 '\0'
+    if (outputSize < static_cast<int>(outputNeeded + 1)) // 包含結尾的 '\0'
         return -2; // 輸出緩衝區不足
 
-    int i = 0, j = 0;
-    while (i < inputLen) {
-        uint64_t buffer = 0;   // 暫存 5 字節的數據
-        int bufferBits = 0;    // 暫存數據的有效位數
+    const size_t fullChunks = inputLength / 5;
+    const size_t leftover = inputLength % 5;
 
-        // 每次最多讀取 5 個字節，組成一個 40 位的 buffer
-        for (int k = 0; k < 5; ++k) {
-            buffer <<= 8;      // 左移 8 位
-            if (i < inputLen) {
-                buffer |= static_cast<unsigned char>(input[i++]);
-                bufferBits += 8; // 有效位數增加 8 位
-            }
+    size_t outputIndex = 0;
+
+    // 處理完整的 5 字節區塊
+    for (size_t i = 0; i < fullChunks; ++i) {
+        uint64_t chunk = 0;
+        for (int j = 0; j < 5; ++j) {
+            chunk = (chunk << 8) | data[i * 5 + j];
         }
 
-        // 將 buffer 的數據提取成 Base32 字符
-        while (bufferBits > 0) {
-            output[j++] = base32_chars[(buffer >> (bufferBits - 5)) & 0x1F];
-            bufferBits -= 5; // 每次處理 5 位
+        for (int j = 7; j >= 0; --j) {
+            output[outputIndex++] = base32_chars[(chunk >> (j * 5)) & 0x1F];
+        }
+    }
+
+    // 處理尾數
+    if (leftover > 0) {
+        uint64_t chunk = 0;
+        for (size_t j = 0; j < leftover; ++j) {
+            chunk = (chunk << 8) | data[fullChunks * 5 + j];
+        }
+        chunk <<= (5 - leftover) * 8; // 填充零位
+
+        for (size_t j = 0; j < leftover * 8 / 5 + 1; ++j) {
+            output[outputIndex++] = base32_chars[(chunk >> ((7 - j) * 5)) & 0x1F];
+        }
+
+        // 填充 "="，使輸出長度是 8 的倍數
+        for (size_t j = leftover * 8 / 5 + 1; j < 8; ++j) {
+            output[outputIndex++] = '=';
         }
     }
 
     // 添加結尾的 '\0'
-    output[j] = '\0';
-    return requiredSize;
+    output[outputIndex] = '\0';
+    return static_cast<int>(outputIndex); // 返回實際生成的輸出長度
 }
 
 int Base32Decode(const char* input, char* output, int outputSize) {

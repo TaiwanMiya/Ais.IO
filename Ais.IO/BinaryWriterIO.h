@@ -1,4 +1,10 @@
 #pragma once
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <stdexcept>
+#include <iostream>
+#include <stdint.h>
 
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS

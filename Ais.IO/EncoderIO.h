@@ -1,8 +1,9 @@
 #pragma once
-#include <string>
 #include <vector>
-#include <cstring>
 #include <stdexcept>
+#include <cstdint>
+#include <cstring>
+#include <stdint.h>
 
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS

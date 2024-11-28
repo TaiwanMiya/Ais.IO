@@ -1,9 +1,4 @@
 #include "pch.h"
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <stdexcept>
-#include <iostream>
 #include "BinaryWriterIO.h"
 
 #ifndef WRITE_CAST 

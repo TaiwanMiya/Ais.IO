@@ -92,10 +92,10 @@ namespace Ais.IO.Command
 
         private static void BaseEncode(out byte[] outputB16, out byte[] outputB32, out byte[] outputB64, out byte[] outputB85)
         {
-            byte[] inputB16 = Encoding.UTF8.GetBytes("This is Base16.");
-            byte[] inputB32 = Encoding.UTF8.GetBytes("This is Base32.");
-            byte[] inputB64 = Encoding.UTF8.GetBytes("This is Base64.");
-            byte[] inputB85 = Encoding.UTF8.GetBytes("This is Base85.");
+            byte[] inputB16 = Encoding.UTF8.GetBytes("這是 Base16 編碼，而此 Base16 使用 Ais.IO 來解碼。");
+            byte[] inputB32 = Encoding.UTF8.GetBytes("這是 Base32 編碼，而此 Base32 使用 Ais.IO 來解碼。");
+            byte[] inputB64 = Encoding.UTF8.GetBytes("這是 Base64 編碼，而此 Base64 使用 Ais.IO 來解碼。");
+            byte[] inputB85 = Encoding.UTF8.GetBytes("這是 Base85 編碼，而此 Base85 使用 Ais.IO 來解碼。");
             outputB16 = new byte[2048];
             outputB32 = new byte[2048];
             outputB64 = new byte[2048];
