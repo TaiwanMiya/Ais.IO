@@ -73,24 +73,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
-    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
-    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;$(IncludePath)</IncludePath>
+    <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
