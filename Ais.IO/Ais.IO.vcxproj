@@ -73,16 +73,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
+    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\x86\$(Configuration)\</OutDir>
+    <IncludePath>C:\Users\User\Documents\Ais.IO\Ais.IO\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\User\Documents\Ais.IO\Ais.IO\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -126,6 +134,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AesIO.h" />
     <ClInclude Include="BinaryIO.h" />
     <ClInclude Include="BinaryReaderIO.h" />
     <ClInclude Include="BinaryWriterIO.h" />
@@ -163,9 +173,11 @@
     <ClInclude Include="StructT.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AesIO.cpp" />
     <ClCompile Include="BinaryIO.cpp" />
     <ClCompile Include="BinaryReaderIO.cpp" />
     <ClCompile Include="BinaryWriterIO.cpp" />
+    <ClCompile Include="CryptographyIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EncoderIO.cpp" />
     <ClCompile Include="pch.cpp">

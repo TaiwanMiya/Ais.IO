@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="標頭檔\Cryptography">
+      <UniqueIdentifier>{c4b46de6-0c66-49cc-9dea-50338320f73d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="來源檔案\Cryptography">
+      <UniqueIdentifier>{d08d7c56-6349-4615-965d-2c3ba11a0526}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -39,6 +45,9 @@
     <ClInclude Include="StructT.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="AesIO.h">
+      <Filter>標頭檔\Cryptography</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -61,6 +70,12 @@
     </ClCompile>
     <ClCompile Include="StructT.cpp">
       <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="CryptographyIO.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="AesIO.cpp">
+      <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

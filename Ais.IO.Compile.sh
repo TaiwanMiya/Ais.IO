@@ -18,5 +18,8 @@ else
 fi
 
 echo "Complie => Ais.IO.so"
-g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp -I./include -o ../unix/Ais.IO.so
+g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp EncoderIO.cpp -I./include -o ../unix/Ais.IO.so
+cd ../Ais.IO.Command
+echo "Complie => aisio"
+g++ -o ../unix/aisio StringCase.cpp main.cpp
 cd ..

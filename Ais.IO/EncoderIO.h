@@ -185,8 +185,8 @@ static const int Base85_Lookup[256] = {
 -2: 輸出緩衝區不足。
 -3: 輸入長度不合法，解碼時必須是偶數長度。
 -4: 非法字符出現在解碼過程中（不是 Base16 有效字符）。*/
-EXT ENCODERIO_API int Base16Encode(const char* input, char* output, int outputSize);
-EXT ENCODERIO_API int Base16Decode(const char* input, char* output, int outputSize);
+EXT ENCODERIO_API int Base16Encode(const char* input, char* output, const int outputSize);
+EXT ENCODERIO_API int Base16Decode(const char* input, char* output, const int outputSize);
 
 /* Base32 錯誤碼含義：
 
@@ -194,8 +194,8 @@ EXT ENCODERIO_API int Base16Decode(const char* input, char* output, int outputSi
 -2: 輸出緩衝區不足。
 -3: 輸入數據長度不合法，Base32 解碼要求長度是 8 的倍數。
 -4: 非法字符出現在解碼過程中（不是 Base32 有效字符）。*/
-EXT ENCODERIO_API int Base32Encode(const char* input, char* output, int outputSize);
-EXT ENCODERIO_API int Base32Decode(const char* input, char* output, int outputSize);
+EXT ENCODERIO_API int Base32Encode(const char* input, char* output, const int outputSize);
+EXT ENCODERIO_API int Base32Decode(const char* input, char* output, const int outputSize);
 
 /* Base64 錯誤碼含義：
 
@@ -204,8 +204,8 @@ EXT ENCODERIO_API int Base32Decode(const char* input, char* output, int outputSi
 -3: 輸入數據長度不合法，Base64 解碼要求長度是 4 的倍數。
 -4: 非法字符出現在解碼過程中（不是 Base64 有效字符）。
 */
-EXT ENCODERIO_API int Base64Encode(const char* input, char* output, int outputSize);
-EXT ENCODERIO_API int Base64Decode(const char* input, char* output, int outputSize);
+EXT ENCODERIO_API int Base64Encode(const char* input, char* output, const int outputSize);
+EXT ENCODERIO_API int Base64Decode(const char* input, char* output, const int outputSize);
 
 /* Base64 錯誤碼含義：
 
@@ -214,5 +214,5 @@ EXT ENCODERIO_API int Base64Decode(const char* input, char* output, int outputSi
 -3: 輸入數據長度不合法，Base85 解碼要求長度是 5 的倍數。
 -4: 非法字符出現在解碼過程中（不是 Base85 有效字符）。
 */
-EXT ENCODERIO_API int Base85Encode(const char* input, char* output, int outputSize);
-EXT ENCODERIO_API int Base85Decode(const char* input, char* output, int outputSize);
+EXT ENCODERIO_API int Base85Encode(const char* input, char* output, const int outputSize);
+EXT ENCODERIO_API int Base85Decode(const char* input, char* output, const int outputSize);

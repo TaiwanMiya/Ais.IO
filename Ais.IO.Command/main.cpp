@@ -1,5 +1,6 @@
 ﻿#include "main.h"
 #include "StringCase.h"
+#include <locale.h>
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(lib) LoadLibraryA(lib)
@@ -255,27 +256,45 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands,
 }
 
 void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unordered_map<std::string, void*>& encodeFunctions) {
-    std::vector<char> outputBuffer(4096, '\0');
+    size_t inputLength = cmd.value.size();
+    size_t outputLength;
+    if (mode == "--base16") {
+        outputLength = inputLength * 2 + 1;
+    }
+    else if (mode == "--base32") {
+        outputLength = ((inputLength + 4) / 5) * 8 + 1;
+    }
+    else if (mode == "--base64") {
+        outputLength = ((inputLength + 2) / 3) * 4 + 1;
+    }
+    else if (mode == "--base85") {
+        outputLength = ((inputLength + 3) / 4) * 5 + 1;
+    }
+    else {
+        std::cerr << "Wrong Pattern: " << mode << "\n";
+        return;
+    }
+    std::vector<char> outputBuffer(outputLength, '\0');
     int resultCode = -4;
     std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
     std::string displayType = mode.substr(2) + " " + cmd.type.substr(1);
     ToLetter(displayType);
     if (encodeType == "-base16-encode")
-        resultCode = ((Base16Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base16Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base32-encode")
-        resultCode = ((Base32Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base32Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base64-encode")
-        resultCode = ((Base64Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base64Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base85-encode")
-        resultCode = ((Base85Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base85Encode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base16-decode")
-        resultCode = ((Base16Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base16Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base32-decode")
-        resultCode = ((Base32Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base32Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base64-decode")
-        resultCode = ((Base64Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base64Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (encodeType == "-base85-decode")
-        resultCode = ((Base85Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), sizeof(outputBuffer));
+        resultCode = ((Base85Decode)encodeFunctions.at(encodeType))(cmd.value.c_str(), outputBuffer.data(), outputLength);
     if (resultCode < 0)
         std::cerr << "Failed to process " << cmd.type << " for " << mode << "\nCode: " << resultCode << "\n";
     else

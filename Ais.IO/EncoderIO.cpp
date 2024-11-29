@@ -13,13 +13,13 @@ inline bool isBase64Char(char c) {
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-int Base16Encode(const char* input, char* output, int outputSize) {
+int Base16Encode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
     int inputLen = std::strlen(input); // 獲取輸入的長度
     int requiredSize = inputLen * 2;   // 每個字節對應兩個十六進制字符
 
-    if (outputSize < requiredSize + 1) // 檢查輸出緩衝區是否足夠（+1 是為了 '\0'）
+    if (outputSize <= 0 || outputSize < requiredSize + 1) // 檢查輸出緩衝區是否足夠（+1 是為了 '\0'）
         return -2;
 
     for (int i = 0; i < inputLen; ++i) {
@@ -32,14 +32,14 @@ int Base16Encode(const char* input, char* output, int outputSize) {
     return requiredSize;         // 返回實際的編碼長度
 }
 
-int Base16Decode(const char* input, char* output, int outputSize) {
+int Base16Decode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性檢查
 
     int inputLen = std::strlen(input); // 獲取輸入的長度
     if (inputLen % 2 != 0) return -3; // Base16 的輸入長度必須是偶數
 
     int requiredSize = inputLen / 2; // 每兩個字符對應一個字節
-    if (outputSize < requiredSize) return -2;
+    if (outputSize <= 0 || outputSize < requiredSize) return -2;
 
     for (int i = 0; i < inputLen; i += 2) {
         int high = HexCharToValue(input[i]);     // 轉換高位字符
@@ -53,14 +53,14 @@ int Base16Decode(const char* input, char* output, int outputSize) {
     return requiredSize; // 返回解碼後的字節數
 }
 
-int Base32Encode(const char* input, char* output, int outputSize) {
+int Base32Encode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     const unsigned char* data = reinterpret_cast<const unsigned char*>(input); // 將輸入轉換為無符號字元指針，方便按位元組處理
     size_t inputLength = std::strlen(input); // 輸入長度
     size_t outputNeeded = ((inputLength + 4) / 5) * 8; // 每 5 字節對應 8 個 Base32 字符
 
-    if (outputSize < static_cast<int>(outputNeeded + 1)) // 包含結尾的 '\0'
+    if (outputSize <= 0 || outputSize < static_cast<int>(outputNeeded + 1)) // 包含結尾的 '\0'
         return -2; // 輸出緩衝區不足
 
     // 計算完整的 5 位元組區塊數量和尾數字節數量
@@ -104,14 +104,14 @@ int Base32Encode(const char* input, char* output, int outputSize) {
     return static_cast<int>(outputIndex); // 返回編碼後的長度
 }
 
-int Base32Decode(const char* input, char* output, int outputSize) {
+int Base32Decode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     int inputLen = std::strlen(input);
     if (inputLen % 8 != 0) return -3; // Base32 的輸入長度必須是 8 的倍數
 
     int requiredSize = (inputLen * 5) / 8; // 每 8 個字符對應 5 個字節
-    if (outputSize < requiredSize) return -2; // 輸出緩衝區不足
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // 輸出緩衝區不足
 
     int i = 0, j = 0;
     uint64_t buffer = 0;   // 暫存 Base32 數據
@@ -136,13 +136,13 @@ int Base32Decode(const char* input, char* output, int outputSize) {
     return j; // 返回解碼後的字節數
 }
 
-int Base64Encode(const char* input, char* output, int outputSize) {
+int Base64Encode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     int inputLen = std::strlen(input);
     int requiredSize = ((inputLen + 2) / 3) * 4; // 每 3 字節對應 4 個 Base64 字符
 
-    if (outputSize < requiredSize) // +1 是為 '\0'
+    if (outputSize <= 0 || outputSize < requiredSize) // +1 是為 '\0'
         return -2; // 輸出緩衝區不足
 
     int i = 0, j = 0;
@@ -164,7 +164,7 @@ int Base64Encode(const char* input, char* output, int outputSize) {
     return requiredSize; // 返回編碼後的長度
 }
 
-int Base64Decode(const char* input, char* output, int outputSize) {
+int Base64Decode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     int inputLen = std::strlen(input);
@@ -174,7 +174,7 @@ int Base64Decode(const char* input, char* output, int outputSize) {
     if (input[inputLen - 1] == '=') requiredSize--; // 處理 '=' 填充
     if (input[inputLen - 2] == '=') requiredSize--;
 
-    if (outputSize < requiredSize) return -2; // 輸出緩衝區不足
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // 輸出緩衝區不足
 
     int i = 0, j = 0;
     uint32_t buffer = 0;   // 暫存 Base64 數據
@@ -200,13 +200,13 @@ int Base64Decode(const char* input, char* output, int outputSize) {
     return j; // 返回解碼後的字節數
 }
 
-int Base85Encode(const char* input, char* output, int outputSize) {
+int Base85Encode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     int inputLen = std::strlen(input);
     int requiredSize = ((inputLen + 3) / 4) * 5; // 每 4 字節對應 5 個 Base85 字符
 
-    if (outputSize < requiredSize + 1) // +1 是為 '\0'
+    if (outputSize <= 0 || outputSize < requiredSize + 1) // +1 是為 '\0'
         return -2; // 輸出緩衝區不足
 
     int i = 0, j = 0;
@@ -229,14 +229,14 @@ int Base85Encode(const char* input, char* output, int outputSize) {
     return requiredSize; // 返回編碼後的長度
 }
 
-int Base85Decode(const char* input, char* output, int outputSize) {
+int Base85Decode(const char* input, char* output, const int outputSize) {
     if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
 
     int inputLen = std::strlen(input);
     if (inputLen % 5 != 0) return -3; // 輸入長度必須是 5 的倍數
 
     int requiredSize = (inputLen / 5) * 4; // 每 5 個字符對應 4 個字節
-    if (outputSize < requiredSize) return -2; // 輸出緩衝區不足
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // 輸出緩衝區不足
 
     uint32_t value = 0;
     size_t i = 0, j = 0;
