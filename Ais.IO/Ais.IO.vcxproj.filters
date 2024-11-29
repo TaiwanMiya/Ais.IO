@@ -36,6 +36,9 @@
     <ClInclude Include="EncoderIO.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="StructT.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -54,6 +57,9 @@
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="EncoderIO.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="StructT.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
   </ItemGroup>

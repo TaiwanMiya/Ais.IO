@@ -7,9 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ais.IO", "Ais.IO\Ais.IO.vcx
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ais.IO.Csharp", "Ais.IO.Csharp\Ais.IO.Csharp.csproj", "{94331F89-AAE0-49BD-8D10-C5B486D5DB65}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ais.IO.Command", "Ais.IO.Command\Ais.IO.Command.csproj", "{AFDD4E12-05B6-4DBB-BB18-FA9D731E197B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ais.IO.Csharp.Command", "Ais.IO.Csharp.Command\Ais.IO.Csharp.Command.csproj", "{AFDD4E12-05B6-4DBB-BB18-FA9D731E197B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ais.IO.Win32.Console", "Ais.IO.Win32.Console\Ais.IO.Win32.Console.vcxproj", "{9081301E-C126-44B9-9A0E-356D486C827A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ais.IO.Command", "Ais.IO.Command\Ais.IO.Command.vcxproj", "{9081301E-C126-44B9-9A0E-356D486C827A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

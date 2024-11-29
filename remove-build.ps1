@@ -5,13 +5,12 @@ $directoriesToDelete = @(
     ".github",
     "bin",
     "packages",
-    "Ais.IO\obj",
     "Ais.IO\Debug",
     "Ais.IO\Release",
-    "Ais.IO.Command\obj",
+    "Ais.IO.Command\Debug",
+    "Ais.IO.Command\Release",
     "Ais.IO.Csharp\obj",
-    "Ais.IO.Win32.Console\Debug",
-    "Ais.IO.Win32.Console\Release"
+    "Ais.IO.Csharp.Command\obj"
 )
 
 foreach ($dir in $directoriesToDelete) {
