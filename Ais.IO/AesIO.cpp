@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "AesIO.h"
 #include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
 #include <cstring>
 #include <iostream>
 #include <random>
@@ -9,6 +11,7 @@
 // Handle Errors
 void handleErrors() {
     std::cerr << "An error occurred during key/iv generation" << std::endl;
+    ERR_print_errors_fp(stderr);
     exit(1);
 }
 
@@ -64,11 +67,50 @@ int GenerateIVFromInput(const char* input, unsigned char* iv, size_t ivLength) {
     return 0;
 }
 
+int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) handleErrors();
 
-//int AesCtrEncrypt(const char* content, char* buffer, size_t bufferSize) {
-//	return 0;
-//}
-//
-//int AesCtrDecrypt(const char* content, char* buffer, size_t bufferSize) {
-//	return 0;
-//}
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, encryption->KEY, encryption->IV)) {
+        handleErrors();
+    }
+
+    int len;
+    int ciphertext_len = 0;
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH)) {
+        handleErrors();
+    }
+    ciphertext_len = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len)) {
+        handleErrors();
+    }
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) handleErrors();
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, decryption->KEY, decryption->IV)) {
+        handleErrors();
+    }
+
+    int len;
+    int plaintext_len = 0;
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH)) {
+        handleErrors();
+    }
+    plaintext_len = len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len)) {
+        handleErrors();
+    }
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}

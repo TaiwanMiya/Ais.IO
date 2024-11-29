@@ -105,6 +105,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AddModuleNamesToAssembly>
+      </AddModuleNamesToAssembly>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -124,6 +127,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AddModuleNamesToAssembly>
+      </AddModuleNamesToAssembly>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -140,6 +146,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AddModuleNamesToAssembly>
+      </AddModuleNamesToAssembly>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,6 +168,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AddModuleNamesToAssembly>
+      </AddModuleNamesToAssembly>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

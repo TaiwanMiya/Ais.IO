@@ -14,7 +14,9 @@ namespace Ais.IO.Csharp.Command
                 //EncoderIO.BaseEncode(out byte[] b16, out byte[] b32, out byte[] b64, out byte[] b85);
                 //EncoderIO.BaseDecode(b16, b32, b64, b85);
 
+                string text = "This is AES CTR Encryption/Decryption.";
                 AesIO.Generate();
+                AesIO.CTR(text);
 
                 //StructT.GetStruct();
                 Console.WriteLine("Press Any Key To Continue...");

@@ -25,5 +25,11 @@ namespace Ais.IO.Csharp
         // Import GenerateIVFromInput function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateIVFromInput(string input, byte[] iv, int ivLength);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesCtrEncrypt(ref AES_CTR_ENCRYPT encryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesCtrDecrypt(ref AES_CTR_DECRYPT decryption);
     }
 }
