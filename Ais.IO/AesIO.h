@@ -31,6 +31,8 @@ struct AES_CTR_DECRYPT {
     unsigned char* PLAIN_TEXT;
 };
 
+
+
 // Generate a random key with specified length (128, 192, 256 bits)
 EXT AESIO_API int GenerateKey(unsigned char* key, size_t keyLength);
 // Generate a random IV with length 128 bits

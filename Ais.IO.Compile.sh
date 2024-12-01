@@ -6,6 +6,8 @@ else
     echo "g++ Already installed."
 fi
 
+sudo apt-get install libssl-dev
+
 cd Ais.IO/ || exit
 
 echo "Start Complie so File..."

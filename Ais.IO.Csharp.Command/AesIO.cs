@@ -66,7 +66,7 @@ namespace Ais.IO.Csharp.Command
                 PLAIN_TEXT = plainTextPtr,
                 KEY = keyPtr,
                 IV = ivPtr,
-                COUNTER = 0,
+                COUNTER = 1,
                 PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 CIPHER_TEXT = cipherTextPtr
             };
@@ -88,7 +88,7 @@ namespace Ais.IO.Csharp.Command
                 CIPHER_TEXT = cipherTextPtr,
                 KEY = keyPtr,
                 IV = ivPtr,
-                COUNTER = 0,
+                COUNTER = 1,
                 CIPHER_TEXT_LENGTH = (UIntPtr)cipherTextLength,
                 PLAIN_TEXT = decryptedTextPtr
             };

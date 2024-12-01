@@ -15,8 +15,19 @@ namespace Ais.IO.Csharp.Command
                 //EncoderIO.BaseDecode(b16, b32, b64, b85);
 
                 string text = "This is AES CTR Encryption/Decryption.";
-                AesIO.Generate();
-                AesIO.CTR(text);
+                string key = "Key length must be 128, 192, 256";
+                string iv = "IvMustBe128Size.";
+                //AesIO.Generate();
+                //AesIO.CTR(text);
+
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] encryptResult = aes.CtrEncrypt(text, keyResult, ivResult);
+                byte[] baseBuffer = new byte[2048];
+
+                EncoderIOInterop.Base16Encode(encryptResult, baseBuffer, 2048);
+                Console.WriteLine(Encoding.UTF8.GetString(baseBuffer));
 
                 //StructT.GetStruct();
                 Console.WriteLine("Press Any Key To Continue...");
