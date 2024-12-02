@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,31 +44,30 @@ namespace Ais.IO.Csharp
             return iv;
         }
 
-        public byte[] ImportKey(string text)
+        public byte[] ImportKey(string content)
         {
-            if (!this.AcceptImportKeySize.Contains(text.Length))
+            if (!this.AcceptImportKeySize.Contains(content.Length))
                 throw new FormatException("Key size must be 128, 192, 256 bits, or 16, 24, 32 bytes.");
-            byte[] key = new byte[text.Length];
+            byte[] key = new byte[content.Length];
             byte[] keyBuffer = new byte[key.Length];
-            AesIOInterop.GenerateKeyFromInput(text, keyBuffer, keyBuffer.Length);
+            AesIOInterop.GenerateKeyFromInput(content, content.Length, keyBuffer, keyBuffer.Length);
             this.Key = keyBuffer;
             return keyBuffer;
         }
 
-        public byte[] ImportIV(string text)
+        public byte[] ImportIV(string content)
         {
-            if (text.Length != 16)
+            if (content.Length != 16)
                 throw new FormatException("IV size must be 128 bits, or 16 bytes.");
-            byte[] iv = new byte[text.Length];
+            byte[] iv = new byte[content.Length];
             byte[] ivBuffer = new byte[iv.Length];
-            AesIOInterop.GenerateIVFromInput(text, ivBuffer, ivBuffer.Length);
+            AesIOInterop.GenerateIVFromInput(content, content.Length, ivBuffer, ivBuffer.Length);
             this.IV = ivBuffer;
             return ivBuffer;
         }
 
-        public byte[] CtrEncrypt(string text, byte[] key, byte[] iv)
+        public byte[] CtrEncrypt(byte[] plainText, byte[] key, byte[] iv, long counter = 0)
         {
-            byte[] plainText = Encoding.UTF8.GetBytes(text);
             byte[] cipherText = new byte[plainText.Length];
 
             IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
@@ -84,22 +84,29 @@ namespace Ais.IO.Csharp
                 PLAIN_TEXT = plainTextPtr,
                 KEY = keyPtr,
                 IV = ivPtr,
-                COUNTER = 1,
                 PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                CIPHER_TEXT = cipherTextPtr
+                CIPHER_TEXT = cipherTextPtr,
+                COUNTER = counter,
             };
 
             int cipherTextLength = AesIOInterop.AesCtrEncrypt(ref encryption);
             if (cipherTextLength > 0)
+            {
+                cipherText = new byte[cipherTextLength];
                 Marshal.Copy(cipherTextPtr, cipherText, 0, cipherTextLength);
+            }
             else
                 cipherText = new byte[0];
+
+            Marshal.FreeHGlobal(plainTextPtr);
+            Marshal.FreeHGlobal(cipherTextPtr);
+            Marshal.FreeHGlobal(keyPtr);
+            Marshal.FreeHGlobal(ivPtr);
             return cipherText;
         }
 
-        public byte[] CtrDecrypt(string text, byte[] key, byte[] iv)
+        public byte[] CtrDecrypt(byte[] cipherText, byte[] key, byte[] iv, long counter = 0)
         {
-            byte[] cipherText = Encoding.UTF8.GetBytes(text);
             byte[] plainText = new byte[cipherText.Length];
 
             IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
@@ -107,7 +114,7 @@ namespace Ais.IO.Csharp
             IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
             IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
 
-            Marshal.Copy(cipherTextPtr, cipherText, 0, cipherText.Length);
+            Marshal.Copy(cipherText, 0, cipherTextPtr, cipherText.Length);
             Marshal.Copy(key, 0, keyPtr, key.Length);
             Marshal.Copy(iv, 0, ivPtr, iv.Length);
 
@@ -116,15 +123,100 @@ namespace Ais.IO.Csharp
                 CIPHER_TEXT = cipherTextPtr,
                 KEY = keyPtr,
                 IV = ivPtr,
-                COUNTER = 1,
                 CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                 PLAIN_TEXT = plainTextPtr,
+                COUNTER = counter,
             };
             int plainTextLength = AesIOInterop.AesCtrDecrypt(ref decryption);
             if (plainTextLength > 0)
+            {
+                plainText = new byte[plainTextLength];
                 Marshal.Copy(plainTextPtr, plainText, 0, plainTextLength);
+            }
             else
                 plainText = new byte[0];
+
+            Marshal.FreeHGlobal(plainTextPtr);
+            Marshal.FreeHGlobal(cipherTextPtr);
+            Marshal.FreeHGlobal(keyPtr);
+            Marshal.FreeHGlobal(ivPtr);
+            return plainText;
+        }
+
+        public byte[] CbcEncrypt(byte[] plainText, byte[] key, byte[] iv, bool padding = true)
+        {
+            byte[] cipherText = new byte[plainText.Length];
+
+            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
+            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
+            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
+            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
+
+            Marshal.Copy(plainText, 0, plainTextPtr, plainText.Length);
+            Marshal.Copy(key, 0, keyPtr, key.Length);
+            Marshal.Copy(iv, 0, ivPtr, iv.Length);
+
+            AES_CBC_ENCRYPT encryption = new AES_CBC_ENCRYPT
+            {
+                PLAIN_TEXT = plainTextPtr,
+                KEY = keyPtr,
+                IV = ivPtr,
+                PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                CIPHER_TEXT = cipherTextPtr,
+                PKCS7_PADDING = padding
+            };
+
+            int cipherTextLength = AesIOInterop.AesCbcEncrypt(ref encryption);
+            if (cipherTextLength > 0)
+            {
+                cipherText = new byte[cipherTextLength];
+                Marshal.Copy(cipherTextPtr, cipherText, 0, cipherTextLength);
+            }
+            else
+                cipherText = new byte[0];
+
+            Marshal.FreeHGlobal(plainTextPtr);
+            Marshal.FreeHGlobal(cipherTextPtr);
+            Marshal.FreeHGlobal(keyPtr);
+            Marshal.FreeHGlobal(ivPtr);
+            return cipherText;
+        }
+
+        public byte[] CbcDecrypt(byte[] cipherText, byte[] key, byte[] iv, bool padding = true)
+        {
+            byte[] plainText = new byte[cipherText.Length];
+
+            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
+            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
+            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
+            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
+
+            Marshal.Copy(cipherText, 0, cipherTextPtr, cipherText.Length);
+            Marshal.Copy(key, 0, keyPtr, key.Length);
+            Marshal.Copy(iv, 0, ivPtr, iv.Length);
+
+            AES_CBC_DECRYPT decryption = new AES_CBC_DECRYPT
+            {
+                CIPHER_TEXT = cipherTextPtr,
+                KEY = keyPtr,
+                IV = ivPtr,
+                CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                PLAIN_TEXT = plainTextPtr,
+                PKCS7_PADDING = padding
+            };
+            int plainTextLength = AesIOInterop.AesCbcDecrypt(ref decryption);
+            if (plainTextLength > 0)
+            {
+                plainText = new byte[plainTextLength];
+                Marshal.Copy(plainTextPtr, plainText, 0, plainTextLength);
+            }
+            else
+                plainText = new byte[0];
+
+            Marshal.FreeHGlobal(plainTextPtr);
+            Marshal.FreeHGlobal(cipherTextPtr);
+            Marshal.FreeHGlobal(keyPtr);
+            Marshal.FreeHGlobal(ivPtr);
             return plainText;
         }
     }

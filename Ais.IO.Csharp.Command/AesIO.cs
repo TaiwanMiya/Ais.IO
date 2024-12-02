@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,83 +32,42 @@ namespace Ais.IO.Csharp.Command
             if (AesIOInterop.GenerateIV(iv, iv.Length) == 0)
                 Console.WriteLine("Generated IV (128 bits): " + BitConverter.ToString(iv).Replace("-", ""));
 
-            if (AesIOInterop.GenerateKeyFromInput(inputKey, inputKeyBuffer, inputKeyBuffer.Length) == 0)
+            if (AesIOInterop.GenerateKeyFromInput(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputKeyBuffer).Replace("-", ""));
-            if (AesIOInterop.GenerateIVFromInput(inputIV, inputIVBuffer, inputIVBuffer.Length) == 0)
+            if (AesIOInterop.GenerateIVFromInput(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
-        public static void CTR(string text)
+        public static void CTR(string text, string key, string iv, long counter)
         {
-            // 明文和密钥设置
             byte[] plainText = Encoding.UTF8.GetBytes(text);
-            byte[] key = new byte[32];  // 假设使用 256 位的密钥
-            byte[] iv = new byte[16];   // 128 位的 IV
-            byte[] cipherText = new byte[plainText.Length];
-            byte[] decryptedText = new byte[plainText.Length];
 
-            // 填充随机密钥和 IV（可根据你的需求调整）
-            Random rnd = new Random();
-            rnd.NextBytes(key);
-            rnd.NextBytes(iv);
+            Aes aes = new Aes();
+            byte[] keyResult = aes.ImportKey(key);
+            byte[] ivResult = aes.ImportIV(iv);
+            byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, ivResult, counter);
 
-            // 分配非托管内存
-            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
-            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
-            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
-            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
+            Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
 
-            Marshal.Copy(plainText, 0, plainTextPtr, plainText.Length);
-            Marshal.Copy(key, 0, keyPtr, key.Length);
-            Marshal.Copy(iv, 0, ivPtr, iv.Length);
+            plainText = aes.CtrDecrypt(cipherText, keyResult, ivResult, counter);
 
-            // 设置 AES_CTR_ENCRYPT 结构体
-            AES_CTR_ENCRYPT encryption = new AES_CTR_ENCRYPT
-            {
-                PLAIN_TEXT = plainTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                COUNTER = 1,
-                PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                CIPHER_TEXT = cipherTextPtr
-            };
+            Console.WriteLine(Encoding.UTF8.GetString(plainText));
+        }
 
-            // 执行加密
-            int cipherTextLength = AesIOInterop.AesCtrEncrypt(ref encryption);
-            if (cipherTextLength > 0)
-            {
-                Marshal.Copy(cipherTextPtr, cipherText, 0, cipherTextLength);
-                Console.WriteLine("Ciphertext: " + BitConverter.ToString(cipherText).Replace("-", ""));
-            }
+        public static void CBC(string text, string key, string iv, bool pkcs7Padding)
+        {
+            byte[] plainText = Encoding.UTF8.GetBytes(text);
 
-            // 分配解密后的明文的非托管内存
-            IntPtr decryptedTextPtr = Marshal.AllocHGlobal(plainText.Length);
+            Aes aes = new Aes();
+            byte[] keyResult = aes.ImportKey(key);
+            byte[] ivResult = aes.ImportIV(iv);
+            byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
 
-            // 设置 AES_CTR_DECRYPT 结构体
-            AES_CTR_DECRYPT decryption = new AES_CTR_DECRYPT
-            {
-                CIPHER_TEXT = cipherTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                COUNTER = 1,
-                CIPHER_TEXT_LENGTH = (UIntPtr)cipherTextLength,
-                PLAIN_TEXT = decryptedTextPtr
-            };
+            Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
 
-            // 执行解密
-            int decryptedTextLength = AesIOInterop.AesCtrDecrypt(ref decryption);
-            if (decryptedTextLength > 0)
-            {
-                Marshal.Copy(decryptedTextPtr, decryptedText, 0, decryptedTextLength);
-                Console.WriteLine("Decrypted text: " + System.Text.Encoding.UTF8.GetString(decryptedText, 0, decryptedTextLength));
-            }
+            plainText = aes.CbcDecrypt(cipherText, keyResult, ivResult, pkcs7Padding);
 
-            // 释放分配的非托管内存
-            Marshal.FreeHGlobal(plainTextPtr);
-            Marshal.FreeHGlobal(keyPtr);
-            Marshal.FreeHGlobal(ivPtr);
-            Marshal.FreeHGlobal(cipherTextPtr);
-            Marshal.FreeHGlobal(decryptedTextPtr);
+            Console.WriteLine(Encoding.UTF8.GetString(plainText));
         }
     }
 }

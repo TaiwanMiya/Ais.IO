@@ -88,12 +88,15 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     const int BLOCK_SIZE = 16;
 
     unsigned char iv_with_counter[16];
-    int len, ciphertext_len = 0;
+    int len = 0;
+    int ciphertext_len = 0;
 
     int total_blocks = (encryption->PLAIN_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     for (int i = 0; i < total_blocks; ++i) {
-        longlong_to_bytes(encryption->COUNTER, iv_with_counter, BLOCK_SIZE);
+        memcpy(iv_with_counter, encryption->IV, 16);
+        uint64_t* counter_ptr = reinterpret_cast<uint64_t*>(&iv_with_counter[8]);
+        *counter_ptr = encryption->COUNTER + i;
 
         if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, encryption->KEY, iv_with_counter))
             handleErrors("Initialize AES CTR encryption for the current block failed.");
@@ -123,12 +126,15 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     const int BLOCK_SIZE = 16;
 
     unsigned char iv_with_counter[16];
-    int len, plaintext_len = 0;
+    int len = 0;
+    int plaintext_len = 0;
 
     int total_blocks = (decryption->CIPHER_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     for (int i = 0; i < total_blocks; ++i) {
-        longlong_to_bytes(decryption->COUNTER, iv_with_counter, BLOCK_SIZE);
+        memcpy(iv_with_counter, decryption->IV, 16);
+        uint64_t* counter_ptr = reinterpret_cast<uint64_t*>(&iv_with_counter[8]);
+        *counter_ptr = decryption->COUNTER + i;
 
         if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, decryption->KEY, iv_with_counter))
             handleErrors("Initialize AES CTR decryption for the current block failed.");
@@ -163,7 +169,8 @@ int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
 
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
-    int len, ciphertext_len = 0;
+    int len = 0;
+    int ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
         handleErrors("Encrypt the current block failed.");
     ciphertext_len += len;
@@ -189,7 +196,8 @@ int AesCbcDecrypt(AES_CBC_DECRYPT* decryption) {
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
-    int len, plaintext_len = 0;
+    int len = 0;
+    int plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
         handleErrors("Decrypt the current block failed.");
     plaintext_len += len;

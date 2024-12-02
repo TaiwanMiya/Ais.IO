@@ -19,8 +19,8 @@ namespace Ais.IO.Csharp.Command
             outputB32 = new byte[2048];
             outputB64 = new byte[2048];
             outputB85 = new byte[2048];
-            int code32 = EncoderIOInterop.Base32Encode(inputB32, outputB32, 2048);
             int code16 = EncoderIOInterop.Base16Encode(inputB16, outputB16, 2048);
+            int code32 = EncoderIOInterop.Base32Encode(inputB32, outputB32, 2048);
             int code64 = EncoderIOInterop.Base64Encode(inputB64, outputB64, 2048);
             int code85 = EncoderIOInterop.Base85Encode(inputB85, outputB85, 2048);
             string[] messageArray =
