@@ -66,158 +66,276 @@ namespace Ais.IO.Csharp
             return ivBuffer;
         }
 
-        public byte[] CtrEncrypt(byte[] plainText, byte[] key, byte[] iv, long counter = 0)
+        public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0)
         {
             byte[] cipherText = new byte[plainText.Length];
 
-            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
-            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
-            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
-            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
 
-            Marshal.Copy(plainText, 0, plainTextPtr, plainText.Length);
-            Marshal.Copy(key, 0, keyPtr, key.Length);
-            Marshal.Copy(iv, 0, ivPtr, iv.Length);
-
-            AES_CTR_ENCRYPT encryption = new AES_CTR_ENCRYPT
+            try
             {
-                PLAIN_TEXT = plainTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                CIPHER_TEXT = cipherTextPtr,
-                COUNTER = counter,
-            };
+                AES_CTR_ENCRYPT encryption = new AES_CTR_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    COUNTER = counter,
+                };
 
-            int cipherTextLength = AesIOInterop.AesCtrEncrypt(ref encryption);
-            if (cipherTextLength > 0)
-            {
-                cipherText = new byte[cipherTextLength];
-                Marshal.Copy(cipherTextPtr, cipherText, 0, cipherTextLength);
+                int cipherTextLength = AesIOInterop.AesCtrEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                    cipherText = new byte[0];
+
+                return cipherText;
             }
-            else
-                cipherText = new byte[0];
-
-            Marshal.FreeHGlobal(plainTextPtr);
-            Marshal.FreeHGlobal(cipherTextPtr);
-            Marshal.FreeHGlobal(keyPtr);
-            Marshal.FreeHGlobal(ivPtr);
-            return cipherText;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+            }
         }
 
-        public byte[] CtrDecrypt(byte[] cipherText, byte[] key, byte[] iv, long counter = 0)
+        public byte[] CtrDecrypt(byte[] cipherText, byte[] key, long counter = 0)
         {
             byte[] plainText = new byte[cipherText.Length];
 
-            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
-            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
-            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
-            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
 
-            Marshal.Copy(cipherText, 0, cipherTextPtr, cipherText.Length);
-            Marshal.Copy(key, 0, keyPtr, key.Length);
-            Marshal.Copy(iv, 0, ivPtr, iv.Length);
+            try
+            {
+                AES_CTR_DECRYPT decryption = new AES_CTR_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    COUNTER = counter,
+                };
+                int plainTextLength = AesIOInterop.AesCtrDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                    plainText = new byte[0];
 
-            AES_CTR_DECRYPT decryption = new AES_CTR_DECRYPT
-            {
-                CIPHER_TEXT = cipherTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                PLAIN_TEXT = plainTextPtr,
-                COUNTER = counter,
-            };
-            int plainTextLength = AesIOInterop.AesCtrDecrypt(ref decryption);
-            if (plainTextLength > 0)
-            {
-                plainText = new byte[plainTextLength];
-                Marshal.Copy(plainTextPtr, plainText, 0, plainTextLength);
+                return plainText;
             }
-            else
-                plainText = new byte[0];
-
-            Marshal.FreeHGlobal(plainTextPtr);
-            Marshal.FreeHGlobal(cipherTextPtr);
-            Marshal.FreeHGlobal(keyPtr);
-            Marshal.FreeHGlobal(ivPtr);
-            return plainText;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
         }
 
         public byte[] CbcEncrypt(byte[] plainText, byte[] key, byte[] iv, bool padding = true)
         {
-            byte[] cipherText = new byte[plainText.Length];
+            byte[] cipherText = new byte[padding ? plainText.Length + 16 : plainText.Length];
 
-            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
-            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
-            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
-            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
 
-            Marshal.Copy(plainText, 0, plainTextPtr, plainText.Length);
-            Marshal.Copy(key, 0, keyPtr, key.Length);
-            Marshal.Copy(iv, 0, ivPtr, iv.Length);
-
-            AES_CBC_ENCRYPT encryption = new AES_CBC_ENCRYPT
+            try
             {
-                PLAIN_TEXT = plainTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                CIPHER_TEXT = cipherTextPtr,
-                PKCS7_PADDING = padding
-            };
+                AES_CBC_ENCRYPT encryption = new AES_CBC_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    PKCS7_PADDING = padding
+                };
 
-            int cipherTextLength = AesIOInterop.AesCbcEncrypt(ref encryption);
-            if (cipherTextLength > 0)
-            {
-                cipherText = new byte[cipherTextLength];
-                Marshal.Copy(cipherTextPtr, cipherText, 0, cipherTextLength);
+                int cipherTextLength = AesIOInterop.AesCbcEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                    cipherText = new byte[0];
+
+                return cipherText;
             }
-            else
-                cipherText = new byte[0];
-
-            Marshal.FreeHGlobal(plainTextPtr);
-            Marshal.FreeHGlobal(cipherTextPtr);
-            Marshal.FreeHGlobal(keyPtr);
-            Marshal.FreeHGlobal(ivPtr);
-            return cipherText;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+            }
         }
 
         public byte[] CbcDecrypt(byte[] cipherText, byte[] key, byte[] iv, bool padding = true)
         {
+            byte[] plainText = new byte[padding ? cipherText.Length + 16 : cipherText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_CBC_DECRYPT decryption = new AES_CBC_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    PKCS7_PADDING = padding
+                };
+                int plainTextLength = AesIOInterop.AesCbcDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                    plainText = new byte[0];
+
+                return plainText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] CfbEncrypt(byte[] plainText, byte[] key, byte[] iv, SEGMENT_SIZE_OPTION segmentSize)
+        {
+            byte[] cipherText = new byte[plainText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_CFB_ENCRYPT encryption = new AES_CFB_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    SEGMENT_SIZE = segmentSize
+                };
+                int cipherTextLength = AesIOInterop.AesCfbEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                    cipherText = new byte[0];
+
+                return cipherText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] CfbDecrypt(byte[] cipherText, byte[] key, byte[] iv, SEGMENT_SIZE_OPTION segmentSize)
+        {
             byte[] plainText = new byte[cipherText.Length];
 
-            IntPtr keyPtr = Marshal.AllocHGlobal(key.Length);
-            IntPtr ivPtr = Marshal.AllocHGlobal(iv.Length);
-            IntPtr cipherTextPtr = Marshal.AllocHGlobal(cipherText.Length);
-            IntPtr plainTextPtr = Marshal.AllocHGlobal(plainText.Length);
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
 
-            Marshal.Copy(cipherText, 0, cipherTextPtr, cipherText.Length);
-            Marshal.Copy(key, 0, keyPtr, key.Length);
-            Marshal.Copy(iv, 0, ivPtr, iv.Length);
+            try
+            {
+                AES_CFB_DECRYPT decryption = new AES_CFB_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    SEGMENT_SIZE = segmentSize
+                };
+                int plainTextLength = AesIOInterop.AesCfbDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                    plainText = new byte[0];
 
-            AES_CBC_DECRYPT decryption = new AES_CBC_DECRYPT
-            {
-                CIPHER_TEXT = cipherTextPtr,
-                KEY = keyPtr,
-                IV = ivPtr,
-                CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                PLAIN_TEXT = plainTextPtr,
-                PKCS7_PADDING = padding
-            };
-            int plainTextLength = AesIOInterop.AesCbcDecrypt(ref decryption);
-            if (plainTextLength > 0)
-            {
-                plainText = new byte[plainTextLength];
-                Marshal.Copy(plainTextPtr, plainText, 0, plainTextLength);
+                return plainText;
             }
-            else
-                plainText = new byte[0];
-
-            Marshal.FreeHGlobal(plainTextPtr);
-            Marshal.FreeHGlobal(cipherTextPtr);
-            Marshal.FreeHGlobal(keyPtr);
-            Marshal.FreeHGlobal(ivPtr);
-            return plainText;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
         }
     }
 }

@@ -19,10 +19,13 @@ namespace Ais.IO.Csharp.Command
                 string iv = "IvMustBe128Size.";
 
                 text = "This is AES CTR Encryption/Decryption.";
-                AesIO.CTR(text, key, iv, 5);
+                AesIO.CTR(text, key, 1);
 
                 text = "This is AES CBC Encryption/Decryption.";
                 AesIO.CBC(text, key, iv, true);
+
+                text = "This is AES CFB Encryption/Decryption.";
+                AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
 
                 Console.WriteLine("Press Any Key To Continue...");
                 Console.ReadKey();

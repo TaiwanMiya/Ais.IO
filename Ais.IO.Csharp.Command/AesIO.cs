@@ -38,36 +38,63 @@ namespace Ais.IO.Csharp.Command
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
-        public static void CTR(string text, string key, string iv, long counter)
+        public static void CTR(string text, string key, long counter)
         {
-            byte[] plainText = Encoding.UTF8.GetBytes(text);
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
 
-            Aes aes = new Aes();
-            byte[] keyResult = aes.ImportKey(key);
-            byte[] ivResult = aes.ImportIV(iv);
-            byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, ivResult, counter);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter);
 
-            Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
 
-            plainText = aes.CtrDecrypt(cipherText, keyResult, ivResult, counter);
+                plainText = aes.CtrDecrypt(cipherText, keyResult, counter);
 
-            Console.WriteLine(Encoding.UTF8.GetString(plainText));
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
         public static void CBC(string text, string key, string iv, bool pkcs7Padding)
         {
-            byte[] plainText = Encoding.UTF8.GetBytes(text);
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
 
-            Aes aes = new Aes();
-            byte[] keyResult = aes.ImportKey(key);
-            byte[] ivResult = aes.ImportIV(iv);
-            byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
 
-            Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
 
-            plainText = aes.CbcDecrypt(cipherText, keyResult, ivResult, pkcs7Padding);
+                plainText = aes.CbcDecrypt(cipherText, keyResult, ivResult, pkcs7Padding);
 
-            Console.WriteLine(Encoding.UTF8.GetString(plainText));
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
+
+        public static void CFB(string text, string key, string iv, SEGMENT_SIZE_OPTION segmentSize)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] cipherText = aes.CfbEncrypt(plainText, keyResult, ivResult, segmentSize);
+
+                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+
+                plainText = aes.CfbDecrypt(cipherText, keyResult, ivResult, segmentSize);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
     }
 }

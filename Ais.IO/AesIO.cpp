@@ -11,10 +11,11 @@
 #include <string>
 
 // Handle Errors
-void handleErrors(std::string message) {
+int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
     std::cerr << "ERROR: " << message << std::endl;
-    ERR_print_errors_fp(stderr);
-    exit(1);
+    if (ctx != NULL)
+        EVP_CIPHER_CTX_free(ctx);
+    return -1;
 }
 
 void longlong_to_bytes(long long counter, unsigned char* buffer, int buffer_size) {
@@ -31,10 +32,9 @@ void longlong_to_bytes(long long counter, unsigned char* buffer, int buffer_size
 }
 
 int GenerateKey(unsigned char* key, size_t keyLength) {
-    if (keyLength != 16 && keyLength != 24 && keyLength != 32) {
-        handleErrors("Invalid key length. Use 128, 192, or 256 bits.");
-        return -1;
-    }
+    ERR_clear_error();
+    if (keyLength != 16 && keyLength != 24 && keyLength != 32)
+        return handleErrors("Invalid key length. Use 128, 192, or 256 bits.", NULL);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
@@ -45,10 +45,9 @@ int GenerateKey(unsigned char* key, size_t keyLength) {
 }
 
 int GenerateIV(unsigned char* iv, size_t ivLength) {
-    if (ivLength != 16) {
-        handleErrors("Invalid IV length. Use 128 bits.");
-        return -1;
-    }
+    ERR_clear_error();
+    if (ivLength != 16)
+        return handleErrors("Invalid IV length. Use 128 bits.", NULL);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
@@ -59,10 +58,9 @@ int GenerateIV(unsigned char* iv, size_t ivLength) {
 }
 
 int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength) {
-    if (keyLength != 16 && keyLength != 24 && keyLength != 32) {
-        handleErrors("Invalid key length. Use 128, 192, or 256 bits.");
-        return -1;
-    }
+    ERR_clear_error();
+    if (keyLength != 16 && keyLength != 24 && keyLength != 32)
+        return handleErrors("Invalid key length. Use 128, 192, or 256 bits.", NULL);
 
     memset(key, 0, keyLength);
     memcpy(key, input, inputLength > keyLength ? keyLength : inputLength);
@@ -70,10 +68,8 @@ int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigne
 }
 
 int GenerateIVFromInput(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength) {
-    if (ivLength != 16) {
-        handleErrors("Invalid IV length. Use 128 bits.");
-        return -1;
-    }
+    if (ivLength != 16)
+        return handleErrors("Invalid IV length. Use 128 bits.", NULL);
 
     memset(iv, 0, ivLength);
     memcpy(iv, input, inputLength > ivLength ? ivLength : inputLength);
@@ -81,9 +77,10 @@ int GenerateIVFromInput(const unsigned char* input, size_t inputLength, unsigned
 }
 
 int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
+    ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        handleErrors("An error occurred during key/iv generation");
+        return handleErrors("An error occurred during key/iv generation", ctx);
 
     const int BLOCK_SIZE = 16;
 
@@ -96,19 +93,19 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
         longlong_to_bytes(encryption->COUNTER, iv_with_counter, BLOCK_SIZE);
 
         if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, encryption->KEY, iv_with_counter))
-            handleErrors("Initialize AES CTR encryption for the current block failed.");
+            return handleErrors("Initialize AES CTR encryption for the current block failed.", ctx);
 
         int current_block_size = (BLOCK_SIZE < (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE)))
                                 ? BLOCK_SIZE
                                 : (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE));
 
         if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len, encryption->PLAIN_TEXT + (i * BLOCK_SIZE), current_block_size))
-            handleErrors("Encrypt the current block failed.");
+            return handleErrors("Encrypt the current block failed.", ctx);
         ciphertext_len += len;
     }
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len))
-        handleErrors("Finalize encryption failed.");
+        return handleErrors("Finalize encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -116,9 +113,10 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
 }
 
 int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
+    ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        handleErrors("An error occurred during key/iv generation");
+        return handleErrors("An error occurred during key/iv generation", ctx);
 
     const int BLOCK_SIZE = 16;
 
@@ -131,19 +129,19 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
         longlong_to_bytes(decryption->COUNTER, iv_with_counter, BLOCK_SIZE);
 
         if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, decryption->KEY, iv_with_counter))
-            handleErrors("Initialize AES CTR decryption for the current block failed.");
+            return handleErrors("Initialize AES CTR decryption for the current block failed.", ctx);
 
         int current_block_size = (BLOCK_SIZE < (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE)))
                                 ? BLOCK_SIZE
                                 : (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE));
 
         if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT + plaintext_len, &len, decryption->CIPHER_TEXT + (i * BLOCK_SIZE), current_block_size))
-            handleErrors("Decrypt the current block failed.");
+            return handleErrors("Decrypt the current block failed.", ctx);
         plaintext_len += len;
     }
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + plaintext_len, &len))
-        handleErrors("Finalize decryption failed.");
+        return handleErrors("Finalize decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -151,25 +149,26 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
 }
 
 int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
+    ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        handleErrors("An error occurred during key/iv generation");
+        return handleErrors("An error occurred during key/iv generation", ctx);
 
     if (encryption->PKCS7_PADDING == false && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
-        handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH));
+        return handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, encryption->KEY, encryption->IV))
-        handleErrors("Initialize AES CBC encryption for the current block failed.");
+        return handleErrors("Initialize AES CBC encryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
     int len, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
-        handleErrors("Encrypt the current block failed.");
+        return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
-        handleErrors("Final encryption failed.");
+        return handleErrors("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -177,25 +176,92 @@ int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
 }
 
 int AesCbcDecrypt(AES_CBC_DECRYPT* decryption) {
+    ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        handleErrors("An error occurred during key/iv generation");
+        return handleErrors("An error occurred during key/iv generation", ctx);
 
     if (decryption->PKCS7_PADDING == false && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
-        handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH));
+        return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, decryption->KEY, decryption->IV))
-        handleErrors("Initialize AES CBC decryption for the current block failed.");
+        return handleErrors("Initialize AES CBC decryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
-        handleErrors("Decrypt the current block failed.");
+        return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
-        handleErrors("Final decryption failed.");
+        return handleErrors("Final decryption failed.", ctx);
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during key/iv generation", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    if (encryption->SEGMENT_SIZE == 1) {
+        cipher = EVP_aes_256_cfb1();
+    }
+    else if (encryption->SEGMENT_SIZE == 8) {
+        cipher = EVP_aes_256_cfb8();
+    }
+    else {
+        cipher = EVP_aes_256_cfb128();
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
+        return handleErrors("Initialize AES CFB encryption failed.", ctx);
+
+    int len, ciphertext_len = 0;
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
+        return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during key/iv generation", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    if (decryption->SEGMENT_SIZE == 1) {
+        cipher = EVP_aes_256_cfb1();
+    }
+    else if (decryption->SEGMENT_SIZE == 8) {
+        cipher = EVP_aes_256_cfb8();
+    }
+    else {
+        cipher = EVP_aes_256_cfb128();
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
+        return handleErrors("Initialize AES CFB decryption failed.", ctx);
+
+    int len, plaintext_len = 0;
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
+        return handleErrors("Final decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
