@@ -71,9 +71,6 @@
     <ClCompile Include="StructT.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="CryptographyIO.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
     <ClCompile Include="AesIO.cpp">
       <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>

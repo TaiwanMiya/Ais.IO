@@ -44,11 +44,12 @@ namespace Ais.IO.Csharp.Command
             {
                 byte[] plainText = Encoding.UTF8.GetBytes(text);
 
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
                 byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter);
 
-                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+                Console.WriteLine(encoder.Encode<string>(cipherText));
 
                 plainText = aes.CtrDecrypt(cipherText, keyResult, counter);
 
@@ -63,12 +64,13 @@ namespace Ais.IO.Csharp.Command
             {
                 byte[] plainText = Encoding.UTF8.GetBytes(text);
 
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
                 byte[] ivResult = aes.ImportIV(iv);
                 byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
 
-                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+                Console.WriteLine(encoder.Encode<string>(cipherText));
 
                 plainText = aes.CbcDecrypt(cipherText, keyResult, ivResult, pkcs7Padding);
 
@@ -83,12 +85,13 @@ namespace Ais.IO.Csharp.Command
             {
                 byte[] plainText = Encoding.UTF8.GetBytes(text);
 
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
                 byte[] ivResult = aes.ImportIV(iv);
                 byte[] cipherText = aes.CfbEncrypt(plainText, keyResult, ivResult, segmentSize);
 
-                Console.WriteLine(BitConverter.ToString(cipherText).Replace("-", ""));
+                Console.WriteLine(encoder.Encode<string>(cipherText));
 
                 plainText = aes.CfbDecrypt(cipherText, keyResult, ivResult, segmentSize);
 

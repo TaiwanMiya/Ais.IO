@@ -189,7 +189,6 @@
     <ClCompile Include="BinaryIO.cpp" />
     <ClCompile Include="BinaryReaderIO.cpp" />
     <ClCompile Include="BinaryWriterIO.cpp" />
-    <ClCompile Include="CryptographyIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EncoderIO.cpp" />
     <ClCompile Include="pch.cpp">

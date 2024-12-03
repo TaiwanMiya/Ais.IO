@@ -19,10 +19,10 @@ namespace Ais.IO.Csharp.Command
             outputB32 = new byte[2048];
             outputB64 = new byte[2048];
             outputB85 = new byte[2048];
-            int code16 = EncoderIOInterop.Base16Encode(inputB16, outputB16, 2048);
-            int code32 = EncoderIOInterop.Base32Encode(inputB32, outputB32, 2048);
-            int code64 = EncoderIOInterop.Base64Encode(inputB64, outputB64, 2048);
-            int code85 = EncoderIOInterop.Base85Encode(inputB85, outputB85, 2048);
+            int code16 = EncoderIOInterop.Base16Encode(inputB16, inputB16.LongLength, outputB16, 2048);
+            int code32 = EncoderIOInterop.Base32Encode(inputB32, inputB32.LongLength, outputB32, 2048);
+            int code64 = EncoderIOInterop.Base64Encode(inputB64, inputB64.LongLength, outputB64, 2048);
+            int code85 = EncoderIOInterop.Base85Encode(inputB85, inputB85.LongLength, outputB85, 2048);
             string[] messageArray =
             [
                 $"base16 encode [{code16}] = {Encoding.UTF8.GetString(outputB16)}",
@@ -39,10 +39,10 @@ namespace Ais.IO.Csharp.Command
             byte[] outputB32 = new byte[2048];
             byte[] outputB64 = new byte[2048];
             byte[] outputB85 = new byte[2048];
-            int code16 = EncoderIOInterop.Base16Decode(inputB16, outputB16, 2048);
-            int code32 = EncoderIOInterop.Base32Decode(inputB32, outputB32, 2048);
-            int code64 = EncoderIOInterop.Base64Decode(inputB64, outputB64, 2048);
-            int code85 = EncoderIOInterop.Base85Decode(inputB85, outputB85, 2048);
+            int code16 = EncoderIOInterop.Base16Decode(inputB16, inputB16.LongLength, outputB16, 2048);
+            int code32 = EncoderIOInterop.Base32Decode(inputB32, inputB32.LongLength, outputB32, 2048);
+            int code64 = EncoderIOInterop.Base64Decode(inputB64, inputB64.LongLength, outputB64, 2048);
+            int code85 = EncoderIOInterop.Base85Decode(inputB85, inputB85.LongLength, outputB85, 2048);
             string[] messageArray =
             [
                 $"base16 decode [{code16}] = {Encoding.UTF8.GetString(outputB16)}",
