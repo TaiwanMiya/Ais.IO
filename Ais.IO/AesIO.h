@@ -71,6 +71,38 @@ struct AES_CFB_DECRYPT {
     SEGMENT_SIZE_OPTION SEGMENT_SIZE;
 };
 
+struct AES_OFB_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+};
+
+struct AES_OFB_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+};
+
+struct AES_ECB_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+    bool PKCS7_PADDING;
+};
+
+struct AES_ECB_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+    bool PKCS7_PADDING;
+};
+
 // Generate a random key with specified length (128, 192, 256 bits)
 EXT AESIO_API int GenerateKey(unsigned char* key, size_t keyLength);
 // Generate a random IV with length 128 bits
@@ -87,3 +119,7 @@ EXT AESIO_API int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption);
 EXT AESIO_API int AesCbcDecrypt(AES_CBC_DECRYPT* decryption);
 EXT AESIO_API int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption);
 EXT AESIO_API int AesCfbDecrypt(AES_CFB_DECRYPT* decryption);
+EXT AESIO_API int AesOfbEncrypt(AES_OFB_ENCRYPT* encryption);
+EXT AESIO_API int AesOfbDecrypt(AES_OFB_DECRYPT* decryption);
+EXT AESIO_API int AesEcbEncrypt(AES_ECB_ENCRYPT* encryption);
+EXT AESIO_API int AesEcbDecrypt(AES_ECB_DECRYPT* decryption);

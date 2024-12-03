@@ -99,5 +99,46 @@ namespace Ais.IO.Csharp.Command
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
+
+        public static void OFB(string text, string key, string iv)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] cipherText = aes.OfbEncrypt(plainText, keyResult, ivResult);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                plainText = aes.OfbDecrypt(cipherText, keyResult, ivResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
+
+        public static void ECB(string text, string key, bool pkcs7Padding)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] cipherText = aes.EcbEncrypt(plainText, keyResult, pkcs7Padding);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                plainText = aes.EcbDecrypt(cipherText, keyResult, pkcs7Padding);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
     }
 }

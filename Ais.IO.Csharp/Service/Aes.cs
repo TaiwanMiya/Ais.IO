@@ -337,5 +337,181 @@ namespace Ais.IO.Csharp
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
             }
         }
+
+        public byte[] OfbEncrypt(byte[] plainText, byte[] key, byte[] iv)
+        {
+            byte[] cipherText = new byte[plainText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_OFB_ENCRYPT encryption = new AES_OFB_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                };
+                int cipherTextLength = AesIOInterop.AesOfbEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                    cipherText = new byte[0];
+
+                return cipherText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] OfbDecrypt(byte[] cipherText, byte[] key, byte[] iv)
+        {
+            byte[] plainText = new byte[cipherText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_OFB_DECRYPT decryption = new AES_OFB_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject()
+                };
+                int plainTextLength = AesIOInterop.AesOfbDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                    plainText = new byte[0];
+
+                return plainText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] EcbEncrypt(byte[] plainText, byte[] key, bool padding = true)
+        {
+            byte[] cipherText = new byte[padding ? plainText.Length + 16 : plainText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_ECB_ENCRYPT encryption = new AES_ECB_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    PKCS7_PADDING = padding
+                };
+                int cipherTextLength = AesIOInterop.AesEcbEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                    cipherText = new byte[0];
+
+                return cipherText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] EcbDecrypt(byte[] cipherText, byte[] key, bool padding = true)
+        {
+            byte[] plainText = new byte[padding ? cipherText.Length + 16 : cipherText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+
+            try
+            {
+                AES_ECB_DECRYPT decryption = new AES_ECB_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    PKCS7_PADDING = padding
+                };
+                int plainTextLength = AesIOInterop.AesEcbDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                    plainText = new byte[0];
+
+                return plainText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
     }
 }
