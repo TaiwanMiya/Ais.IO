@@ -11,6 +11,9 @@
 #include <cstdlib>
 #include <iomanip>
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
+#include <iostream>
 
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,

@@ -1,5 +1,6 @@
 ﻿#include "main.h"
 #include "StringCase.h"
+#include "arguments.h"
 #include <locale.h>
 
 #ifdef _WIN32
@@ -11,88 +12,6 @@
 #define GET_PROC_ADDRESS(lib, name) dlsym(lib, name)
 #define UNLOAD_LIBRARY(lib) dlclose(lib)
 #endif
-
-struct Command {
-    std::string type;
-    std::string value;
-};
-
-void ShowUsage() {
-    std::cout << "Usage:\n";
-    std::cout << "  --write <path> [--type] <value> ...\n";
-    std::cout << "  --read <path> [--type] ...\n";
-    std::cout << "  --base16 [-encode | -decode] <value>\n";
-    std::cout << "  --base32 [-encode | -decode] <value>\n";
-    std::cout << "  --base64 [-encode | -decode] <value>\n";
-    std::cout << "  --base85 [-encode | -decode] <value>\n";
-    std::cout << "Supported types:\n";
-    std::cout << "  -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n";
-}
-
-bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, std::vector<Command>& commands) {
-    if (argc < 3) {
-        return false;
-    }
-
-    std::unordered_set<std::string> validMode = {
-        "--write", "--read", "--base16", "--base32", "--base64", "--base85"
-    };
-
-    std::unordered_set<std::string> validOptions = {
-        "-bool", "-byte", "-sbyte", "-short", "-ushort", "-int", "-uint",
-        "-long", "-ulong", "-float", "-double", "-bytes", "-string"
-    };
-
-    std::unordered_set<std::string> encodeDecodeOptions = {
-        "-encode", "-decode"
-    };
-
-    mode = argv[1];
-    if (!validMode.count(mode))
-        return false;
-
-    if (mode == "--write" || mode == "--read") {
-        if (argc < 4)
-            return false;
-        filePath = argv[2];
-
-        Command cmd;
-        for (int i = 3; i < argc; ++i) {
-            std::string arg = argv[i];
-            if (validOptions.count(arg)) {
-                if (!cmd.type.empty()) {
-                    commands.push_back(cmd);
-                    cmd = Command{};
-                }
-                cmd.type = arg;
-            }
-            else {
-                if (cmd.type.empty()) {
-                    std::cerr << "Value without type: " << arg << "\n";
-                    return false;
-                }
-                cmd.value = arg;
-            }
-        }
-
-        if (!cmd.type.empty())
-            commands.push_back(cmd);
-    }
-    else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
-        if (argc != 4)
-            return false;
-        std::string operation = argv[2];
-        if (!encodeDecodeOptions.count(operation)) {
-            std::cerr << "Invalid operation: " << operation << "\n";
-            return false;
-        }
-        Command cmd;
-        cmd.type = operation;
-        cmd.value = argv[3];
-        commands.push_back(cmd);
-    }
-    return true;
-}
 
 void ExecuteWrite(void* writer, const std::vector<Command>& commands,
     const std::unordered_map<std::string, void*>& writeFunctions) {
@@ -305,10 +224,8 @@ void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unord
 }
 
 int main(int argc, char* argv[]) {
-    std::string mode;
-    std::string filePath;
     std::vector<Command> commands;
-    if (!ParseArguments(argc, argv, mode, filePath, commands)) {
+    if (!ParseArguments(argc, argv, commands)) {
         ShowUsage();
         return 1;
     }
@@ -380,10 +297,10 @@ int main(int argc, char* argv[]) {
     aesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCfbDecrypt");
     //aesFunctions[""] = GET_PROC_ADDRESS(lib, "");
 
-    if (mode == "--write") {
-        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
+    if (commands[0].mode == "--write") {
+        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(commands[0].path.c_str());
         if (!writer) {
-            std::cerr << "Failed to create binary writer for file: " << filePath << "\n";
+            std::cerr << "Failed to create binary writer for file: " << commands[0].path << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -392,10 +309,10 @@ int main(int argc, char* argv[]) {
         ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
 
     }
-    else if (mode == "--read") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+    else if (commands[0].mode == "--read") {
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(commands[0].path.c_str());
         if (!reader) {
-            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            std::cerr << "Failed to create binary reader for file: " << commands[0].path << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -403,9 +320,9 @@ int main(int argc, char* argv[]) {
         ExecuteRead(reader, commands, readFunctions);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
     }
-    else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
+    else if (commands[0].mode == "--base16" || commands[0].mode == "--base32" || commands[0].mode == "--base64" || commands[0].mode == "--base85") {
         const Command& cmd = commands[0];
-        std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
+        std::string encodeType = cmd.mode.substr(1) + "-" + cmd.type.substr(1);
         if (commands.empty()) {
             std::cerr << "No encoding or decoding command provided.\n";
             UNLOAD_LIBRARY(lib);
@@ -416,7 +333,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(lib);
             return 1;
         }
-        ExecuteEncoder(mode, cmd, encodeFunctions);
+        ExecuteEncoder(cmd.mode, cmd, encodeFunctions);
     }
 
     UNLOAD_LIBRARY(lib);
