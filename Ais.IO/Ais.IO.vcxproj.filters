@@ -80,4 +80,7 @@
       <Filter>資源檔</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="libcrypto-3-x64.dll" />
+  </ItemGroup>
 </Project>
