@@ -35,7 +35,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
 
     std::unordered_set<std::string> validMode = {
-        "--write", "--read", "--base16", "--base32", "--base64", "--base85"
+        "--write", "--read", "--read-all", "--base16", "--base32", "--base64", "--base85"
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -77,6 +77,11 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
         if (!cmd.type.empty())
             commands.push_back(cmd);
+    }
+    else if (mode == "--read-all") {
+        if (argc < 3)
+            return false;
+        filePath = argv[2];
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
         if (argc != 4)
@@ -140,7 +145,9 @@ void ExecuteWrite(void* writer, const std::vector<Command>& commands,
                 ((WriteString)writeFunctions.at(cmd.type))(writer, cmd.value.c_str());
             }
             else if (cmd.type == "-bytes") {
-                ((WriteBytes)writeFunctions.at(cmd.type))(writer, cmd.value.c_str());
+                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
+                uint64_t length = static_cast<uint64_t>(cmd.value.size());
+                ((WriteBytes)writeFunctions.at(cmd.type))(writer, data, length);
             }
         }
         catch (const std::invalid_argument& e) {
@@ -221,7 +228,7 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands,
             }
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)readFunctions.at("-next-length"))(reader);
-                std::vector<char> buffer(length);
+                std::vector<unsigned char> buffer(length);
                 ((ReadBytes)readFunctions.at(cmd.type))(reader, buffer.data(), length);
                 std::cout << "Bytes: " << std::string(buffer.begin(), buffer.end()) << std::endl;
             }
@@ -251,6 +258,81 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands,
         catch (...) {
             // Other unknown errors
             std::cerr << "Unknown error occurred while reading type " << cmd.type << std::endl;
+        }
+    }
+}
+
+void ReadToType(void* reader, BINARYIO_TYPE type) {
+    switch (type) {
+        case BINARYIO_TYPE::TYPE_BOOLEAN: {
+            bool value = ((ReadBoolean)ReadFunctions.at("-bool"))(reader);
+            std::cout << "Boolean: " << (value ? "true" : "false") << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_BYTE: {
+            unsigned char value = ((ReadByte)ReadFunctions.at("-byte"))(reader);
+            std::cout << "Byte: " << static_cast<int>(value) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_SBYTE: {
+            signed char value = ((ReadSByte)ReadFunctions.at("-sbyte"))(reader);
+            std::cout << "SByte: " << static_cast<int>(value) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_SHORT: {
+            short value = ((ReadShort)ReadFunctions.at("-short"))(reader);
+            std::cout << "Short: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_USHORT: {
+            unsigned short value = ((ReadUShort)ReadFunctions.at("-ushort"))(reader);
+            std::cout << "UShort: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_INT: {
+            int value = ((ReadInt)ReadFunctions.at("-int"))(reader);
+            std::cout << "Int: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_UINT: {
+            unsigned int value = ((ReadUInt)ReadFunctions.at("-uint"))(reader);
+            std::cout << "UInt: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_LONG: {
+            long long value = ((ReadLong)ReadFunctions.at("-long"))(reader);
+            std::cout << "Long: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_ULONG: {
+            unsigned long long value = ((ReadULong)ReadFunctions.at("-ulong"))(reader);
+            std::cout << "ULong: " << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_FLOAT: {
+            float value = ((ReadFloat)ReadFunctions.at("-float"))(reader);
+            std::cout << "Float: " << std::setprecision(8) << std::defaultfloat << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_DOUBLE: {
+            double value = ((ReadDouble)ReadFunctions.at("-double"))(reader);
+            std::cout << "Double: " << std::setprecision(16) << std::defaultfloat << value << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_BYTES: {
+            uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+            std::vector<unsigned char> buffer(length);
+            ((ReadBytes)ReadFunctions.at("-bytes"))(reader, buffer.data(), length);
+            std::cout << "Bytes: " << std::string(buffer.begin(), buffer.end()) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_STRING: {
+            uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+            std::vector<char> buffer(length + 1, '\0');
+            ((ReadString)ReadFunctions.at("-string"))(reader, buffer.data(), length + 1);
+            buffer[length] = '\0';
+            std::cout << "String: " << buffer.data() << std::endl;
+            break;
         }
     }
 }
@@ -318,66 +400,62 @@ int main(int argc, char* argv[]) {
 #else
     void* lib = LOAD_LIBRARY("./Ais.IO.so");
 #endif
+
     if (!lib) {
         std::cerr << "Failed to load Ais.IO library\n";
         return 1;
     }
 
     // Load function pointers (example: Load WriteBoolean, WriteInt, etc.)
-    std::unordered_map<std::string, void*> writeFunctions;
-    std::unordered_map<std::string, void*> readFunctions;
-    std::unordered_map<std::string, void*> encodeFunctions;
-    std::unordered_map<std::string, void*> aesFunctions;
 
-    writeFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
-    writeFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
-    writeFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "WriteSByte");
-    writeFunctions["-short"] = GET_PROC_ADDRESS(lib, "WriteShort");
-    writeFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "WriteUShort");
-    writeFunctions["-int"] = GET_PROC_ADDRESS(lib, "WriteInt");
-    writeFunctions["-uint"] = GET_PROC_ADDRESS(lib, "WriteUInt");
-    writeFunctions["-long"] = GET_PROC_ADDRESS(lib, "WriteLong");
-    writeFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "WriteULong");
-    writeFunctions["-float"] = GET_PROC_ADDRESS(lib, "WriteFloat");
-    writeFunctions["-double"] = GET_PROC_ADDRESS(lib, "WriteDouble");
-    writeFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "WriteBytes");
-    writeFunctions["-string"] = GET_PROC_ADDRESS(lib, "WriteString");
-    // Load all other write functions...
+    WriteFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
+    WriteFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
+    WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "WriteSByte");
+    WriteFunctions["-short"] = GET_PROC_ADDRESS(lib, "WriteShort");
+    WriteFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "WriteUShort");
+    WriteFunctions["-int"] = GET_PROC_ADDRESS(lib, "WriteInt");
+    WriteFunctions["-uint"] = GET_PROC_ADDRESS(lib, "WriteUInt");
+    WriteFunctions["-long"] = GET_PROC_ADDRESS(lib, "WriteLong");
+    WriteFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "WriteULong");
+    WriteFunctions["-float"] = GET_PROC_ADDRESS(lib, "WriteFloat");
+    WriteFunctions["-double"] = GET_PROC_ADDRESS(lib, "WriteDouble");
+    WriteFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "WriteBytes");
+    WriteFunctions["-string"] = GET_PROC_ADDRESS(lib, "WriteString");
 
-    readFunctions["-bool"] = GET_PROC_ADDRESS(lib, "ReadBoolean");
-    readFunctions["-byte"] = GET_PROC_ADDRESS(lib, "ReadByte");
-    readFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "ReadSByte");
-    readFunctions["-short"] = GET_PROC_ADDRESS(lib, "ReadShort");
-    readFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "ReadUShort");
-    readFunctions["-int"] = GET_PROC_ADDRESS(lib, "ReadInt");
-    readFunctions["-uint"] = GET_PROC_ADDRESS(lib, "ReadUInt");
-    readFunctions["-long"] = GET_PROC_ADDRESS(lib, "ReadLong");
-    readFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "ReadULong");
-    readFunctions["-float"] = GET_PROC_ADDRESS(lib, "ReadFloat");
-    readFunctions["-double"] = GET_PROC_ADDRESS(lib, "ReadDouble");
-    readFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "ReadBytes");
-    readFunctions["-string"] = GET_PROC_ADDRESS(lib, "ReadString");
-    readFunctions["-next-length"] = GET_PROC_ADDRESS(lib, "NextLength");
+    ReadFunctions["-bool"] = GET_PROC_ADDRESS(lib, "ReadBoolean");
+    ReadFunctions["-byte"] = GET_PROC_ADDRESS(lib, "ReadByte");
+    ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "ReadSByte");
+    ReadFunctions["-short"] = GET_PROC_ADDRESS(lib, "ReadShort");
+    ReadFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "ReadUShort");
+    ReadFunctions["-int"] = GET_PROC_ADDRESS(lib, "ReadInt");
+    ReadFunctions["-uint"] = GET_PROC_ADDRESS(lib, "ReadUInt");
+    ReadFunctions["-long"] = GET_PROC_ADDRESS(lib, "ReadLong");
+    ReadFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "ReadULong");
+    ReadFunctions["-float"] = GET_PROC_ADDRESS(lib, "ReadFloat");
+    ReadFunctions["-double"] = GET_PROC_ADDRESS(lib, "ReadDouble");
+    ReadFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "ReadBytes");
+    ReadFunctions["-string"] = GET_PROC_ADDRESS(lib, "ReadString");
+    ReadFunctions["-next-length"] = GET_PROC_ADDRESS(lib, "NextLength");
 
-    encodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(lib, "Base16Encode");
-    encodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(lib, "Base16Decode");
-    encodeFunctions["-base32-encode"] = GET_PROC_ADDRESS(lib, "Base32Encode");
-    encodeFunctions["-base32-decode"] = GET_PROC_ADDRESS(lib, "Base32Decode");
-    encodeFunctions["-base64-encode"] = GET_PROC_ADDRESS(lib, "Base64Encode");
-    encodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(lib, "Base64Decode");
-    encodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(lib, "Base85Encode");
-    encodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(lib, "Base85Decode");
+    EncodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(lib, "Base16Encode");
+    EncodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(lib, "Base16Decode");
+    EncodeFunctions["-base32-encode"] = GET_PROC_ADDRESS(lib, "Base32Encode");
+    EncodeFunctions["-base32-decode"] = GET_PROC_ADDRESS(lib, "Base32Decode");
+    EncodeFunctions["-base64-encode"] = GET_PROC_ADDRESS(lib, "Base64Encode");
+    EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(lib, "Base64Decode");
+    EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(lib, "Base85Encode");
+    EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(lib, "Base85Decode");
 
-    aesFunctions["-generate-key"] = GET_PROC_ADDRESS(lib, "GenerateKey");
-    aesFunctions["-generate-iv"] = GET_PROC_ADDRESS(lib, "GenerateIV");
-    aesFunctions["-import-key"] = GET_PROC_ADDRESS(lib, "GenerateKeyFromInput");
-    aesFunctions["-import-iv"] = GET_PROC_ADDRESS(lib, "GenerateIVFromInput");
-    aesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCtrEncrypt");
-    aesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCtrDecrypt");
-    aesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCbcEncrypt");
-    aesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCbcDecrypt");
-    aesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCfbEncrypt");
-    aesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCfbDecrypt");
+    AesFunctions["-generate-key"] = GET_PROC_ADDRESS(lib, "GenerateKey");
+    AesFunctions["-generate-iv"] = GET_PROC_ADDRESS(lib, "GenerateIV");
+    AesFunctions["-import-key"] = GET_PROC_ADDRESS(lib, "GenerateKeyFromInput");
+    AesFunctions["-import-iv"] = GET_PROC_ADDRESS(lib, "GenerateIVFromInput");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCtrEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCtrDecrypt");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCbcEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCbcDecrypt");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCfbEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCfbDecrypt");
     //aesFunctions[""] = GET_PROC_ADDRESS(lib, "");
 
     if (mode == "--write") {
@@ -388,7 +466,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        ExecuteWrite(writer, commands, writeFunctions);
+        ExecuteWrite(writer, commands, WriteFunctions);
         ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
 
     }
@@ -400,7 +478,21 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        ExecuteRead(reader, commands, readFunctions);
+        ExecuteRead(reader, commands, ReadFunctions);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+    }
+    else if (mode == "--read-all") {
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+        if (!reader) {
+            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            UNLOAD_LIBRARY(lib);
+            return 1;
+        }
+
+        while (((GetReaderPosition)GET_PROC_ADDRESS(lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(lib, "GetReaderLength"))(reader)) {
+            BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(lib, "ReadType"))(reader);
+            ReadToType(reader, type);
+        }
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
@@ -411,12 +503,12 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(lib);
             return 1;
         }
-        if (encodeFunctions.find(encodeType) == encodeFunctions.end()) {
+        if (EncodeFunctions.find(encodeType) == EncodeFunctions.end()) {
             std::cerr << "Unsupported encode/decode operation: " << cmd.type << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
-        ExecuteEncoder(mode, cmd, encodeFunctions);
+        ExecuteEncoder(mode, cmd, EncodeFunctions);
     }
 
     UNLOAD_LIBRARY(lib);

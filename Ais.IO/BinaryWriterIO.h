@@ -35,5 +35,5 @@ EXT BINARYIO_API void WriteLong(void* writer, long long value);
 EXT BINARYIO_API void WriteULong(void* writer, unsigned long long value);
 EXT BINARYIO_API void WriteFloat(void* writer, float value);
 EXT BINARYIO_API void WriteDouble(void* writer, double value);
-EXT BINARYIO_API void WriteBytes(void* writer, const char* bytes);
+EXT BINARYIO_API void WriteBytes(void* writer, const unsigned char* bytes, uint64_t length);
 EXT BINARYIO_API void WriteString(void* writer, const char* value);

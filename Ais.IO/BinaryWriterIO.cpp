@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "BinaryWriterIO.h"
+#include "BinaryIO.h"
 
 #ifndef WRITE_CAST 
 #define WRITE_CAST reinterpret_cast<const char*>
@@ -35,63 +36,79 @@ public:
     }
 
     void WriteBoolean(bool value) {
+        WriteType(BINARYIO_TYPE::TYPE_BOOLEAN);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteByte(unsigned char value) {
+        WriteType(BINARYIO_TYPE::TYPE_BYTE);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteSByte(signed char value) {
+        WriteType(BINARYIO_TYPE::TYPE_SBYTE);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteShort(short value) {
+        WriteType(BINARYIO_TYPE::TYPE_SHORT);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteUShort(unsigned short value) {
+        WriteType(BINARYIO_TYPE::TYPE_USHORT);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteInt(int value) {
+        WriteType(BINARYIO_TYPE::TYPE_INT);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteUInt(unsigned int value) {
+        WriteType(BINARYIO_TYPE::TYPE_UINT);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteLong(long long value) {
+        WriteType(BINARYIO_TYPE::TYPE_LONG);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteULong(unsigned long long value) {
+        WriteType(BINARYIO_TYPE::TYPE_ULONG);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteFloat(float value) {
+        WriteType(BINARYIO_TYPE::TYPE_FLOAT);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
     void WriteDouble(double value) {
+        WriteType(BINARYIO_TYPE::TYPE_DOUBLE);
         OutputStream.write(WRITE_CAST(&value), sizeof(value));
     }
 
-    void WriteBytes(const char* bytes) {
-        uint64_t length = strlen(bytes);
+    void WriteBytes(const unsigned char* bytes, uint64_t length) {
+        WriteType(BINARYIO_TYPE::TYPE_BYTES);
         OutputStream.write(WRITE_CAST(&length), sizeof(length));
-        OutputStream.write(bytes, length);
+        OutputStream.write(WRITE_CAST(bytes), length);
     }
 
     void WriteString(const std::string& value) {
-        size_t length = value.length();
+        WriteType(BINARYIO_TYPE::TYPE_STRING);
+        uint64_t length = value.length() + 1;
         OutputStream.write(WRITE_CAST(&length), sizeof(length));
         OutputStream.write(value.data(), length);
     }
 
 private:
     std::ofstream OutputStream;
+
+    void WriteType(BINARYIO_TYPE type) {
+        OutputStream.write(WRITE_CAST(&type), sizeof(type));
+    }
 };
 
 /* Writer Interface */
@@ -161,8 +178,8 @@ void WriteDouble(void* writer, double value) {
     static_cast<BinaryWriter*>(writer)->WriteDouble(value);
 }
 
-void WriteBytes(void* writer, const char* bytes) {
-    static_cast<BinaryWriter*>(writer)->WriteBytes(bytes);
+void WriteBytes(void* writer, const unsigned char* bytes, uint64_t length) {
+    static_cast<BinaryWriter*>(writer)->WriteBytes(bytes, length);
 }
 
 void WriteString(void* writer, const char* value) {

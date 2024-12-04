@@ -4,6 +4,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
+#include <typeinfo>
 #include <stdint.h>
 
 /* Dll Export Define */
@@ -35,5 +36,5 @@ EXT BINARYIO_API long long ReadLong(void* reader);
 EXT BINARYIO_API unsigned long long ReadULong(void* reader);
 EXT BINARYIO_API float ReadFloat(void* reader);
 EXT BINARYIO_API double ReadDouble(void* reader);
-EXT BINARYIO_API void ReadBytes(void* reader, char* buffer, uint64_t bufferSize);
+EXT BINARYIO_API void ReadBytes(void* reader, unsigned char* buffer, uint64_t bufferSize);
 EXT BINARYIO_API void ReadString(void* reader, char* buffer, uint64_t bufferSize);

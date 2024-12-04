@@ -15,6 +15,22 @@
 #include <unordered_set>
 #include <iostream>
 
+enum BINARYIO_TYPE : unsigned char {
+    TYPE_BOOLEAN = 1,
+    TYPE_BYTE = 2,
+    TYPE_SBYTE = 3,
+    TYPE_SHORT = 4,
+    TYPE_USHORT = 5,
+    TYPE_INT = 6,
+    TYPE_UINT = 7,
+    TYPE_LONG = 8,
+    TYPE_ULONG = 9,
+    TYPE_FLOAT = 10,
+    TYPE_DOUBLE = 11,
+    TYPE_BYTES = 12,
+    TYPE_STRING = 13,
+};
+
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,
     SEGMENT_8_BIT = 8,
@@ -76,6 +92,7 @@ struct AES_CFB_DECRYPT {
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
+typedef BINARYIO_TYPE(*ReadType)(void*);
 #pragma endregion
 
 #pragma region BinaryReaderIO
@@ -95,7 +112,7 @@ typedef long long (*ReadLong)(void*);
 typedef unsigned long long (*ReadULong)(void*);
 typedef float (*ReadFloat)(void*);
 typedef double (*ReadDouble)(void*);
-typedef void (*ReadBytes)(void*, char*, uint64_t);
+typedef void (*ReadBytes)(void*, unsigned char*, uint64_t);
 typedef void (*ReadString)(void*, char*, uint64_t);
 #pragma endregion
 
@@ -116,7 +133,7 @@ typedef void (*WriteLong)(void*, long long);
 typedef void (*WriteULong)(void*, unsigned long long);
 typedef void (*WriteFloat)(void*, float);
 typedef void (*WriteDouble)(void*, double);
-typedef void (*WriteBytes)(void*, const char*);
+typedef void (*WriteBytes)(void*, const unsigned char*, uint64_t);
 typedef void (*WriteString)(void*, const char*);
 #pragma endregion
 
@@ -143,3 +160,8 @@ typedef int (*AesCbcDecrypt)(AES_CBC_DECRYPT*);
 typedef int (*AesCfbEncrypt)(AES_CFB_ENCRYPT*);
 typedef int (*AesCfbDecrypt)(AES_CFB_DECRYPT*);
 #pragma endregion
+
+std::unordered_map<std::string, void*> WriteFunctions;
+std::unordered_map<std::string, void*> ReadFunctions;
+std::unordered_map<std::string, void*> EncodeFunctions;
+std::unordered_map<std::string, void*> AesFunctions;

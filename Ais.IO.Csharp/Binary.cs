@@ -1,0 +1,207 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ais.IO.Csharp
+{
+    public class Binary
+    {
+        public string BinaryFilePath { get; }
+        private IntPtr Writer { get; set; } = IntPtr.Zero;
+        private IntPtr Reader { get; set; } = IntPtr.Zero;
+
+        public ulong WriterPosition
+        {
+            get
+            {
+                if (this.Writer == IntPtr.Zero)
+                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+                return BinaryIOInterop.GetWriterPosition(this.Writer);
+            }
+        }
+
+        public ulong ReaderPosition
+        {
+            get
+            {
+                if (this.Reader == IntPtr.Zero)
+                    this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+                return BinaryIOInterop.GetReaderPosition(this.Reader);
+            }
+        }
+
+        public ulong WriterLength
+        {
+            get
+            {
+                if (this.Writer == IntPtr.Zero)
+                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+                return BinaryIOInterop.GetWriterLength(this.Writer);
+            }
+        }
+
+        public ulong ReaderLength
+        {
+            get
+            {
+                if (this.Reader == IntPtr.Zero)
+                    this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+                return BinaryIOInterop.GetReaderLength(this.Reader);
+            }
+        }
+
+        public Binary(string binaryFilePath)
+            => this.BinaryFilePath = binaryFilePath;
+
+        public void Write<T>(T value)
+        {
+            if (this.Writer == IntPtr.Zero)
+                this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+
+            switch (this.Writer)
+            {
+                case var _ when value is bool @bool:
+                    BinaryIOInterop.WriteBoolean(this.Writer, @bool);
+                    break;
+                case var _ when value is byte @byte:
+                    BinaryIOInterop.WriteByte(this.Writer, @byte);
+                    break;
+                case var _ when value is sbyte @sbyte:
+                    BinaryIOInterop.WriteSByte(this.Writer, @sbyte);
+                    break;
+                case var _ when value is short @short:
+                    BinaryIOInterop.WriteShort(this.Writer, @short);
+                    break;
+                case var _ when value is ushort @ushort:
+                    BinaryIOInterop.WriteUShort(this.Writer, @ushort);
+                    break;
+                case var _ when value is int @int:
+                    BinaryIOInterop.WriteInt(this.Writer, @int);
+                    break;
+                case var _ when value is uint @uint:
+                    BinaryIOInterop.WriteUInt(this.Writer, @uint);
+                    break;
+                case var _ when value is long @long:
+                    BinaryIOInterop.WriteLong(this.Writer, @long);
+                    break;
+                case var _ when value is ulong @ulong:
+                    BinaryIOInterop.WriteULong(this.Writer, @ulong);
+                    break;
+                case var _ when value is float @float:
+                    BinaryIOInterop.WriteFloat(this.Writer, @float);
+                    break;
+                case var _ when value is double @double:
+                    BinaryIOInterop.WriteDouble(this.Writer, @double);
+                    break;
+                case var _ when value is byte[] @bytes:
+                    BinaryIOInterop.WriteBytes(this.Writer, @bytes, @bytes.LongLength);
+                    break;
+                case var _ when value is string @string:
+                    BinaryIOInterop.WriteString(this.Writer, @string);
+                    break;
+                default:
+                    throw new TypeAccessException($"Invalid type {value.GetType().Name}");
+            }
+        }
+
+        public T Read<T>()
+        {
+            if (this.Reader == IntPtr.Zero)
+                this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+
+            switch (this.Reader)
+            {
+                case var _ when typeof(T) == typeof(bool):
+                    return (T)(object)BinaryIOInterop.ReadBoolean(this.Reader);
+                case var _ when typeof(T) == typeof(byte):
+                    return (T)(object)BinaryIOInterop.ReadByte(this.Reader);
+                case var _ when typeof(T) == typeof(sbyte):
+                    return (T)(object)BinaryIOInterop.ReadSByte(this.Reader);
+                case var _ when typeof(T) == typeof(short):
+                    return (T)(object)BinaryIOInterop.ReadShort(this.Reader);
+                case var _ when typeof(T) == typeof(ushort):
+                    return (T)(object)BinaryIOInterop.ReadUShort(this.Reader);
+                case var _ when typeof(T) == typeof(int):
+                    return (T)(object)BinaryIOInterop.ReadInt(this.Reader);
+                case var _ when typeof(T) == typeof(uint):
+                    return (T)(object)BinaryIOInterop.ReadUInt(this.Reader);
+                case var _ when typeof(T) == typeof(long):
+                    return (T)(object)BinaryIOInterop.ReadLong(this.Reader);
+                case var _ when typeof(T) == typeof(ulong):
+                    return (T)(object)BinaryIOInterop.ReadULong(this.Reader);
+                case var _ when typeof(T) == typeof(float):
+                    return (T)(object)BinaryIOInterop.ReadFloat(this.Reader);
+                case var _ when typeof(T) == typeof(double):
+                    return (T)(object)BinaryIOInterop.ReadDouble(this.Reader);
+                case var _ when typeof(T) == typeof(byte[]):
+                    ulong bytesLength = BinaryIOInterop.NextLength(this.Reader);
+                    byte[] bytesBuffer = new byte[bytesLength];
+                    BinaryIOInterop.ReadBytes(this.Reader, bytesBuffer, bytesLength);
+                    return (T)(object)bytesBuffer;
+                case var _ when typeof(T) == typeof(string):
+                    ulong stringLength = BinaryIOInterop.NextLength(this.Reader);
+                    StringBuilder stringBuffer = new StringBuilder((int)stringLength);
+                    BinaryIOInterop.ReadString(this.Reader, stringBuffer, stringLength);
+                    return (T)(object)stringBuffer.ToString();
+                default:
+                    throw new TypeAccessException($"Invalid type {typeof(T).Name}");
+            }
+        }
+
+        public object Read()
+        {
+            if (this.Reader == IntPtr.Zero)
+                this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+
+            BINARYIO_TYPE type = BinaryIOInterop.ReadType(this.Reader);
+
+            switch (type)
+            {
+                case BINARYIO_TYPE.TYPE_BOOLEAN:
+                    return BinaryIOInterop.ReadBoolean(this.Reader);
+                case BINARYIO_TYPE.TYPE_BYTE:
+                    return BinaryIOInterop.ReadByte(this.Reader);
+                case BINARYIO_TYPE.TYPE_SBYTE:
+                    return BinaryIOInterop.ReadSByte(this.Reader);
+                case BINARYIO_TYPE.TYPE_SHORT:
+                    return BinaryIOInterop.ReadShort(this.Reader);
+                case BINARYIO_TYPE.TYPE_USHORT:
+                    return BinaryIOInterop.ReadUShort(this.Reader);
+                case BINARYIO_TYPE.TYPE_INT:
+                    return BinaryIOInterop.ReadInt(this.Reader);
+                case BINARYIO_TYPE.TYPE_UINT:
+                    return BinaryIOInterop.ReadUInt(this.Reader);
+                case BINARYIO_TYPE.TYPE_LONG:
+                    return BinaryIOInterop.ReadLong(this.Reader);
+                case BINARYIO_TYPE.TYPE_ULONG:
+                    return BinaryIOInterop.ReadULong(this.Reader);
+                case BINARYIO_TYPE.TYPE_FLOAT:
+                    return BinaryIOInterop.ReadFloat(this.Reader);
+                case BINARYIO_TYPE.TYPE_DOUBLE:
+                    return BinaryIOInterop.ReadDouble(this.Reader);
+                case BINARYIO_TYPE.TYPE_BYTES:
+                    ulong bytesLength = BinaryIOInterop.NextLength(this.Reader);
+                    byte[] bytesBuffer = new byte[bytesLength];
+                    BinaryIOInterop.ReadBytes(this.Reader, bytesBuffer, bytesLength);
+                    return bytesBuffer;
+                case BINARYIO_TYPE.TYPE_STRING:
+                    ulong stringLength = BinaryIOInterop.NextLength(this.Reader);
+                    StringBuilder stringBuffer = new StringBuilder((int)stringLength);
+                    BinaryIOInterop.ReadString(this.Reader, stringBuffer, stringLength);
+                    return stringBuffer.ToString();
+                default:
+                    throw new TypeAccessException($"Invalid type {type}");
+            }
+        }
+
+        public void Close()
+        {
+            if (this.Writer != IntPtr.Zero)
+                BinaryIOInterop.DestroyBinaryWriter(this.Writer);
+            if (this.Reader != IntPtr.Zero)
+                BinaryIOInterop.DestroyBinaryReader(this.Reader);
+        }
+    }
+}

@@ -11,70 +11,41 @@ namespace Ais.IO.Csharp.Command
     {
         public static void WriteRelease()
         {
-            IntPtr writer = BinaryIOInterop.CreateBinaryWriter("test.bin");
-            BinaryIOInterop.WriteBoolean(writer, true);
-            BinaryIOInterop.WriteShort(writer, 0x7FFF);
-            BinaryIOInterop.WriteInt(writer, 0x7FFFFFFF);
-            BinaryIOInterop.WriteLong(writer, 0x7FFFFFFFFFFFFFFF);
-            BinaryIOInterop.WriteByte(writer, 255);
-            BinaryIOInterop.WriteSByte(writer, -128);
-            BinaryIOInterop.WriteUShort(writer, 65535);
-            BinaryIOInterop.WriteUInt(writer, 4294967295);
-            BinaryIOInterop.WriteULong(writer, 18446744073709551615);
-            BinaryIOInterop.WriteFloat(writer, 3.1415927F);
-            BinaryIOInterop.WriteDouble(writer, 3.141592653589793D);
-            BinaryIOInterop.WriteString(writer, "This is Ais.IO Release Function String.");
-
-            byte[] byteArray = Encoding.UTF8.GetBytes("This is Ais.IO Release Function Byte Array.");
-            BinaryIOInterop.WriteBytes(writer, byteArray);
-            BinaryIOInterop.DestroyBinaryWriter(writer);
+            Binary binary = new Binary("test.bin");
+            for (int i = 0; i < 1000; i++)
+            {
+                binary.Write<bool>(true);
+                binary.Write<short>(0x7FFF);
+                binary.Write<int>(0x7FFFFFFF);
+                binary.Write<long>(0x7FFFFFFFFFFFFFFF);
+                binary.Write<byte>(255);
+                binary.Write<sbyte>(-128);
+                binary.Write<ushort>(65535);
+                binary.Write<uint>(4294967295);
+                binary.Write<ulong>(18446744073709551615);
+                binary.Write<float>(3.1415927F);
+                binary.Write<double>(3.141592653589793D);
+                binary.Write<byte[]>(Encoding.UTF8.GetBytes("This is Ais.IO Release Function Byte Array."));
+                binary.Write<string>("This is Ais.IO Release Function String.");
+            }
+            binary.Close();
         }
 
         public static void ReadRelease()
         {
-            IntPtr reader = BinaryIOInterop.CreateBinaryReader("test.bin");
-
-            while (BinaryIOInterop.GetReaderPosition(reader) < BinaryIOInterop.GetReaderLength(reader))
+            Binary binary = new Binary("test.bin");
+            string message = string.Empty;
+            while (binary.ReaderPosition < binary.ReaderLength)
             {
-                var @bool = BinaryIOInterop.ReadBoolean(reader);
-                var @short = BinaryIOInterop.ReadShort(reader);
-                var @int = BinaryIOInterop.ReadInt(reader);
-                var @long = BinaryIOInterop.ReadLong(reader);
-                var @byte = BinaryIOInterop.ReadByte(reader);
-                var @sbyte = BinaryIOInterop.ReadSByte(reader);
-                var @ushort = BinaryIOInterop.ReadUShort(reader);
-                var @uint = BinaryIOInterop.ReadUInt(reader);
-                var @ulong = BinaryIOInterop.ReadULong(reader);
-                var @float = BinaryIOInterop.ReadFloat(reader);
-                var @double = BinaryIOInterop.ReadDouble(reader);
-
-                ulong stringLength = BinaryIOInterop.NextLength(reader);
-                StringBuilder stringBuffer = new StringBuilder((int)stringLength);
-                BinaryIOInterop.ReadString(reader, stringBuffer, (uint)stringLength);
-
-                ulong bytesLength = BinaryIOInterop.NextLength(reader);
-                byte[] bytesBuffer = new byte[bytesLength];
-                BinaryIOInterop.ReadBytes(reader, bytesBuffer, bytesLength);
-
-                string[] messageArray =
-                [
-                    $"bool = {@bool}",
-                    $"short = {@short}",
-                    $"int = {@int}",
-                    $"long = {@long}",
-                    $"byte = {@byte}",
-                    $"sbyte = {@sbyte}",
-                    $"ushort = {@ushort}",
-                    $"uint = {@uint}",
-                    $"ulong = {@ulong}",
-                    $"float = {@float}",
-                    $"double = {@double}",
-                    $"string = {stringBuffer}",
-                    $"bytes = {Encoding.UTF8.GetString(bytesBuffer)}",
-                ];
-                Console.WriteLine(string.Join("\n", messageArray));
+                object result = binary.Read();
+                if (result.GetType() == typeof(byte[]))
+                    message += $"{result.GetType()} = {Encoding.UTF8.GetString((byte[])result)}";
+                else
+                    message += $"{result.GetType()} = {result}";
+                message += Environment.NewLine;
             }
-            BinaryIOInterop.DestroyBinaryReader(reader);
+            binary.Close();
+            Console.WriteLine(message);
         }
     }
 }

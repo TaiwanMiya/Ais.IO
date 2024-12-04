@@ -14,6 +14,9 @@ namespace Ais.IO.Csharp
         #region BinaryIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong NextLength(IntPtr reader);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern BINARYIO_TYPE ReadType(IntPtr reader);
         #endregion
 
         #region BinaryReaderIO.h
@@ -116,7 +119,7 @@ namespace Ais.IO.Csharp
         public static extern void WriteDouble(IntPtr writer, double value);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void WriteBytes(IntPtr writer, byte[] bytes);
+        public static extern void WriteBytes(IntPtr writer, byte[] bytes, long length);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void WriteString(IntPtr writer, string value);

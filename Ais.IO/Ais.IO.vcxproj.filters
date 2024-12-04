@@ -19,21 +19,18 @@
     <Filter Include="來源檔案\Cryptography">
       <UniqueIdentifier>{d08d7c56-6349-4615-965d-2c3ba11a0526}</UniqueIdentifier>
     </Filter>
+    <Filter Include="來源檔案\Binary">
+      <UniqueIdentifier>{d4d6ef52-af64-4efc-8d58-bda215d8d138}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="標頭檔\Binary">
+      <UniqueIdentifier>{922f478b-4858-4ee7-817b-abf5c98ed7f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
-    <ClInclude Include="BinaryIO.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
-    <ClInclude Include="BinaryReaderIO.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
-    <ClInclude Include="BinaryWriterIO.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -48,21 +45,21 @@
     <ClInclude Include="AesIO.h">
       <Filter>標頭檔\Cryptography</Filter>
     </ClInclude>
+    <ClInclude Include="BinaryIO.h">
+      <Filter>標頭檔\Binary</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryReaderIO.h">
+      <Filter>標頭檔\Binary</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryWriterIO.h">
+      <Filter>標頭檔\Binary</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
-    <ClCompile Include="BinaryIO.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
-    <ClCompile Include="BinaryReaderIO.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
-    <ClCompile Include="BinaryWriterIO.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="EncoderIO.cpp">
@@ -73,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="AesIO.cpp">
       <Filter>來源檔案\Cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryIO.cpp">
+      <Filter>來源檔案\Binary</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryReaderIO.cpp">
+      <Filter>來源檔案\Binary</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryWriterIO.cpp">
+      <Filter>來源檔案\Binary</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

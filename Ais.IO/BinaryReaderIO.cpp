@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "BinaryReaderIO.h"
+#include "BinaryIO.h"
 
 #ifndef READ_CAST
 #define READ_CAST reinterpret_cast<char*>
@@ -35,80 +36,119 @@ public:
     }
 
     bool ReadBoolean() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_BOOLEAN)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         bool value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     unsigned char ReadByte() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_BYTE)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         unsigned char value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     signed char ReadSByte() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_SBYTE)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         signed char value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     short ReadShort() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_SHORT)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         short value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     unsigned short ReadUShort() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_USHORT)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         unsigned short value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     int ReadInt() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_INT)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         int value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     unsigned int ReadUInt() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_UINT)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         unsigned int value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     long long ReadLong() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_LONG)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         long long value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     unsigned long long ReadULong() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_ULONG)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         unsigned long long value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     float ReadFloat() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_FLOAT)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         float value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
     double ReadDouble() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_DOUBLE)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         double value;
         InputStream.read(READ_CAST(&value), sizeof(value));
         return value;
     }
 
-    void ReadBytes(char* buffer, uint64_t bufferSize) {
-        uint64_t storedLength;
-        InputStream.read(READ_CAST(&storedLength), sizeof(storedLength));
-        if (storedLength > bufferSize)
+    void ReadBytes(unsigned char* buffer, uint64_t bufferSize) {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_BYTES)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
+        uint64_t length;
+        InputStream.read(READ_CAST(&length), sizeof(length));
+        if (length > bufferSize)
             throw std::runtime_error("Buffer size is too small for the data.");
-        InputStream.read(buffer, storedLength);
+        InputStream.read(READ_CAST(buffer), length);
     }
 
     std::string ReadString() {
+        BINARYIO_TYPE type = ReadType();
+        if (type != BINARYIO_TYPE::TYPE_STRING)
+            std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
         uint64_t length;
         InputStream.read(READ_CAST(&length), sizeof(length));
         if (InputStream.fail())
@@ -123,6 +163,13 @@ public:
 
 private:
     std::ifstream InputStream;
+
+    BINARYIO_TYPE ReadType() {
+        unsigned char typeCode;
+        InputStream.read(READ_CAST(&typeCode), sizeof(typeCode));
+        BINARYIO_TYPE type = static_cast<BINARYIO_TYPE>(typeCode);
+        return type;
+    }
 };
 
 /* Reader Interface */
@@ -192,7 +239,7 @@ double ReadDouble(void* reader) {
     return static_cast<BinaryReader*>(reader)->ReadDouble();
 }
 
-void ReadBytes(void* reader, char* buffer, uint64_t bufferSize) {
+void ReadBytes(void* reader, unsigned char* buffer, uint64_t bufferSize) {
     if (!buffer || bufferSize == 0)
         throw std::invalid_argument("Buffer is null or size is zero.");
     static_cast<BinaryReader*>(reader)->ReadBytes(buffer, bufferSize);
