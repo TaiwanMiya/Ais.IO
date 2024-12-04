@@ -124,5 +124,58 @@ namespace Ais.IO.Csharp
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void WriteString(IntPtr writer, string value);
         #endregion
+
+        #region BinaryAppenderIO.h
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr CreateBinaryAppender(string filePath);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void DestroyBinaryAppender(IntPtr writer);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong GetAppenderPosition(IntPtr writer);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong GetAppenderLength(IntPtr writer);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendBoolean(IntPtr appender, bool value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendByte(IntPtr appender, byte value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendSByte(IntPtr appender, sbyte value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendShort(IntPtr appender, short value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendUShort(IntPtr appender, ushort value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendInt(IntPtr appender, int value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendUInt(IntPtr appender, uint value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendLong(IntPtr appender, long value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendULong(IntPtr appender, ulong value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendFloat(IntPtr appender, float value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendDouble(IntPtr appender, double value);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendBytes(IntPtr appender, byte[] bytes, long length);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void AppendString(IntPtr appender, string value);
+        #endregion
     }
 }

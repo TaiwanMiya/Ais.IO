@@ -19,8 +19,10 @@ struct Command {
 
 void ShowUsage() {
     std::cout << "Usage:\n";
-    std::cout << "  --write <path> [--type] <value> ...\n";
+    std::cout << "  --read-all <path>\n";
     std::cout << "  --read <path> [--type] ...\n";
+    std::cout << "  --write <path> [--type] <value> ...\n";
+    std::cout << "  --append <path> [--type] <value> ...\n";
     std::cout << "  --base16 [-encode | -decode] <value>\n";
     std::cout << "  --base32 [-encode | -decode] <value>\n";
     std::cout << "  --base64 [-encode | -decode] <value>\n";
@@ -35,7 +37,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
 
     std::unordered_set<std::string> validMode = {
-        "--write", "--read", "--read-all", "--base16", "--base32", "--base64", "--base85"
+        "--read", "--read-all", "--write", "--append", "--base16", "--base32", "--base64", "--base85"
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -51,7 +53,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     if (!validMode.count(mode))
         return false;
 
-    if (mode == "--write" || mode == "--read") {
+    if (mode == "--read" || mode == "--write" || mode == "--append") {
         if (argc < 4)
             return false;
         filePath = argv[2];
@@ -97,169 +99,6 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         commands.push_back(cmd);
     }
     return true;
-}
-
-void ExecuteWrite(void* writer, const std::vector<Command>& commands,
-    const std::unordered_map<std::string, void*>& writeFunctions) {
-    for (const auto& cmd : commands) {
-        try {
-            if (writeFunctions.find(cmd.type) == writeFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
-                continue;
-            }
-
-            if (cmd.type == "-bool") {
-                ((WriteBoolean)writeFunctions.at(cmd.type))(writer, cmd.value == "true");
-            }
-            else if (cmd.type == "-byte") {
-                ((WriteByte)writeFunctions.at(cmd.type))(writer, static_cast<unsigned char>(std::stoi(cmd.value)));
-            }
-            else if (cmd.type == "-sbyte") {
-                ((WriteSByte)writeFunctions.at(cmd.type))(writer, static_cast<signed char>(std::stoi(cmd.value)));
-            }
-            else if (cmd.type == "-short") {
-                ((WriteShort)writeFunctions.at(cmd.type))(writer, static_cast<short>(std::stoi(cmd.value)));
-            }
-            else if (cmd.type == "-ushort") {
-                ((WriteUShort)writeFunctions.at(cmd.type))(writer, static_cast<unsigned short>(std::stoul(cmd.value)));
-            }
-            else if (cmd.type == "-int") {
-                ((WriteInt)writeFunctions.at(cmd.type))(writer, std::stoi(cmd.value));
-            }
-            else if (cmd.type == "-uint") {
-                ((WriteUInt)writeFunctions.at(cmd.type))(writer, std::stoul(cmd.value));
-            }
-            else if (cmd.type == "-long") {
-                ((WriteLong)writeFunctions.at(cmd.type))(writer, std::stoll(cmd.value));
-            }
-            else if (cmd.type == "-ulong") {
-                ((WriteULong)writeFunctions.at(cmd.type))(writer, std::stoull(cmd.value));
-            }
-            else if (cmd.type == "-float") {
-                ((WriteFloat)writeFunctions.at(cmd.type))(writer, std::stof(cmd.value));
-            }
-            else if (cmd.type == "-double") {
-                ((WriteDouble)writeFunctions.at(cmd.type))(writer, std::stod(cmd.value));
-            }
-            else if (cmd.type == "-string") {
-                ((WriteString)writeFunctions.at(cmd.type))(writer, cmd.value.c_str());
-            }
-            else if (cmd.type == "-bytes") {
-                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
-                uint64_t length = static_cast<uint64_t>(cmd.value.size());
-                ((WriteBytes)writeFunctions.at(cmd.type))(writer, data, length);
-            }
-        }
-        catch (const std::invalid_argument& e) {
-            // Value conversion errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
-        }
-        catch (const std::out_of_range& e) {
-            // Value out of range errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
-        }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": runtime error (" << e.what() << ")" << std::endl;
-        }
-        catch (...) {
-            // Other unknown errors
-            std::cerr << "Unknown error occurred while writing type " << cmd.type
-                << " with value '" << cmd.value << "'" << std::endl;
-        }
-    }
-}
-
-void ExecuteRead(void* reader, const std::vector<Command>& commands,
-    const std::unordered_map<std::string, void*>& readFunctions) {
-    for (const auto& cmd : commands) {
-        try {
-            if (readFunctions.find(cmd.type) == readFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
-                continue;
-            }
-
-            if (cmd.type == "-bool") {
-                bool value = ((ReadBoolean)readFunctions.at(cmd.type))(reader);
-                std::cout << "Boolean: " << (value ? "true" : "false") << std::endl;
-            }
-            else if (cmd.type == "-byte") {
-                unsigned char value = ((ReadByte)readFunctions.at(cmd.type))(reader);
-                std::cout << "Byte: " << static_cast<int>(value) << std::endl;
-            }
-            else if (cmd.type == "-sbyte") {
-                signed char value = ((ReadSByte)readFunctions.at(cmd.type))(reader);
-                std::cout << "SByte: " << static_cast<int>(value) << std::endl;
-            }
-            else if (cmd.type == "-short") {
-                short value = ((ReadShort)readFunctions.at(cmd.type))(reader);
-                std::cout << "Short: " << value << std::endl;
-            }
-            else if (cmd.type == "-ushort") {
-                unsigned short value = ((ReadUShort)readFunctions.at(cmd.type))(reader);
-                std::cout << "UShort: " << value << std::endl;
-            }
-            else if (cmd.type == "-int") {
-                int value = ((ReadInt)readFunctions.at(cmd.type))(reader);
-                std::cout << "Int: " << value << std::endl;
-            }
-            else if (cmd.type == "-uint") {
-                unsigned int value = ((ReadUInt)readFunctions.at(cmd.type))(reader);
-                std::cout << "UInt: " << value << std::endl;
-            }
-            else if (cmd.type == "-long") {
-                long long value = ((ReadLong)readFunctions.at(cmd.type))(reader);
-                std::cout << "Long: " << value << std::endl;
-            }
-            else if (cmd.type == "-ulong") {
-                unsigned long long value = ((ReadULong)readFunctions.at(cmd.type))(reader);
-                std::cout << "ULong: " << value << std::endl;
-            }
-            else if (cmd.type == "-float") {
-                float value = ((ReadFloat)readFunctions.at(cmd.type))(reader);
-                std::cout << "Float: " << std::setprecision(8) << std::defaultfloat << value << std::endl;
-            }
-            else if (cmd.type == "-double") {
-                double value = ((ReadDouble)readFunctions.at(cmd.type))(reader);
-                std::cout << "Double: " << std::setprecision(16) << std::defaultfloat << value << std::endl;
-            }
-            else if (cmd.type == "-bytes") {
-                uint64_t length = ((NextLength)readFunctions.at("-next-length"))(reader);
-                std::vector<unsigned char> buffer(length);
-                ((ReadBytes)readFunctions.at(cmd.type))(reader, buffer.data(), length);
-                std::cout << "Bytes: " << std::string(buffer.begin(), buffer.end()) << std::endl;
-            }
-            else if (cmd.type == "-string") {
-                uint64_t length = ((NextLength)readFunctions.at("-next-length"))(reader);
-                std::vector<char> buffer(length + 1, '\0');
-                ((ReadString)readFunctions.at(cmd.type))(reader, buffer.data(), length + 1);
-                buffer[length] = '\0';
-                std::cout << "String: " << buffer.data() << std::endl;
-            }
-        }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Runtime error while reading type " << cmd.type
-                << ": " << e.what() << std::endl;
-        }
-        catch (const std::out_of_range& e) {
-            // Value out of range errors
-            std::cerr << "Out of range error while reading type " << cmd.type
-                << ": " << e.what() << std::endl;
-        }
-        catch (const std::bad_alloc& e) {
-            // Memory allocation failed
-            std::cerr << "Memory allocation error while reading type " << cmd.type
-                << ": " << e.what() << std::endl;
-        }
-        catch (...) {
-            // Other unknown errors
-            std::cerr << "Unknown error occurred while reading type " << cmd.type << std::endl;
-        }
-    }
 }
 
 void ReadToType(void* reader, BINARYIO_TYPE type) {
@@ -337,6 +176,240 @@ void ReadToType(void* reader, BINARYIO_TYPE type) {
     }
 }
 
+void ExecuteRead(void* reader, const std::vector<Command>& commands) {
+    for (const auto& cmd : commands) {
+        try {
+            if (ReadFunctions.find(cmd.type) == ReadFunctions.end()) {
+                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                continue;
+            }
+
+            if (cmd.type == "-bool") {
+                bool value = ((ReadBoolean)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Boolean: " << (value ? "true" : "false") << std::endl;
+            }
+            else if (cmd.type == "-byte") {
+                unsigned char value = ((ReadByte)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Byte: " << static_cast<int>(value) << std::endl;
+            }
+            else if (cmd.type == "-sbyte") {
+                signed char value = ((ReadSByte)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "SByte: " << static_cast<int>(value) << std::endl;
+            }
+            else if (cmd.type == "-short") {
+                short value = ((ReadShort)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Short: " << value << std::endl;
+            }
+            else if (cmd.type == "-ushort") {
+                unsigned short value = ((ReadUShort)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "UShort: " << value << std::endl;
+            }
+            else if (cmd.type == "-int") {
+                int value = ((ReadInt)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Int: " << value << std::endl;
+            }
+            else if (cmd.type == "-uint") {
+                unsigned int value = ((ReadUInt)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "UInt: " << value << std::endl;
+            }
+            else if (cmd.type == "-long") {
+                long long value = ((ReadLong)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Long: " << value << std::endl;
+            }
+            else if (cmd.type == "-ulong") {
+                unsigned long long value = ((ReadULong)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "ULong: " << value << std::endl;
+            }
+            else if (cmd.type == "-float") {
+                float value = ((ReadFloat)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Float: " << std::setprecision(8) << std::defaultfloat << value << std::endl;
+            }
+            else if (cmd.type == "-double") {
+                double value = ((ReadDouble)ReadFunctions.at(cmd.type))(reader);
+                std::cout << "Double: " << std::setprecision(16) << std::defaultfloat << value << std::endl;
+            }
+            else if (cmd.type == "-bytes") {
+                uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+                std::vector<unsigned char> buffer(length);
+                ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length);
+                std::cout << "Bytes: " << std::string(buffer.begin(), buffer.end()) << std::endl;
+            }
+            else if (cmd.type == "-string") {
+                uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+                std::vector<char> buffer(length + 1, '\0');
+                ((ReadString)ReadFunctions.at(cmd.type))(reader, buffer.data(), length + 1);
+                buffer[length] = '\0';
+                std::cout << "String: " << buffer.data() << std::endl;
+            }
+        }
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << "Runtime error while reading type " << cmd.type
+                << ": " << e.what() << std::endl;
+        }
+        catch (const std::out_of_range& e) {
+            // Value out of range errors
+            std::cerr << "Out of range error while reading type " << cmd.type
+                << ": " << e.what() << std::endl;
+        }
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << "Memory allocation error while reading type " << cmd.type
+                << ": " << e.what() << std::endl;
+        }
+        catch (...) {
+            // Other unknown errors
+            std::cerr << "Unknown error occurred while reading type " << cmd.type << std::endl;
+        }
+    }
+}
+
+void ExecuteWrite(void* writer, const std::vector<Command>& commands) {
+    for (const auto& cmd : commands) {
+        try {
+            if (WriteFunctions.find(cmd.type) == WriteFunctions.end()) {
+                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                continue;
+            }
+
+            if (cmd.type == "-bool") {
+                ((WriteBoolean)WriteFunctions.at(cmd.type))(writer, cmd.value == "true");
+            }
+            else if (cmd.type == "-byte") {
+                ((WriteByte)WriteFunctions.at(cmd.type))(writer, static_cast<unsigned char>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-sbyte") {
+                ((WriteSByte)WriteFunctions.at(cmd.type))(writer, static_cast<signed char>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-short") {
+                ((WriteShort)WriteFunctions.at(cmd.type))(writer, static_cast<short>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-ushort") {
+                ((WriteUShort)WriteFunctions.at(cmd.type))(writer, static_cast<unsigned short>(std::stoul(cmd.value)));
+            }
+            else if (cmd.type == "-int") {
+                ((WriteInt)WriteFunctions.at(cmd.type))(writer, std::stoi(cmd.value));
+            }
+            else if (cmd.type == "-uint") {
+                ((WriteUInt)WriteFunctions.at(cmd.type))(writer, std::stoul(cmd.value));
+            }
+            else if (cmd.type == "-long") {
+                ((WriteLong)WriteFunctions.at(cmd.type))(writer, std::stoll(cmd.value));
+            }
+            else if (cmd.type == "-ulong") {
+                ((WriteULong)WriteFunctions.at(cmd.type))(writer, std::stoull(cmd.value));
+            }
+            else if (cmd.type == "-float") {
+                ((WriteFloat)WriteFunctions.at(cmd.type))(writer, std::stof(cmd.value));
+            }
+            else if (cmd.type == "-double") {
+                ((WriteDouble)WriteFunctions.at(cmd.type))(writer, std::stod(cmd.value));
+            }
+            else if (cmd.type == "-string") {
+                ((WriteString)WriteFunctions.at(cmd.type))(writer, cmd.value.c_str());
+            }
+            else if (cmd.type == "-bytes") {
+                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
+                uint64_t length = static_cast<uint64_t>(cmd.value.size());
+                ((WriteBytes)WriteFunctions.at(cmd.type))(writer, data, length);
+            }
+        }
+        catch (const std::invalid_argument& e) {
+            // Value conversion errors
+            std::cerr << "Error writing type " << cmd.type
+                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        }
+        catch (const std::out_of_range& e) {
+            // Value out of range errors
+            std::cerr << "Error writing type " << cmd.type
+                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        }
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << "Error writing type " << cmd.type
+                << ": runtime error (" << e.what() << ")" << std::endl;
+        }
+        catch (...) {
+            // Other unknown errors
+            std::cerr << "Unknown error occurred while writing type " << cmd.type
+                << " with value '" << cmd.value << "'" << std::endl;
+        }
+    }
+}
+
+void ExecuteAppend(void* appender, const std::vector<Command>& commands) {
+    for (const auto& cmd : commands) {
+        try {
+            if (AppendFunctions.find(cmd.type) == AppendFunctions.end()) {
+                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                continue;
+            }
+
+            if (cmd.type == "-bool") {
+                ((AppendBoolean)AppendFunctions.at(cmd.type))(appender, cmd.value == "true");
+            }
+            else if (cmd.type == "-byte") {
+                ((AppendByte)AppendFunctions.at(cmd.type))(appender, static_cast<unsigned char>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-sbyte") {
+                ((AppendSByte)AppendFunctions.at(cmd.type))(appender, static_cast<signed char>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-short") {
+                ((AppendShort)AppendFunctions.at(cmd.type))(appender, static_cast<short>(std::stoi(cmd.value)));
+            }
+            else if (cmd.type == "-ushort") {
+                ((AppendUShort)AppendFunctions.at(cmd.type))(appender, static_cast<unsigned short>(std::stoul(cmd.value)));
+            }
+            else if (cmd.type == "-int") {
+                ((AppendInt)AppendFunctions.at(cmd.type))(appender, std::stoi(cmd.value));
+            }
+            else if (cmd.type == "-uint") {
+                ((AppendUInt)AppendFunctions.at(cmd.type))(appender, std::stoul(cmd.value));
+            }
+            else if (cmd.type == "-long") {
+                ((AppendLong)AppendFunctions.at(cmd.type))(appender, std::stoll(cmd.value));
+            }
+            else if (cmd.type == "-ulong") {
+                ((AppendULong)AppendFunctions.at(cmd.type))(appender, std::stoull(cmd.value));
+            }
+            else if (cmd.type == "-float") {
+                ((AppendFloat)AppendFunctions.at(cmd.type))(appender, std::stof(cmd.value));
+            }
+            else if (cmd.type == "-double") {
+                ((AppendDouble)AppendFunctions.at(cmd.type))(appender, std::stod(cmd.value));
+            }
+            else if (cmd.type == "-string") {
+                ((AppendString)AppendFunctions.at(cmd.type))(appender, cmd.value.c_str());
+            }
+            else if (cmd.type == "-bytes") {
+                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
+                uint64_t length = static_cast<uint64_t>(cmd.value.size());
+                ((AppendBytes)AppendFunctions.at(cmd.type))(appender, data, length);
+            }
+        }
+        catch (const std::invalid_argument& e) {
+            // Value conversion errors
+            std::cerr << "Error appending type " << cmd.type
+                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        }
+        catch (const std::out_of_range& e) {
+            // Value out of range errors
+            std::cerr << "Error appending type " << cmd.type
+                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        }
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << "Error appending type " << cmd.type
+                << ": runtime error (" << e.what() << ")" << std::endl;
+        }
+        catch (...) {
+            // Other unknown errors
+            std::cerr << "Unknown error occurred while appending type " << cmd.type
+                << " with value '" << cmd.value << "'" << std::endl;
+        }
+    }
+}
+
 void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unordered_map<std::string, void*>& encodeFunctions) {
     size_t inputLength = cmd.value.size();
     size_t outputLength;
@@ -408,20 +481,6 @@ int main(int argc, char* argv[]) {
 
     // Load function pointers (example: Load WriteBoolean, WriteInt, etc.)
 
-    WriteFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
-    WriteFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
-    WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "WriteSByte");
-    WriteFunctions["-short"] = GET_PROC_ADDRESS(lib, "WriteShort");
-    WriteFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "WriteUShort");
-    WriteFunctions["-int"] = GET_PROC_ADDRESS(lib, "WriteInt");
-    WriteFunctions["-uint"] = GET_PROC_ADDRESS(lib, "WriteUInt");
-    WriteFunctions["-long"] = GET_PROC_ADDRESS(lib, "WriteLong");
-    WriteFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "WriteULong");
-    WriteFunctions["-float"] = GET_PROC_ADDRESS(lib, "WriteFloat");
-    WriteFunctions["-double"] = GET_PROC_ADDRESS(lib, "WriteDouble");
-    WriteFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "WriteBytes");
-    WriteFunctions["-string"] = GET_PROC_ADDRESS(lib, "WriteString");
-
     ReadFunctions["-bool"] = GET_PROC_ADDRESS(lib, "ReadBoolean");
     ReadFunctions["-byte"] = GET_PROC_ADDRESS(lib, "ReadByte");
     ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "ReadSByte");
@@ -436,6 +495,34 @@ int main(int argc, char* argv[]) {
     ReadFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "ReadBytes");
     ReadFunctions["-string"] = GET_PROC_ADDRESS(lib, "ReadString");
     ReadFunctions["-next-length"] = GET_PROC_ADDRESS(lib, "NextLength");
+
+    WriteFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
+    WriteFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
+    WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "WriteSByte");
+    WriteFunctions["-short"] = GET_PROC_ADDRESS(lib, "WriteShort");
+    WriteFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "WriteUShort");
+    WriteFunctions["-int"] = GET_PROC_ADDRESS(lib, "WriteInt");
+    WriteFunctions["-uint"] = GET_PROC_ADDRESS(lib, "WriteUInt");
+    WriteFunctions["-long"] = GET_PROC_ADDRESS(lib, "WriteLong");
+    WriteFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "WriteULong");
+    WriteFunctions["-float"] = GET_PROC_ADDRESS(lib, "WriteFloat");
+    WriteFunctions["-double"] = GET_PROC_ADDRESS(lib, "WriteDouble");
+    WriteFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "WriteBytes");
+    WriteFunctions["-string"] = GET_PROC_ADDRESS(lib, "WriteString");
+
+    AppendFunctions["-bool"] = GET_PROC_ADDRESS(lib, "AppendBoolean");
+    AppendFunctions["-byte"] = GET_PROC_ADDRESS(lib, "AppendByte");
+    AppendFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "AppendSByte");
+    AppendFunctions["-short"] = GET_PROC_ADDRESS(lib, "AppendShort");
+    AppendFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "AppendUShort");
+    AppendFunctions["-int"] = GET_PROC_ADDRESS(lib, "AppendInt");
+    AppendFunctions["-uint"] = GET_PROC_ADDRESS(lib, "AppendUInt");
+    AppendFunctions["-long"] = GET_PROC_ADDRESS(lib, "AppendLong");
+    AppendFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "AppendULong");
+    AppendFunctions["-float"] = GET_PROC_ADDRESS(lib, "AppendFloat");
+    AppendFunctions["-double"] = GET_PROC_ADDRESS(lib, "AppendDouble");
+    AppendFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "AppendBytes");
+    AppendFunctions["-string"] = GET_PROC_ADDRESS(lib, "AppendString");
 
     EncodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(lib, "Base16Encode");
     EncodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(lib, "Base16Decode");
@@ -458,19 +545,7 @@ int main(int argc, char* argv[]) {
     AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCfbDecrypt");
     //aesFunctions[""] = GET_PROC_ADDRESS(lib, "");
 
-    if (mode == "--write") {
-        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
-        if (!writer) {
-            std::cerr << "Failed to create binary writer for file: " << filePath << "\n";
-            UNLOAD_LIBRARY(lib);
-            return 1;
-        }
-
-        ExecuteWrite(writer, commands, WriteFunctions);
-        ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
-
-    }
-    else if (mode == "--read") {
+    if (mode == "--read") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
@@ -478,8 +553,31 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        ExecuteRead(reader, commands, ReadFunctions);
+        ExecuteRead(reader, commands);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+    }
+    else if (mode == "--write") {
+        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
+        if (!writer) {
+            std::cerr << "Failed to create binary writer for file: " << filePath << "\n";
+            UNLOAD_LIBRARY(lib);
+            return 1;
+        }
+
+        ExecuteWrite(writer, commands);
+        ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
+
+    }
+    else if (mode == "--append") {
+        void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(lib, "CreateBinaryAppender"))(filePath.c_str());
+        if (!appender) {
+            std::cerr << "Failed to create binary appender for file: " << filePath << "\n";
+            UNLOAD_LIBRARY(lib);
+            return 1;
+        }
+
+        ExecuteAppend(appender, commands);
+        ((DestroyBinaryAppender)GET_PROC_ADDRESS(lib, "DestroyBinaryAppender"))(appender);
     }
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());

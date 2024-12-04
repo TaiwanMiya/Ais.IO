@@ -9,18 +9,9 @@ namespace Ais.IO.Csharp
     public class Binary
     {
         public string BinaryFilePath { get; }
-        private IntPtr Writer { get; set; } = IntPtr.Zero;
         private IntPtr Reader { get; set; } = IntPtr.Zero;
-
-        public ulong WriterPosition
-        {
-            get
-            {
-                if (this.Writer == IntPtr.Zero)
-                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
-                return BinaryIOInterop.GetWriterPosition(this.Writer);
-            }
-        }
+        private IntPtr Writer { get; set; } = IntPtr.Zero;
+        private IntPtr Appender { get; set; } = IntPtr.Zero;
 
         public ulong ReaderPosition
         {
@@ -29,16 +20,6 @@ namespace Ais.IO.Csharp
                 if (this.Reader == IntPtr.Zero)
                     this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
                 return BinaryIOInterop.GetReaderPosition(this.Reader);
-            }
-        }
-
-        public ulong WriterLength
-        {
-            get
-            {
-                if (this.Writer == IntPtr.Zero)
-                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
-                return BinaryIOInterop.GetWriterLength(this.Writer);
             }
         }
 
@@ -52,59 +33,48 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public Binary(string binaryFilePath)
-            => this.BinaryFilePath = binaryFilePath;
-
-        public void Write<T>(T value)
+        public ulong WriterPosition
         {
-            if (this.Writer == IntPtr.Zero)
-                this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
-
-            switch (this.Writer)
+            get
             {
-                case var _ when value is bool @bool:
-                    BinaryIOInterop.WriteBoolean(this.Writer, @bool);
-                    break;
-                case var _ when value is byte @byte:
-                    BinaryIOInterop.WriteByte(this.Writer, @byte);
-                    break;
-                case var _ when value is sbyte @sbyte:
-                    BinaryIOInterop.WriteSByte(this.Writer, @sbyte);
-                    break;
-                case var _ when value is short @short:
-                    BinaryIOInterop.WriteShort(this.Writer, @short);
-                    break;
-                case var _ when value is ushort @ushort:
-                    BinaryIOInterop.WriteUShort(this.Writer, @ushort);
-                    break;
-                case var _ when value is int @int:
-                    BinaryIOInterop.WriteInt(this.Writer, @int);
-                    break;
-                case var _ when value is uint @uint:
-                    BinaryIOInterop.WriteUInt(this.Writer, @uint);
-                    break;
-                case var _ when value is long @long:
-                    BinaryIOInterop.WriteLong(this.Writer, @long);
-                    break;
-                case var _ when value is ulong @ulong:
-                    BinaryIOInterop.WriteULong(this.Writer, @ulong);
-                    break;
-                case var _ when value is float @float:
-                    BinaryIOInterop.WriteFloat(this.Writer, @float);
-                    break;
-                case var _ when value is double @double:
-                    BinaryIOInterop.WriteDouble(this.Writer, @double);
-                    break;
-                case var _ when value is byte[] @bytes:
-                    BinaryIOInterop.WriteBytes(this.Writer, @bytes, @bytes.LongLength);
-                    break;
-                case var _ when value is string @string:
-                    BinaryIOInterop.WriteString(this.Writer, @string);
-                    break;
-                default:
-                    throw new TypeAccessException($"Invalid type {value.GetType().Name}");
+                if (this.Writer == IntPtr.Zero)
+                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+                return BinaryIOInterop.GetWriterPosition(this.Writer);
             }
         }
+
+        public ulong WriterLength
+        {
+            get
+            {
+                if (this.Writer == IntPtr.Zero)
+                    this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+                return BinaryIOInterop.GetWriterLength(this.Writer);
+            }
+        }
+
+        public ulong AppenderPosition
+        {
+            get
+            {
+                if (this.Appender == IntPtr.Zero)
+                    this.Appender = BinaryIOInterop.CreateBinaryAppender(this.BinaryFilePath);
+                return BinaryIOInterop.GetAppenderPosition(this.Appender);
+            }
+        }
+
+        public ulong AppenderLength
+        {
+            get
+            {
+                if (this.Appender == IntPtr.Zero)
+                    this.Appender = BinaryIOInterop.CreateBinaryAppender(this.BinaryFilePath);
+                return BinaryIOInterop.GetAppenderLength(this.Appender);
+            }
+        }
+
+        public Binary(string binaryFilePath)
+            => this.BinaryFilePath = binaryFilePath;
 
         public T Read<T>()
         {
@@ -196,12 +166,116 @@ namespace Ais.IO.Csharp
             }
         }
 
+        public void Write<T>(T value)
+        {
+            if (this.Writer == IntPtr.Zero)
+                this.Writer = BinaryIOInterop.CreateBinaryWriter(this.BinaryFilePath);
+
+            switch (this.Writer)
+            {
+                case var _ when value is bool @bool:
+                    BinaryIOInterop.WriteBoolean(this.Writer, @bool);
+                    break;
+                case var _ when value is byte @byte:
+                    BinaryIOInterop.WriteByte(this.Writer, @byte);
+                    break;
+                case var _ when value is sbyte @sbyte:
+                    BinaryIOInterop.WriteSByte(this.Writer, @sbyte);
+                    break;
+                case var _ when value is short @short:
+                    BinaryIOInterop.WriteShort(this.Writer, @short);
+                    break;
+                case var _ when value is ushort @ushort:
+                    BinaryIOInterop.WriteUShort(this.Writer, @ushort);
+                    break;
+                case var _ when value is int @int:
+                    BinaryIOInterop.WriteInt(this.Writer, @int);
+                    break;
+                case var _ when value is uint @uint:
+                    BinaryIOInterop.WriteUInt(this.Writer, @uint);
+                    break;
+                case var _ when value is long @long:
+                    BinaryIOInterop.WriteLong(this.Writer, @long);
+                    break;
+                case var _ when value is ulong @ulong:
+                    BinaryIOInterop.WriteULong(this.Writer, @ulong);
+                    break;
+                case var _ when value is float @float:
+                    BinaryIOInterop.WriteFloat(this.Writer, @float);
+                    break;
+                case var _ when value is double @double:
+                    BinaryIOInterop.WriteDouble(this.Writer, @double);
+                    break;
+                case var _ when value is byte[] @bytes:
+                    BinaryIOInterop.WriteBytes(this.Writer, @bytes, @bytes.LongLength);
+                    break;
+                case var _ when value is string @string:
+                    BinaryIOInterop.WriteString(this.Writer, @string);
+                    break;
+                default:
+                    throw new TypeAccessException($"Invalid type {value.GetType().Name}");
+            }
+        }
+
+        public void Append<T>(T value)
+        {
+            if (this.Appender == IntPtr.Zero)
+                this.Appender = BinaryIOInterop.CreateBinaryAppender(this.BinaryFilePath);
+
+            switch (this.Appender)
+            {
+                case var _ when value is bool @bool:
+                    BinaryIOInterop.AppendBoolean(this.Appender, @bool);
+                    break;
+                case var _ when value is byte @byte:
+                    BinaryIOInterop.AppendByte(this.Appender, @byte);
+                    break;
+                case var _ when value is sbyte @sbyte:
+                    BinaryIOInterop.AppendSByte(this.Appender, @sbyte);
+                    break;
+                case var _ when value is short @short:
+                    BinaryIOInterop.AppendShort(this.Appender, @short);
+                    break;
+                case var _ when value is ushort @ushort:
+                    BinaryIOInterop.AppendUShort(this.Appender, @ushort);
+                    break;
+                case var _ when value is int @int:
+                    BinaryIOInterop.AppendInt(this.Appender, @int);
+                    break;
+                case var _ when value is uint @uint:
+                    BinaryIOInterop.AppendUInt(this.Appender, @uint);
+                    break;
+                case var _ when value is long @long:
+                    BinaryIOInterop.AppendLong(this.Appender, @long);
+                    break;
+                case var _ when value is ulong @ulong:
+                    BinaryIOInterop.AppendULong(this.Appender, @ulong);
+                    break;
+                case var _ when value is float @float:
+                    BinaryIOInterop.AppendFloat(this.Appender, @float);
+                    break;
+                case var _ when value is double @double:
+                    BinaryIOInterop.AppendDouble(this.Appender, @double);
+                    break;
+                case var _ when value is byte[] @bytes:
+                    BinaryIOInterop.AppendBytes(this.Appender, @bytes, @bytes.LongLength);
+                    break;
+                case var _ when value is string @string:
+                    BinaryIOInterop.AppendString(this.Appender, @string);
+                    break;
+                default:
+                    throw new TypeAccessException($"Invalid type {value.GetType().Name}");
+            }
+        }
+
         public void Close()
         {
-            if (this.Writer != IntPtr.Zero)
-                BinaryIOInterop.DestroyBinaryWriter(this.Writer);
             if (this.Reader != IntPtr.Zero)
                 BinaryIOInterop.DestroyBinaryReader(this.Reader);
+            if (this.Writer != IntPtr.Zero)
+                BinaryIOInterop.DestroyBinaryWriter(this.Writer);
+            if (this.Appender != IntPtr.Zero)
+                BinaryIOInterop.DestroyBinaryAppender(this.Appender);
         }
     }
 }

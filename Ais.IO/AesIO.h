@@ -3,7 +3,7 @@
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS
 #ifdef _WIN32
-#define AESIO_API __declspec(dllimport)
+#define AESIO_API __declspec(dllexport)
 #else
 #define AESIO_API
 #endif

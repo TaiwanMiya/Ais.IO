@@ -8,7 +8,7 @@
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS
 #ifdef _WIN32
-#define ENCODERIO_API __declspec(dllimport)
+#define ENCODERIO_API __declspec(dllexport)
 #else
 #define ENCODERIO_API
 #endif

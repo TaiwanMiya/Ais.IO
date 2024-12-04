@@ -137,6 +137,27 @@ typedef void (*WriteBytes)(void*, const unsigned char*, uint64_t);
 typedef void (*WriteString)(void*, const char*);
 #pragma endregion
 
+#pragma region BinaryAppenderIO
+typedef void* (*CreateBinaryAppender)(const char*);
+typedef void (*DestroyBinaryAppender)(void*);
+typedef uint64_t(*GetAppenderPosition)(void*);
+typedef uint64_t(*GetAppenderLength)(void*);
+
+typedef void (*AppendBoolean)(void*, bool);
+typedef void (*AppendByte)(void*, unsigned char);
+typedef void (*AppendSByte)(void*, signed char);
+typedef void (*AppendShort)(void*, short);
+typedef void (*AppendUShort)(void*, unsigned short);
+typedef void (*AppendInt)(void*, int);
+typedef void (*AppendUInt)(void*, unsigned int);
+typedef void (*AppendLong)(void*, long long);
+typedef void (*AppendULong)(void*, unsigned long long);
+typedef void (*AppendFloat)(void*, float);
+typedef void (*AppendDouble)(void*, double);
+typedef void (*AppendBytes)(void*, const unsigned char*, uint64_t);
+typedef void (*AppendString)(void*, const char*);
+#pragma endregion
+
 #pragma region EncoderIO
 typedef int (*Base16Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base16Decode)(const unsigned char*, const size_t, char*, const size_t);
@@ -161,7 +182,8 @@ typedef int (*AesCfbEncrypt)(AES_CFB_ENCRYPT*);
 typedef int (*AesCfbDecrypt)(AES_CFB_DECRYPT*);
 #pragma endregion
 
-std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> ReadFunctions;
+std::unordered_map<std::string, void*> WriteFunctions;
+std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
