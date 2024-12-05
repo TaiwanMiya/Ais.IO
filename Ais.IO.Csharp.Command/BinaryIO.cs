@@ -11,7 +11,7 @@ namespace Ais.IO.Csharp.Command
     {
         public static void WriteRelease()
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             binary.Write<bool>(true);
             binary.Write<byte>(0xFF);
             binary.Write<sbyte>(0x7F);
@@ -30,7 +30,7 @@ namespace Ais.IO.Csharp.Command
 
         public static void AppendRelease()
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             binary.Append<bool>(true);
             binary.Append<byte>(255);
             binary.Append<sbyte>(-128);
@@ -49,7 +49,7 @@ namespace Ais.IO.Csharp.Command
 
         public static void InsertRelease()
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             binary.Insert<bool>(true, 0);
             binary.Insert<byte>(255, 0);
             binary.Insert<sbyte>(-128, 0);
@@ -68,7 +68,7 @@ namespace Ais.IO.Csharp.Command
 
         public static void ReadRelease()
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             string message = string.Empty;
             while (binary.ReaderPosition < binary.ReaderLength)
             {
@@ -87,19 +87,21 @@ namespace Ais.IO.Csharp.Command
 
         public static void GetIndex()
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             BINARYIO_INDICES[] indexes = binary.GetAllIndices();
             foreach (BINARYIO_INDICES index in indexes)
                 Console.WriteLine($"pos:{index.POSITION}, type:{index.TYPE}, len:{index.LENGTH}");
             Console.WriteLine($"Total Count: {indexes.Length}");
+            binary.Close();
 
             RemoveIndex(indexes[12]);
         }
 
         public static void RemoveIndex(BINARYIO_INDICES index)
         {
-            Binary binary = new Binary("test.bin");
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             binary.RemoveIndex(index);
+            binary.Close();
         }
     }
 }

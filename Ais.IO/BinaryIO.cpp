@@ -149,7 +149,6 @@ public:
 
 private:
     std::ifstream InputStream;
-    std::ofstream OutputStream;
 };
 
 /* Get Next Length */

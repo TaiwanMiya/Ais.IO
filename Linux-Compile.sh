@@ -20,10 +20,10 @@ else
 fi
 
 echo "Complie => Ais.IO.so"
-g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp BinaryAppenderIO.cpp EncoderIO.cpp -I./include -o ../unix/Ais.IO.so
+g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp BinaryAppenderIO.cpp BinaryInserterIO.cpp EncoderIO.cpp -I./include -o ../bin/unix/Ais.IO.so
 cd ../Ais.IO.Command
 echo "Complie => aisio"
-g++ -o ../unix/aisio StringCase.cpp main.cpp
+g++ -o ../unix/aisio output_colors.cpp StringCase.cpp main.cpp
 cd ..
 
 
@@ -64,12 +64,12 @@ compile_cpp() {
     fi
 
     # Compile Ais.IO.so
-    g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp BinaryAppenderIO.cpp EncoderIO.cpp -I./include -o ../bin/unix/Ais.IO.so
+    g++ -shared -fPIC BinaryIO.cpp BinaryReaderIO.cpp BinaryWriterIO.cpp BinaryAppenderIO.cpp BinaryInserterIO.cpp EncoderIO.cpp -I./include -o ../bin/unix/Ais.IO.so
 
     # Compile aisio
     cd ../Ais.IO.Command || exit
     echo "Compiling aisio..."
-    g++ -o ../bin/unix/aisio StringCase.cpp main.cpp
+    g++ -o ../bin/unix/aisio output_colors.cpp StringCase.cpp main.cpp
     cd ..
 
     echo "Compilation finished."

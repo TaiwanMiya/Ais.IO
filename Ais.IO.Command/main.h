@@ -31,6 +31,14 @@ enum BINARYIO_TYPE : unsigned char {
     TYPE_STRING = 13,
 };
 
+#pragma pack(push, 1)
+struct BINARYIO_INDICES {
+    uint64_t POSITION;
+    BINARYIO_TYPE TYPE;
+    uint64_t LENGTH;
+};
+#pragma pack(pop)
+
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,
     SEGMENT_8_BIT = 8,
@@ -93,6 +101,9 @@ struct AES_CFB_DECRYPT {
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
 typedef BINARYIO_TYPE(*ReadType)(void*);
+typedef BINARYIO_INDICES* (*GetAllIndices)(void*, uint64_t*);
+typedef void (*RemoveIndex)(void*, const char*, BINARYIO_INDICES*);
+typedef void (*FreeIndexArray)(BINARYIO_INDICES*);
 #pragma endregion
 
 #pragma region BinaryReaderIO
@@ -158,6 +169,27 @@ typedef void (*AppendBytes)(void*, const unsigned char*, uint64_t);
 typedef void (*AppendString)(void*, const char*);
 #pragma endregion
 
+#pragma region BinaryInserterIO
+typedef void* (*CreateBinaryInserter)(const char*);
+typedef void (*DestroyBinaryInserter)(void*);
+typedef uint64_t (*GetInserterPosition)(void*);
+typedef uint64_t (*GetInserterLength)(void*);
+
+typedef void (*InsertBoolean)(void*, bool, uint64_t);
+typedef void (*InsertByte)(void*, unsigned char, uint64_t);
+typedef void (*InsertSByte)(void*, signed char, uint64_t);
+typedef void (*InsertShort)(void*, short, uint64_t);
+typedef void (*InsertUShort)(void*, unsigned short, uint64_t);
+typedef void (*InsertInt)(void*, int, uint64_t);
+typedef void (*InsertUInt)(void*, unsigned int, uint64_t);
+typedef void (*InsertLong)(void*, long long, uint64_t);
+typedef void (*InsertULong)(void*, unsigned long long, uint64_t);
+typedef void (*InsertFloat)(void*, float, uint64_t);
+typedef void (*InsertDouble)(void*, double, uint64_t);
+typedef void (*InsertBytes)(void*, const unsigned char*, uint64_t, uint64_t);
+typedef void (*InsertString)(void*, const char*, uint64_t);
+#pragma endregion
+
 #pragma region EncoderIO
 typedef int (*Base16Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base16Decode)(const unsigned char*, const size_t, char*, const size_t);
@@ -185,5 +217,6 @@ typedef int (*AesCfbDecrypt)(AES_CFB_DECRYPT*);
 std::unordered_map<std::string, void*> ReadFunctions;
 std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> AppendFunctions;
+std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> AesFunctions;

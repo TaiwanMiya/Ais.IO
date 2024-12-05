@@ -16,7 +16,7 @@ namespace Ais.IO.Csharp.Command
                 sw.Start();
                 BinaryIO.WriteRelease();
                 BinaryIO.AppendRelease();
-                //BinaryIO.InsertRelease();
+                BinaryIO.InsertRelease();
                 BinaryIO.GetIndex();
                 BinaryIO.ReadRelease();
                 //EncoderIO.BaseEncode(out byte[] b16, out byte[] b32, out byte[] b64, out byte[] b85);

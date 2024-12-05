@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public class Binary
+    public class BinaryIO
     {
         public string BinaryFilePath { get; }
         private IntPtr Reader { get; set; } = IntPtr.Zero;
@@ -95,7 +95,7 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public Binary(string binaryFilePath)
+        public BinaryIO(string binaryFilePath)
             => this.BinaryFilePath = binaryFilePath;
 
         public BINARYIO_INDICES[] GetAllIndices()
@@ -325,7 +325,7 @@ namespace Ais.IO.Csharp
         public void Insert<T>(T value, ulong position)
         {
             if (this.Inserter == IntPtr.Zero)
-                this.Inserter = BinaryIOInterop.CreateBinaryAppender(this.BinaryFilePath);
+                this.Inserter = BinaryIOInterop.CreateBinaryInserter(this.BinaryFilePath);
 
             switch (this.Inserter)
             {
@@ -381,6 +381,8 @@ namespace Ais.IO.Csharp
                 BinaryIOInterop.DestroyBinaryWriter(this.Writer);
             if (this.Appender != IntPtr.Zero)
                 BinaryIOInterop.DestroyBinaryAppender(this.Appender);
+            if (this.Inserter != IntPtr.Zero)
+                BinaryIOInterop.DestroyBinaryInserter(this.Inserter);
         }
     }
 }
