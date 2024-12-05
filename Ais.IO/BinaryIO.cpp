@@ -13,9 +13,9 @@
 class BinaryIO {
 public:
     BinaryIO (const std::string& filePath) {
-        InputStream.open(filePath, std::ios::binary);
+        InputStream.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
         if (!InputStream.is_open())
-            throw std::runtime_error("Unable to open file for reading.");
+            throw std::runtime_error("Unable to open file for reading & writing.");
     }
 
     uint64_t NextLength() {
@@ -39,9 +39,103 @@ public:
         return length;
     }
 
+    BINARYIO_INDICES* GetAllIndices(uint64_t* count) {
+        *count = 0;
+        InputStream.seekg(std::streampos(0), std::ios::beg);
+
+        std::vector<BINARYIO_INDICES> indices;
+        uint64_t position = 0;
+
+        while (true) {
+            BINARYIO_INDICES index;
+            InputStream.read(reinterpret_cast<char*>(&index.TYPE), sizeof(index.TYPE));
+            if (InputStream.eof() || InputStream.fail())
+                break;
+
+            switch (index.TYPE) {
+                case BINARYIO_TYPE::TYPE_BOOLEAN:
+                case BINARYIO_TYPE::TYPE_BYTE:
+                case BINARYIO_TYPE::TYPE_SBYTE: {
+                    index.POSITION = position;
+                    index.LENGTH = 1;
+                    position += sizeof(index.TYPE) + index.LENGTH;
+                    InputStream.seekg(index.LENGTH, std::ios::cur);
+                    break;
+                }
+                case BINARYIO_TYPE::TYPE_SHORT:
+                case BINARYIO_TYPE::TYPE_USHORT: {
+                    index.POSITION = position;
+                    index.LENGTH = 2;
+                    position += sizeof(index.TYPE) + index.LENGTH;
+                    InputStream.seekg(index.LENGTH, std::ios::cur);
+                    break;
+                }
+                case BINARYIO_TYPE::TYPE_INT:
+                case BINARYIO_TYPE::TYPE_UINT:
+                case BINARYIO_TYPE::TYPE_FLOAT: {
+                    index.POSITION = position;
+                    index.LENGTH = 4;
+                    position += sizeof(index.TYPE) + index.LENGTH;
+                    InputStream.seekg(index.LENGTH, std::ios::cur);
+                    break;
+                }
+                case BINARYIO_TYPE::TYPE_LONG:
+                case BINARYIO_TYPE::TYPE_ULONG:
+                case BINARYIO_TYPE::TYPE_DOUBLE: {
+                    index.POSITION = position;
+                    index.LENGTH = 8;
+                    position += sizeof(index.TYPE) + index.LENGTH;
+                    InputStream.seekg(index.LENGTH, std::ios::cur);
+                    break;
+                }
+                case BINARYIO_TYPE::TYPE_BYTES:
+                case BINARYIO_TYPE::TYPE_STRING: {
+                    index.POSITION = position;
+                    InputStream.read(READ_CAST(&index.LENGTH), sizeof(index.LENGTH));
+                    if (InputStream.fail()) {
+                        std::cerr << "Error: Failed to read length for type " << static_cast<int>(index.TYPE) << std::endl;
+                        return nullptr;
+                    }
+                    position += sizeof(index.TYPE) + sizeof(index.LENGTH) + index.LENGTH;
+                    InputStream.seekg(index.LENGTH, std::ios::cur);
+                    break;
+                }
+            }
+            indices.push_back(index);
+        }
+
+        InputStream.close();
+
+        *count = indices.size();
+        BINARYIO_INDICES* result = static_cast<BINARYIO_INDICES*>(malloc(indices.size() * sizeof(BINARYIO_INDICES)));
+        std::memcpy(result, indices.data(), indices.size() * sizeof(BINARYIO_INDICES));
+        return result;
+    }
+
+    void RemoveIndex(const std::string& filePath, BINARYIO_INDICES* index) {
+        std::fstream file(filePath, std::ios::in | std::ios::out | std::ios::binary);
+        if (!file.is_open())
+            throw std::runtime_error("Unable to open file for remove operation.");
+
+        if (index->TYPE == BINARYIO_TYPE::TYPE_BYTES || index->TYPE == BINARYIO_TYPE::TYPE_STRING)
+            file.seekg(index->POSITION + index->LENGTH + sizeof(index->TYPE) + sizeof(index->LENGTH), std::ios::beg);
+        else
+            file.seekg(index->POSITION + index->LENGTH + sizeof(index->TYPE), std::ios::beg);
+        std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+        file.seekp(index->POSITION, std::ios::beg);
+
+        file.write(buffer.data(), buffer.size());
+
+        file.close();
+        std::filesystem::resize_file(filePath, index->POSITION + buffer.size());
+    }
+
     BINARYIO_TYPE ReadType(bool unchangePosition) {
-        if (!InputStream.is_open())
-            throw std::runtime_error("Input stream is not open.");
+        if (!InputStream.is_open()) {
+            std::cerr << "Input stream is not open." << std::endl;
+            return BINARYIO_TYPE::TYPE_NULL;
+        }
 
         std::streampos currentPos = unchangePosition
             ? std::streampos(-1)
@@ -55,6 +149,7 @@ public:
 
 private:
     std::ifstream InputStream;
+    std::ofstream OutputStream;
 };
 
 /* Get Next Length */
@@ -65,4 +160,16 @@ uint64_t NextLength(void* reader) {
 
 BINARYIO_TYPE ReadType(void* reader) {
     return static_cast<BinaryIO*>(reader)->ReadType(false);
+}
+
+BINARYIO_INDICES* GetAllIndices(void* reader, uint64_t* count) {
+    return static_cast<BinaryIO*>(reader)->GetAllIndices(count);
+}
+
+void RemoveIndex(void* reader, const char* filePath, BINARYIO_INDICES* index) {
+    static_cast<BinaryIO*>(reader)->RemoveIndex(filePath, index);
+}
+
+void FreeIndexArray(BINARYIO_INDICES* indices) {
+    free(indices);
 }

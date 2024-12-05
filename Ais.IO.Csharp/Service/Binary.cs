@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace Ais.IO.Csharp
         private IntPtr Reader { get; set; } = IntPtr.Zero;
         private IntPtr Writer { get; set; } = IntPtr.Zero;
         private IntPtr Appender { get; set; } = IntPtr.Zero;
+        private IntPtr Inserter { get; set; } = IntPtr.Zero;
 
         public ulong ReaderPosition
         {
@@ -73,8 +75,58 @@ namespace Ais.IO.Csharp
             }
         }
 
+        public ulong InserterPosition
+        {
+            get
+            {
+                if (this.Inserter == IntPtr.Zero)
+                    this.Inserter = BinaryIOInterop.CreateBinaryInserter(this.BinaryFilePath);
+                return BinaryIOInterop.GetInserterPosition(this.Inserter);
+            }
+        }
+
+        public ulong InserterLength
+        {
+            get
+            {
+                if (this.Inserter == IntPtr.Zero)
+                    this.Inserter = BinaryIOInterop.CreateBinaryInserter(this.BinaryFilePath);
+                return BinaryIOInterop.GetInserterLength(this.Inserter);
+            }
+        }
+
         public Binary(string binaryFilePath)
             => this.BinaryFilePath = binaryFilePath;
+
+        public BINARYIO_INDICES[] GetAllIndices()
+        {
+            if (this.Reader == IntPtr.Zero)
+                this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+
+            IntPtr indicesPtr = BinaryIOInterop.GetAllIndices(this.Reader, out ulong count);
+
+            if (indicesPtr == IntPtr.Zero || count == 0)
+                return new BINARYIO_INDICES[0];
+
+            BINARYIO_INDICES[] indices = new BINARYIO_INDICES[count];
+            IntPtr current = indicesPtr;
+
+            for (ulong i = 0; i < count; i++)
+            {
+                indices[i] = (BINARYIO_INDICES) Marshal.PtrToStructure(current, typeof(BINARYIO_INDICES));
+                current = IntPtr.Add(current, Marshal.SizeOf(typeof(BINARYIO_INDICES)));
+            }
+            BinaryIOInterop.FreeIndexArray(indicesPtr);
+            return indices;
+        }
+
+        public void RemoveIndex(BINARYIO_INDICES index)
+        {
+            if (this.Reader == IntPtr.Zero)
+                this.Reader = BinaryIOInterop.CreateBinaryReader(this.BinaryFilePath);
+
+            BinaryIOInterop.RemoveIndex(this.Reader, this.BinaryFilePath, index);
+        }
 
         public T Read<T>()
         {
@@ -129,6 +181,8 @@ namespace Ais.IO.Csharp
 
             switch (type)
             {
+                case BINARYIO_TYPE.TYPE_NULL:
+                    return null;
                 case BINARYIO_TYPE.TYPE_BOOLEAN:
                     return BinaryIOInterop.ReadBoolean(this.Reader);
                 case BINARYIO_TYPE.TYPE_BYTE:
@@ -262,6 +316,57 @@ namespace Ais.IO.Csharp
                     break;
                 case var _ when value is string @string:
                     BinaryIOInterop.AppendString(this.Appender, @string);
+                    break;
+                default:
+                    throw new TypeAccessException($"Invalid type {value.GetType().Name}");
+            }
+        }
+
+        public void Insert<T>(T value, ulong position)
+        {
+            if (this.Inserter == IntPtr.Zero)
+                this.Inserter = BinaryIOInterop.CreateBinaryAppender(this.BinaryFilePath);
+
+            switch (this.Inserter)
+            {
+                case var _ when value is bool @bool:
+                    BinaryIOInterop.InsertBoolean(this.Inserter, @bool, position);
+                    break;
+                case var _ when value is byte @byte:
+                    BinaryIOInterop.InsertByte(this.Inserter, @byte, position);
+                    break;
+                case var _ when value is sbyte @sbyte:
+                    BinaryIOInterop.InsertSByte(this.Inserter, @sbyte, position);
+                    break;
+                case var _ when value is short @short:
+                    BinaryIOInterop.InsertShort(this.Inserter, @short, position);
+                    break;
+                case var _ when value is ushort @ushort:
+                    BinaryIOInterop.InsertUShort(this.Inserter, @ushort, position);
+                    break;
+                case var _ when value is int @int:
+                    BinaryIOInterop.InsertInt(this.Inserter, @int, position);
+                    break;
+                case var _ when value is uint @uint:
+                    BinaryIOInterop.InsertUInt(this.Inserter, @uint, position);
+                    break;
+                case var _ when value is long @long:
+                    BinaryIOInterop.InsertLong(this.Inserter, @long, position);
+                    break;
+                case var _ when value is ulong @ulong:
+                    BinaryIOInterop.InsertULong(this.Inserter, @ulong, position);
+                    break;
+                case var _ when value is float @float:
+                    BinaryIOInterop.InsertFloat(this.Inserter, @float, position);
+                    break;
+                case var _ when value is double @double:
+                    BinaryIOInterop.InsertDouble(this.Inserter, @double, position);
+                    break;
+                case var _ when value is byte[] @bytes:
+                    BinaryIOInterop.InsertBytes(this.Inserter, @bytes, @bytes.LongLength, position);
+                    break;
+                case var _ when value is string @string:
+                    BinaryIOInterop.InsertString(this.Inserter, @string, position);
                     break;
                 default:
                     throw new TypeAccessException($"Invalid type {value.GetType().Name}");

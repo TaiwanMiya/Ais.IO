@@ -17,6 +17,15 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern BINARYIO_TYPE ReadType(IntPtr reader);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetAllIndices(IntPtr reader, out ulong count);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void RemoveIndex(IntPtr reader, string filePath, BINARYIO_INDICES index);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void FreeIndexArray(IntPtr indices);
         #endregion
 
         #region BinaryReaderIO.h
@@ -176,6 +185,59 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void AppendString(IntPtr appender, string value);
+        #endregion
+
+        #region BinaryInserterIO.h
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr CreateBinaryInserter(string filePath);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void DestroyBinaryInserter(IntPtr inserter);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong GetInserterPosition(IntPtr inserter);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong GetInserterLength(IntPtr inserter);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertBoolean(IntPtr inserter, bool value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertByte(IntPtr inserter, byte value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertSByte(IntPtr inserter, sbyte value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertShort(IntPtr inserter, short value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertUShort(IntPtr inserter, ushort value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertInt(IntPtr inserter, int value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertUInt(IntPtr inserter, uint value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertLong(IntPtr inserter, long value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertULong(IntPtr inserter, ulong value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertFloat(IntPtr inserter, float value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertDouble(IntPtr inserter, double value, ulong position);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertBytes(IntPtr inserter, byte[] bytes, long length, ulong position);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InsertString(IntPtr inserter, string value, ulong position);
         #endregion
     }
 }

@@ -1,3 +1,4 @@
+#pragma warning(disable : 4267)
 #include "pch.h"
 #include "AesIO.h"
 #include <openssl/evp.h>

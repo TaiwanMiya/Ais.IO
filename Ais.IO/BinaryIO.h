@@ -4,6 +4,10 @@
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
+#include <vector>
+#include <filesystem>
+#include <set>
+#include <assert.h>
 #include <stdint.h>
 
 /* Dll Export Define */
@@ -20,6 +24,7 @@
 #endif
 
 enum BINARYIO_TYPE : unsigned char {
+	TYPE_NULL = 0,
 	TYPE_BOOLEAN = 1,
 	TYPE_BYTE = 2,
 	TYPE_SBYTE = 3,
@@ -35,5 +40,16 @@ enum BINARYIO_TYPE : unsigned char {
 	TYPE_STRING = 13,
 };
 
+#pragma pack(push, 1)
+struct BINARYIO_INDICES {
+	uint64_t POSITION;      // 數據塊的起始位置
+	BINARYIO_TYPE TYPE;     // 數據塊類型
+	uint64_t LENGTH;        // 數據塊長度
+};
+#pragma pack(pop)
+
 EXT BINARYIO_API uint64_t NextLength(void* reader);
 EXT BINARYIO_API BINARYIO_TYPE ReadType(void* reader);
+EXT BINARYIO_API BINARYIO_INDICES* GetAllIndices(void* reader, uint64_t* count);
+EXT BINARYIO_API void RemoveIndex(void* reader, const char* filePath, BINARYIO_INDICES* index);
+EXT BINARYIO_API void FreeIndexArray(BINARYIO_INDICES* indices);
