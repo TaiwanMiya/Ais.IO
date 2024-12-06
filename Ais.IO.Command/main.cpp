@@ -22,6 +22,25 @@ struct Command {
 };
 
 void ShowUsage() {
+    std::cout << "                                                                                            " << std::endl;
+    std::cout << "               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     " << std::endl;
+    std::cout << "              A:::A               i::::i                       I::::::::I   OO:::::::::OO   " << std::endl;
+    std::cout << "             A:::::A               iiii                        I::::::::I OO:::::::::::::OO " << std::endl;
+    std::cout << "            A:::::::A                                          II::::::IIO:::::::OOO:::::::O" << std::endl;
+    std::cout << "           A:::::::::A           iiiiiii     ssssssssss          I::::I  O::::::O   O::::::O" << std::endl;
+    std::cout << "          A:::::A:::::A          i:::::i   ss::::::::::s         I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "         A:::::A A:::::A          i::::i ss:::::::::::::s        I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "        A:::::A   A:::::A         i::::i s::::::ssss:::::s       I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "       A:::::A     A:::::A        i::::i  s:::::s  ssssss        I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "      A:::::AAAAAAAAA:::::A       i::::i    s::::::s             I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "     A:::::::::::::::::::::A      i::::i       s::::::s          I::::I  O:::::O     O:::::O" << std::endl;
+    std::cout << "    A:::::AAAAAAAAAAAAA:::::A     i::::i ssssss   s:::::s        I::::I  O::::::O   O::::::O" << std::endl;
+    std::cout << "   A:::::A             A:::::A   i::::::is:::::ssss::::::s     II::::::IIO:::::::OOO:::::::O" << std::endl;
+    std::cout << "  A:::::A               A:::::A  i::::::is::::::::::::::s      I::::::::I OO:::::::::::::OO " << std::endl;
+    std::cout << " A:::::A                 A:::::A i::::::i s:::::::::::ss       I::::::::I   OO:::::::::OO   " << std::endl;
+    std::cout << "AAAAAAA                   AAAAAAAiiiiiiii  sssssssssss         IIIIIIIIII     OOOOOOOOO     " << std::endl;
+    std::cout << "                                                                                            " << std::endl;
+
     std::cout << Hint("Usage:\n");
     std::cout << Hint("  --indexes <path>\n");
     std::cout << Hint("  --read-all <path>\n");
@@ -745,6 +764,11 @@ int main(int argc, char* argv[]) {
 #if _WIN32
     EnableVirtualTerminalProcessing();
 #endif
+
+    if (argc == 2 && std::string(argv[1]) == "--colors") {
+        ListColorTable();
+        return 1;
+    }
 
     if (!ParseArguments(argc, argv, mode, filePath, commands)) {
         ShowUsage();
