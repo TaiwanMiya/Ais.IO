@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <iostream>
+#include <sstream>
 
 enum BINARYIO_TYPE : unsigned char {
     TYPE_BOOLEAN = 1,

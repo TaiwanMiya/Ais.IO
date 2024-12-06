@@ -220,76 +220,82 @@ std::string GetTypeName(BINARYIO_TYPE type) {
 
 void ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count) {
     switch (type) {
-    case BINARYIO_TYPE::TYPE_BOOLEAN: {
-        bool value = ((ReadBoolean)ReadFunctions.at("-bool"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Boolean: ") << (value ? "true" : "false") << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_BYTE: {
-        unsigned char value = ((ReadByte)ReadFunctions.at("-byte"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Byte: ") << static_cast<int>(value) << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_SBYTE: {
-        signed char value = ((ReadSByte)ReadFunctions.at("-sbyte"))(reader);
-        std::cout << Hint(std::to_string(count) + ". SByte: ") << static_cast<int>(value) << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_SHORT: {
-        short value = ((ReadShort)ReadFunctions.at("-short"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Short: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_USHORT: {
-        unsigned short value = ((ReadUShort)ReadFunctions.at("-ushort"))(reader);
-        std::cout << Hint(std::to_string(count) + ". UShort: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_INT: {
-        int value = ((ReadInt)ReadFunctions.at("-int"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Int: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_UINT: {
-        unsigned int value = ((ReadUInt)ReadFunctions.at("-uint"))(reader);
-        std::cout << Hint(std::to_string(count) + ". UInt: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_LONG: {
-        long long value = ((ReadLong)ReadFunctions.at("-long"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Long: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_ULONG: {
-        unsigned long long value = ((ReadULong)ReadFunctions.at("-ulong"))(reader);
-        std::cout << Hint(std::to_string(count) + ". ULong: ") << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_FLOAT: {
-        float value = ((ReadFloat)ReadFunctions.at("-float"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Float: ") << std::setprecision(8) << std::defaultfloat << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_DOUBLE: {
-        double value = ((ReadDouble)ReadFunctions.at("-double"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Double: ") << std::setprecision(16) << std::defaultfloat << value << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_BYTES: {
-        uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
-        std::vector<unsigned char> buffer(length);
-        ((ReadBytes)ReadFunctions.at("-bytes"))(reader, buffer.data(), length);
-        std::cout << Hint(std::to_string(count) + ". Bytes: ") << std::string(buffer.begin(), buffer.end()) << std::endl;
-        break;
-    }
-    case BINARYIO_TYPE::TYPE_STRING: {
-        uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
-        std::vector<char> buffer(length + 1, '\0');
-        ((ReadString)ReadFunctions.at("-string"))(reader, buffer.data(), length + 1);
-        buffer[length] = '\0';
-        std::cout << Hint(std::to_string(count) + ". String: ") << buffer.data() << std::endl;
-        break;
-    }
+        case BINARYIO_TYPE::TYPE_BOOLEAN: {
+            bool value = ((ReadBoolean)ReadFunctions.at("-bool"))(reader);
+            std::cout << Hint(std::to_string(count) + ". Boolean: ") << Ask(value ? "true" : "false") << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_BYTE: {
+            unsigned char value = ((ReadByte)ReadFunctions.at("-byte"))(reader);
+            std::cout << Hint(std::to_string(count) + ". Byte: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_SBYTE: {
+            signed char value = ((ReadSByte)ReadFunctions.at("-sbyte"))(reader);
+            std::cout << Hint(std::to_string(count) + ". SByte: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_SHORT: {
+            short value = ((ReadShort)ReadFunctions.at("-short"))(reader);
+            std::cout << Hint(std::to_string(count) + ". Short: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_USHORT: {
+            unsigned short value = ((ReadUShort)ReadFunctions.at("-ushort"))(reader);
+            std::cout << Hint(std::to_string(count) + ". UShort: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_INT: {
+            int value = ((ReadInt)ReadFunctions.at("-int"))(reader);
+            std::cout << Hint(std::to_string(count) + ". Int: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_UINT: {
+            unsigned int value = ((ReadUInt)ReadFunctions.at("-uint"))(reader);
+            std::cout << Hint(std::to_string(count) + ". UInt: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_LONG: {
+            long long value = ((ReadLong)ReadFunctions.at("-long"))(reader);
+            std::cout << Hint(std::to_string(count) + ". Long: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_ULONG: {
+            unsigned long long value = ((ReadULong)ReadFunctions.at("-ulong"))(reader);
+            std::cout << Hint(std::to_string(count) + ". ULong: ") << Ask(std::to_string(value)) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_FLOAT: {
+            float value = ((ReadFloat)ReadFunctions.at("-float"))(reader);
+            std::ostringstream oss;
+            oss.precision(8);
+            oss << std::defaultfloat << value;
+            std::cout << Hint(std::to_string(count) + ". Float: ") << Ask(oss.str()) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_DOUBLE: {
+            double value = ((ReadDouble)ReadFunctions.at("-double"))(reader);
+            std::ostringstream oss;
+            oss.precision(16);
+            oss << std::defaultfloat << value;
+            std::cout << Hint(std::to_string(count) + ". Double: ") << Ask(oss.str()) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_BYTES: {
+            uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+            std::vector<unsigned char> buffer(length);
+            ((ReadBytes)ReadFunctions.at("-bytes"))(reader, buffer.data(), length);
+            std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(buffer.begin(), buffer.end())) << std::endl;
+            break;
+        }
+        case BINARYIO_TYPE::TYPE_STRING: {
+            uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+            std::vector<char> buffer(length + 1, '\0');
+            ((ReadString)ReadFunctions.at("-string"))(reader, buffer.data(), length + 1);
+            buffer[length] = '\0';
+            std::cout << Hint(std::to_string(count) + ". String: ") << Ask(buffer.data()) << std::endl;
+            break;
+        }
     }
     count++;
 }
@@ -303,7 +309,7 @@ void GetIndexes(void* reader) {
     }
     
     for (uint64_t i = 0; i < count; ++i)
-        std::cout << i << ". " << GetTypeName(indices[i].TYPE) << " = Position:" << indices[i].POSITION << ", Length:" << indices[i].LENGTH << std::endl;
+        std::cout << Hint(std::to_string(i + 1)) << ". " + Ask(GetTypeName(indices[i].TYPE)) << " = " << Hint("Position:") << Ask(std::to_string(indices[i].POSITION)) << ", " << Hint("Length:") << Ask(std::to_string(indices[i].LENGTH)) << std::endl;
     free(indices);
 }
 
@@ -318,60 +324,66 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands) {
 
             if (cmd.type == "-bool") {
                 bool value = ((ReadBoolean)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Boolean: " << (value ? "true" : "false") << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Boolean: ") << Ask(value ? "true" : "false") << std::endl;
             }
             else if (cmd.type == "-byte") {
                 unsigned char value = ((ReadByte)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Byte: " << static_cast<int>(value) << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Byte: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-sbyte") {
                 signed char value = ((ReadSByte)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". SByte: " << static_cast<int>(value) << std::endl;
+                std::cout << Hint(std::to_string(count) + ". SByte: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-short") {
                 short value = ((ReadShort)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Short: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Short: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-ushort") {
                 unsigned short value = ((ReadUShort)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". UShort: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". UShort: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-int") {
                 int value = ((ReadInt)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Int: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Int: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-uint") {
                 unsigned int value = ((ReadUInt)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". UInt: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". UInt: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-long") {
                 long long value = ((ReadLong)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Long: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Long: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-ulong") {
                 unsigned long long value = ((ReadULong)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". ULong: " << value << std::endl;
+                std::cout << Hint(std::to_string(count) + ". ULong: ") << Ask(std::to_string(value)) << std::endl;
             }
             else if (cmd.type == "-float") {
                 float value = ((ReadFloat)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Float: " << std::setprecision(8) << std::defaultfloat << value << std::endl;
+                std::ostringstream oss;
+                oss.precision(8);
+                oss << std::defaultfloat << value;
+                std::cout << Hint(std::to_string(count) + ". Float: ") << Ask(oss.str()) << std::endl;
             }
             else if (cmd.type == "-double") {
                 double value = ((ReadDouble)ReadFunctions.at(cmd.type))(reader);
-                std::cout << count << ". Double: " << std::setprecision(16) << std::defaultfloat << value << std::endl;
+                std::ostringstream oss;
+                oss.precision(16);
+                oss << std::defaultfloat << value;
+                std::cout << Hint(std::to_string(count) + ". Double: ") << Ask(oss.str()) << std::endl;
             }
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
                 std::vector<unsigned char> buffer(length);
                 ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length);
-                std::cout << count << ". Bytes: " << std::string(buffer.begin(), buffer.end()) << std::endl;
+                std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(buffer.begin(), buffer.end())) << std::endl;
             }
             else if (cmd.type == "-string") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
                 std::vector<char> buffer(length + 1, '\0');
                 ((ReadString)ReadFunctions.at(cmd.type))(reader, buffer.data(), length + 1);
                 buffer[length] = '\0';
-                std::cout << count << ". String: " << buffer.data() << std::endl;
+                std::cout << Hint(std::to_string(count) + ". String: ") << Ask(buffer.data()) << std::endl;
             }
             count++;
         }
@@ -722,6 +734,7 @@ void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unord
         std::cerr << "Failed to process " << cmd.type << " for " << mode << "\nCode: " << resultCode << "\n";
     else
         std::cout << "<" << displayMode << " " << displayType << ">\n" << outputBuffer.data() << "\nInput Length: [" << inputLength << "]\nOutput Length: [" << resultCode << "]\n";
+    std::cout << Mark(displayMode + " " + displayType + " Action Completed!") << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -840,6 +853,7 @@ int main(int argc, char* argv[]) {
         }
         ExecuteRead(reader, commands);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        std::cout << Mark("Read Action Completed!") << std::endl;
     }
     else if (mode == "--write") {
         void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
@@ -850,7 +864,7 @@ int main(int argc, char* argv[]) {
         }
         ExecuteWrite(writer, commands);
         ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
-
+        std::cout << Mark("Write Action Completed!") << std::endl;
     }
     else if (mode == "--append") {
         void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(lib, "CreateBinaryAppender"))(filePath.c_str());
@@ -861,6 +875,7 @@ int main(int argc, char* argv[]) {
         }
         ExecuteAppend(appender, commands);
         ((DestroyBinaryAppender)GET_PROC_ADDRESS(lib, "DestroyBinaryAppender"))(appender);
+        std::cout << Mark("Append Action Completed!") << std::endl;
     }
     else if (mode == "--insert") {
         void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(lib, "CreateBinaryInserter"))(filePath.c_str());
@@ -871,6 +886,7 @@ int main(int argc, char* argv[]) {
         }
         ExecuteInsert(inserter, commands);
         ((DestroyBinaryInserter)GET_PROC_ADDRESS(lib, "DestroyBinaryInserter"))(inserter);
+        std::cout << Mark("Insert Action Completed!") << std::endl;
     }
     else if (mode == "--remove") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
@@ -881,6 +897,7 @@ int main(int argc, char* argv[]) {
         }
         ExecuteRemove(reader, filePath, commands);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        std::cout << Mark("Remove Action Completed!") << std::endl;
     }
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
@@ -895,6 +912,7 @@ int main(int argc, char* argv[]) {
             ReadToType(reader, type, count);
         }
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        std::cout << Mark("Read All Action Completed!") << std::endl;
     }
     else if (mode == "--indexes") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
@@ -905,6 +923,7 @@ int main(int argc, char* argv[]) {
         }
         GetIndexes(reader);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        std::cout << Mark("Indexes Action Completed!") << std::endl;
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
         const Command& cmd = commands[0];

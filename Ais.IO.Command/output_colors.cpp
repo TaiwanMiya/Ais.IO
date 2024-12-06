@@ -20,17 +20,21 @@ void EnableVirtualTerminalProcessing() {
 #endif
 
 std::string Hint(const std::string str) {
-    return "\033[1;32m" + str + "\033[0m";
+    return "\033[1;32m" + str + "\033[0m"; // Green
 }
 
 std::string Error(const std::string str) {
-    return "\033[1;31m" + str + "\033[0m";
+    return "\033[1;31m" + str + "\033[0m"; // Red
 }
 
 std::string Warn(const std::string str) {
-    return "\033[1;33m" + str + "\033[0m";
+    return "\033[1;33m" + str + "\033[0m"; // Yellow
 }
 
 std::string Ask(const std::string str) {
-    return "\033[1;34m" + str + "\033[0m";
+    return "\033[1;34m" + str + "\033[0m"; // Blue
+}
+
+std::string Mark(const std::string str) {
+    return "\033[1;35m" + str + "\033[0m"; // Purple
 }
