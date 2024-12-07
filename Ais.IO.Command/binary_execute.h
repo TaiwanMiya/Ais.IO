@@ -1,7 +1,7 @@
 #pragma once
 #include "main.h"
 
-static class binary_execute {
+class binary_execute {
 public:
 	static std::string GetTypeName(BINARYIO_TYPE type);
     static void ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count);
