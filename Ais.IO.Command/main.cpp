@@ -115,12 +115,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         Command cmd;
         for (int i = 3; i < argc; ++i) {
             std::string arg = argv[i];
-            if (validOptions.count(arg)) {
+            if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
                     cmd = Command{};
                 }
-                cmd.type = arg;
+                cmd.type = ToLower(arg);
             }
             else {
                 if (cmd.type.empty()) {
@@ -142,12 +142,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         Command cmd;
         for (int i = 3; i < argc; ++i) {
             std::string arg = argv[i];
-            if (validOptions.count(arg)) {
+            if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
                     cmd = Command{};
                 }
-                cmd.type = arg;
+                cmd.type = ToLower(arg);
             }
             else if (IsULong(arg) && (i - 2) % 3 == 0) {
                 if (cmd.type.empty()) {
@@ -181,12 +181,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         for (int i = 3; i < argc; ++i) {
             std::string arg = argv[i];
             std::string arg2 = argv[i + 1];
-            if (validOptions.count(arg)) {
+            if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
                     cmd = Command{};
                 }
-                cmd.type = arg;
+                cmd.type = ToLower(arg);
             }
             else if (IsULong(arg) && IsULong(arg2)) {
                 if (cmd.type.empty()) {
@@ -243,12 +243,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         commands.push_back(cmd);
     }
     else if (mode == "--aes") {
-        std::string aesMode = argv[2];
+        std::string aesMode = ToLower(argv[2]);
         if (!aesModeOptions.count(aesMode)) {
             std::cerr << Error("Invalid aes mode: ") << Ask(aesMode) << "\n";
             return false;
         }
-        std::string operation = argv[3];
+        std::string operation = ToLower(argv[3]);
         if (!encodeDecodeOptions.count(operation)) {
             std::cerr << Error("Invalid operation: ") << Ask(operation) << "\n";
             return false;
