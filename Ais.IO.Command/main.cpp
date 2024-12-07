@@ -19,6 +19,7 @@ struct Command {
     std::string value;
     uint64_t position{};
     uint64_t length{};
+    std::string mode;
 };
 
 void ShowUsage() {
@@ -64,7 +65,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove",
-        "--base16", "--base32", "--base64", "--base85"
+        "--base16", "--base32", "--base64", "--base85",
+        "-aes"
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -74,6 +76,10 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> encodeDecodeOptions = {
         "-encode", "-decode"
+    };
+
+    std::unordered_set<std::string> aesModeOptions = {
+        "-ctr", "-cbc", "-cfb", "-ofb", "-ecb"
     };
 
     mode = argv[1];
@@ -199,6 +205,22 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         Command cmd;
         cmd.type = operation;
         cmd.value = argv[3];
+        commands.push_back(cmd);
+    }
+    else if (mode == "--aes") {
+        std::string aesMode = argv[2];
+        if (!aesModeOptions.count(aesMode)) {
+            std::cerr << Error("Invalid aes mode: ") << Ask(aesMode) << "\n";
+            return false;
+        }
+        std::string operation = argv[3];
+        if (!encodeDecodeOptions.count(operation)) {
+            std::cerr << Error("Invalid operation: ") << Ask(operation) << "\n";
+            return false;
+        }
+        Command cmd;
+        cmd.mode = aesMode;
+        cmd.type = operation;
         commands.push_back(cmd);
     }
     return true;
@@ -393,9 +415,12 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands) {
             }
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+                uint64_t outputLength = ((length + 2) / 3) * 4 + 1;
+                std::vector<char> outputBuffer(outputLength, '\0');
                 std::vector<unsigned char> buffer(length);
                 ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length);
-                std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(buffer.begin(), buffer.end())) << std::endl;
+                ((Base64Decode)EncodeFunctions.at("--base64"))(buffer.data(), length, outputBuffer.data(), outputLength);
+                std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(outputBuffer.begin(), outputBuffer.end())) << std::endl;
             }
             else if (cmd.type == "-string") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);

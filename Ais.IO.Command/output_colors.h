@@ -13,13 +13,13 @@ enum TERMINAL_STYLE {
 	STYLE_RESET = 0, // 重置
 	STYLE_BOLD = 1, // 粗體
 	STYLE_DIM = 2, // 黯淡
-	STYLE_BASE = 3, // 基礎
+	STYLE_BASE = 3, // 斜體
 	STYLE_UNDERLINE = 4, // 下劃線
 	STYLE_FLASHING = 5, // 閃爍
 	STYLE_FAST_FLASHING = 6, // 快速閃爍
 	STYLE_REVERSE = 7, // 反顯
 	STYLE_HIDE = 8, // 隱藏
-	STYLE_BRIGHT = 9, // 明亮
+	STYLE_BRIGHT = 9, // 劃線
 };
 
 void ListColorTable();

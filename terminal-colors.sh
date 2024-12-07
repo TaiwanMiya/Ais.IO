@@ -32,7 +32,7 @@ colors=(
 
 for style in "${styles[@]}"; do
     for color in "${colors[@]}"; do
-        echo -e "\033[${style};${color}m樣式 ${style} 顏色 ${color}\033[0m"
+        echo -ne "\033[${style};${color}m${style};${color}\t\033[0m"
     done
     echo ""
 done
@@ -40,8 +40,8 @@ done
 # 顯示 256 色顏色表
 echo -e "\n顯示 256 色顏色表："
 for i in {0..255}; do
-    # 每行顯示 16 種顏色
-    if (( i % 16 == 0 )); then
+    # 每行顯示 8 種顏色
+    if (( i % 8 == 0 )); then
         echo ""
     fi
     echo -ne "\033[38;5;${i}m${i}\t"

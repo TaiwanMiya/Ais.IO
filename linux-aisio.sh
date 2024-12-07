@@ -6,16 +6,16 @@ Usage() {
     exit 1
 }
 
-# 设置默认值
+# 默認
 file="test.bin"
 iterations=1
 
-# 检查参数是否提供
+# 檢查參數是否被提供
 if [ "$#" -eq 0 ]; then
     Usage
 fi
 
-# 解析参数
+# 解析參數
 operation=""
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -37,13 +37,13 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# 检查是否指定操作
+# 檢查參數是否是指定的操作
 if [ -z "$operation" ]; then
     echo "Error: Operation is required."
     Usage
 fi
 
-# 执行操作多次
+# 執行操作多次
 for ((i=1; i<=iterations; i++)); do
     echo "Iteration $i/$iterations"
     case "$operation" in

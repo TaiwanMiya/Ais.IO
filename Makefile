@@ -2,7 +2,15 @@
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -shared -fPIC
+CXXFLAGS = -shared -fPIC -std=c++17
+LDFLAGS = 
+
+# Detect platform
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S), Linux)
+    CXXFLAGS += -DUSE_TRUNCATE
+endif
 
 # Directories
 AISO_DIR = Ais.IO
