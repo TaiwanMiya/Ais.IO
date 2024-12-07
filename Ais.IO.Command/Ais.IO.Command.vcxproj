@@ -154,12 +154,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="binary_execute.cpp" />
+    <ClCompile Include="encoder_execute.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="output_colors.cpp" />
     <ClCompile Include="string_case.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="binary_execute.h" />
+    <ClInclude Include="encoder_execute.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="output_colors.h" />
     <ClInclude Include="string_case.h" />

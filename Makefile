@@ -41,7 +41,7 @@ $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -I$(AISO_DIR)/include -o $@ -ldl
 
-$(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.cpp $(AISO_CMD_DIR)/main.cpp $(AISO_CMD_DIR)/binary_execute.cpp
+$(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.cpp $(AISO_CMD_DIR)/main.cpp $(AISO_CMD_DIR)/binary_execute.cpp $(AISO_CMD_DIR)/encoder_execute.cpp
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl
 

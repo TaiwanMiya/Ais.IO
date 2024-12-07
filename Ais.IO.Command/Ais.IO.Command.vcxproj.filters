@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="來源檔案\Execute">
+      <UniqueIdentifier>{011b6eeb-ceab-4467-8d01-dbb366bab7c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="標頭檔\Execute">
+      <UniqueIdentifier>{7a5682d6-d4e1-45db-8ac3-4169854c1139}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -25,7 +31,10 @@
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="binary_execute.cpp">
-      <Filter>來源檔案</Filter>
+      <Filter>來源檔案\Execute</Filter>
+    </ClCompile>
+    <ClCompile Include="encoder_execute.cpp">
+      <Filter>來源檔案\Execute</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +48,10 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="binary_execute.h">
-      <Filter>標頭檔</Filter>
+      <Filter>標頭檔\Execute</Filter>
+    </ClInclude>
+    <ClInclude Include="encoder_execute.h">
+      <Filter>標頭檔\Execute</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

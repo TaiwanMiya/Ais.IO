@@ -1,18 +1,21 @@
-﻿#include "main.h"
+﻿#include <locale.h>
+#include <algorithm>
+#include "main.h"
 #include "string_case.h"
 #include "output_colors.h"
-#include <locale.h>
-#include <algorithm>
 #include "binary_execute.h"
+#include "encoder_execute.h"
 
 #ifdef _WIN32
-#define LOAD_LIBRARY(lib) LoadLibraryA(lib)
-#define GET_PROC_ADDRESS(lib, name) GetProcAddress(lib, name)
-#define UNLOAD_LIBRARY(lib) FreeLibrary(lib)
+#define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
+#define GET_PROC_ADDRESS(Lib, name) GetProcAddress(Lib, name)
+#define UNLOAD_LIBRARY(Lib) FreeLibrary(Lib)
+HMODULE Lib = LOAD_LIBRARY("Ais.IO.dll");
 #else
-#define LOAD_LIBRARY(lib) dlopen(lib, RTLD_LAZY)
-#define GET_PROC_ADDRESS(lib, name) dlsym(lib, name)
-#define UNLOAD_LIBRARY(lib) dlclose(lib)
+#define LOAD_LIBRARY(Lib) dlopen(Lib, RTLD_LAZY)
+#define GET_PROC_ADDRESS(Lib, name) dlsym(Lib, name)
+#define UNLOAD_LIBRARY(Lib) dlclose(Lib)
+void* Lib = LOAD_LIBRARY("./Ais.IO.so");
 #endif
 
 std::unordered_map<std::string, void*> ReadFunctions;
@@ -246,51 +249,86 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     return true;
 }
 
-void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unordered_map<std::string, void*>& encodeFunctions) {
-    size_t inputLength = cmd.value.size();
-    size_t outputLength;
-    if (mode == "--base16") {
-        outputLength = inputLength * 2 + 1;
-    }
-    else if (mode == "--base32") {
-        outputLength = ((inputLength + 4) / 5) * 8 + 1;
-    }
-    else if (mode == "--base64") {
-        outputLength = ((inputLength + 2) / 3) * 4 + 1;
-    }
-    else if (mode == "--base85") {
-        outputLength = ((inputLength + 3) / 4) * 5 + 1;
-    }
-    else {
-        std::cerr << Warn("Wrong Pattern: ") << Ask(mode) << "\n";
-        return;
-    }
-    std::vector<char> outputBuffer(outputLength, '\0');
-    int resultCode = -4;
-    std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
-    std::string display = ToLetter(mode.substr(2) + cmd.type.substr(1));
-    const unsigned char* value = reinterpret_cast<unsigned char*>(const_cast<char*>(cmd.value.c_str()));
-    if (encodeType == "-base16-encode")
-        resultCode = ((Base16Encode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base32-encode")
-        resultCode = ((Base32Encode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base64-encode")
-        resultCode = ((Base64Encode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base85-encode")
-        resultCode = ((Base85Encode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base16-decode")
-        resultCode = ((Base16Decode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base32-decode")
-        resultCode = ((Base32Decode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base64-decode")
-        resultCode = ((Base64Decode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (encodeType == "-base85-decode")
-        resultCode = ((Base85Decode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
-    if (resultCode < 0)
-        std::cerr << Error("Failed to process ") << Ask(cmd.type) << Error(" for ") << Ask(mode) << Error("\nCode: ") << Ask(std::to_string(resultCode)) << "\n";
-    else
-        std::cout << Hint("<" + display + ">\n") << Ask(outputBuffer.data()) << Hint("\nInput Length: [") << Ask(std::to_string(inputLength)) << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
-    std::cout << Mark(display + " Action Completed!") << std::endl;
+void LoadFunctions() {
+    ReadFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "ReadBoolean");
+    ReadFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "ReadByte");
+    ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "ReadSByte");
+    ReadFunctions["-short"] = GET_PROC_ADDRESS(Lib, "ReadShort");
+    ReadFunctions["-ushort"] = GET_PROC_ADDRESS(Lib, "ReadUShort");
+    ReadFunctions["-int"] = GET_PROC_ADDRESS(Lib, "ReadInt");
+    ReadFunctions["-uint"] = GET_PROC_ADDRESS(Lib, "ReadUInt");
+    ReadFunctions["-long"] = GET_PROC_ADDRESS(Lib, "ReadLong");
+    ReadFunctions["-ulong"] = GET_PROC_ADDRESS(Lib, "ReadULong");
+    ReadFunctions["-float"] = GET_PROC_ADDRESS(Lib, "ReadFloat");
+    ReadFunctions["-double"] = GET_PROC_ADDRESS(Lib, "ReadDouble");
+    ReadFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "ReadBytes");
+    ReadFunctions["-string"] = GET_PROC_ADDRESS(Lib, "ReadString");
+
+    ReadFunctions["-next-length"] = GET_PROC_ADDRESS(Lib, "NextLength");
+    ReadFunctions["-remove"] = GET_PROC_ADDRESS(Lib, "RemoveIndex");
+    ReadFunctions["-indexes"] = GET_PROC_ADDRESS(Lib, "GetAllIndices");
+
+    WriteFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "WriteBoolean");
+    WriteFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "WriteByte");
+    WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "WriteSByte");
+    WriteFunctions["-short"] = GET_PROC_ADDRESS(Lib, "WriteShort");
+    WriteFunctions["-ushort"] = GET_PROC_ADDRESS(Lib, "WriteUShort");
+    WriteFunctions["-int"] = GET_PROC_ADDRESS(Lib, "WriteInt");
+    WriteFunctions["-uint"] = GET_PROC_ADDRESS(Lib, "WriteUInt");
+    WriteFunctions["-long"] = GET_PROC_ADDRESS(Lib, "WriteLong");
+    WriteFunctions["-ulong"] = GET_PROC_ADDRESS(Lib, "WriteULong");
+    WriteFunctions["-float"] = GET_PROC_ADDRESS(Lib, "WriteFloat");
+    WriteFunctions["-double"] = GET_PROC_ADDRESS(Lib, "WriteDouble");
+    WriteFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "WriteBytes");
+    WriteFunctions["-string"] = GET_PROC_ADDRESS(Lib, "WriteString");
+
+    AppendFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "AppendBoolean");
+    AppendFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "AppendByte");
+    AppendFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "AppendSByte");
+    AppendFunctions["-short"] = GET_PROC_ADDRESS(Lib, "AppendShort");
+    AppendFunctions["-ushort"] = GET_PROC_ADDRESS(Lib, "AppendUShort");
+    AppendFunctions["-int"] = GET_PROC_ADDRESS(Lib, "AppendInt");
+    AppendFunctions["-uint"] = GET_PROC_ADDRESS(Lib, "AppendUInt");
+    AppendFunctions["-long"] = GET_PROC_ADDRESS(Lib, "AppendLong");
+    AppendFunctions["-ulong"] = GET_PROC_ADDRESS(Lib, "AppendULong");
+    AppendFunctions["-float"] = GET_PROC_ADDRESS(Lib, "AppendFloat");
+    AppendFunctions["-double"] = GET_PROC_ADDRESS(Lib, "AppendDouble");
+    AppendFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "AppendBytes");
+    AppendFunctions["-string"] = GET_PROC_ADDRESS(Lib, "AppendString");
+
+    InsertFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "InsertBoolean");
+    InsertFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "InsertByte");
+    InsertFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "InsertSByte");
+    InsertFunctions["-short"] = GET_PROC_ADDRESS(Lib, "InsertShort");
+    InsertFunctions["-ushort"] = GET_PROC_ADDRESS(Lib, "InsertUShort");
+    InsertFunctions["-int"] = GET_PROC_ADDRESS(Lib, "InsertInt");
+    InsertFunctions["-uint"] = GET_PROC_ADDRESS(Lib, "InsertUInt");
+    InsertFunctions["-long"] = GET_PROC_ADDRESS(Lib, "InsertLong");
+    InsertFunctions["-ulong"] = GET_PROC_ADDRESS(Lib, "InsertULong");
+    InsertFunctions["-float"] = GET_PROC_ADDRESS(Lib, "InsertFloat");
+    InsertFunctions["-double"] = GET_PROC_ADDRESS(Lib, "InsertDouble");
+    InsertFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "InsertBytes");
+    InsertFunctions["-string"] = GET_PROC_ADDRESS(Lib, "InsertString");
+
+    EncodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(Lib, "Base16Encode");
+    EncodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(Lib, "Base16Decode");
+    EncodeFunctions["-base32-encode"] = GET_PROC_ADDRESS(Lib, "Base32Encode");
+    EncodeFunctions["-base32-decode"] = GET_PROC_ADDRESS(Lib, "Base32Decode");
+    EncodeFunctions["-base64-encode"] = GET_PROC_ADDRESS(Lib, "Base64Encode");
+    EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(Lib, "Base64Decode");
+    EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(Lib, "Base85Encode");
+    EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(Lib, "Base85Decode");
+
+    AesFunctions["-generate-key"] = GET_PROC_ADDRESS(Lib, "GenerateKey");
+    AesFunctions["-generate-iv"] = GET_PROC_ADDRESS(Lib, "GenerateIV");
+    AesFunctions["-import-key"] = GET_PROC_ADDRESS(Lib, "GenerateKeyFromInput");
+    AesFunctions["-import-iv"] = GET_PROC_ADDRESS(Lib, "GenerateIVFromInput");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrDecrypt");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcDecrypt");
+    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbEncrypt");
+    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbDecrypt");
 }
 
 int main(int argc, char* argv[]) {
@@ -313,178 +351,93 @@ int main(int argc, char* argv[]) {
     }
 
     auto timeStart = std::chrono::high_resolution_clock::now();
-#if _WIN32
-    HMODULE lib = LOAD_LIBRARY("Ais.IO.dll");
-#else
-    void* lib = LOAD_LIBRARY("./Ais.IO.so");
-#endif
 
-    if (!lib) {
+    if (!Lib) {
         std::cerr << Error("Failed to load Ais.IO library\n");
         return 1;
     }
 
-    // Load function pointers (example: Load WriteBoolean, WriteInt, etc.)
-
-    ReadFunctions["-bool"] = GET_PROC_ADDRESS(lib, "ReadBoolean");
-    ReadFunctions["-byte"] = GET_PROC_ADDRESS(lib, "ReadByte");
-    ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "ReadSByte");
-    ReadFunctions["-short"] = GET_PROC_ADDRESS(lib, "ReadShort");
-    ReadFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "ReadUShort");
-    ReadFunctions["-int"] = GET_PROC_ADDRESS(lib, "ReadInt");
-    ReadFunctions["-uint"] = GET_PROC_ADDRESS(lib, "ReadUInt");
-    ReadFunctions["-long"] = GET_PROC_ADDRESS(lib, "ReadLong");
-    ReadFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "ReadULong");
-    ReadFunctions["-float"] = GET_PROC_ADDRESS(lib, "ReadFloat");
-    ReadFunctions["-double"] = GET_PROC_ADDRESS(lib, "ReadDouble");
-    ReadFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "ReadBytes");
-    ReadFunctions["-string"] = GET_PROC_ADDRESS(lib, "ReadString");
-
-    ReadFunctions["-next-length"] = GET_PROC_ADDRESS(lib, "NextLength");
-    ReadFunctions["-remove"] = GET_PROC_ADDRESS(lib, "RemoveIndex");
-    ReadFunctions["-indexes"] = GET_PROC_ADDRESS(lib, "GetAllIndices");
-
-    WriteFunctions["-bool"] = GET_PROC_ADDRESS(lib, "WriteBoolean");
-    WriteFunctions["-byte"] = GET_PROC_ADDRESS(lib, "WriteByte");
-    WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "WriteSByte");
-    WriteFunctions["-short"] = GET_PROC_ADDRESS(lib, "WriteShort");
-    WriteFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "WriteUShort");
-    WriteFunctions["-int"] = GET_PROC_ADDRESS(lib, "WriteInt");
-    WriteFunctions["-uint"] = GET_PROC_ADDRESS(lib, "WriteUInt");
-    WriteFunctions["-long"] = GET_PROC_ADDRESS(lib, "WriteLong");
-    WriteFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "WriteULong");
-    WriteFunctions["-float"] = GET_PROC_ADDRESS(lib, "WriteFloat");
-    WriteFunctions["-double"] = GET_PROC_ADDRESS(lib, "WriteDouble");
-    WriteFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "WriteBytes");
-    WriteFunctions["-string"] = GET_PROC_ADDRESS(lib, "WriteString");
-
-    AppendFunctions["-bool"] = GET_PROC_ADDRESS(lib, "AppendBoolean");
-    AppendFunctions["-byte"] = GET_PROC_ADDRESS(lib, "AppendByte");
-    AppendFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "AppendSByte");
-    AppendFunctions["-short"] = GET_PROC_ADDRESS(lib, "AppendShort");
-    AppendFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "AppendUShort");
-    AppendFunctions["-int"] = GET_PROC_ADDRESS(lib, "AppendInt");
-    AppendFunctions["-uint"] = GET_PROC_ADDRESS(lib, "AppendUInt");
-    AppendFunctions["-long"] = GET_PROC_ADDRESS(lib, "AppendLong");
-    AppendFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "AppendULong");
-    AppendFunctions["-float"] = GET_PROC_ADDRESS(lib, "AppendFloat");
-    AppendFunctions["-double"] = GET_PROC_ADDRESS(lib, "AppendDouble");
-    AppendFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "AppendBytes");
-    AppendFunctions["-string"] = GET_PROC_ADDRESS(lib, "AppendString");
-
-    InsertFunctions["-bool"] = GET_PROC_ADDRESS(lib, "InsertBoolean");
-    InsertFunctions["-byte"] = GET_PROC_ADDRESS(lib, "InsertByte");
-    InsertFunctions["-sbyte"] = GET_PROC_ADDRESS(lib, "InsertSByte");
-    InsertFunctions["-short"] = GET_PROC_ADDRESS(lib, "InsertShort");
-    InsertFunctions["-ushort"] = GET_PROC_ADDRESS(lib, "InsertUShort");
-    InsertFunctions["-int"] = GET_PROC_ADDRESS(lib, "InsertInt");
-    InsertFunctions["-uint"] = GET_PROC_ADDRESS(lib, "InsertUInt");
-    InsertFunctions["-long"] = GET_PROC_ADDRESS(lib, "InsertLong");
-    InsertFunctions["-ulong"] = GET_PROC_ADDRESS(lib, "InsertULong");
-    InsertFunctions["-float"] = GET_PROC_ADDRESS(lib, "InsertFloat");
-    InsertFunctions["-double"] = GET_PROC_ADDRESS(lib, "InsertDouble");
-    InsertFunctions["-bytes"] = GET_PROC_ADDRESS(lib, "InsertBytes");
-    InsertFunctions["-string"] = GET_PROC_ADDRESS(lib, "InsertString");
-
-    EncodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(lib, "Base16Encode");
-    EncodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(lib, "Base16Decode");
-    EncodeFunctions["-base32-encode"] = GET_PROC_ADDRESS(lib, "Base32Encode");
-    EncodeFunctions["-base32-decode"] = GET_PROC_ADDRESS(lib, "Base32Decode");
-    EncodeFunctions["-base64-encode"] = GET_PROC_ADDRESS(lib, "Base64Encode");
-    EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(lib, "Base64Decode");
-    EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(lib, "Base85Encode");
-    EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(lib, "Base85Decode");
-
-    AesFunctions["-generate-key"] = GET_PROC_ADDRESS(lib, "GenerateKey");
-    AesFunctions["-generate-iv"] = GET_PROC_ADDRESS(lib, "GenerateIV");
-    AesFunctions["-import-key"] = GET_PROC_ADDRESS(lib, "GenerateKeyFromInput");
-    AesFunctions["-import-iv"] = GET_PROC_ADDRESS(lib, "GenerateIVFromInput");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCtrEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCtrDecrypt");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCbcEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCbcDecrypt");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(lib, "AesCfbEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(lib, "AesCfbDecrypt");
+    LoadFunctions();
 
     if (mode == "--read") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::ExecuteRead(reader, commands);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Read Action Completed!") << std::endl;
     }
     else if (mode == "--write") {
-        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
+        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(Lib, "CreateBinaryWriter"))(filePath.c_str());
         if (!writer) {
             std::cerr << Error("Failed to create binary writer for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::ExecuteWrite(writer, commands);
-        ((DestroyBinaryWriter)GET_PROC_ADDRESS(lib, "DestroyBinaryWriter"))(writer);
+        ((DestroyBinaryWriter)GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter"))(writer);
         std::cout << Mark("Write Action Completed!") << std::endl;
     }
     else if (mode == "--append") {
-        void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(lib, "CreateBinaryAppender"))(filePath.c_str());
+        void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(Lib, "CreateBinaryAppender"))(filePath.c_str());
         if (!appender) {
             std::cerr << Error("Failed to create binary appender for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::ExecuteAppend(appender, commands);
-        ((DestroyBinaryAppender)GET_PROC_ADDRESS(lib, "DestroyBinaryAppender"))(appender);
+        ((DestroyBinaryAppender)GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender"))(appender);
         std::cout << Mark("Append Action Completed!") << std::endl;
     }
     else if (mode == "--insert") {
-        void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(lib, "CreateBinaryInserter"))(filePath.c_str());
+        void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(Lib, "CreateBinaryInserter"))(filePath.c_str());
         if (!inserter) {
             std::cerr << Error("Failed to create binary inserter for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::ExecuteInsert(inserter, commands);
-        ((DestroyBinaryInserter)GET_PROC_ADDRESS(lib, "DestroyBinaryInserter"))(inserter);
+        ((DestroyBinaryInserter)GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter"))(inserter);
         std::cout << Mark("Insert Action Completed!") << std::endl;
     }
     else if (mode == "--remove") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::ExecuteRemove(reader, filePath, commands);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Remove Action Completed!") << std::endl;
     }
     else if (mode == "--read-all") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         uint64_t count = 1;
-        while (((GetReaderPosition)GET_PROC_ADDRESS(lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(lib, "GetReaderLength"))(reader)) {
-            BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(lib, "ReadType"))(reader);
+        while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
+            BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
             binary_execute::ReadToType(reader, type, count);
         }
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Read All Action Completed!") << std::endl;
     }
     else if (mode == "--indexes") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << Error("Failed to create binary reader indexes for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         binary_execute::GetIndexes(reader);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(lib, "DestroyBinaryReader"))(reader);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Indexes Action Completed!") << std::endl;
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
@@ -493,18 +446,18 @@ int main(int argc, char* argv[]) {
         if (commands.empty()) {
             std::cerr << "No encoding or decoding command provided.\n";
             std::cerr << Error("No encoding or decoding command provided.\n");
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
         if (EncodeFunctions.find(encodeType) == EncodeFunctions.end()) {
             std::cerr << Error("Unsupported encode/decode operation: ") << Ask(cmd.type) << "\n";
-            UNLOAD_LIBRARY(lib);
+            UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        ExecuteEncoder(mode, cmd, EncodeFunctions);
+        encoder_execute::ExecuteEncoder(mode, cmd);
     }
 
-    UNLOAD_LIBRARY(lib);
+    UNLOAD_LIBRARY(Lib);
     auto timeEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> seconds = timeEnd - timeStart;
     std::ostringstream oss;
