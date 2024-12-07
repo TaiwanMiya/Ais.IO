@@ -37,12 +37,12 @@ void ListColorTable() {
     std::cout << "\033[0m" << std::endl;
 }
 
-std::string Hint(const std::string str) {
-    return "\033[1;32m" + str + "\033[0m"; // Green
-}
-
 std::string Error(const std::string str) {
     return "\033[1;31m" + str + "\033[0m"; // Red
+}
+
+std::string Hint(const std::string str) {
+    return "\033[1;32m" + str + "\033[0m"; // Green
 }
 
 std::string Warn(const std::string str) {

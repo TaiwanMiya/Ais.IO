@@ -22,24 +22,24 @@ struct Command {
 };
 
 void ShowUsage() {
-    std::cout << "                                                                                            " << std::endl;
-    std::cout << "               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     " << std::endl;
-    std::cout << "              A:::A               i::::i                       I::::::::I   OO:::::::::OO   " << std::endl;
-    std::cout << "             A:::::A               iiii                        I::::::::I OO:::::::::::::OO " << std::endl;
-    std::cout << "            A:::::::A                                          II::::::IIO:::::::OOO:::::::O" << std::endl;
-    std::cout << "           A:::::::::A           iiiiiii     ssssssssss          I::::I  O::::::O   O::::::O" << std::endl;
-    std::cout << "          A:::::A:::::A          i:::::i   ss::::::::::s         I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "         A:::::A A:::::A          i::::i ss:::::::::::::s        I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "        A:::::A   A:::::A         i::::i s::::::ssss:::::s       I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "       A:::::A     A:::::A        i::::i  s:::::s  ssssss        I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "      A:::::AAAAAAAAA:::::A       i::::i    s::::::s             I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "     A:::::::::::::::::::::A      i::::i       s::::::s          I::::I  O:::::O     O:::::O" << std::endl;
-    std::cout << "    A:::::AAAAAAAAAAAAA:::::A     i::::i ssssss   s:::::s        I::::I  O::::::O   O::::::O" << std::endl;
-    std::cout << "   A:::::A             A:::::A   i::::::is:::::ssss::::::s     II::::::IIO:::::::OOO:::::::O" << std::endl;
-    std::cout << "  A:::::A               A:::::A  i::::::is::::::::::::::s      I::::::::I OO:::::::::::::OO " << std::endl;
-    std::cout << " A:::::A                 A:::::A i::::::i s:::::::::::ss       I::::::::I   OO:::::::::OO   " << std::endl;
-    std::cout << "AAAAAAA                   AAAAAAAiiiiiiii  sssssssssss         IIIIIIIIII     OOOOOOOOO     " << std::endl;
-    std::cout << "                                                                                            " << std::endl;
+    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
+    std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
+    std::cout << Any("              A:::A               i::::i                       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
+    std::cout << Any("             A:::::A               iiii                        I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
+    std::cout << Any("            A:::::::A                                          II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
+    std::cout << Any("           A:::::::::A           iiiiiii     ssssssssss          I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("          A:::::A:::::A          i:::::i   ss::::::::::s         I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("         A:::::A A:::::A          i::::i ss:::::::::::::s        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
+    std::cout << Any("        A:::::A   A:::::A         i::::i s::::::ssss:::::s       I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
+    std::cout << Any("       A:::::A     A:::::A        i::::i  s:::::s  ssssss        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
+    std::cout << Any("      A:::::AAAAAAAAA:::::A       i::::i    s::::::s             I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
+    std::cout << Any("     A:::::::::::::::::::::A      i::::i       s::::::s          I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
+    std::cout << Any("    A:::::AAAAAAAAAAAAA:::::A     i::::i ssssss   s:::::s        I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("   A:::::A             A:::::A   i::::::is:::::ssss::::::s     II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("  A:::::A               A:::::A  i::::::is::::::::::::::s      I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
+    std::cout << Any(" A:::::A                 A:::::A i::::::i s:::::::::::ss       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("AAAAAAA                   AAAAAAAiiiiiiii  sssssssssss         IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
 
     std::cout << Hint("Usage:\n");
     std::cout << Hint("  --indexes <path>\n");
@@ -97,7 +97,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             }
             else {
                 if (cmd.type.empty()) {
-                    std::cerr << "Value without type: " << arg << "\n";
+                    std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                     return false;
                 }
                 cmd.value = arg;
@@ -124,14 +124,14 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             }
             else if (IsULong(arg) && (i - 2) % 3 == 0) {
                 if (cmd.type.empty()) {
-                    std::cerr << "Value without type: " << arg << "\n";
+                    std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                     return false;
                 }
                 cmd.position = std::stoull(arg);
             }
             else {
                 if (cmd.type.empty()) {
-                    std::cerr << "Value without type: " << arg << "\n";
+                    std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                     return false;
                 }
                 cmd.value = arg;
@@ -163,7 +163,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             }
             else if (IsULong(arg) && IsULong(arg2)) {
                 if (cmd.type.empty()) {
-                    std::cerr << "Value without type: " << arg << "\n";
+                    std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                     return false;
                 }
                 cmd.position = std::stoull(arg);
@@ -171,7 +171,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 i++;
             }
             else {
-                std::cerr << "Value without type: " << arg << "\n";
+                std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                 return false;
             }
         }
@@ -193,7 +193,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             return false;
         std::string operation = argv[2];
         if (!encodeDecodeOptions.count(operation)) {
-            std::cerr << "Invalid operation: " << operation << "\n";
+            std::cerr << Error("Invalid operation: ") << Ask(operation) << "\n";
             return false;
         }
         Command cmd;
@@ -323,7 +323,7 @@ void GetIndexes(void* reader) {
     uint64_t count = 1;
     BINARYIO_INDICES* indices = ((GetAllIndices)ReadFunctions.at("-indexes"))(reader, &count);
     if (indices == nullptr) {
-        std::cerr << "Error: Failed to get indexes from the file." << std::endl;
+        std::cerr << Error("Error: Failed to get indexes from the file.") << std::endl;
         return;
     }
     
@@ -337,7 +337,7 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands) {
     for (const auto& cmd : commands) {
         try {
             if (ReadFunctions.find(cmd.type) == ReadFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                std::cerr << Warn("Unsupported type: ") << Ask(cmd.type) << std::endl;
                 continue;
             }
 
@@ -408,22 +408,22 @@ void ExecuteRead(void* reader, const std::vector<Command>& commands) {
         }
         catch (const std::runtime_error& e) {
             // Runtime errors
-            std::cerr << "Runtime error while reading type " << cmd.type
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
                 << ": " << e.what() << std::endl;
         }
         catch (const std::out_of_range& e) {
             // Value out of range errors
-            std::cerr << "Out of range error while reading type " << cmd.type
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
                 << ": " << e.what() << std::endl;
         }
         catch (const std::bad_alloc& e) {
             // Memory allocation failed
-            std::cerr << "Memory allocation error while reading type " << cmd.type
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
                 << ": " << e.what() << std::endl;
         }
         catch (...) {
             // Other unknown errors
-            std::cerr << "Unknown error occurred while reading type " << cmd.type << std::endl;
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
 }
@@ -432,7 +432,7 @@ void ExecuteWrite(void* writer, const std::vector<Command>& commands) {
     for (const auto& cmd : commands) {
         try {
             if (WriteFunctions.find(cmd.type) == WriteFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                std::cerr << Warn("Unsupported type: ") << Ask(cmd.type) << std::endl;
                 continue;
             }
 
@@ -478,25 +478,24 @@ void ExecuteWrite(void* writer, const std::vector<Command>& commands) {
                 ((WriteBytes)WriteFunctions.at(cmd.type))(writer, data, length);
             }
         }
-        catch (const std::invalid_argument& e) {
-            // Value conversion errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (const std::out_of_range& e) {
             // Value out of range errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Error writing type " << cmd.type
-                << ": runtime error (" << e.what() << ")" << std::endl;
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (...) {
             // Other unknown errors
-            std::cerr << "Unknown error occurred while writing type " << cmd.type
-                << " with value '" << cmd.value << "'" << std::endl;
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
 }
@@ -505,7 +504,7 @@ void ExecuteAppend(void* appender, const std::vector<Command>& commands) {
     for (const auto& cmd : commands) {
         try {
             if (AppendFunctions.find(cmd.type) == AppendFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                std::cerr << Warn("Unsupported type: ") << Ask(cmd.type) << std::endl;
                 continue;
             }
 
@@ -551,25 +550,24 @@ void ExecuteAppend(void* appender, const std::vector<Command>& commands) {
                 ((AppendBytes)AppendFunctions.at(cmd.type))(appender, data, length);
             }
         }
-        catch (const std::invalid_argument& e) {
-            // Value conversion errors
-            std::cerr << "Error appending type " << cmd.type
-                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (const std::out_of_range& e) {
             // Value out of range errors
-            std::cerr << "Error appending type " << cmd.type
-                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Error appending type " << cmd.type
-                << ": runtime error (" << e.what() << ")" << std::endl;
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (...) {
             // Other unknown errors
-            std::cerr << "Unknown error occurred while appending type " << cmd.type
-                << " with value '" << cmd.value << "'" << std::endl;
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
 }
@@ -578,7 +576,7 @@ void ExecuteInsert(void* inserter, const std::vector<Command>& commands) {
     for (const auto& cmd : commands) {
         try {
             if (InsertFunctions.find(cmd.type) == InsertFunctions.end()) {
-                std::cerr << "Unsupported type: " << cmd.type << std::endl;
+                std::cerr << Warn("Unsupported type: ") << Ask(cmd.type) << std::endl;
                 continue;
             }
 
@@ -624,25 +622,24 @@ void ExecuteInsert(void* inserter, const std::vector<Command>& commands) {
                 ((InsertBytes)InsertFunctions.at(cmd.type))(inserter, data, length, cmd.position);
             }
         }
-        catch (const std::invalid_argument& e) {
-            // Value conversion errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (const std::out_of_range& e) {
             // Value out of range errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": runtime error (" << e.what() << ")" << std::endl;
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (...) {
             // Other unknown errors
-            std::cerr << "Unknown error occurred while insertint type " << cmd.type
-                << " with value '" << cmd.value << "'" << std::endl;
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
 }
@@ -683,25 +680,24 @@ void ExecuteRemove(void* remover, const std::string filePath, const std::vector<
             index->LENGTH = cmd.length;
             ((RemoveIndex)ReadFunctions.at("-remove"))(remover, filePath.c_str(), index);
         }
-        catch (const std::invalid_argument& e) {
-            // Value conversion errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": invalid argument '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (const std::out_of_range& e) {
             // Value out of range errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": value out of range '" << cmd.value << "' (" << e.what() << ")" << std::endl;
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
-        catch (const std::runtime_error& e) {
-            // Runtime errors
-            std::cerr << "Error insertint type " << cmd.type
-                << ": runtime error (" << e.what() << ")" << std::endl;
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
         }
         catch (...) {
             // Other unknown errors
-            std::cerr << "Unknown error occurred while insertint type " << cmd.type
-                << " with value '" << cmd.value << "'" << std::endl;
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
 }
@@ -722,7 +718,7 @@ void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unord
         outputLength = ((inputLength + 3) / 4) * 5 + 1;
     }
     else {
-        std::cerr << "Wrong Pattern: " << mode << "\n";
+        std::cerr << Warn("Wrong Pattern: ") << Ask(mode) << "\n";
         return;
     }
     std::vector<char> outputBuffer(outputLength, '\0');
@@ -750,9 +746,9 @@ void ExecuteEncoder(const std::string mode, const Command& cmd, const std::unord
     if (encodeType == "-base85-decode")
         resultCode = ((Base85Decode)encodeFunctions.at(encodeType))(value, inputLength, outputBuffer.data(), outputLength);
     if (resultCode < 0)
-        std::cerr << "Failed to process " << cmd.type << " for " << mode << "\nCode: " << resultCode << "\n";
+        std::cerr << Error("Failed to process ") << Ask(cmd.type) << Error(" for ") << Ask(mode) << Error("\nCode: ") << Ask(std::to_string(resultCode)) << "\n";
     else
-        std::cout << "<" << displayMode << " " << displayType << ">\n" << outputBuffer.data() << "\nInput Length: [" << inputLength << "]\nOutput Length: [" << resultCode << "]\n";
+        std::cout << Hint("<" + displayMode + " " + displayType + ">\n") << Ask(outputBuffer.data()) << Hint("\nInput Length: [") << Ask(std::to_string(inputLength)) << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
     std::cout << Mark(displayMode + " " + displayType + " Action Completed!") << std::endl;
 }
 
@@ -782,7 +778,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (!lib) {
-        std::cerr << "Failed to load Ais.IO library\n";
+        std::cerr << Error("Failed to load Ais.IO library\n");
         return 1;
     }
 
@@ -871,7 +867,7 @@ int main(int argc, char* argv[]) {
     if (mode == "--read") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -882,7 +878,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--write") {
         void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(lib, "CreateBinaryWriter"))(filePath.c_str());
         if (!writer) {
-            std::cerr << "Failed to create binary writer for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary writer for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -893,7 +889,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--append") {
         void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(lib, "CreateBinaryAppender"))(filePath.c_str());
         if (!appender) {
-            std::cerr << "Failed to create binary appender for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary appender for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -904,7 +900,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--insert") {
         void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(lib, "CreateBinaryInserter"))(filePath.c_str());
         if (!inserter) {
-            std::cerr << "Failed to create binary inserter for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary inserter for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -915,7 +911,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--remove") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -926,7 +922,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -941,7 +937,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--indexes") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << "Failed to create binary reader for file: " << filePath << "\n";
+            std::cerr << Error("Failed to create binary reader indexes for file: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
@@ -954,11 +950,12 @@ int main(int argc, char* argv[]) {
         std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
         if (commands.empty()) {
             std::cerr << "No encoding or decoding command provided.\n";
+            std::cerr << Error("No encoding or decoding command provided.\n");
             UNLOAD_LIBRARY(lib);
             return 1;
         }
         if (EncodeFunctions.find(encodeType) == EncodeFunctions.end()) {
-            std::cerr << "Unsupported encode/decode operation: " << cmd.type << "\n";
+            std::cerr << Error("Unsupported encode/decode operation: ") << Ask(cmd.type) << "\n";
             UNLOAD_LIBRARY(lib);
             return 1;
         }
