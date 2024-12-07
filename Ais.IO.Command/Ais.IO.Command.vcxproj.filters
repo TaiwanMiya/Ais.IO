@@ -18,10 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="StringCase.cpp">
+    <ClCompile Include="string_case.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="output_colors.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="binary_execute.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +32,13 @@
     <ClInclude Include="main.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
-    <ClInclude Include="StringCase.h">
+    <ClInclude Include="string_case.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="output_colors.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="binary_execute.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

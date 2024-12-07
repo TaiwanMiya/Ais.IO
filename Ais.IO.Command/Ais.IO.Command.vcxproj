@@ -153,14 +153,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="binary_execute.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="output_colors.cpp" />
-    <ClCompile Include="StringCase.cpp" />
+    <ClCompile Include="string_case.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="binary_execute.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="output_colors.h" />
-    <ClInclude Include="StringCase.h" />
+    <ClInclude Include="string_case.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

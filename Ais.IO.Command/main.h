@@ -15,6 +15,16 @@
 #include <unordered_set>
 #include <iostream>
 #include <sstream>
+#include <chrono>
+#include <thread>
+
+struct Command {
+    std::string type;
+    std::string value;
+    uint64_t position{};
+    uint64_t length{};
+    std::string mode;
+};
 
 enum BINARYIO_TYPE : unsigned char {
     TYPE_BOOLEAN = 1,
@@ -215,9 +225,9 @@ typedef int (*AesCfbEncrypt)(AES_CFB_ENCRYPT*);
 typedef int (*AesCfbDecrypt)(AES_CFB_DECRYPT*);
 #pragma endregion
 
-std::unordered_map<std::string, void*> ReadFunctions;
-std::unordered_map<std::string, void*> WriteFunctions;
-std::unordered_map<std::string, void*> AppendFunctions;
-std::unordered_map<std::string, void*> InsertFunctions;
-std::unordered_map<std::string, void*> EncodeFunctions;
-std::unordered_map<std::string, void*> AesFunctions;
+extern std::unordered_map<std::string, void*> ReadFunctions;
+extern std::unordered_map<std::string, void*> WriteFunctions;
+extern std::unordered_map<std::string, void*> AppendFunctions;
+extern std::unordered_map<std::string, void*> InsertFunctions;
+extern std::unordered_map<std::string, void*> EncodeFunctions;
+extern std::unordered_map<std::string, void*> AesFunctions;

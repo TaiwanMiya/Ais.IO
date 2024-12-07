@@ -3,10 +3,7 @@
 #include <iostream>
 
 #if _WIN32
-#define COLORS __cdecl
 void EnableVirtualTerminalProcessing();
-#else
-#define COLORS
 #endif
 
 enum TERMINAL_STYLE {

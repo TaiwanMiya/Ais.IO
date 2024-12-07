@@ -10,7 +10,7 @@
 #define ECL
 #endif
 
-void ECL ToLetter(std::string& str);
-void ECL ToLower(std::string& str);
-void ECL ToUpper(std::string& str);
+std::string ECL ToLetter(std::string str);
+std::string ECL ToLower(std::string str);
+std::string ECL ToUpper(std::string str);
 bool ECL IsULong(const std::string& str);
