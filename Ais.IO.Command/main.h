@@ -17,6 +17,7 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <fstream>
 
 struct Command {
     std::string type;

@@ -53,10 +53,10 @@ void ShowUsage() {
     std::cout << Hint("  [-a | --append] <path> [--type] <value> ...\n");
     std::cout << Hint("  [-i | --insert] <path> [--type] <value> <position> ...\n");
     std::cout << Hint("  [-rm | --remove] <path> [--type] <position> <length> ...\n");
-    std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] <value>\n");
-    std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] <value>\n");
-    std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] <value>\n");
-    std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] <value>\n");
+    std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
+    std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
+    std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
+    std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
     std::cout << Hint("Supported [--type]:\n");
     std::cout << Hint("  -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
 }
@@ -216,7 +216,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         filePath = argv[2];
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
-        if (argc != 4)
+        if (argc < 4)
             return false;
         std::string operation = ToLower(argv[2]);
         if (abbreviationEncodeDecodeOptions.count(operation))
@@ -227,7 +227,19 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         }
         Command cmd;
         cmd.type = operation;
-        cmd.value = argv[3];
+        if ((std::string(argv[3]) == "-f" || std::string(argv[3]) == "-file") && !std::string(argv[4]).empty()) {
+            std::ifstream file(argv[4], std::ios::in | std::ios::binary);
+            if (!file.is_open()) {
+                std::cerr << Error("Failed to open for file: " + std::string(argv[4])) << std::endl;
+                return false;
+            }
+            std::ostringstream buffer;
+            buffer << file.rdbuf();
+            cmd.value = buffer.str();
+            file.close();
+        }
+        else
+            cmd.value = argv[3];
         commands.push_back(cmd);
     }
     else if (mode == "--aes") {
@@ -325,10 +337,14 @@ void LoadFunctions() {
     AesFunctions["-import-iv"] = GET_PROC_ADDRESS(Lib, "GenerateIVFromInput");
     AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrEncrypt");
     AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrDecrypt");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcDecrypt");
+    AesFunctions["-aes-cbc-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcEncrypt");
+    AesFunctions["-aes-cbc-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcDecrypt");
     AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbEncrypt");
     AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbDecrypt");
+    AesFunctions["-aes-ofb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbEncrypt");
+    AesFunctions["-aes-ofb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbDecrypt");
+    AesFunctions["-aes-ecb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbEncrypt");
+    AesFunctions["-aes-ecb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbDecrypt");
 }
 
 int main(int argc, char* argv[]) {
