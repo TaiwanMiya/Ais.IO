@@ -21,7 +21,7 @@ fi
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -c|-d|-l|-f|-pl|-ps)
+        -c|-d|-l|-f|-p|-ps)
             operation="$1"
             shift
             ;;
