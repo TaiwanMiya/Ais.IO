@@ -118,7 +118,7 @@ void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& coun
 }
 
 void binary_execute::GetIndexes(void* reader) {
-    uint64_t count = 1;
+    uint64_t count = 0;
     BINARYIO_INDICES* indices = ((GetAllIndices)ReadFunctions.at("-indexes"))(reader, &count);
     if (indices == nullptr) {
         std::cerr << Error("Error: Failed to get indexes from the file.") << std::endl;
@@ -126,12 +126,12 @@ void binary_execute::GetIndexes(void* reader) {
     }
 
     for (uint64_t i = 0; i < count; ++i)
-        std::cout << Hint(std::to_string(i + 1)) << ". " + Ask(GetTypeName(indices[i].TYPE)) << " = " << Hint("Position:") << Ask(std::to_string(indices[i].POSITION)) << ", " << Hint("Length:") << Ask(std::to_string(indices[i].LENGTH)) << std::endl;
+        std::cout << Hint(std::to_string(i)) << ". " + Ask(GetTypeName(indices[i].TYPE)) << " = " << Hint("Position:") << Ask(std::to_string(indices[i].POSITION)) << ", " << Hint("Length:") << Ask(std::to_string(indices[i].LENGTH)) << std::endl;
     free(indices);
 }
 
 void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& commands) {
-    uint64_t count = 1;
+    uint64_t count = 0;
     for (const auto& cmd : commands) {
         try {
             if (ReadFunctions.find(cmd.type) == ReadFunctions.end()) {
@@ -501,4 +501,40 @@ void binary_execute::ExecuteRemove(void* remover, const std::string filePath, co
             std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
+}
+
+void binary_execute::ExecuteRemoveIndex(void* reader, void* remover, const std::string filePath, const std::vector<Command>& commands) {
+    uint64_t count = 0;
+    BINARYIO_INDICES* indices = ((GetAllIndices)ReadFunctions.at("-indexes"))(reader, &count);
+    for (const auto& cmd : commands) {
+        try {
+            uint64_t indexCount = std::stoull(cmd.value);
+            if (indexCount >= count) {
+                std::cerr << Error("Index count out of range: " + cmd.value) << std::endl;
+                continue;
+            }
+            BINARYIO_INDICES* index = &indices[indexCount];
+            ((RemoveIndex)ReadFunctions.at("-remove"))(remover, filePath.c_str(), index);
+        }
+        catch (const std::runtime_error& e) {
+            // Runtime errors
+            std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
+        }
+        catch (const std::out_of_range& e) {
+            // Value out of range errors
+            std::cerr << Error("Out of range error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
+        }
+        catch (const std::bad_alloc& e) {
+            // Memory allocation failed
+            std::cerr << Error("Memory allocation error while reading type ") << Ask(cmd.type)
+                << ": " << e.what() << std::endl;
+        }
+        catch (...) {
+            // Other unknown errors
+            std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
+        }
+    }
+    free(indices);
 }

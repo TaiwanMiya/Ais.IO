@@ -46,6 +46,7 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	$(CXX) -o $@ $^ -ldl
 
 	@cp -p linux-aisio.sh $(BIN_DIR)/linux-aisio.sh
+	@chmod +x $(BIN_DIR)/linux-aisio.sh
 
 clean:
 	@echo "Cleaning up..."

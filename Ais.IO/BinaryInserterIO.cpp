@@ -1,6 +1,12 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "BinaryInserterIO.h"
 #include "BinaryIO.h"
+
+#ifndef _WIN32
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 #ifndef INSERT_CAST 
 #define INSERT_CAST reinterpret_cast<const char*>
@@ -9,7 +15,7 @@
 class BinaryInserter {
 public:
     BinaryInserter(const std::string& filePath) {
-        Stream.open(filePath, std::ios::in | std::ios::out | std::ios::binary | std::ios::ate);
+        Stream.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
         if (!Stream.is_open()) {
             Stream.open(filePath, std::ios::out | std::ios::binary);
             Stream.close();
@@ -139,10 +145,23 @@ private:
         Stream.write(INSERT_CAST(&type), sizeof(type));
     }
 
-    std::vector<char> StartInsert(uint64_t position) {
+    std::vector<char> StartInsert(uint64_t position, size_t chunkSize = 1024) {
         Stream.seekg(position, std::ios::beg);
-        std::vector<char> buffer((std::istreambuf_iterator<char>(Stream)), std::istreambuf_iterator<char>());
+
+        std::vector<char> buffer;
+        std::vector<char> temp(chunkSize);
+
+        while (Stream.read(temp.data(), temp.size())) {
+            buffer.insert(buffer.end(), temp.begin(), temp.begin() + Stream.gcount());
+        }
+
+        if (Stream.gcount() > 0) {
+            buffer.insert(buffer.end(), temp.begin(), temp.begin() + Stream.gcount());
+        }
+
+        Stream.clear();
         Stream.seekp(position, std::ios::beg);
+
         return buffer;
     }
 };

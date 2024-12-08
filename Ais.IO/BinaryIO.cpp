@@ -108,7 +108,8 @@ public:
 
         *count = indices.size();
         BINARYIO_INDICES* result = static_cast<BINARYIO_INDICES*>(malloc(indices.size() * sizeof(BINARYIO_INDICES)));
-        std::memcpy(result, indices.data(), indices.size() * sizeof(BINARYIO_INDICES));
+        if (result != 0)
+            std::memcpy(result, indices.data(), indices.size() * sizeof(BINARYIO_INDICES));
         return result;
     }
 

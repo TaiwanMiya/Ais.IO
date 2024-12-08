@@ -53,6 +53,7 @@ void ShowUsage() {
     std::cout << Hint("  [-a | --append] <path> [--type] <value> ...\n");
     std::cout << Hint("  [-i | --insert] <path> [--type] <value> <position> ...\n");
     std::cout << Hint("  [-rm | --remove] <path> [--type] <position> <length> ...\n");
+    std::cout << Hint("  [-rs | --remove-index] <path> <index> ...\n");
     std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
     std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
     std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
@@ -67,14 +68,14 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
 
     std::unordered_set<std::string> validMode = {
-        "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove",
+        "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
         "-aes"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"},
-        {"-a", "--append"}, {"-in", "--insert"}, {"-rm", "--remove"},
+        {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
         {"-aes", "--aes"}
     };
@@ -209,6 +210,30 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         std::sort(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
             return a.position > b.position;
             });
+    }
+    else if (mode == "--remove-index") {
+        if (argc < 3)
+            return false;
+        filePath = argv[2];
+        Command cmd;
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (IsULong(arg)) {
+                cmd.value = arg;
+                commands.push_back(cmd);
+            }
+            else {
+                std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
+                return false;
+            }
+        }
+        std::sort(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+            return std::stoull(a.value) > std::stoull(b.value);
+        });
+        auto last = std::unique(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+            return a.value == b.value;
+        });
+        commands.erase(last, commands.end());
     }
     else if (mode == "--read-all" || mode == "--indexes") {
         if (argc < 3)
@@ -430,6 +455,19 @@ int main(int argc, char* argv[]) {
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Remove Action Completed!") << std::endl;
     }
+    else if (mode == "--remove-index") {
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+        void* remover = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+        if (!reader || !remover) {
+            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            UNLOAD_LIBRARY(Lib);
+            return 1;
+        }
+        binary_execute::ExecuteRemoveIndex(reader, remover, filePath, commands);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(remover);
+        std::cout << Mark("Remove Action Completed!") << std::endl;
+    }
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
@@ -437,7 +475,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        uint64_t count = 1;
+        uint64_t count = 0;
         while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
             BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
             binary_execute::ReadToType(reader, type, count);
