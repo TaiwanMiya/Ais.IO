@@ -1,201 +1,195 @@
-import ctypes
-from ctypes import (c_void_p,
-                    c_char_p,
-                    c_bool,
-                    c_ubyte,
-                    c_byte,
-                    c_short,
-                    c_ushort,
-                    c_int,
-                    c_uint,
-                    c_longlong,
-                    c_ulonglong,
-                    c_float,
-                    c_double,
-                    c_size_t)
+from BinaryReaderIO import Reader
+from BinaryWriterIO import Writer
+from BinaryAppenderIO import Appender
+from BinaryInserterIO import Inserter
+from BinaryIO import Binary, BINARYIO_TYPE
 
-DllPath = "./DLL/Ais.IO.Source.dll"
-DLL = ctypes.WinDLL(DllPath)
+def StartWrite(filePath):
+    '''
+    寫入器的功能測試
+    '''
+    writer = Writer.CreateBinaryWriter(filePath)
 
-# NextLength
-DLL.NextLength.argtypes = [c_void_p]
-DLL.NextLength.restype = c_ulonglong
+    Writer.WriteBoolean(writer, True)
+    Writer.WriteByte(writer, 0xFF)
+    Writer.WriteSByte(writer, 0x7F)
+    Writer.WriteShort(writer, 0x7FFF)
+    Writer.WriteUShort(writer, 0xFFFF)
+    Writer.WriteInt(writer, 0x7FFFFFFF)
+    Writer.WriteUInt(writer, 0XFFFFFFFF)
+    Writer.WriteLong(writer, 0x7FFFFFFFFFFFFFFF)
+    Writer.WriteULong(writer, 0xFFFFFFFFFFFFFFFF)
+    Writer.WriteFloat(writer, 3.1415927)
+    Writer.WriteDouble(writer, 3.141592653589793)
+    bbytes = b"This is Ais.IO Release Function Byte Array."
+    Writer.WriteBytes(writer, bbytes, len(bbytes))
+    
+    bstring = b"This is Ais.IO Release Function String."
+    Writer.WriteString(writer, bstring)
 
-# CreateBinaryReader
-DLL.CreateBinaryReader.argtypes = [c_char_p]
-DLL.CreateBinaryReader.restype = c_void_p
+    Writer.DestroyBinaryWriter(writer)
 
-# DestroyBinaryReader
-DLL.DestroyBinaryReader.argtypes = [c_void_p]
-DLL.DestroyBinaryReader.restype = None
+def StartAppend(filePath):
+    '''
+    加入器的功能測試
+    '''
+    appender = Appender.CreateBinaryAppender(filePath)
 
-# GetReaderPosition
-DLL.GetReaderPosition.argtypes = [c_void_p]
-DLL.GetReaderPosition.restype = c_ulonglong
+    Appender.AppendBoolean(appender, True)
+    Appender.AppendByte(appender, 0xFF)
+    Appender.AppendSByte(appender, 0x7F)
+    Appender.AppendShort(appender, 0x7FFF)
+    Appender.AppendUShort(appender, 0xFFFF)
+    Appender.AppendInt(appender, 0x7FFFFFFF)
+    Appender.AppendUInt(appender, 0XFFFFFFFF)
+    Appender.AppendLong(appender, 0x7FFFFFFFFFFFFFFF)
+    Appender.AppendULong(appender, 0xFFFFFFFFFFFFFFFF)
+    Appender.AppendFloat(appender, 3.1415927)
+    Appender.AppendDouble(appender, 3.141592653589793)
+    bbytes = b"This is Ais.IO Release Function Byte Array."
+    Appender.AppendBytes(appender, bbytes, len(bbytes))
+    
+    bstring = b"This is Ais.IO Release Function String."
+    Appender.AppendString(appender, bstring)
 
-# GetReaderLength
-DLL.GetReaderLength.argtypes = [c_void_p]
-DLL.GetReaderLength.restype = c_ulonglong
+    Appender.DestroyBinaryAppender(appender)
 
-# ReadBoolean
-DLL.ReadBoolean.argtypes = [c_void_p]
-DLL.ReadBoolean.restype = c_bool
+def StartInsert(filePath):
+    '''
+    插入器的功能測試
+    '''
+    inserter = Inserter.CreateBinaryInserter(filePath)
 
-# ReadByte
-DLL.ReadByte.argtypes = [c_void_p]
-DLL.ReadByte.restype = c_ubyte
+    Inserter.InsertBoolean(inserter, True, 0)
+    Inserter.InsertByte(inserter, 0xFF, 0)
+    Inserter.InsertSByte(inserter, 0x7F, 0)
+    Inserter.InsertShort(inserter, 0x7FFF, 0)
+    Inserter.InsertUShort(inserter, 0xFFFF, 0)
+    Inserter.InsertInt(inserter, 0x7FFFFFFF, 0)
+    Inserter.InsertUInt(inserter, 0XFFFFFFFF, 0)
+    Inserter.InsertLong(inserter, 0x7FFFFFFFFFFFFFFF, 0)
+    Inserter.InsertULong(inserter, 0xFFFFFFFFFFFFFFFF, 0)
+    Inserter.InsertFloat(inserter, 3.1415927, 0)
+    Inserter.InsertDouble(inserter, 3.141592653589793, 0)
+    bbytes = b"This is Ais.IO Release Function Byte Array."
+    Inserter.InsertBytes(inserter, bbytes, len(bbytes), 0)
+    
+    bstring = b"This is Ais.IO Release Function String."
+    Inserter.InsertString(inserter, bstring, 0)
 
-# ReadSByte
-DLL.ReadSByte.argtypes = [c_void_p]
-DLL.ReadSByte.restype = c_byte
+    Inserter.DestroyBinaryInserter(inserter)
 
-# ReadShort
-DLL.ReadShort.argtypes = [c_void_p]
-DLL.ReadShort.restype = c_short
+def StartRead(filePath):
+    '''
+    讀取器的功能測試
+    '''
+    reader = Reader.CreateBinaryReader(filePath)
 
-# ReadUShort
-DLL.ReadUShort.argtypes = [c_void_p]
-DLL.ReadUShort.restype = c_ushort
+    rbool = Reader.ReadBoolean(reader)
+    rbyte = Reader.ReadByte(reader)
+    rsbyte = Reader.ReadSByte(reader)
+    rshort = Reader.ReadShort(reader)
+    rushort = Reader.ReadUShort(reader)
+    rint = Reader.ReadInt(reader)
+    ruint = Reader.ReadUInt(reader)
+    rlong = Reader.ReadLong(reader)
+    rulong = Reader.ReadULong(reader)
+    rfloat = Reader.ReadFloat(reader)
+    rdouble = Reader.ReadDouble(reader)
 
-# ReadInt
-DLL.ReadInt.argtypes = [c_void_p]
-DLL.ReadInt.restype = c_int
+    nextLength = Reader.NextLength(reader)
+    bytesBuffer = Binary.CreateBuffer(nextLength)
+    Reader.ReadBytes(reader, bytesBuffer, nextLength)
+    rbytes = bytesBuffer.value
 
-# ReadUInt
-DLL.ReadUInt.argtypes = [c_void_p]
-DLL.ReadUInt.restype = c_uint
-
-# ReadLong
-DLL.ReadLong.argtypes = [c_void_p]
-DLL.ReadLong.restype = c_longlong
-
-# ReadULong
-DLL.ReadULong.argtypes = [c_void_p]
-DLL.ReadULong.restype = c_ulonglong
-
-# ReadFloat
-DLL.ReadFloat.argtypes = [c_void_p]
-DLL.ReadFloat.restype = c_float
-
-# ReadDouble
-DLL.ReadDouble.argtypes = [c_void_p]
-DLL.ReadDouble.restype = c_double
-
-# ReadBytes
-DLL.ReadBytes.argtypes = [c_void_p, c_char_p, c_ulonglong]
-DLL.ReadBytes.restype = None
-
-# ReadString
-DLL.ReadString.argtypes = [c_void_p, c_char_p, c_int]
-DLL.ReadString.restype = None
-
-# CreateBinaryWriter
-DLL.CreateBinaryWriter.argtypes = [c_char_p]
-DLL.CreateBinaryWriter.restype = c_void_p
-
-# DestroyBinaryWriter
-DLL.DestroyBinaryWriter.argtypes = [c_void_p]
-DLL.DestroyBinaryWriter.restype = None
-
-# GetWriterPosition
-DLL.GetWriterPosition.argtypes = [c_void_p]
-DLL.GetWriterPosition.restype = c_ulonglong
-
-# GetWriterLength
-DLL.GetWriterLength.argtypes = [c_void_p]
-DLL.GetWriterLength.restype = c_ulonglong
-
-# WriteBoolean
-DLL.WriteBoolean.argtypes = [c_void_p, c_bool]
-DLL.WriteBoolean.restype = None
-
-# WriteByte
-DLL.WriteByte.argtypes = [c_void_p, c_ubyte]
-DLL.WriteByte.restype = None
-
-# WriteSByte
-DLL.WriteSByte.argtypes = [c_void_p, c_byte]
-DLL.WriteSByte.restype = None
-
-# WriteShort
-DLL.WriteShort.argtypes = [c_void_p, c_short]
-DLL.WriteShort.restype = None
-
-# WriteUShort
-DLL.WriteUShort.argtypes = [c_void_p, c_ushort]
-DLL.WriteUShort.restype = None
-
-# WriteInt
-DLL.WriteInt.argtypes = [c_void_p, c_int]
-DLL.WriteInt.restype = None
-
-# WriteUInt
-DLL.WriteUInt.argtypes = [c_void_p, c_uint]
-DLL.WriteUInt.restype = None
-
-# WriteLong
-DLL.WriteLong.argtypes = [c_void_p, c_longlong]
-DLL.WriteLong.restype = None
-
-# WriteULong
-DLL.WriteULong.argtypes = [c_void_p, c_ulonglong]
-DLL.WriteULong.restype = None
-
-# WriteFloat
-DLL.WriteFloat.argtypes = [c_void_p, c_float]
-DLL.WriteFloat.restype = None
-
-# WriteDouble
-DLL.WriteDouble.argtypes = [c_void_p, c_double]
-DLL.WriteDouble.restype = None
-
-# WriteBytes
-DLL.WriteBytes.argtypes = [c_void_p, c_char_p, c_ulonglong]
-DLL.WriteBytes.restype = None
-
-# WriteString
-DLL.WriteString.argtypes = [c_void_p, c_char_p]
-DLL.WriteString.restype = None
-
-if __name__ == "__main__":
-    filePath = b"./File/test.bin"
-    reader = DLL.CreateBinaryReader(filePath)
-
-    rbool = DLL.ReadBoolean(reader)
-    rshort = DLL.ReadShort(reader)
-    rint = DLL.ReadInt(reader)
-    rlong = DLL.ReadLong(reader)
-    rbyte = DLL.ReadByte(reader)
-    rsbyte = DLL.ReadSByte(reader)
-    rushort = DLL.ReadUShort(reader)
-    ruint = DLL.ReadUInt(reader)
-    rulong = DLL.ReadULong(reader)
-    rfloat = DLL.ReadFloat(reader)
-    rdouble = DLL.ReadDouble(reader)
-
-    nextLength = DLL.NextLength(reader)
-    stringBuffer = ctypes.create_string_buffer(nextLength)
-    DLL.ReadString(reader, stringBuffer, nextLength)
+    nextLength = Reader.NextLength(reader)
+    stringBuffer = Binary.CreateBuffer(nextLength)
+    Reader.ReadString(reader, stringBuffer, nextLength)
     rstring = stringBuffer.value
 
-    nextLength = DLL.NextLength(reader)
-    bytesBuffer = ctypes.create_string_buffer(nextLength)
-    DLL.ReadBytes(reader, bytesBuffer, nextLength)
-    rbytes = bytesBuffer.value
+    Reader.DestroyBinaryReader(reader)
 
     message = [
         f"bool = {rbool}",
-        f"short = {rshort}",
-        f"int = {rint}",
-        f"long = {rlong}",
         f"byte = {rbyte}",
         f"sbyte = {rsbyte}",
+        f"short = {rshort}",
         f"ushort = {rushort}",
+        f"int = {rint}",
         f"uint = {ruint}",
+        f"long = {rlong}",
         f"ulong = {rulong}",
         f"float = {rfloat}",
         f"double = {rdouble}",
-        f"string = {rstring}",
         f"bytes = {rbytes}",
+        f"string = {rstring}",
     ]
     print(str.join("\n", message))
+
+def StartReadAll(filePath):
+    '''
+    讀取器的功能測試 (自動)
+    '''
+    reader = Reader.CreateBinaryReader(filePath)
+    message = ""
+    count = 0
+    while (Reader.GetReaderPosition(reader) < Reader.GetReaderLength(reader)):
+        type = Reader.ReadType(reader)
+        match (type):
+            case BINARYIO_TYPE.TYPE_BOOLEAN:
+                message += f"{count}. Boolean : {Reader.ReadBoolean(reader)}\n"
+            case BINARYIO_TYPE.TYPE_BYTE:
+                message += f"{count}. Byte : {Reader.ReadByte(reader)}\n"
+            case BINARYIO_TYPE.TYPE_SBYTE:
+                message += f"{count}. SByte : {Reader.ReadSByte(reader)}\n"
+            case BINARYIO_TYPE.TYPE_SHORT:
+                message += f"{count}. Short : {Reader.ReadShort(reader)}\n"
+            case BINARYIO_TYPE.TYPE_USHORT:
+                message += f"{count}. UShort : {Reader.ReadUShort(reader)}\n"
+            case BINARYIO_TYPE.TYPE_INT:
+                message += f"{count}. Int : {Reader.ReadInt(reader)}\n"
+            case BINARYIO_TYPE.TYPE_UINT:
+                message += f"{count}. UInt : {Reader.ReadUInt(reader)}\n"
+            case BINARYIO_TYPE.TYPE_LONG:
+                message += f"{count}. Long : {Reader.ReadLong(reader)}\n"
+            case BINARYIO_TYPE.TYPE_ULONG:
+                message += f"{count}. ULong : {Reader.ReadULong(reader)}\n"
+            case BINARYIO_TYPE.TYPE_FLOAT:
+                message += f"{count}. Float : {Reader.ReadFloat(reader)}\n"
+            case BINARYIO_TYPE.TYPE_DOUBLE:
+                message += f"{count}. Double : {Reader.ReadDouble(reader)}\n"
+            case BINARYIO_TYPE.TYPE_BYTES:
+                nextLength = Reader.NextLength(reader)
+                bytesBuffer = Binary.CreateBuffer(nextLength)
+                Reader.ReadBytes(reader, bytesBuffer, nextLength)
+                message += f"{count}. Bytes : {bytesBuffer.value.decode()}\n"
+            case BINARYIO_TYPE.TYPE_STRING:
+                nextLength = Reader.NextLength(reader)
+                stringBuffer = Binary.CreateBuffer(nextLength)
+                Reader.ReadString(reader, stringBuffer, nextLength)
+                message += f"{count}. String : {stringBuffer.value.decode()}\n"
+            case _:
+                message += "N{count}. ull : None\n"
+
+        count += 1
+                
+    print(message)
+
+if __name__ == "__main__":
+    filePath = b"Sample\\File\\test.bin"
+
+    # Binary Writer
+    StartWrite(filePath)
+
+    # Binary Appender
+    for i in range(1000):
+        StartAppend(filePath)
+
+    # Binary Inserter
+    StartInsert(filePath)
+
+    # Binary Reader (All)
+    StartReadAll(filePath)
+
+    # # Binary Reader
+    # StartRead(filePath)
