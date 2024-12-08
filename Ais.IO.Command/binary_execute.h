@@ -4,7 +4,7 @@
 class binary_execute {
 public:
 	static std::string GetTypeName(BINARYIO_TYPE type);
-    static void ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count);
+    static void ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count, std::string& message);
     static void GetIndexes(void* reader);
     static void ExecuteRead(void* reader, const std::vector<Command>& commands);
     static void ExecuteWrite(void* writer, const std::vector<Command>& commands);

@@ -476,11 +476,13 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         uint64_t count = 0;
+        std::string message = "";
         while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
             BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
-            binary_execute::ReadToType(reader, type, count);
+            binary_execute::ReadToType(reader, type, count, message);
         }
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+        std::cout << message << std::endl;
         std::cout << Mark("Read All Action Completed!") << std::endl;
     }
     else if (mode == "--indexes") {

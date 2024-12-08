@@ -35,51 +35,51 @@ std::string binary_execute::GetTypeName(BINARYIO_TYPE type) {
     }
 }
 
-void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count) {
+void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count, std::string& message) {
     switch (type) {
     case BINARYIO_TYPE::TYPE_BOOLEAN: {
         bool value = ((ReadBoolean)ReadFunctions.at("-bool"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Boolean: ") << Ask(value ? "true" : "false") << std::endl;
+        message += Hint(std::to_string(count) + ". Boolean: ") + Ask(value ? "true" : "false") + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_BYTE: {
         unsigned char value = ((ReadByte)ReadFunctions.at("-byte"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Byte: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". Byte: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_SBYTE: {
         signed char value = ((ReadSByte)ReadFunctions.at("-sbyte"))(reader);
-        std::cout << Hint(std::to_string(count) + ". SByte: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". SByte: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_SHORT: {
         short value = ((ReadShort)ReadFunctions.at("-short"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Short: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". Short: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_USHORT: {
         unsigned short value = ((ReadUShort)ReadFunctions.at("-ushort"))(reader);
-        std::cout << Hint(std::to_string(count) + ". UShort: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". UShort: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_INT: {
         int value = ((ReadInt)ReadFunctions.at("-int"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Int: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". Int: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_UINT: {
         unsigned int value = ((ReadUInt)ReadFunctions.at("-uint"))(reader);
-        std::cout << Hint(std::to_string(count) + ". UInt: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". UInt: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_LONG: {
         long long value = ((ReadLong)ReadFunctions.at("-long"))(reader);
-        std::cout << Hint(std::to_string(count) + ". Long: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". Long: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_ULONG: {
         unsigned long long value = ((ReadULong)ReadFunctions.at("-ulong"))(reader);
-        std::cout << Hint(std::to_string(count) + ". ULong: ") << Ask(std::to_string(value)) << std::endl;
+        message += Hint(std::to_string(count) + ". ULong: ") + Ask(std::to_string(value)) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_FLOAT: {
@@ -87,7 +87,7 @@ void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& coun
         std::ostringstream oss;
         oss.precision(8);
         oss << std::defaultfloat << value;
-        std::cout << Hint(std::to_string(count) + ". Float: ") << Ask(oss.str()) << std::endl;
+        message += Hint(std::to_string(count) + ". Float: ") + Ask(oss.str()) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_DOUBLE: {
@@ -95,14 +95,14 @@ void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& coun
         std::ostringstream oss;
         oss.precision(16);
         oss << std::defaultfloat << value;
-        std::cout << Hint(std::to_string(count) + ". Double: ") << Ask(oss.str()) << std::endl;
+        message += Hint(std::to_string(count) + ". Double: ") + Ask(oss.str()) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_BYTES: {
         uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
         std::vector<unsigned char> buffer(length);
         ((ReadBytes)ReadFunctions.at("-bytes"))(reader, buffer.data(), length);
-        std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(buffer.begin(), buffer.end())) << std::endl;
+        message += Hint(std::to_string(count) + ". Bytes: ") + Ask(std::string(buffer.begin(), buffer.end())) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_STRING: {
@@ -110,7 +110,7 @@ void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& coun
         std::vector<char> buffer(length + 1, '\0');
         ((ReadString)ReadFunctions.at("-string"))(reader, buffer.data(), length + 1);
         buffer[length] = '\0';
-        std::cout << Hint(std::to_string(count) + ". String: ") << Ask(buffer.data()) << std::endl;
+        message += Hint(std::to_string(count) + ". String: ") + Ask(buffer.data()) + "\n";
         break;
     }
     }
@@ -125,13 +125,16 @@ void binary_execute::GetIndexes(void* reader) {
         return;
     }
 
+    std::string message = "";
     for (uint64_t i = 0; i < count; ++i)
-        std::cout << Hint(std::to_string(i)) << ". " + Ask(GetTypeName(indices[i].TYPE)) << " = " << Hint("Position:") << Ask(std::to_string(indices[i].POSITION)) << ", " << Hint("Length:") << Ask(std::to_string(indices[i].LENGTH)) << std::endl;
+        message += Hint(std::to_string(i)) + ". " + Ask(GetTypeName(indices[i].TYPE)) + " = " + Hint("Position:") + Ask(std::to_string(indices[i].POSITION)) + ", " + Hint("Length:") + Ask(std::to_string(indices[i].LENGTH)) + "\n";
     free(indices);
+    std::cout << message << std::endl;
 }
 
 void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& commands) {
     uint64_t count = 0;
+    std::string message = "";
     for (const auto& cmd : commands) {
         try {
             if (ReadFunctions.find(cmd.type) == ReadFunctions.end()) {
@@ -141,53 +144,53 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
 
             if (cmd.type == "-bool") {
                 bool value = ((ReadBoolean)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". Boolean: ") << Ask(value ? "true" : "false") << std::endl;
+                message += Hint(std::to_string(count) + ". Boolean: ") + Ask(value ? "true" : "false") + "\n";
             }
             else if (cmd.type == "-byte") {
                 unsigned char value = ((ReadByte)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". Byte: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". Byte: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-sbyte") {
                 signed char value = ((ReadSByte)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". SByte: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". SByte: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-short") {
                 short value = ((ReadShort)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". Short: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". Short: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-ushort") {
                 unsigned short value = ((ReadUShort)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". UShort: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". UShort: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-int") {
                 int value = ((ReadInt)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". Int: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". Int: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-uint") {
                 unsigned int value = ((ReadUInt)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". UInt: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". UInt: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-long") {
                 long long value = ((ReadLong)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". Long: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". Long: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-ulong") {
                 unsigned long long value = ((ReadULong)ReadFunctions.at(cmd.type))(reader);
-                std::cout << Hint(std::to_string(count) + ". ULong: ") << Ask(std::to_string(value)) << std::endl;
+                message += Hint(std::to_string(count) + ". ULong: ") + Ask(std::to_string(value)) + "\n";
             }
             else if (cmd.type == "-float") {
                 float value = ((ReadFloat)ReadFunctions.at(cmd.type))(reader);
                 std::ostringstream oss;
                 oss.precision(8);
                 oss << std::defaultfloat << value;
-                std::cout << Hint(std::to_string(count) + ". Float: ") << Ask(oss.str()) << std::endl;
+                message += Hint(std::to_string(count) + ". Float: ") + Ask(oss.str()) + "\n";
             }
             else if (cmd.type == "-double") {
                 double value = ((ReadDouble)ReadFunctions.at(cmd.type))(reader);
                 std::ostringstream oss;
                 oss.precision(16);
                 oss << std::defaultfloat << value;
-                std::cout << Hint(std::to_string(count) + ". Double: ") << Ask(oss.str()) << std::endl;
+                message += Hint(std::to_string(count) + ". Double: ") + Ask(oss.str()) + "\n";
             }
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
@@ -196,14 +199,14 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
                 std::vector<unsigned char> buffer(length);
                 ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length);
                 ((Base64Decode)EncodeFunctions.at("--base64"))(buffer.data(), length, outputBuffer.data(), outputLength);
-                std::cout << Hint(std::to_string(count) + ". Bytes: ") << Ask(std::string(outputBuffer.begin(), outputBuffer.end())) << std::endl;
+                message += Hint(std::to_string(count) + ". Bytes: ") + Ask(std::string(outputBuffer.begin(), outputBuffer.end())) + "\n";
             }
             else if (cmd.type == "-string") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
                 std::vector<char> buffer(length + 1, '\0');
                 ((ReadString)ReadFunctions.at(cmd.type))(reader, buffer.data(), length + 1);
                 buffer[length] = '\0';
-                std::cout << Hint(std::to_string(count) + ". String: ") << Ask(buffer.data()) << std::endl;
+                message += Hint(std::to_string(count) + ". String: ") + Ask(buffer.data()) + "\n";
             }
             count++;
         }
@@ -227,6 +230,7 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
             std::cerr << Error("Unknown error occurred while reading type ") << Ask(cmd.type) << std::endl;
         }
     }
+    std::cout << message << std::endl;
 }
 
 void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& commands) {
