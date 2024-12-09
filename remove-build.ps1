@@ -10,7 +10,8 @@ $directoriesToDelete = @(
     "Ais.IO.Command\Debug",
     "Ais.IO.Command\Release",
     "Ais.IO.Csharp\obj",
-    "Ais.IO.Csharp.Command\obj"
+    "Ais.IO.Csharp.Command\obj",
+    "Sample\Python\__pycache__"
 )
 
 foreach ($dir in $directoriesToDelete) {
