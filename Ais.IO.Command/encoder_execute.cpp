@@ -86,7 +86,7 @@ size_t encoder_execute::CalculateOutputLength(const std::string& mode, size_t in
         return ((inputLength + 3) / 4) * 5 + 1;
     }
     else {
-        return 0; // µL®Ä¼Ò¦¡
+        return 0;
     }
 }
 
@@ -121,7 +121,6 @@ void encoder_execute::SetOutput(Command& cmd, size_t size, std::vector<unsigned 
         std::cerr << Error("Failed to open file: " + cmd.output) << std::endl;
         return;
     }
-    std::cout << "buffer size: " << buffer.size() << ", result code: " << size << std::endl;
     file.write(reinterpret_cast<const char*>(buffer.data()), size);
     if (!file)
         std::cerr << Error("Failed to write data to file: " + cmd.output) << std::endl;
