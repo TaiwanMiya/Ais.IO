@@ -23,7 +23,6 @@ std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
-std::unordered_map<std::string, void*> AesFunctions;
 
 void ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
@@ -54,10 +53,10 @@ void ShowUsage() {
     std::cout << Hint("  [-i | --insert] <path> [--type] <value> <position> ...\n");
     std::cout << Hint("  [-rm | --remove] <path> [--type] <position> <length> ...\n");
     std::cout << Hint("  [-rs | --remove-index] <path> <index> ...\n");
-    std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
-    std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
-    std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
-    std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] [Null | -f | -file] <value>\n");
+    std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
+    std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
+    std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
+    std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
     std::cout << Hint("Supported [--type]:\n");
     std::cout << Hint("  -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
 }
@@ -69,15 +68,13 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
-        "--base16", "--base32", "--base64", "--base85",
-        "-aes"
+        "--base16", "--base32", "--base64", "--base85"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"},
         {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
-        {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-aes", "--aes"}
+        {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -93,8 +90,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         {"-e", "-encode"}, {"-d", "-decode"}
     };
 
-    std::unordered_set<std::string> aesModeOptions = {
-        "-ctr", "-cbc", "-cfb", "-ofb", "-ecb", "-generate"
+    std::unordered_set<std::string> ioOptions = {
+        "-input", "-output"
+    };
+
+    std::unordered_map<std::string, std::string> abbreviationIoOptions = {
+        {"-in", "-input"}, {"-out", "-output"}
     };
 
     mode = ToLower(argv[1]);
@@ -250,9 +251,40 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             std::cerr << Error("Invalid operation: ") << Ask(operation) << "\n";
             return false;
         }
+
         Command cmd;
         cmd.type = operation;
-        if ((std::string(argv[3]) == "-f" || std::string(argv[3]) == "-file") && !std::string(argv[4]).empty()) {
+
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (abbreviationIoOptions.count(arg)) {
+                arg = abbreviationIoOptions[arg];
+            }
+            if (arg == "-input") {
+                if (i + 1 >= argc) {
+                    std::cerr << Error("Missing input file path after -input.\n");
+                    return false;
+                }
+                cmd.input = argv[++i];
+            }
+            else if (arg == "-output") {
+                if (i + 1 >= argc) {
+                    std::cerr << Error("Missing output file path after -output.\n");
+                    return false;
+                }
+                cmd.output = argv[++i];
+            }
+            else {
+                cmd.value = arg; // For encoding/decoding value
+            }
+        }
+
+        if (cmd.input.empty() && cmd.value.empty()) {
+            std::cerr << Error("Either an input file or a value is required for encoding/decoding.\n");
+            return false;
+        }
+
+        /*if ((std::string(argv[3]) == "-f" || std::string(argv[3]) == "-file") && !std::string(argv[4]).empty()) {
             std::ifstream file(argv[4], std::ios::in | std::ios::binary);
             if (!file.is_open()) {
                 std::cerr << Error("Failed to open for file: " + std::string(argv[4])) << std::endl;
@@ -264,23 +296,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             file.close();
         }
         else
-            cmd.value = argv[3];
-        commands.push_back(cmd);
-    }
-    else if (mode == "--aes") {
-        std::string aesMode = ToLower(argv[2]);
-        if (!aesModeOptions.count(aesMode)) {
-            std::cerr << Error("Invalid aes mode: ") << Ask(aesMode) << "\n";
-            return false;
-        }
-        std::string operation = ToLower(argv[3]);
-        if (!encodeDecodeOptions.count(operation)) {
-            std::cerr << Error("Invalid operation: ") << Ask(operation) << "\n";
-            return false;
-        }
-        Command cmd;
-        cmd.mode = aesMode;
-        cmd.type = operation;
+            cmd.value = argv[3];*/
         commands.push_back(cmd);
     }
     return true;
@@ -355,21 +371,6 @@ void LoadFunctions() {
     EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(Lib, "Base64Decode");
     EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(Lib, "Base85Encode");
     EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(Lib, "Base85Decode");
-
-    AesFunctions["-generate-key"] = GET_PROC_ADDRESS(Lib, "GenerateKey");
-    AesFunctions["-generate-iv"] = GET_PROC_ADDRESS(Lib, "GenerateIV");
-    AesFunctions["-import-key"] = GET_PROC_ADDRESS(Lib, "GenerateKeyFromInput");
-    AesFunctions["-import-iv"] = GET_PROC_ADDRESS(Lib, "GenerateIVFromInput");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrDecrypt");
-    AesFunctions["-aes-cbc-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcEncrypt");
-    AesFunctions["-aes-cbc-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcDecrypt");
-    AesFunctions["-aes-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbEncrypt");
-    AesFunctions["-aes-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbDecrypt");
-    AesFunctions["-aes-ofb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbEncrypt");
-    AesFunctions["-aes-ofb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbDecrypt");
-    AesFunctions["-aes-ecb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbEncrypt");
-    AesFunctions["-aes-ecb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbDecrypt");
 }
 
 int main(int argc, char* argv[]) {
@@ -497,7 +498,7 @@ int main(int argc, char* argv[]) {
         std::cout << Mark("Indexes Action Completed!") << std::endl;
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
-        const Command& cmd = commands[0];
+        Command cmd = commands[0];
         std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
         if (commands.empty()) {
             std::cerr << "No encoding or decoding command provided.\n";

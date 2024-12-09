@@ -1,144 +1,144 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "EncoderIO.h"
 
 static int HexCharToValue(char c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    return -1; // «Dªk¦r²Åªğ¦^ -1
+    return -1; // éæ³•å­—ç¬¦è¿”å› -1
 }
 
 int Base16Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©ÊÀË¬d¡AÁ×§KªÅ«ü°w
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§æª¢æŸ¥ï¼Œé¿å…ç©ºæŒ‡é‡
 
-    size_t inputLen = inputSize; // Àò¨ú¿é¤Jªºªø«×
-    int requiredSize = inputLen * 2;   // ¨C­Ó¦r¸`¹ïÀ³¨â­Ó¤Q¤»¶i¨î¦r²Å
+    size_t inputLen = inputSize; // ç²å–è¼¸å…¥çš„é•·åº¦
+    int requiredSize = inputLen * 2;   // æ¯å€‹å­—ç¯€å°æ‡‰å…©å€‹åå…­é€²åˆ¶å­—ç¬¦
 
-    if (outputSize <= 0 || outputSize < requiredSize + 1) // ÀË¬d¿é¥X½w½Ä°Ï¬O§_¨¬°÷¡]+1 ¬O¬°¤F '\0'¡^
+    if (outputSize <= 0 || outputSize < requiredSize + 1) // æª¢æŸ¥è¼¸å‡ºç·©è¡å€æ˜¯å¦è¶³å¤ ï¼ˆ+1 æ˜¯ç‚ºäº† '\0'ï¼‰
         return -2;
 
     for (int i = 0; i < inputLen; ++i) {
-        unsigned char byte = static_cast<unsigned char>(input[i]); // Àò¨ú¨C­Ó¦r¸`
-        output[i * 2] = Base16_Chars[byte >> 4];      // °ª¥|¦ìÂà´«¬°¤Q¤»¶i¨î¦r²Å
-        output[i * 2 + 1] = Base16_Chars[byte & 0x0F]; // §C¥|¦ìÂà´«¬°¤Q¤»¶i¨î¦r²Å
+        unsigned char byte = static_cast<unsigned char>(input[i]); // ç²å–æ¯å€‹å­—ç¯€
+        output[i * 2] = Base16_Chars[byte >> 4];      // é«˜å››ä½è½‰æ›ç‚ºåå…­é€²åˆ¶å­—ç¬¦
+        output[i * 2 + 1] = Base16_Chars[byte & 0x0F]; // ä½å››ä½è½‰æ›ç‚ºåå…­é€²åˆ¶å­—ç¬¦
     }
 
-    output[requiredSize] = '\0'; // ²K¥[µ²§ÀªºªÅ¦r²Å
-    return requiredSize;         // ªğ¦^¹ê»Úªº½s½Xªø«×
+    output[requiredSize] = '\0'; // æ·»åŠ çµå°¾çš„ç©ºå­—ç¬¦
+    return requiredSize;         // è¿”å›å¯¦éš›çš„ç·¨ç¢¼é•·åº¦
 }
 
-int Base16Decode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©ÊÀË¬d
+int Base16Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§æª¢æŸ¥
 
-    size_t inputLen = inputSize; // Àò¨ú¿é¤Jªºªø«×
-    if (inputLen % 2 != 0) return -3; // Base16 ªº¿é¤Jªø«×¥²¶·¬O°¸¼Æ
+    size_t inputLen = inputSize; // ç²å–è¼¸å…¥çš„é•·åº¦
+    if (inputLen % 2 != 0) return -3; // Base16 çš„è¼¸å…¥é•·åº¦å¿…é ˆæ˜¯å¶æ•¸
 
-    int requiredSize = inputLen / 2; // ¨C¨â­Ó¦r²Å¹ïÀ³¤@­Ó¦r¸`
+    int requiredSize = inputLen / 2; // æ¯å…©å€‹å­—ç¬¦å°æ‡‰ä¸€å€‹å­—ç¯€
     if (outputSize <= 0 || outputSize < requiredSize) return -2;
 
     for (int i = 0; i < inputLen; i += 2) {
-        int high = HexCharToValue(input[i]);     // Âà´«°ª¦ì¦r²Å
-        int low = HexCharToValue(input[i + 1]); // Âà´«§C¦ì¦r²Å
+        int high = HexCharToValue(input[i]);     // è½‰æ›é«˜ä½å­—ç¬¦
+        int low = HexCharToValue(input[i + 1]); // è½‰æ›ä½ä½å­—ç¬¦
 
-        if (high == -1 || low == -1) return -4; // ÀË¬d¦r²Å¬O§_¦Xªk
+        if (high == -1 || low == -1) return -4; // æª¢æŸ¥å­—ç¬¦æ˜¯å¦åˆæ³•
 
-        output[i / 2] = (high << 4) | low; // ¦X¨Ö°ª§C¦ì±o¨ì¤@­Ó¦r¸`
+        output[i / 2] = (high << 4) | low; // åˆä½µé«˜ä½ä½å¾—åˆ°ä¸€å€‹å­—ç¯€
     }
 
-    return requiredSize; // ªğ¦^¸Ñ½X«áªº¦r¸`¼Æ
+    return static_cast<int>(requiredSize);; // è¿”å›è§£ç¢¼å¾Œçš„å­—ç¯€æ•¸
 }
 
 int Base32Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
-    const unsigned char* data = reinterpret_cast<const unsigned char*>(input); // ±N¿é¤JÂà´«¬°µL²Å¸¹¦r¤¸«ü°w¡A¤è«K«ö¦ì¤¸²Õ³B²z
-    size_t inputLength = inputSize; // ¿é¤Jªø«×
-    size_t outputNeeded = ((inputLength + 4) / 5) * 8; // ¨C 5 ¦r¸`¹ïÀ³ 8 ­Ó Base32 ¦r²Å
+    const unsigned char* data = reinterpret_cast<const unsigned char*>(input); // å°‡è¼¸å…¥è½‰æ›ç‚ºç„¡ç¬¦è™Ÿå­—å…ƒæŒ‡é‡ï¼Œæ–¹ä¾¿æŒ‰ä½å…ƒçµ„è™•ç†
+    size_t inputLength = inputSize; // è¼¸å…¥é•·åº¦
+    size_t outputNeeded = ((inputLength + 4) / 5) * 8; // æ¯ 5 å­—ç¯€å°æ‡‰ 8 å€‹ Base32 å­—ç¬¦
 
-    if (outputSize <= 0 || outputSize < static_cast<int>(outputNeeded + 1)) // ¥]§tµ²§Àªº '\0'
-        return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    if (outputSize <= 0 || outputSize < static_cast<int>(outputNeeded + 1)) // åŒ…å«çµå°¾çš„ '\0'
+        return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
-    // ­pºâ§¹¾ãªº 5 ¦ì¤¸²Õ°Ï¶ô¼Æ¶q©M§À¼Æ¦r¸`¼Æ¶q
+    // è¨ˆç®—å®Œæ•´çš„ 5 ä½å…ƒçµ„å€å¡Šæ•¸é‡å’Œå°¾æ•¸å­—ç¯€æ•¸é‡
     const size_t fullChunks = inputLength / 5;
     const size_t leftover = inputLength % 5;
 
-    // ¿é¥X¦r¤¸¯Á¤Şªì©l¤Æ
+    // è¼¸å‡ºå­—å…ƒç´¢å¼•åˆå§‹åŒ–
     size_t outputIndex = 0;
 
-    // ³B²z§¹¾ãªº 5 ¦r¸`°Ï¶ô
+    // è™•ç†å®Œæ•´çš„ 5 å­—ç¯€å€å¡Š
     for (size_t i = 0; i < fullChunks; ++i) {
-        uint64_t chunk = 0; // ¼È®ÉÀx¦s 5 ¦ì¤¸²Õ¸ê®Æªº 40 ¦ì¤¸¾ã¼Æ
+        uint64_t chunk = 0; // æš«æ™‚å„²å­˜ 5 ä½å…ƒçµ„è³‡æ–™çš„ 40 ä½å…ƒæ•´æ•¸
         for (int j = 0; j < 5; ++j)
-            chunk = (chunk << 8) | data[i * 5 + j]; // ±N 5 ¦ì¤¸²Õ«÷±µ¬°¤@­Ó 40 ¦ì¤¸¾ã¼Æ
+            chunk = (chunk << 8) | data[i * 5 + j]; // å°‡ 5 ä½å…ƒçµ„æ‹¼æ¥ç‚ºä¸€å€‹ 40 ä½å…ƒæ•´æ•¸
 
-        // Â^¨ú¨C 5 ¦ì¤¸¼Æ¾Ú¡A¹ïÀ³¬° Base32 ¦r²Å
+        // æ“·å–æ¯ 5 ä½å…ƒæ•¸æ“šï¼Œå°æ‡‰ç‚º Base32 å­—ç¬¦
         for (int j = 7; j >= 0; --j)
             output[outputIndex++] = Base32_Chars[(chunk >> (j * 5)) & 0x1F];
     }
 
-    // ³B²z¤£¨¬ 5 ¦r¸`ªº§À¼Æ
+    // è™•ç†ä¸è¶³ 5 å­—ç¯€çš„å°¾æ•¸
     if (leftover > 0) {
-        uint64_t chunk = 0; // ¼È®ÉÀx¦s¤£¨¬ 5 ¦ì¤¸²Õªº¼Æ¾Ú
+        uint64_t chunk = 0; // æš«æ™‚å„²å­˜ä¸è¶³ 5 ä½å…ƒçµ„çš„æ•¸æ“š
         for (size_t j = 0; j < leftover; ++j) {
-            // «÷±µ³Ñ¾lªº¦ì¤¸²Õ
+            // æ‹¼æ¥å‰©é¤˜çš„ä½å…ƒçµ„
             chunk = (chunk << 8) | data[fullChunks * 5 + j];
         }
-        chunk <<= (5 - leftover) * 8; // ±N§À¼Æ³¡¤À¥ª²¾¡A¶ñº¡¹s¦ì¡A¸É»ô¨ì 40 ¦ì
+        chunk <<= (5 - leftover) * 8; // å°‡å°¾æ•¸éƒ¨åˆ†å·¦ç§»ï¼Œå¡«æ»¿é›¶ä½ï¼Œè£œé½Šåˆ° 40 ä½
 
-        // Â^¨ú¦³®Äªº Base32 ¦r²Å
+        // æ“·å–æœ‰æ•ˆçš„ Base32 å­—ç¬¦
         for (size_t j = 0; j < leftover * 8 / 5 + 1; ++j)
             output[outputIndex++] = Base32_Chars[(chunk >> ((7 - j) * 5)) & 0x1F];
 
-        // ¶ñ¥R "="¡A¨Ï¿é¥Xªø«×¬O 8 ªº­¿¼Æ
+        // å¡«å…… "="ï¼Œä½¿è¼¸å‡ºé•·åº¦æ˜¯ 8 çš„å€æ•¸
         for (size_t j = leftover * 8 / 5 + 1; j < 8; ++j)
             output[outputIndex++] = '=';
     }
 
-    // ²K¥[µ²§Àªº '\0'
+    // æ·»åŠ çµå°¾çš„ '\0'
     output[outputIndex] = '\0';
-    return static_cast<int>(outputIndex); // ªğ¦^½s½X«áªºªø«×
+    return static_cast<int>(outputIndex); // è¿”å›ç·¨ç¢¼å¾Œçš„é•·åº¦
 }
 
-int Base32Decode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+int Base32Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
     size_t inputLen = inputSize;
-    if (inputLen % 8 != 0) return -3; // Base32 ªº¿é¤Jªø«×¥²¶·¬O 8 ªº­¿¼Æ
+    if (inputLen % 8 != 0) return -3; // Base32 çš„è¼¸å…¥é•·åº¦å¿…é ˆæ˜¯ 8 çš„å€æ•¸
 
-    int requiredSize = (inputLen * 5) / 8; // ¨C 8 ­Ó¦r²Å¹ïÀ³ 5 ­Ó¦r¸`
-    if (outputSize <= 0 || outputSize < requiredSize) return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    int requiredSize = (inputLen * 5) / 8; // æ¯ 8 å€‹å­—ç¬¦å°æ‡‰ 5 å€‹å­—ç¯€
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
     int i = 0, j = 0;
-    uint64_t buffer = 0;   // ¼È¦s Base32 ¼Æ¾Ú
-    int bufferBits = 0;    // ¼È¦s¦³®Ä¦ì¼Æ
+    uint64_t buffer = 0;   // æš«å­˜ Base32 æ•¸æ“š
+    int bufferBits = 0;    // æš«å­˜æœ‰æ•ˆä½æ•¸
 
     while (i < inputLen) {
         char c = input[i++];
-        if (c == '=') break; // ©¿²¤µ²§Àªº¶ñ¥R²Å
+        if (c == '=') break; // å¿½ç•¥çµå°¾çš„å¡«å……ç¬¦
 
-        // Àò¨ú¦r²Å¹ïÀ³ªº¼Æ­È
-        if (c < 0 || c >= 128 || Base32_Lookup[c] == -1) return -4; // «Dªk¦r²Å
+        // ç²å–å­—ç¬¦å°æ‡‰çš„æ•¸å€¼
+        if (c < 0 || c >= 128 || Base32_Lookup[c] == -1) return -4; // éæ³•å­—ç¬¦
         buffer = (buffer << 5) | Base32_Lookup[c];
         bufferBits += 5;
 
-        // ¨C¦¸±q buffer ¤¤¨ú¥X 8 ¦ì¡AÂà´«¦¨¤@­Ó¦r¸`
+        // æ¯æ¬¡å¾ buffer ä¸­å–å‡º 8 ä½ï¼Œè½‰æ›æˆä¸€å€‹å­—ç¯€
         while (bufferBits >= 8) {
             output[j++] = (buffer >> (bufferBits - 8)) & 0xFF;
             bufferBits -= 8;
         }
     }
 
-    return j; // ªğ¦^¸Ñ½X«áªº¦r¸`¼Æ
+    return j; // è¿”å›è§£ç¢¼å¾Œçš„å­—ç¯€æ•¸
 }
 
 int Base64Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
     size_t inputLen = inputSize;
-    int requiredSize = ((inputLen + 2) / 3) * 4; // ¨C 3 ¦r¸`¹ïÀ³ 4 ­Ó Base64 ¦r²Å
+    int requiredSize = ((inputLen + 2) / 3) * 4; // æ¯ 3 å­—ç¯€å°æ‡‰ 4 å€‹ Base64 å­—ç¬¦
 
-    if (outputSize <= 0 || outputSize < requiredSize) // +1 ¬O¬° '\0'
-        return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    if (outputSize <= 0 || outputSize < requiredSize) // +1 æ˜¯ç‚º '\0'
+        return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
     int i = 0, j = 0;
     unsigned char char_array_3[3];
@@ -179,63 +179,63 @@ int Base64Encode(const unsigned char* input, const size_t inputSize, char* outpu
         }
     }
 
-    return j;  // ªğ¦^½s½X«áªºªø«×
+    return j;  // è¿”å›ç·¨ç¢¼å¾Œçš„é•·åº¦
 }
 
-int Base64Decode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+int Base64Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
     size_t inputLen = inputSize;
-    if (inputLen % 4 != 0) return -3; // Base64 ªº¿é¤Jªø«×¥²¶·¬O 4 ªº­¿¼Æ
+    if (inputLen % 4 != 0) return -3; // Base64 çš„è¼¸å…¥é•·åº¦å¿…é ˆæ˜¯ 4 çš„å€æ•¸
 
-    int requiredSize = (inputLen / 4) * 3; // ¨C 4 ­Ó¦r²Å¹ïÀ³ 3 ­Ó¦r¸`
-    if (input[inputLen - 1] == '=') requiredSize--; // ³B²z '=' ¶ñ¥R
+    int requiredSize = (inputLen / 4) * 3; // æ¯ 4 å€‹å­—ç¬¦å°æ‡‰ 3 å€‹å­—ç¯€
+    if (input[inputLen - 1] == '=') requiredSize--; // è™•ç† '=' å¡«å……
     if (input[inputLen - 2] == '=') requiredSize--;
 
-    if (outputSize <= 0 || outputSize < requiredSize) return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
     int i = 0, j = 0;
-    uint32_t buffer = 0;   // ¼È¦s Base64 ¼Æ¾Ú
-    int bufferBits = 0;    // ¼È¦s¦³®Ä¦ì¼Æ
+    uint32_t buffer = 0;   // æš«å­˜ Base64 æ•¸æ“š
+    int bufferBits = 0;    // æš«å­˜æœ‰æ•ˆä½æ•¸
 
     while (i < inputLen) {
         char c = input[i++];
-        if (c == '=') break; // µ²§À¶ñ¥R²Å
+        if (c == '=') break; // çµå°¾å¡«å……ç¬¦
 
         int value = (c >= 0 && c < 256) ? Base64_Lookup[c] : -1;
-        if (value < 0) return -4; // «Dªk¦r²Å
+        if (value < 0) return -4; // éæ³•å­—ç¬¦
 
         buffer = (buffer << 6) | value;
         bufferBits += 6;
 
-        // ¨C¦¸±q buffer ¤¤´£¨ú 8 ¦ì
+        // æ¯æ¬¡å¾ buffer ä¸­æå– 8 ä½
         if (bufferBits >= 8) {
             output[j++] = (buffer >> (bufferBits - 8)) & 0xFF;
             bufferBits -= 8;
         }
     }
 
-    return j; // ªğ¦^¸Ñ½X«áªº¦r¸`¼Æ
+    return j; // è¿”å›è§£ç¢¼å¾Œçš„å­—ç¯€æ•¸
 }
 
 int Base85Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
     size_t inputLen = inputSize;
-    int requiredSize = ((inputLen + 3) / 4) * 5; // ¨C 4 ¦r¸`¹ïÀ³ 5 ­Ó Base85 ¦r²Å
+    int requiredSize = ((inputLen + 3) / 4) * 5; // æ¯ 4 å­—ç¯€å°æ‡‰ 5 å€‹ Base85 å­—ç¬¦
 
-    if (outputSize <= 0 || outputSize < requiredSize + 1) // +1 ¬O¬° '\0'
-        return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    if (outputSize <= 0 || outputSize < requiredSize + 1) // +1 æ˜¯ç‚º '\0'
+        return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
     int i = 0, j = 0;
     while (i < inputLen) {
-        // ±N¨C¥|­Ó¦r¸`²Õ¦¨¤@­Ó 32 ¦ìªº¼Æ¾Ú¶ô
+        // å°‡æ¯å››å€‹å­—ç¯€çµ„æˆä¸€å€‹ 32 ä½çš„æ•¸æ“šå¡Š
         uint32_t value = 0;
         for (int k = 0; k < 4; ++k) {
             value = (value << 8) | (i < inputLen ? static_cast<unsigned char>(input[i++]) : 0);
         }
 
-        // ±N 32 ¦ì¼Æ¾Ú¶ôÂà´«¬° 5 ­Ó Base85 ¦r²Å
+        // å°‡ 32 ä½æ•¸æ“šå¡Šè½‰æ›ç‚º 5 å€‹ Base85 å­—ç¬¦
         for (int k = 4; k >= 0; --k) {
             output[j + k] = Base85_Chars[value % 85];
             value /= 85;
@@ -243,18 +243,18 @@ int Base85Encode(const unsigned char* input, const size_t inputSize, char* outpu
         j += 5;
     }
 
-    output[j] = '\0'; // ²K¥[µ²§Àªº '\0'
-    return requiredSize; // ªğ¦^½s½X«áªºªø«×
+    output[j] = '\0'; // æ·»åŠ çµå°¾çš„ '\0'
+    return requiredSize; // è¿”å›ç·¨ç¢¼å¾Œçš„é•·åº¦
 }
 
-int Base85Decode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // ¨¾¿m©Ê½sµ{¡AÀË¬d«ü°w¬O§_¬°ªÅ
+int Base85Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // é˜²ç¦¦æ€§ç·¨ç¨‹ï¼Œæª¢æŸ¥æŒ‡é‡æ˜¯å¦ç‚ºç©º
 
     size_t inputLen = inputSize;
-    if (inputLen % 5 != 0) return -3; // ¿é¤Jªø«×¥²¶·¬O 5 ªº­¿¼Æ
+    if (inputLen % 5 != 0) return -3; // è¼¸å…¥é•·åº¦å¿…é ˆæ˜¯ 5 çš„å€æ•¸
 
-    int requiredSize = (inputLen / 5) * 4; // ¨C 5 ­Ó¦r²Å¹ïÀ³ 4 ­Ó¦r¸`
-    if (outputSize <= 0 || outputSize < requiredSize) return -2; // ¿é¥X½w½Ä°Ï¤£¨¬
+    int requiredSize = (inputLen / 5) * 4; // æ¯ 5 å€‹å­—ç¬¦å°æ‡‰ 4 å€‹å­—ç¯€
+    if (outputSize <= 0 || outputSize < requiredSize) return -2; // è¼¸å‡ºç·©è¡å€ä¸è¶³
 
     uint32_t value = 0;
     size_t i = 0, j = 0;
@@ -262,7 +262,7 @@ int Base85Decode(const unsigned char* input, const size_t inputSize, char* outpu
     while (i < inputLen) {
         value = 0;
 
-        // ±N 5 ­Ó Base85 ¦r¤¸Âà´«¬° 32-bit ¾ã¼Æ­È
+        // å°‡ 5 å€‹ Base85 å­—å…ƒè½‰æ›ç‚º 32-bit æ•´æ•¸å€¼
         for (int k = 0; k < 5; ++k) {
             const char* pos = strchr(Base85_Chars, input[i++]);
             if (!pos)
@@ -270,10 +270,10 @@ int Base85Decode(const unsigned char* input, const size_t inputSize, char* outpu
             value = value * 85 + (pos - Base85_Chars);
         }
 
-        // ±N 32-bit ¾ã¼Æ­È¤À¸Ñ¬°³Ì¦h 4 ­Ó¦ì¤¸²Õ
+        // å°‡ 32-bit æ•´æ•¸å€¼åˆ†è§£ç‚ºæœ€å¤š 4 å€‹ä½å…ƒçµ„
         for (int k = 3; k >= 0; --k) {
             if (j + k < requiredSize)
-                output[j + k] = static_cast<uint8_t>(value & 0xFF);
+                output[j + k] = static_cast<unsigned char>(value & 0xFF);
             value >>= 8;
         }
         j += 4;

@@ -1,4 +1,3 @@
-#pragma warning(disable : 4267)
 #include "pch.h"
 #include "AesIO.h"
 #include <openssl/evp.h>
@@ -88,7 +87,7 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     unsigned char iv_with_counter[16];
     int len, ciphertext_len = 0;
 
-    int total_blocks = (encryption->PLAIN_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    size_t total_blocks = (encryption->PLAIN_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     for (int i = 0; i < total_blocks; ++i) {
         longlong_to_bytes(encryption->COUNTER, iv_with_counter, BLOCK_SIZE);
@@ -96,11 +95,11 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
         if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, encryption->KEY, iv_with_counter))
             return handleErrors("Initialize AES CTR encryption for the current block failed.", ctx);
 
-        int current_block_size = (BLOCK_SIZE < (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE)))
+        size_t current_block_size = (BLOCK_SIZE < (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE)))
                                 ? BLOCK_SIZE
                                 : (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE));
 
-        if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len, encryption->PLAIN_TEXT + (i * BLOCK_SIZE), current_block_size))
+        if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len, encryption->PLAIN_TEXT + (i * BLOCK_SIZE), static_cast<int>(current_block_size)))
             return handleErrors("Encrypt the current block failed.", ctx);
         ciphertext_len += len;
     }
@@ -124,7 +123,7 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     unsigned char iv_with_counter[16];
     int len, plaintext_len = 0;
 
-    int total_blocks = (decryption->CIPHER_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    size_t total_blocks = (decryption->CIPHER_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     for (int i = 0; i < total_blocks; ++i) {
         longlong_to_bytes(decryption->COUNTER, iv_with_counter, BLOCK_SIZE);
@@ -132,11 +131,11 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
         if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, decryption->KEY, iv_with_counter))
             return handleErrors("Initialize AES CTR decryption for the current block failed.", ctx);
 
-        int current_block_size = (BLOCK_SIZE < (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE)))
+        size_t current_block_size = (BLOCK_SIZE < (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE)))
                                 ? BLOCK_SIZE
                                 : (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE));
 
-        if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT + plaintext_len, &len, decryption->CIPHER_TEXT + (i * BLOCK_SIZE), current_block_size))
+        if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT + plaintext_len, &len, decryption->CIPHER_TEXT + (i * BLOCK_SIZE), static_cast<int>(current_block_size)))
             return handleErrors("Decrypt the current block failed.", ctx);
         plaintext_len += len;
     }
@@ -164,7 +163,7 @@ int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
     int len, ciphertext_len = 0;
-    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
@@ -191,7 +190,7 @@ int AesCbcDecrypt(AES_CBC_DECRYPT* decryption) {
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
     int len, plaintext_len = 0;
-    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
@@ -229,7 +228,7 @@ int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
         return handleErrors("Initialize AES CFB encryption failed.", ctx);
 
     int len, ciphertext_len = 0;
-    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
@@ -267,7 +266,7 @@ int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
         return handleErrors("Initialize AES CFB decryption failed.", ctx);
 
     int len, plaintext_len = 0;
-    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
@@ -289,7 +288,7 @@ int AesOfbEncrypt(AES_OFB_ENCRYPT* encryption) {
         return handleErrors("Initialize AES OFB encryption failed.", ctx);
 
     int len, ciphertext_len = 0;
-    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
@@ -311,7 +310,7 @@ int AesOfbDecrypt(AES_OFB_DECRYPT* decryption) {
         return handleErrors("Initialize AES OFB encryption failed.", ctx);
 
     int len, plaintext_len = 0;
-    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
@@ -338,7 +337,7 @@ int AesEcbEncrypt(AES_ECB_ENCRYPT* encryption) {
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
     int len, ciphertext_len = 0;
-    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
@@ -365,7 +364,7 @@ int AesEcbDecrypt(AES_ECB_DECRYPT* decryption) {
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
     int len, plaintext_len = 0;
-    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 

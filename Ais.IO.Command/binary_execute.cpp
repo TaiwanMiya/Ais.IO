@@ -194,12 +194,9 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
             }
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
-                uint64_t outputLength = ((length + 2) / 3) * 4 + 1;
-                std::vector<char> outputBuffer(outputLength, '\0');
                 std::vector<unsigned char> buffer(length);
                 ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length);
-                ((Base64Decode)EncodeFunctions.at("--base64"))(buffer.data(), length, outputBuffer.data(), outputLength);
-                message += Hint(std::to_string(count) + ". Bytes: ") + Ask(std::string(outputBuffer.begin(), outputBuffer.end())) + "\n";
+                message += Hint(std::to_string(count) + ". Bytes: ") + Ask(std::string(buffer.begin(), buffer.end())) + "\n";
             }
             else if (cmd.type == "-string") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);

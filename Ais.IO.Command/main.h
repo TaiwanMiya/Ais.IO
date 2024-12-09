@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifdef _WIN32
 #include <windows.h>
@@ -24,7 +24,9 @@ struct Command {
     std::string value;
     uint64_t position{};
     uint64_t length{};
-    std::string mode;
+    std::string input;
+    std::string output;
+    unsigned char* binary{};
 };
 
 enum BINARYIO_TYPE : unsigned char {
@@ -204,13 +206,13 @@ typedef void (*InsertString)(void*, const char*, uint64_t);
 
 #pragma region EncoderIO
 typedef int (*Base16Encode)(const unsigned char*, const size_t, char*, const size_t);
-typedef int (*Base16Decode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base16Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base32Encode)(const unsigned char*, const size_t, char*, const size_t);
-typedef int (*Base32Decode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base32Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base64Encode)(const unsigned char*, const size_t, char*, const size_t);
-typedef int (*Base64Decode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base64Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base85Encode)(const unsigned char*, const size_t, char*, const size_t);
-typedef int (*Base85Decode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const size_t);
 #pragma endregion
 
 #pragma region AesIO
@@ -231,4 +233,3 @@ extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
-extern std::unordered_map<std::string, void*> AesFunctions;
