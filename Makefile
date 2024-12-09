@@ -52,6 +52,7 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	@cp -p Terminal/Linux/linux-aisio.sh $(BIN_DIR)/linux-aisio.sh
 	@cp -p Terminal/Linux/terminal-colors.sh $(BIN_DIR)/terminal-colors.sh
 	@chmod +x $(BIN_DIR)/linux-aisio.sh
+	@chmod +x $(BIN_DIR)/terminal-colors.sh
 
 clean:
 	@echo "Cleaning up..."

@@ -25,7 +25,7 @@ while [[ "$#" -gt 0 ]]; do
             operation="$1"
             shift
             ;;
-        -f)
+        -m)
             message="$2"
             shift 2
             ;;
@@ -63,7 +63,7 @@ case "$operation" in
 		echo "You chose - Git Push"
 		git -c core.quotepath=false --no-optional-locks add -f -- .
 		git -c core.quotepath=false --no-optional-locks commit -v -q -m "$message"
-		git -c core.quotepath=false --no-optional-locks push -v --tags origin master:naster
+		git -c core.quotepath=false --no-optional-locks push -v --tags origin master:master
 		;;
 	*)
 		Usage
