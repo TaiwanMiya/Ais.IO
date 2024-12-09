@@ -3,9 +3,10 @@
 
 void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     size_t size = 0;
+    std::vector<unsigned char> buffer(0);
     if (!cmd.input.empty()) {
-        encoder_execute::SetInput(cmd, size);
-        if (!cmd.binary) {
+        encoder_execute::SetInput(cmd, size, buffer);
+        if (!buffer.data()) {
             std::cerr << Error("Failed to read input file: ") << Ask(cmd.input) << "\n";
             return;
         }
@@ -28,7 +29,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
     std::string display = ToLetter(mode.substr(2)) + " " + ToLetter(cmd.type.substr(1));
 
-    const unsigned char* inputData = cmd.binary ? cmd.binary : reinterpret_cast<const unsigned char*>(cmd.value.c_str());
+    const unsigned char* inputData = buffer.data() ? buffer.data() : reinterpret_cast<const unsigned char*>(cmd.value.c_str());
 
     if (encodeType == "-base16-encode")
         resultCode = ((Base16Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
@@ -57,13 +58,18 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
             << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
 
         if (!cmd.output.empty()) {
-            std::memcpy(cmd.binary, outputBuffer.data(), resultCode);
-            encoder_execute::SetOutput(cmd, static_cast<size_t>(resultCode));
+            if (resultCode > outputBuffer.size()) {
+                std::cerr << Error("Output buffer overflow detected.\n");
+                return;
+            }
+            buffer.resize(resultCode);
+            std::memcpy(buffer.data(), outputBuffer.data(), resultCode);
+            encoder_execute::SetOutput(cmd, static_cast<size_t>(resultCode), buffer);
         }
     }
 
-    std::cout << Mark(encodeType + " Action Completed!") << std::endl;
-    cmd.binary = nullptr;
+    std::cout << Mark(display + " Action Completed!") << std::endl;
+    buffer.clear();
 }
 
 size_t encoder_execute::CalculateOutputLength(const std::string& mode, size_t inputLength) {
@@ -84,7 +90,7 @@ size_t encoder_execute::CalculateOutputLength(const std::string& mode, size_t in
     }
 }
 
-void encoder_execute::SetInput(Command& cmd, size_t& size) {
+void encoder_execute::SetInput(Command& cmd, size_t& size, std::vector<unsigned char>& buffer) {
     if (cmd.input.empty()) {
         std::cerr << Error("Input file path is empty.") << std::endl;
         return;
@@ -97,17 +103,16 @@ void encoder_execute::SetInput(Command& cmd, size_t& size) {
 
     size = file.tellg();
     file.seekg(0, std::ios::beg);
-    cmd.binary = new unsigned char[size];
-    if (!file.read(reinterpret_cast<char*>(cmd.binary), size)) {
+    buffer.resize(size);
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
         std::cerr << Error("Failed to read file: " + cmd.input) << std::endl;
-        delete[] cmd.binary;
-        cmd.binary = nullptr;
+        buffer.clear();
     }
     file.close();
 }
 
-void encoder_execute::SetOutput(Command& cmd, size_t size) {
-    if (!cmd.binary || cmd.output.empty()) {
+void encoder_execute::SetOutput(Command& cmd, size_t size, std::vector<unsigned char>& buffer) {
+    if (!buffer.data() || cmd.output.empty()) {
         std::cerr << Error("No binary data or output path provided for writing.\n");
         return;
     }
@@ -116,8 +121,10 @@ void encoder_execute::SetOutput(Command& cmd, size_t size) {
         std::cerr << Error("Failed to open file: " + cmd.output) << std::endl;
         return;
     }
-    file.write(reinterpret_cast<const char*>(cmd.binary), size);
+    std::cout << "buffer size: " << buffer.size() << ", result code: " << size << std::endl;
+    file.write(reinterpret_cast<const char*>(buffer.data()), size);
     if (!file)
         std::cerr << Error("Failed to write data to file: " + cmd.output) << std::endl;
+    buffer.clear();
     file.close();
 }

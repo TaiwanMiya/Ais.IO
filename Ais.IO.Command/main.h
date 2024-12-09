@@ -26,7 +26,6 @@ struct Command {
     uint64_t length{};
     std::string input;
     std::string output;
-    unsigned char* binary{};
 };
 
 enum BINARYIO_TYPE : unsigned char {
