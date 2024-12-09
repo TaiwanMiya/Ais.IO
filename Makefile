@@ -26,12 +26,16 @@ all: install_deps compile
 
 install_deps:
 	@echo "Checking and installing dependencies..."
-	@if ! command -v g++ &> /dev/null; then \
+	@if ! command -v g++ 2>&1; then \
 		sudo apt-get update && sudo apt-get install -y $(DEPS); \
 	else \
 		echo "g++ Already installed."; \
 	fi
-	sudo apt-get install -y $(DEPS)
+	@if ! command -v openssl 2>&1; then \
+		sudo apt-get update && sudo apt-get install -y $(DEPS); \
+	else \
+		echo "openssl Already installed."; \
+	fi
 
 compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
 
@@ -46,7 +50,7 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	$(CXX) -o $@ $^ -ldl
 
 	@cp -p Terminal/Linux/linux-aisio.sh $(BIN_DIR)/linux-aisio.sh
-	@cp -p Terminal/Linux/terminal-colors.sh$(BIN_DIR)/terminal-colors.sh
+	@cp -p Terminal/Linux/terminal-colors.sh $(BIN_DIR)/terminal-colors.sh
 	@chmod +x $(BIN_DIR)/linux-aisio.sh
 
 clean:
