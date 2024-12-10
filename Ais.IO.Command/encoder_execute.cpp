@@ -1,11 +1,15 @@
 #include "encoder_execute.h"
 #include <functional>
+#include <filesystem>
 
 void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     size_t size = 0;
     std::vector<unsigned char> buffer(0);
+    std::filesystem::path inputPath;
+    std::filesystem::path outputPath;
     if (!cmd.input.empty()) {
         encoder_execute::SetInput(cmd, size, buffer);
+        inputPath = std::filesystem::absolute(cmd.input);
         if (!buffer.data()) {
             std::cerr << Error("Failed to read input file: ") << Ask(cmd.input) << "\n";
             return;
@@ -52,10 +56,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
         std::cerr << Error("Encoding/Decoding failed for ") << Ask(mode) << Error(" with code: ") << Ask(std::to_string(resultCode)) << "\n";
     }
     else {
-        std::cout << Hint("<" + display + ">\n")
-            << Ask(std::string(reinterpret_cast<char*>(outputBuffer.data())))
-            << Hint("\nInput Length: [") << Ask(std::to_string(inputLength))
-            << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
+        
 
         if (!cmd.output.empty()) {
             if (resultCode > outputBuffer.size()) {
@@ -65,7 +66,17 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
             buffer.resize(resultCode);
             std::memcpy(buffer.data(), outputBuffer.data(), resultCode);
             encoder_execute::SetOutput(cmd, static_cast<size_t>(resultCode), buffer);
+            outputPath = std::filesystem::absolute(cmd.output);
         }
+        std::cout << Hint("<" + display + ">\n");
+        if (outputPath.empty())
+            std::cout << Ask(std::string(reinterpret_cast<char*>(outputBuffer.data()))) << "\n";
+        if (!inputPath.empty())
+            std::cout << Hint("Input Path:\n") << Ask(inputPath.string()) << "\n";
+        if (!outputPath.empty())
+            std::cout << Hint("Output Path:\n") << Ask(outputPath.string()) << "\n";
+        std::cout << Hint("Input Length: [") << Ask(std::to_string(inputLength))
+            << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
     }
 
     std::cout << Mark(display + " Action Completed!") << std::endl;
