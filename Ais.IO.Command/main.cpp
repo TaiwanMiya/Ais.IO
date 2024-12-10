@@ -275,7 +275,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 cmd.output = argv[++i];
             }
             else {
-                cmd.value = arg; // For encoding/decoding value
+                cmd.value = arg;
             }
         }
 
@@ -283,20 +283,6 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             std::cerr << Error("Either an input file or a value is required for encoding/decoding.\n");
             return false;
         }
-
-        /*if ((std::string(argv[3]) == "-f" || std::string(argv[3]) == "-file") && !std::string(argv[4]).empty()) {
-            std::ifstream file(argv[4], std::ios::in | std::ios::binary);
-            if (!file.is_open()) {
-                std::cerr << Error("Failed to open for file: " + std::string(argv[4])) << std::endl;
-                return false;
-            }
-            std::ostringstream buffer;
-            buffer << file.rdbuf();
-            cmd.value = buffer.str();
-            file.close();
-        }
-        else
-            cmd.value = argv[3];*/
         commands.push_back(cmd);
     }
     return true;

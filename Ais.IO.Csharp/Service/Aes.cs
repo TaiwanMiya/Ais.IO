@@ -18,9 +18,18 @@ namespace Ais.IO.Csharp
         {
             16, 24, 32
         };
+        private int[] AcceptGenerateIvSize = new int[]
+        {
+            12, 16, 96, 128
+        };
+        private int[] AcceptImportIvSize = new int[]
+        {
+            12, 16
+        };
 
         private byte[] Key { get; set; }
         private byte[] IV { get; set; }
+        private byte[] Tag { get; set; }
 
         public Aes() { }
 
@@ -36,12 +45,24 @@ namespace Ais.IO.Csharp
             return key;
         }
 
-        public byte[] GenerateIV()
+        public byte[] GenerateIV(int size)
         {
-            byte[] iv = new byte[16];
-            AesIOInterop.GenerateIV(iv, 16);
+            if (!this.AcceptGenerateIvSize.Contains(size))
+                    throw new FormatException("IV size must be 96, 128 bits, or 12, 16 bytes.");
+            byte[] iv = size > 16
+                ? new byte[size / 8]
+                : new byte[size];
+            AesIOInterop.GenerateIV(iv, size > 16 ? size / 8 : size);
             this.IV = iv;
             return iv;
+        }
+
+        public byte[] GenerateTag()
+        {
+            byte[] tag = new byte[16];
+            AesIOInterop.GenerateTag(tag, 16);
+            this.Tag = tag;
+            return tag;
         }
 
         public byte[] ImportKey(string content)
@@ -57,13 +78,24 @@ namespace Ais.IO.Csharp
 
         public byte[] ImportIV(string content)
         {
-            if (content.Length != 16)
-                throw new FormatException("IV size must be 128 bits, or 16 bytes.");
+            if (!this.AcceptImportIvSize.Contains(content.Length))
+                    throw new FormatException("IV size must be 96, 128 bits, or 12, 16 bytes.");
             byte[] iv = new byte[content.Length];
             byte[] ivBuffer = new byte[iv.Length];
             AesIOInterop.GenerateIVFromInput(content, content.Length, ivBuffer, ivBuffer.Length);
             this.IV = ivBuffer;
             return ivBuffer;
+        }
+
+        public byte[] ImportTag(string content)
+        {
+            if (content.Length != 16)
+                throw new FormatException("Tag size must be 128 bits, or 16 bytes.");
+            byte[] tag = new byte[content.Length];
+            byte[] tagBuffer = new byte[tag.Length];
+            AesIOInterop.GenerateIVFromInput(content, content.Length, tagBuffer, tagBuffer.Length);
+            this.Tag = tagBuffer;
+            return tagBuffer;
         }
 
         public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0)
@@ -511,6 +543,102 @@ namespace Ais.IO.Csharp
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+            }
+        }
+
+        public byte[] GcmEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag)
+        {
+            byte[] cipherText = new byte[plainText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+
+            try
+            {
+                AES_GCM_ENCRYPT encryption = new AES_GCM_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    TAG = tagHandle.AddrOfPinnedObject(),
+                    IV_LENGTH = (UIntPtr)iv.Length,
+                    TAG_LENGTH = (UIntPtr)tag.Length
+                };
+
+                int cipherTextLength = AesIOInterop.AesGcmEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                {
+                    cipherText = new byte[0];
+                }
+
+                return cipherText;
+            }
+            finally
+            {
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (tagHandle.IsAllocated) tagHandle.Free();
+            }
+        }
+
+        public byte[] GcmDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag)
+        {
+            byte[] plainText = new byte[cipherText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+
+            try
+            {
+                AES_GCM_DECRYPT decryption = new AES_GCM_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    TAG = tagHandle.AddrOfPinnedObject(),
+                    IV_LENGTH = (UIntPtr)iv.Length,
+                    TAG_LENGTH = (UIntPtr)tag.Length
+                };
+
+                int plainTextLength = AesIOInterop.AesGcmDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                {
+                    plainText = new byte[0];
+                }
+
+                return plainText;
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (tagHandle.IsAllocated) tagHandle.Free();
             }
         }
     }

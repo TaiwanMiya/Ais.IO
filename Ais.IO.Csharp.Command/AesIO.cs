@@ -140,5 +140,26 @@ namespace Ais.IO.Csharp.Command
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
+
+        public static void GCM(string text, string key, string iv, string tag)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] tagResult = aes.ImportTag(tag);
+                byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, ivResult, tagResult);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                plainText = aes.GcmDecrypt(cipherText, keyResult, ivResult, tagResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
     }
 }

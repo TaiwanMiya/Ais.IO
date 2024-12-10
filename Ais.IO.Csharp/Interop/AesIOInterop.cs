@@ -19,6 +19,10 @@ namespace Ais.IO.Csharp
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateIV(byte[] iv, long ivLength);
 
+        // Import GenerateTag function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GenerateTag(byte[] tag, long tagLength);
+
         // Import GenerateKeyFromInput function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateKeyFromInput(byte[] input, long inputLength, byte[] key, long keyLength);
@@ -30,6 +34,12 @@ namespace Ais.IO.Csharp
         public static extern int GenerateIVFromInput(byte[] input, long inputLength, byte[] iv, long ivLength);
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateIVFromInput(string input, long inputLength, byte[] iv, long ivLength);
+
+        // Import GenerateTagFromInput function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GenerateTagFromInput(byte[] input, long inputLength, byte[] tag, long tagLength);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GenerateTagFromInput(string input, long inputLength, byte[] tag, long tagLength);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesCtrEncrypt(ref AES_CTR_ENCRYPT encryption);
@@ -60,5 +70,11 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesEcbDecrypt(ref AES_ECB_DECRYPT decryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesGcmEncrypt(ref AES_GCM_ENCRYPT encryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesGcmDecrypt(ref AES_GCM_DECRYPT decryption);
     }
 }

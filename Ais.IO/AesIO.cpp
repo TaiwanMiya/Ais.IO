@@ -34,7 +34,7 @@ void longlong_to_bytes(long long counter, unsigned char* buffer, int buffer_size
 int GenerateKey(unsigned char* key, size_t keyLength) {
     ERR_clear_error();
     if (keyLength != 16 && keyLength != 24 && keyLength != 32)
-        return handleErrors("Invalid key length. Use 128, 192, or 256 bits.", NULL);
+        return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
@@ -46,8 +46,8 @@ int GenerateKey(unsigned char* key, size_t keyLength) {
 
 int GenerateIV(unsigned char* iv, size_t ivLength) {
     ERR_clear_error();
-    if (ivLength != 16)
-        return handleErrors("Invalid IV length. Use 128 bits.", NULL);
+    if (ivLength != 12 && ivLength != 16)
+        return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
@@ -57,10 +57,22 @@ int GenerateIV(unsigned char* iv, size_t ivLength) {
     return 0;
 }
 
+int GenerateTag(unsigned char* tag, size_t tagLength) {
+    ERR_clear_error();
+    if (tagLength != 16)
+        return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 255);
+    for (size_t i = 0; i < tagLength; ++i)
+        tag[i] = static_cast<unsigned char>(dis(gen));
+    return 0;
+}
+
 int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength) {
     ERR_clear_error();
     if (keyLength != 16 && keyLength != 24 && keyLength != 32)
-        return handleErrors("Invalid key length. Use 128, 192, or 256 bits.", NULL);
+        return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
 
     memset(key, 0, keyLength);
     memcpy(key, input, inputLength > keyLength ? keyLength : inputLength);
@@ -68,11 +80,20 @@ int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigne
 }
 
 int GenerateIVFromInput(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength) {
-    if (ivLength != 16)
-        return handleErrors("Invalid IV length. Use 128 bits.", NULL);
+    if (ivLength != 12 && ivLength != 16)
+        return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
 
     memset(iv, 0, ivLength);
     memcpy(iv, input, inputLength > ivLength ? ivLength : inputLength);
+    return 0;
+}
+
+int GenerateTagFromInput(const unsigned char* input, size_t inputLength, unsigned char* tag, size_t tagLength) {
+    if (tagLength != 16)
+        return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
+
+    memset(tag, 0, tagLength);
+    memcpy(tag, input, inputLength > tagLength ? tagLength : inputLength);
     return 0;
 }
 
@@ -370,6 +391,69 @@ int AesEcbDecrypt(AES_ECB_DECRYPT* decryption) {
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
         return handleErrors("Final decryption failed.", ctx);
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
+        return handleErrors("Failed to set GCM IV length.", ctx);
+
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
+        return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
+
+    int len, ciphertext_len = 0;
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
+        return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, encryption->TAG_LENGTH, encryption->TAG))
+        return handleErrors("Failed to set GCM Tag length.", ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
+        return handleErrors("Failed to set GCM IV length.", ctx);
+
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
+        return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
+
+    int len, plaintext_len = 0;
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
+        return handleErrors("Failed to set GCM Tag length.", ctx);
+
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len)) {
+        return handleErrors("Final decryption failed.", ctx);
+    }
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
