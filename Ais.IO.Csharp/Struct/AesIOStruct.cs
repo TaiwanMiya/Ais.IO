@@ -156,4 +156,60 @@ namespace Ais.IO.Csharp
         public UIntPtr IV_LENGTH;                   // IV 長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
     };
+
+    // AES_CCM_ENCRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_CCM_ENCRYPT
+    {
+        public IntPtr PLAIN_TEXT;                   // 指向明文數據
+        public IntPtr KEY;                          // 指向密鑰
+        public IntPtr IV;                           // 指向 IV
+        public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
+        public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
+        public IntPtr TAG;                          // 指向認證標籤
+        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr TAG_LENGTH;                  // 認證標籤長度
+        public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
+    };
+
+    // AES_CCM_DECRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_CCM_DECRYPT
+    {
+        public IntPtr CIPHER_TEXT;                  // 指向密文數據
+        public IntPtr KEY;                          // 指向密鑰
+        public IntPtr IV;                           // 指向 IV
+        public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
+        public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
+        public IntPtr TAG;                          // 指向認證標籤
+        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr TAG_LENGTH;                  // 認證標籤長度
+        public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
+    };
+
+    // AES_XTS_ENCRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_XTS_ENCRYPT
+    {
+        public IntPtr PLAIN_TEXT;                   // 指向明文數據
+        public IntPtr KEY1;                         // 指向數據加密密鑰
+        public IntPtr KEY2;                         // 指向扭曲值密鑰
+        public IntPtr TWEAK;                        // 扭曲值，通常是磁碟扇區編號
+        public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
+        public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
+    };
+
+    // AES_XTS_DECRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_XTS_DECRYPT
+    {
+        public IntPtr CIPHER_TEXT;                  // 指向密文數據
+        public IntPtr KEY1;                         // 指向數據加密密鑰
+        public IntPtr KEY2;                         // 指向扭曲值密鑰
+        public IntPtr TWEAK;                        // 扭曲值，通常是磁碟扇區編號
+        public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
+        public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
+    };
 }

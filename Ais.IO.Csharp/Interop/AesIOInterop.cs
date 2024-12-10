@@ -23,23 +23,43 @@ namespace Ais.IO.Csharp
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateTag(byte[] tag, long tagLength);
 
-        // Import GenerateKeyFromInput function from the DLL
+        // Import GenerateAad function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateKeyFromInput(byte[] input, long inputLength, byte[] key, long keyLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateKeyFromInput(string input, long inputLength, byte[] key, long keyLength);
+        public static extern int GenerateAad(byte[] aad, long aadLength);
 
-        // Import GenerateIVFromInput function from the DLL
+        // Import GenerateTweak function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateIVFromInput(byte[] input, long inputLength, byte[] iv, long ivLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateIVFromInput(string input, long inputLength, byte[] iv, long ivLength);
+        public static extern int GenerateTweak(byte[] tweak, long tweakLength);
 
-        // Import GenerateTagFromInput function from the DLL
+        // Import ImportKey function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateTagFromInput(byte[] input, long inputLength, byte[] tag, long tagLength);
+        public static extern int ImportKey(byte[] input, long inputLength, byte[] key, long keyLength);
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateTagFromInput(string input, long inputLength, byte[] tag, long tagLength);
+        public static extern int ImportKey(string input, long inputLength, byte[] key, long keyLength);
+
+        // Import ImportIV function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportIV(byte[] input, long inputLength, byte[] iv, long ivLength);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportIV(string input, long inputLength, byte[] iv, long ivLength);
+
+        // Import ImportTag function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportTag(byte[] input, long inputLength, byte[] tag, long tagLength);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportTag(string input, long inputLength, byte[] tag, long tagLength);
+
+        // Import ImportAad function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportAad(byte[] input, long inputLength, byte[] aad, long aadLength);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportAad(string input, long inputLength, byte[] aad, long aadLength);
+
+        // Import ImportTweak function from the DLL
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportTweak(byte[] input, long inputLength, byte[] tweak, long tweakLength);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ImportTweak(string input, long inputLength, byte[] tweak, long tweakLength);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesCtrEncrypt(ref AES_CTR_ENCRYPT encryption);
@@ -76,5 +96,17 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesGcmDecrypt(ref AES_GCM_DECRYPT decryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesCcmEncrypt(ref AES_CCM_ENCRYPT encryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesCcmDecrypt(ref AES_CCM_DECRYPT decryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesXtsEncrypt(ref AES_XTS_ENCRYPT encryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesXtsDecrypt(ref AES_XTS_DECRYPT decryption);
     }
 }

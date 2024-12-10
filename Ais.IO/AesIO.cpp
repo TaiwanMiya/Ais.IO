@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "AesIO.h"
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -69,7 +69,29 @@ int GenerateTag(unsigned char* tag, size_t tagLength) {
     return 0;
 }
 
-int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength) {
+int GenerateAad(unsigned char* aad, size_t aadLength) {
+    ERR_clear_error();
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 255);
+    for (size_t i = 0; i < aadLength; ++i)
+        aad[i] = static_cast<unsigned char>(dis(gen));
+    return 0;
+}
+
+int GenerateTweak(unsigned char* tweak, size_t tweakLength) {
+    ERR_clear_error();
+    if (tweakLength != 16)
+        return handleErrors("Invalid Tweak length. Use 128 bits.", NULL);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 255);
+    for (size_t i = 0; i < tweakLength; ++i)
+        tweak[i] = static_cast<unsigned char>(dis(gen));
+    return 0;
+}
+
+int ImportKey(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength) {
     ERR_clear_error();
     if (keyLength != 16 && keyLength != 24 && keyLength != 32)
         return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
@@ -79,7 +101,7 @@ int GenerateKeyFromInput(const unsigned char* input, size_t inputLength, unsigne
     return 0;
 }
 
-int GenerateIVFromInput(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength) {
+int ImportIV(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength) {
     if (ivLength != 12 && ivLength != 16)
         return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
 
@@ -88,12 +110,26 @@ int GenerateIVFromInput(const unsigned char* input, size_t inputLength, unsigned
     return 0;
 }
 
-int GenerateTagFromInput(const unsigned char* input, size_t inputLength, unsigned char* tag, size_t tagLength) {
+int ImportTag(const unsigned char* input, size_t inputLength, unsigned char* tag, size_t tagLength) {
     if (tagLength != 16)
         return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
 
     memset(tag, 0, tagLength);
     memcpy(tag, input, inputLength > tagLength ? tagLength : inputLength);
+    return 0;
+}
+
+int ImportAad(const unsigned char* input, size_t inputLength, unsigned char* aad, size_t aadLength) {
+    memset(aad, 0, aadLength);
+    memcpy(aad, input, inputLength > aadLength ? aadLength : inputLength);
+    return 0;
+}
+
+int ImportTweak(const unsigned char* input, size_t inputLength, unsigned char* tweak, size_t tweakLength) {
+    if (tweakLength != 16)
+        return handleErrors("Invalid Tweak length. Use 128 bits.", NULL);
+    memset(tweak, 0, tweakLength);
+    memcpy(tweak, input, inputLength > tweakLength ? tweakLength : inputLength);
     return 0;
 }
 
@@ -422,7 +458,7 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
     ciphertext_len += len;
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, encryption->TAG_LENGTH, encryption->TAG))
-        return handleErrors("Failed to set GCM Tag length.", ctx);
+        return handleErrors("Failed to get GCM Tag length.", ctx);
 
     EVP_CIPHER_CTX_free(ctx);
     return ciphertext_len;
@@ -454,6 +490,139 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len)) {
         return handleErrors("Final decryption failed.", ctx);
     }
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
+        return handleErrors("Failed to set CCM IV length.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, encryption->TAG_LENGTH, NULL))
+        return handleErrors("Failed to set CCM Tag length.", ctx);
+
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
+        return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
+
+    int len, ciphertext_len = 0;
+    if (1 != EVP_EncryptUpdate(ctx, NULL, &len, NULL, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+
+    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->ADDITIONAL_DATA, encryption->AAD_LENGTH))
+        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
+        return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_GET_TAG, encryption->TAG_LENGTH, encryption->TAG))
+        return handleErrors("Failed to get CCM Tag length.", ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
+        return handleErrors("Failed to set CCM IV length.", ctx);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
+        return handleErrors("Failed to set CCM Tag length.", ctx);
+
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
+        return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
+
+    int len, plaintext_len = 0;
+    if (1 != EVP_DecryptUpdate(ctx, NULL, &len, NULL, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+
+    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->ADDITIONAL_DATA, decryption->AAD_LENGTH))
+        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+int AesXtsEncrypt(AES_XTS_ENCRYPT* encryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_xts(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
+
+    unsigned char xts_key[64];
+    memcpy(xts_key, encryption->KEY1, 32);
+    memcpy(xts_key + 32, encryption->KEY2, 32);
+
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key, encryption->TWEAK))
+        return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
+
+    int len, ciphertext_len = 0;
+
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
+        return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesXtsDecrypt(AES_XTS_DECRYPT* decryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_xts(), NULL, NULL, NULL))
+        return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
+
+    unsigned char xts_key[64];
+    memcpy(xts_key, decryption->KEY1, 32);
+    memcpy(xts_key + 32, decryption->KEY2, 32);
+
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key, decryption->TWEAK))
+        return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
+
+    int len, plaintext_len = 0;
+
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
+        return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);

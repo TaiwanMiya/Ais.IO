@@ -32,9 +32,9 @@ namespace Ais.IO.Csharp.Command
             if (AesIOInterop.GenerateIV(iv, iv.Length) == 0)
                 Console.WriteLine("Generated IV (128 bits): " + BitConverter.ToString(iv).Replace("-", ""));
 
-            if (AesIOInterop.GenerateKeyFromInput(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
+            if (AesIOInterop.ImportKey(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputKeyBuffer).Replace("-", ""));
-            if (AesIOInterop.GenerateIVFromInput(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
+            if (AesIOInterop.ImportIV(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
@@ -156,6 +156,50 @@ namespace Ais.IO.Csharp.Command
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
                 plainText = aes.GcmDecrypt(cipherText, keyResult, ivResult, tagResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
+
+        public static void CCM(string text, string key, string iv, string tag, string aad)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] tagResult = aes.ImportTag(tag);
+                byte[] aadResult = aes.ImportAad(aad);
+                byte[] cipherText = aes.CcmEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                plainText = aes.CcmDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
+
+        public static void XTS(string text, string key1, string key2, string tweak)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] key1Result = aes.ImportKey(key1);
+                byte[] key2Result = aes.ImportKey(key2);
+                byte[] tweakResult = Encoding.UTF8.GetBytes(tweak);
+                byte[] cipherText = aes.XtsEncrypt(plainText, key1Result, key2Result, tweakResult);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                byte[] decryptedText = aes.XtsDecrypt(cipherText, key1Result, key2Result, tweakResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }
