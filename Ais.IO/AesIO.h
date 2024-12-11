@@ -132,7 +132,7 @@ struct AES_CCM_ENCRYPT {
     size_t PLAIN_TEXT_LENGTH;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA; // Additional Authenticated Data (AAD)
+    const unsigned char* ADDITIONAL_DATA;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
@@ -145,7 +145,7 @@ struct AES_CCM_DECRYPT {
     size_t CIPHER_TEXT_LENGTH;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA; // Additional Authenticated Data (AAD)
+    const unsigned char* ADDITIONAL_DATA;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
@@ -153,18 +153,18 @@ struct AES_CCM_DECRYPT {
 
 struct AES_XTS_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
-    const unsigned char* KEY1;  // Primary Key
-    const unsigned char* KEY2;  // Tweak Key
-    const unsigned char* TWEAK; // Typically the sector number
+    const unsigned char* KEY1;
+    const unsigned char* KEY2;
+    const unsigned char* TWEAK;
     size_t PLAIN_TEXT_LENGTH;
     unsigned char* CIPHER_TEXT;
 };
 
 struct AES_XTS_DECRYPT {
     const unsigned char* CIPHER_TEXT;
-    const unsigned char* KEY1;  // Primary Key
-    const unsigned char* KEY2;  // Tweak Key
-    const unsigned char* TWEAK; // Typically the sector number
+    const unsigned char* KEY1;
+    const unsigned char* KEY2;
+    const unsigned char* TWEAK;
     size_t CIPHER_TEXT_LENGTH;
     unsigned char* PLAIN_TEXT;
 };
@@ -176,7 +176,7 @@ struct AES_OCB_ENCRYPT {
     size_t PLAIN_TEXT_LENGTH;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA; // Additional Authenticated Data (AAD)
+    const unsigned char* ADDITIONAL_DATA;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
@@ -189,37 +189,37 @@ struct AES_OCB_DECRYPT {
     size_t CIPHER_TEXT_LENGTH;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA; // Additional Authenticated Data (AAD)
+    const unsigned char* ADDITIONAL_DATA;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_WRAP_ENCRYPT {
-    const unsigned char* PLAINTEXT_KEY;  // Key to wrap
-    const unsigned char* WRAP_KEY;       // AES Key for wrapping
-    unsigned char* WRAPPED_KEY;          // Buffer for the wrapped key
-    size_t PLAINTEXT_KEY_LENGTH;         // Length of the key to wrap
-    size_t WRAP_KEY_LENGTH;              // Length of the wrapping key (16, 24, or 32 bytes)
-    size_t WRAPPED_KEY_LENGTH;           // Output length of the wrapped key
+    const unsigned char* PLAINTEXT_KEY;
+    const unsigned char* WRAP_KEY;
+    unsigned char* WRAPPED_KEY;
+    size_t PLAINTEXT_KEY_LENGTH;
+    size_t WRAP_KEY_LENGTH;
+    size_t WRAPPED_KEY_LENGTH;
 };
 
 struct AES_WRAP_DECRYPT {
-    const unsigned char* WRAPPED_KEY;    // Wrapped key
-    const unsigned char* WRAP_KEY;       // AES Key for unwrapping
-    unsigned char* UNWRAPPED_KEY;        // Buffer for the unwrapped key
-    size_t WRAPPED_KEY_LENGTH;           // Length of the wrapped key
-    size_t WRAP_KEY_LENGTH;              // Length of the wrapping key (16, 24, or 32 bytes)
-    size_t UNWRAPPED_KEY_LENGTH;         // Output length of the unwrapped key
+    const unsigned char* WRAPPED_KEY;
+    const unsigned char* WRAP_KEY;
+    unsigned char* UNWRAPPED_KEY;
+    size_t WRAPPED_KEY_LENGTH;
+    size_t WRAP_KEY_LENGTH;
+    size_t UNWRAPPED_KEY_LENGTH;
 };
 
-// Generate a random Key with specified length (128, 192, 256 bits)
+// Generate a random Key with length 128, 192, 256 bits
 EXT AESIO_API int GenerateKey(unsigned char* key, size_t keyLength);
-// Generate a random IV with length 128 bits
+// Generate a random IV with length 96, 128 bits
 EXT AESIO_API int GenerateIV(unsigned char* iv, size_t ivLength);
 // Generate a random Tag with length 128 bits
 EXT AESIO_API int GenerateTag(unsigned char* tag, size_t tagLength);
-// Generate a random Aad with length 128 bits
+// Generate a random Aad with any length
 EXT AESIO_API int GenerateAad(unsigned char* aad, size_t aadLength);
 // Generate a random Tweak with length 128 bits
 EXT AESIO_API int GenerateTweak(unsigned char* tweak, size_t tweakLength);

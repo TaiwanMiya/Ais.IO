@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "EncoderIO.h"
+#include "BaseEncoderIO.h"
 
 static int HexCharToValue(char c) {
     if (c >= '0' && c <= '9') return c - '0';

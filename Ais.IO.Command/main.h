@@ -19,6 +19,16 @@
 #include <thread>
 #include <fstream>
 
+enum CRYPT_OPTIONS : unsigned char {
+    OPTION_NULL = 0,
+    OPTION_TEXT = 1,
+    OPTION_BASE16 = 2,
+    OPTION_BASE32 = 3,
+    OPTION_BASE64 = 4,
+    OPTION_BASE85 = 5,
+    OPTION_FILE = 6,
+};
+
 struct Command {
     std::string type;
     std::string value;
@@ -26,6 +36,30 @@ struct Command {
     uint64_t length{};
     std::string input;
     std::string output;
+};
+
+struct Aes {
+    std::string Mode;
+    std::string Crypt;
+    std::string Key;
+    std::string IV;
+    std::string Tag;
+    std::string Aad;
+    std::string Tweak;
+    std::string Key2;
+    std::string Wrap;
+    std::string PlainText;
+    std::string CipherText;
+
+    CRYPT_OPTIONS key_option;
+    CRYPT_OPTIONS iv_option;
+    CRYPT_OPTIONS tag_option;
+    CRYPT_OPTIONS aad_option;
+    CRYPT_OPTIONS tweak_option;
+    CRYPT_OPTIONS key2_option;
+    CRYPT_OPTIONS wrap_option;
+    CRYPT_OPTIONS plaintext_option;
+    CRYPT_OPTIONS ciphertext_option;
 };
 
 enum BINARYIO_TYPE : unsigned char {
@@ -108,6 +142,148 @@ struct AES_CFB_DECRYPT {
     size_t CIPHER_TEXT_LENGTH;
     unsigned char* PLAIN_TEXT;
     SEGMENT_SIZE_OPTION SEGMENT_SIZE;
+};
+
+struct AES_OFB_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+};
+
+struct AES_OFB_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+};
+
+struct AES_ECB_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+    bool PKCS7_PADDING;
+};
+
+struct AES_ECB_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+    bool PKCS7_PADDING;
+};
+
+struct AES_GCM_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+    unsigned char* TAG;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+};
+
+struct AES_GCM_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+    const unsigned char* TAG;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+};
+
+struct AES_CCM_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+    unsigned char* TAG;
+    const unsigned char* ADDITIONAL_DATA;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
+};
+
+struct AES_CCM_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+    const unsigned char* TAG;
+    const unsigned char* ADDITIONAL_DATA;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
+};
+
+struct AES_XTS_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY1;
+    const unsigned char* KEY2;
+    const unsigned char* TWEAK;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+};
+
+struct AES_XTS_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY1;
+    const unsigned char* KEY2;
+    const unsigned char* TWEAK;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+};
+
+struct AES_OCB_ENCRYPT {
+    const unsigned char* PLAIN_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t PLAIN_TEXT_LENGTH;
+    unsigned char* CIPHER_TEXT;
+    unsigned char* TAG;
+    const unsigned char* ADDITIONAL_DATA;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
+};
+
+struct AES_OCB_DECRYPT {
+    const unsigned char* CIPHER_TEXT;
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    size_t CIPHER_TEXT_LENGTH;
+    unsigned char* PLAIN_TEXT;
+    const unsigned char* TAG;
+    const unsigned char* ADDITIONAL_DATA;
+    size_t IV_LENGTH;
+    size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
+};
+
+struct AES_WRAP_ENCRYPT {
+    const unsigned char* PLAINTEXT_KEY;
+    const unsigned char* WRAP_KEY;
+    unsigned char* WRAPPED_KEY;
+    size_t PLAINTEXT_KEY_LENGTH;
+    size_t WRAP_KEY_LENGTH;
+    size_t WRAPPED_KEY_LENGTH;
+};
+
+struct AES_WRAP_DECRYPT {
+    const unsigned char* WRAPPED_KEY;
+    const unsigned char* WRAP_KEY;
+    unsigned char* UNWRAPPED_KEY;
+    size_t WRAPPED_KEY_LENGTH;
+    size_t WRAP_KEY_LENGTH;
+    size_t UNWRAPPED_KEY_LENGTH;
 };
 
 // Define function pointer types for all APIs
@@ -217,14 +393,34 @@ typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const siz
 #pragma region AesIO
 typedef int (*GenerateKey)(unsigned char*, size_t);
 typedef int (*GenerateIV)(unsigned char*, size_t);
-typedef int (*GenerateKeyFromInput)(const unsigned char*, size_t, unsigned char*, size_t);
-typedef int (*GenerateIVFromInput)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*GenerateTag)(unsigned char*, size_t);
+typedef int (*GenerateAad)(unsigned char*, size_t);
+typedef int (*GenerateTweak)(unsigned char*, size_t);
+typedef int (*ImportKey)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*ImportIV)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*ImportTag)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*ImportAad)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*ImportTweak)(const unsigned char*, size_t, unsigned char*, size_t);
 typedef int (*AesCtrEncrypt)(AES_CTR_ENCRYPT*);
 typedef int (*AesCtrDecrypt)(AES_CTR_DECRYPT*);
 typedef int (*AesCbcEncrypt)(AES_CBC_ENCRYPT*);
 typedef int (*AesCbcDecrypt)(AES_CBC_DECRYPT*);
 typedef int (*AesCfbEncrypt)(AES_CFB_ENCRYPT*);
 typedef int (*AesCfbDecrypt)(AES_CFB_DECRYPT*);
+typedef int (*AesOfbEncrypt)(AES_OFB_ENCRYPT*);
+typedef int (*AesOfbDecrypt)(AES_OFB_DECRYPT*);
+typedef int (*AesEcbEncrypt)(AES_ECB_ENCRYPT*);
+typedef int (*AesEcbDecrypt)(AES_ECB_DECRYPT*);
+typedef int (*AesGcmEncrypt)(AES_GCM_ENCRYPT*);
+typedef int (*AesGcmDecrypt)(AES_GCM_DECRYPT*);
+typedef int (*AesCcmEncrypt)(AES_CCM_ENCRYPT*);
+typedef int (*AesCcmDecrypt)(AES_CCM_DECRYPT*);
+typedef int (*AesXtsEncrypt)(AES_XTS_ENCRYPT*);
+typedef int (*AesXtsDecrypt)(AES_XTS_DECRYPT*);
+typedef int (*AesOcbEncrypt)(AES_OCB_ENCRYPT*);
+typedef int (*AesOcbDecrypt)(AES_OCB_DECRYPT*);
+typedef int (*AesWrapEncrypt)(AES_WRAP_ENCRYPT*);
+typedef int (*AesWrapDecrypt)(AES_WRAP_DECRYPT*);
 #pragma endregion
 
 extern std::unordered_map<std::string, void*> ReadFunctions;
@@ -232,3 +428,4 @@ extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
+extern std::unordered_map<std::string, void*> AesFunctions;

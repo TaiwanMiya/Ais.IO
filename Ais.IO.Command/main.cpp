@@ -5,6 +5,7 @@
 #include "output_colors.h"
 #include "binary_execute.h"
 #include "encoder_execute.h"
+#include "aes_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -23,6 +24,14 @@ std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
+std::unordered_map<std::string, void*> AesFunctions;
+
+constexpr size_t hash(const char* str) {
+    size_t hash = 0;
+    while (*str)
+        hash = hash * 31 + *str++;
+    return hash;
+}
 
 void ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
@@ -68,13 +77,14 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
-        "--base16", "--base32", "--base64", "--base85"
+        "--base16", "--base32", "--base64", "--base85",
+        "--aes"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
-        {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"},
-        {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
-        {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"}
+        {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
+        {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
+        {"-aes", "--aes"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -357,6 +367,27 @@ void LoadFunctions() {
     EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(Lib, "Base64Decode");
     EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(Lib, "Base85Encode");
     EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(Lib, "Base85Decode");
+
+    AesFunctions["-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrEncrypt");
+    AesFunctions["-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrDecrypt");
+    AesFunctions["-cbc-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcEncrypt");
+    AesFunctions["-cbc-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCbcDecrypt");
+    AesFunctions["-cfb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbEncrypt");
+    AesFunctions["-cfb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCfbDecrypt");
+    AesFunctions["-ofb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbEncrypt");
+    AesFunctions["-ofb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesOfbDecrypt");
+    AesFunctions["-ecb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbEncrypt");
+    AesFunctions["-ecb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesEcbDecrypt");
+    AesFunctions["-gcm-encrypt"] = GET_PROC_ADDRESS(Lib, "AesGcmEncrypt");
+    AesFunctions["-gcm-decrypt"] = GET_PROC_ADDRESS(Lib, "AesGcmDecrypt");
+    AesFunctions["-ccm-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCcmEncrypt");
+    AesFunctions["-ccm-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCcmDecrypt");
+    AesFunctions["-xts-encrypt"] = GET_PROC_ADDRESS(Lib, "AesXtsEncrypt");
+    AesFunctions["-xts-decrypt"] = GET_PROC_ADDRESS(Lib, "AesXtsDecrypt");
+    AesFunctions["-ocb-encrypt"] = GET_PROC_ADDRESS(Lib, "AesOcbEncrypt");
+    AesFunctions["-ocb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesOcbDecrypt");
+    AesFunctions["-wrap-encrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapEncrypt");
+    AesFunctions["-wrap-decrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapDecrypt");
 }
 
 int main(int argc, char* argv[]) {
@@ -498,6 +529,10 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         encoder_execute::ExecuteEncoder(mode, cmd);
+    }
+    else if (mode == "--aes") {
+        Aes aes;
+        aes_execute::ParseParameters(argc, argv, aes);
     }
 
     UNLOAD_LIBRARY(Lib);

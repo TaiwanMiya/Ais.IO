@@ -36,7 +36,7 @@
     <ClInclude Include="resource.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
-    <ClInclude Include="EncoderIO.h">
+    <ClInclude Include="BaseEncoderIO.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="StructT.h">
@@ -68,7 +68,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="EncoderIO.cpp">
+    <ClCompile Include="BaseEncoderIO.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="StructT.cpp">
