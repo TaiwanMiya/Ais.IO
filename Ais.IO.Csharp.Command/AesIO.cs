@@ -205,5 +205,28 @@ namespace Ais.IO.Csharp.Command
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
+
+        public static void OCB(string text, string key, string iv, string tag, string aad)
+        {
+            try
+            {
+                byte[] plainText = Encoding.UTF8.GetBytes(text);
+
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] ivResult = aes.ImportIV(iv);
+                byte[] tagResult = aes.ImportTag(tag);
+                byte[] aadResult = aes.ImportAad(aad);
+                byte[] cipherText = aes.OcbEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
+
+                Console.WriteLine(encoder.Encode<string>(cipherText));
+
+                byte[] decryptedText = aes.OcbDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
     }
 }

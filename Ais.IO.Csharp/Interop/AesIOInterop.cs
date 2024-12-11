@@ -108,5 +108,11 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesXtsDecrypt(ref AES_XTS_DECRYPT decryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesOcbEncrypt(ref AES_OCB_ENCRYPT encryption);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int AesOcbDecrypt(ref AES_OCB_DECRYPT decryption);
     }
 }

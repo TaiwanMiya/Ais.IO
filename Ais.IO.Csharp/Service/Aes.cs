@@ -869,5 +869,119 @@ namespace Ais.IO.Csharp
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
             }
         }
+
+        public byte[] OcbEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        {
+            byte[] cipherText = new byte[plainText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+            GCHandle aadHandle = GCHandle.Alloc(aad, GCHandleType.Pinned);
+
+            try
+            {
+                AES_OCB_ENCRYPT encryption = new AES_OCB_ENCRYPT
+                {
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    TAG = tagHandle.AddrOfPinnedObject(),
+                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    IV_LENGTH = (UIntPtr)iv.Length,
+                    TAG_LENGTH = (UIntPtr)tag.Length,
+                    AAD_LENGTH = (UIntPtr)aad.Length
+                };
+
+                int cipherTextLength = AesIOInterop.AesOcbEncrypt(ref encryption);
+                if (cipherTextLength > 0)
+                {
+                    byte[] result = new byte[cipherTextLength];
+                    Array.Copy(cipherText, result, cipherTextLength);
+                    cipherText = result;
+                }
+                else
+                {
+                    cipherText = new byte[0];
+                }
+
+                return cipherText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (tagHandle.IsAllocated) tagHandle.Free();
+                if (aadHandle.IsAllocated) aadHandle.Free();
+            }
+        }
+
+        public byte[] OcbDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        {
+            byte[] plainText = new byte[cipherText.Length];
+
+            GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
+            GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
+            GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+            GCHandle aadHandle = GCHandle.Alloc(aad, GCHandleType.Pinned);
+
+            try
+            {
+                AES_OCB_DECRYPT decryption = new AES_OCB_DECRYPT
+                {
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY = keyHandle.AddrOfPinnedObject(),
+                    IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    TAG = tagHandle.AddrOfPinnedObject(),
+                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    IV_LENGTH = (UIntPtr)iv.Length,
+                    TAG_LENGTH = (UIntPtr)tag.Length,
+                    AAD_LENGTH = (UIntPtr)aad.Length
+                };
+
+                int plainTextLength = AesIOInterop.AesOcbDecrypt(ref decryption);
+                if (plainTextLength > 0)
+                {
+                    byte[] result = new byte[plainTextLength];
+                    Array.Copy(plainText, result, plainTextLength);
+                    plainText = result;
+                }
+                else
+                {
+                    plainText = new byte[0];
+                }
+
+                return plainText;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
+                if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (plainTextHandle.IsAllocated) plainTextHandle.Free();
+                if (tagHandle.IsAllocated) tagHandle.Free();
+                if (aadHandle.IsAllocated) aadHandle.Free();
+            }
+        }
     }
 }
