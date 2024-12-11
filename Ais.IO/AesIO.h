@@ -195,6 +195,24 @@ struct AES_OCB_DECRYPT {
     size_t AAD_LENGTH;
 };
 
+struct AES_WRAP_ENCRYPT {
+    const unsigned char* PLAINTEXT_KEY;  // Key to wrap
+    const unsigned char* WRAP_KEY;       // AES Key for wrapping
+    unsigned char* WRAPPED_KEY;          // Buffer for the wrapped key
+    size_t PLAINTEXT_KEY_LENGTH;         // Length of the key to wrap
+    size_t WRAP_KEY_LENGTH;              // Length of the wrapping key (16, 24, or 32 bytes)
+    size_t WRAPPED_KEY_LENGTH;           // Output length of the wrapped key
+};
+
+struct AES_WRAP_DECRYPT {
+    const unsigned char* WRAPPED_KEY;    // Wrapped key
+    const unsigned char* WRAP_KEY;       // AES Key for unwrapping
+    unsigned char* UNWRAPPED_KEY;        // Buffer for the unwrapped key
+    size_t WRAPPED_KEY_LENGTH;           // Length of the wrapped key
+    size_t WRAP_KEY_LENGTH;              // Length of the wrapping key (16, 24, or 32 bytes)
+    size_t UNWRAPPED_KEY_LENGTH;         // Output length of the unwrapped key
+};
+
 // Generate a random Key with specified length (128, 192, 256 bits)
 EXT AESIO_API int GenerateKey(unsigned char* key, size_t keyLength);
 // Generate a random IV with length 128 bits
@@ -235,3 +253,5 @@ EXT AESIO_API int AesXtsEncrypt(AES_XTS_ENCRYPT* encryption);
 EXT AESIO_API int AesXtsDecrypt(AES_XTS_DECRYPT* decryption);
 EXT AESIO_API int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption);
 EXT AESIO_API int AesOcbDecrypt(AES_OCB_DECRYPT* decryption);
+EXT AESIO_API int AesWrapEncrypt(AES_WRAP_ENCRYPT* encryption);
+EXT AESIO_API int AesWrapDecrypt(AES_WRAP_DECRYPT* decryption);

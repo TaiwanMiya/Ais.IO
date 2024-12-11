@@ -199,7 +199,7 @@ namespace Ais.IO.Csharp.Command
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                byte[] decryptedText = aes.XtsDecrypt(cipherText, key1Result, key2Result, tweakResult);
+                plainText = aes.XtsDecrypt(cipherText, key1Result, key2Result, tweakResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }
@@ -222,9 +222,28 @@ namespace Ais.IO.Csharp.Command
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                byte[] decryptedText = aes.OcbDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+                plainText = aes.OcbDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+        }
+
+        public static void WRAP(string key, string wrapey)
+        {
+            try
+            {
+                BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+                Aes aes = new Aes();
+                byte[] keyResult = aes.ImportKey(key);
+                byte[] wrapkeyResult = aes.ImportKey(wrapey);
+                byte[] wrappedKey = aes.WrapEncrypt(keyResult, wrapkeyResult);
+
+                Console.WriteLine(encoder.Encode<string>(wrappedKey));
+
+                byte[] decryptedText = aes.WrapDecrypt(wrappedKey, wrapkeyResult);
+
+                Console.WriteLine(Encoding.UTF8.GetString(decryptedText));
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }

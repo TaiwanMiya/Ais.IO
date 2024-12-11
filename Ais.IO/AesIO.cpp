@@ -641,20 +641,23 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, encryption->IV_LENGTH, NULL))
         return handleErrors("Failed to set OCB IV length.", ctx);
 
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, encryption->TAG_LENGTH, NULL))
+        return handleErrors("Failed to set OCB Tag length.", ctx);
+
     if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
     if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->ADDITIONAL_DATA, encryption->AAD_LENGTH))
-        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+        return handleErrors("Failed to set OCB ADD length and ADD data.", ctx);
 
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
-    // Finalize encryption
-    if (1 != EVP_EncryptFinal_ex(ctx, NULL, &len))
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
         return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, encryption->TAG_LENGTH, encryption->TAG))
         return handleErrors("Failed to get OCM Tag length.", ctx);
@@ -675,24 +678,98 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, decryption->IV_LENGTH, NULL))
         return handleErrors("Failed to set OCB IV length.", ctx);
 
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
+        return handleErrors("Failed to set OCB Tag length.", ctx);
+
     if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
     if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->ADDITIONAL_DATA, decryption->AAD_LENGTH))
-        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+        return handleErrors("Failed to set OCB ADD length and ADD data.", ctx);
 
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);
-    plaintext_len = len;
+    plaintext_len += len;
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
-        return handleErrors("Failed to set OCM Tag length.", ctx);
+        return handleErrors("Failed to set OCB Tag length.", ctx);
 
-    // Finalize decryption
-    if (1 != EVP_DecryptFinal_ex(ctx, NULL, &len))
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
         return handleErrors("Final decryption failed.", ctx);
+    plaintext_len += len;
 
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext_len;
+}
+
+int AesWrapEncrypt(AES_WRAP_ENCRYPT* encryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (encryption->WRAP_KEY_LENGTH != 16 && encryption->WRAP_KEY_LENGTH != 24 && encryption->WRAP_KEY_LENGTH != 32)
+        return handleErrors("Invalid wrap key length. Must be 16, 24, or 32 bytes.", ctx);
+
+    if (encryption->PLAINTEXT_KEY_LENGTH < 16)
+        return handleErrors("Invalid plaintext key length. Must be at least 16 bytes.", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->WRAP_KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_wrap(); break;
+    case 24: cipher = EVP_aes_192_wrap(); break;
+    case 32: cipher = EVP_aes_256_wrap(); break;
+    default: return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->WRAP_KEY, NULL))
+        return handleErrors("Initialize AES WRAP encryption for the current block failed.", ctx);
+
+    int len, ciphertext_len = 0;
+    if (1 != EVP_EncryptUpdate(ctx, encryption->WRAPPED_KEY, &len, encryption->PLAINTEXT_KEY, encryption->PLAINTEXT_KEY_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->WRAPPED_KEY + len, &len))
+        return handleErrors("Final encryption failed.", ctx);
+    ciphertext_len += len;
+
+    encryption->WRAPPED_KEY_LENGTH = ciphertext_len;
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext_len;
+}
+
+int AesWrapDecrypt(AES_WRAP_DECRYPT* decryption) {
+    ERR_clear_error();
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return handleErrors("An error occurred during ctx generation.", ctx);
+
+    if (decryption->WRAP_KEY_LENGTH != 16 && decryption->WRAP_KEY_LENGTH != 24 && decryption->WRAP_KEY_LENGTH != 32)
+        return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->WRAP_KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_wrap(); break;
+    case 24: cipher = EVP_aes_192_wrap(); break;
+    case 32: cipher = EVP_aes_256_wrap(); break;
+    default:return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->WRAP_KEY, NULL))
+        return handleErrors("Initialize AES WRAP decryption for the current block failed.", ctx);
+
+    int len, plaintext_len = 0;
+    if (1 != EVP_DecryptUpdate(ctx, decryption->UNWRAPPED_KEY, &len, decryption->WRAPPED_KEY, decryption->WRAPPED_KEY_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->UNWRAPPED_KEY + len, &len))
+        return handleErrors("Final decryption failed.", ctx);
+    plaintext_len += len;
+
+    decryption->UNWRAPPED_KEY_LENGTH = plaintext_len;
     EVP_CIPHER_CTX_free(ctx);
     return plaintext_len;
 }

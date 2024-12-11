@@ -244,4 +244,28 @@ namespace Ais.IO.Csharp
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
+
+    // AES_WRAP_ENCRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_WRAP_ENCRYPT
+    {
+        public IntPtr PLAINTEXT_KEY;                // 指向密鑰
+        public IntPtr WRAP_KEY;                     // 指向包裝密鑰
+        public IntPtr WRAPPED_KEY;                  // 指向已包裝密鑰輸出
+        public UIntPtr PLAINTEXT_KEY_LENGTH;        // 密鑰長度
+        public UIntPtr WRAP_KEY_LENGTH;             // 包裝密鑰長度 (16、24 或 32 位元組)
+        public UIntPtr WRAPPED_KEY_LENGTH;          // 已包裝密鑰輸出長度
+    };
+
+    // AES_WRAP_DECRYPT
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AES_WRAP_DECRYPT
+    {
+        public IntPtr WRAPPED_KEY;                  // 指向已包裝密鑰
+        public IntPtr WRAP_KEY;                     // 指向包裝密鑰
+        public IntPtr UNWRAPPED_KEY;                // 指向解包密鑰的緩衝區
+        public UIntPtr WRAPPED_KEY_LENGTH;          // 已包裝密鑰長度
+        public UIntPtr WRAP_KEY_LENGTH;             // 包裝金鑰長度 (16、24 或 32 位元組)
+        public UIntPtr UNWRAPPED_KEY_LENGTH;        // 解包密鑰的輸出長度
+    };
 }

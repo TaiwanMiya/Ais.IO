@@ -905,9 +905,7 @@ namespace Ais.IO.Csharp
                     cipherText = result;
                 }
                 else
-                {
                     cipherText = new byte[0];
-                }
 
                 return cipherText;
             }
@@ -962,9 +960,7 @@ namespace Ais.IO.Csharp
                     plainText = result;
                 }
                 else
-                {
                     plainText = new byte[0];
-                }
 
                 return plainText;
             }
@@ -981,6 +977,91 @@ namespace Ais.IO.Csharp
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
                 if (aadHandle.IsAllocated) aadHandle.Free();
+            }
+        }
+
+        public byte[] WrapEncrypt(byte[] plainKey, byte[] wrappingKey)
+        {
+            byte[] wrappedKey = new byte[plainKey.Length + 8]; // Wrapped key length is input length + 8 bytes.
+            
+            GCHandle plainKeyHandle = GCHandle.Alloc(plainKey, GCHandleType.Pinned);
+            GCHandle wrappingKeyHandle = GCHandle.Alloc(wrappingKey, GCHandleType.Pinned);
+            GCHandle wrappedKeyHandle = GCHandle.Alloc(wrappedKey, GCHandleType.Pinned);
+
+            try
+            {
+                AES_WRAP_ENCRYPT encryption = new AES_WRAP_ENCRYPT
+                {
+                    PLAINTEXT_KEY = plainKeyHandle.AddrOfPinnedObject(),
+                    WRAP_KEY = wrappingKeyHandle.AddrOfPinnedObject(),
+                    WRAPPED_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
+                    PLAINTEXT_KEY_LENGTH = (UIntPtr)plainKey.Length,
+                    WRAP_KEY_LENGTH = (UIntPtr)wrappingKey.Length,
+                    WRAPPED_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
+                };
+
+                int wrappedKeyLength = AesIOInterop.AesWrapEncrypt(ref encryption);
+                if (wrappedKeyLength > 0)
+                {
+                    byte[] result = new byte[wrappedKeyLength];
+                    Array.Copy(wrappedKey, result, wrappedKeyLength);
+                    wrappedKey = result;
+                }
+                else
+                    wrappedKey = new byte[0];
+
+                return wrappedKey;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}: {ex.StackTrace}");
+                return new byte[0];
+            }
+            finally
+            {
+                if (plainKeyHandle.IsAllocated) plainKeyHandle.Free();
+                if (wrappingKeyHandle.IsAllocated) wrappingKeyHandle.Free();
+                if (wrappedKeyHandle.IsAllocated) wrappedKeyHandle.Free();
+            }
+        }
+
+        public byte[] WrapDecrypt(byte[] wrappedKey, byte[] wrappingKey)
+        {
+            byte[] unwrappedKey = new byte[wrappedKey.Length - 8];
+            
+            GCHandle wrappedKeyHandle = GCHandle.Alloc(wrappedKey, GCHandleType.Pinned);
+            GCHandle wrappingKeyHandle = GCHandle.Alloc(wrappingKey, GCHandleType.Pinned);
+            GCHandle unwrappedKeyHandle = GCHandle.Alloc(unwrappedKey, GCHandleType.Pinned);
+
+            try
+            {
+                AES_WRAP_DECRYPT decryption = new AES_WRAP_DECRYPT
+                {
+                    WRAPPED_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
+                    WRAPPED_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
+                    WRAP_KEY = wrappingKeyHandle.AddrOfPinnedObject(),
+                    WRAP_KEY_LENGTH = (UIntPtr)wrappingKey.Length,
+                    UNWRAPPED_KEY = unwrappedKeyHandle.AddrOfPinnedObject(),
+                    UNWRAPPED_KEY_LENGTH = (UIntPtr)unwrappedKey.Length,
+                };
+
+                int unwrappedKeyLength = AesIOInterop.AesWrapDecrypt(ref decryption);
+                if (unwrappedKeyLength > 0)
+                {
+                    byte[] result = new byte[unwrappedKeyLength];
+                    Array.Copy(unwrappedKey, result, unwrappedKeyLength);
+                    unwrappedKey = result;
+                }
+                else
+                    unwrappedKey = new byte[0];
+
+                return unwrappedKey;
+            }
+            finally
+            {
+                if (wrappedKeyHandle.IsAllocated) wrappedKeyHandle.Free();
+                if (wrappingKeyHandle.IsAllocated) wrappingKeyHandle.Free();
+                if (unwrappedKeyHandle.IsAllocated) unwrappedKeyHandle.Free();
             }
         }
     }
