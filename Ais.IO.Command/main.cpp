@@ -66,6 +66,7 @@ void ShowUsage() {
     std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
     std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
     std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
+    std::cout << Hint("  --colors\n");
     std::cout << Hint("Supported [--type]:\n");
     std::cout << Hint("  -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
 }
@@ -401,7 +402,7 @@ int main(int argc, char* argv[]) {
 
     if (argc == 2 && std::string(argv[1]) == "--colors") {
         ListColorTable();
-        return 1;
+        return 0;
     }
 
     if (!ParseArguments(argc, argv, mode, filePath, commands)) {
