@@ -124,11 +124,12 @@ namespace Ais.IO.Csharp
             {
                 AES_CTR_ENCRYPT encryption = new AES_CTR_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     COUNTER = counter,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesCtrEncrypt(ref encryption);
@@ -168,11 +169,12 @@ namespace Ais.IO.Csharp
             {
                 AES_CTR_DECRYPT decryption = new AES_CTR_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     COUNTER = counter,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                 };
                 int plainTextLength = AesIOInterop.AesCtrDecrypt(ref decryption);
                 if (plainTextLength > 0)
@@ -212,12 +214,13 @@ namespace Ais.IO.Csharp
             {
                 AES_CBC_ENCRYPT encryption = new AES_CBC_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
-                    PKCS7_PADDING = padding
+                    PKCS7_PADDING = padding,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesCbcEncrypt(ref encryption);
@@ -259,12 +262,13 @@ namespace Ais.IO.Csharp
             {
                 AES_CBC_DECRYPT decryption = new AES_CBC_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
-                    PKCS7_PADDING = padding
+                    PKCS7_PADDING = padding,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                 };
                 int plainTextLength = AesIOInterop.AesCbcDecrypt(ref decryption);
                 if (plainTextLength > 0)
@@ -305,12 +309,13 @@ namespace Ais.IO.Csharp
             {
                 AES_CFB_ENCRYPT encryption = new AES_CFB_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
-                    SEGMENT_SIZE = segmentSize
+                    SEGMENT_SIZE = segmentSize,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 };
                 int cipherTextLength = AesIOInterop.AesCfbEncrypt(ref encryption);
                 if (cipherTextLength > 0)
@@ -351,12 +356,13 @@ namespace Ais.IO.Csharp
             {
                 AES_CFB_DECRYPT decryption = new AES_CFB_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
-                    SEGMENT_SIZE = segmentSize
+                    SEGMENT_SIZE = segmentSize,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                 };
                 int plainTextLength = AesIOInterop.AesCfbDecrypt(ref decryption);
                 if (plainTextLength > 0)
@@ -397,11 +403,12 @@ namespace Ais.IO.Csharp
             {
                 AES_OFB_ENCRYPT encryption = new AES_OFB_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 };
                 int cipherTextLength = AesIOInterop.AesOfbEncrypt(ref encryption);
                 if (cipherTextLength > 0)
@@ -442,11 +449,12 @@ namespace Ais.IO.Csharp
             {
                 AES_OFB_DECRYPT decryption = new AES_OFB_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject()
                 };
                 int plainTextLength = AesIOInterop.AesOfbDecrypt(ref decryption);
                 if (plainTextLength > 0)
@@ -486,11 +494,12 @@ namespace Ais.IO.Csharp
             {
                 AES_ECB_ENCRYPT encryption = new AES_ECB_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
-                    PKCS7_PADDING = padding
+                    PKCS7_PADDING = padding,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                 };
                 int cipherTextLength = AesIOInterop.AesEcbEncrypt(ref encryption);
                 if (cipherTextLength > 0)
@@ -529,11 +538,12 @@ namespace Ais.IO.Csharp
             {
                 AES_ECB_DECRYPT decryption = new AES_ECB_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
-                    PKCS7_PADDING = padding
+                    PKCS7_PADDING = padding,
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                 };
                 int plainTextLength = AesIOInterop.AesEcbDecrypt(ref decryption);
                 if (plainTextLength > 0)
@@ -574,14 +584,15 @@ namespace Ais.IO.Csharp
             {
                 AES_GCM_ENCRYPT encryption = new AES_GCM_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
-                    TAG_LENGTH = (UIntPtr)tag.Length
+                    TAG_LENGTH = (UIntPtr)tag.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesGcmEncrypt(ref encryption);
@@ -625,12 +636,13 @@ namespace Ais.IO.Csharp
             {
                 AES_GCM_DECRYPT decryption = new AES_GCM_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length
                 };
@@ -677,16 +689,17 @@ namespace Ais.IO.Csharp
             {
                 AES_CCM_ENCRYPT encryption = new AES_CCM_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
-                    AAD_LENGTH = (UIntPtr)aad.Length
+                    AAD_LENGTH = (UIntPtr)aad.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesCcmEncrypt(ref encryption);
@@ -732,13 +745,14 @@ namespace Ais.IO.Csharp
             {
                 AES_CCM_DECRYPT decryption = new AES_CCM_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length
@@ -786,12 +800,14 @@ namespace Ais.IO.Csharp
             {
                 AES_XTS_ENCRYPT encryption = new AES_XTS_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY1 = key1Handle.AddrOfPinnedObject(),
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY2 = key2Handle.AddrOfPinnedObject(),
                     TWEAK = tweakHandle.AddrOfPinnedObject(),
+                    KEY1_LENGTH = (UIntPtr)key1.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    KEY2_LENGTH = (UIntPtr)key2.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesXtsEncrypt(ref encryption);
@@ -835,12 +851,14 @@ namespace Ais.IO.Csharp
             {
                 AES_XTS_DECRYPT decryption = new AES_XTS_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY1 = key1Handle.AddrOfPinnedObject(),
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY2 = key2Handle.AddrOfPinnedObject(),
                     TWEAK = tweakHandle.AddrOfPinnedObject(),
+                    KEY1_LENGTH = (UIntPtr)key1.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    KEY2_LENGTH = (UIntPtr)key2.Length,
                 };
 
                 int plainTextLength = AesIOInterop.AesXtsDecrypt(ref decryption);
@@ -885,16 +903,17 @@ namespace Ais.IO.Csharp
             {
                 AES_OCB_ENCRYPT encryption = new AES_OCB_ENCRYPT
                 {
-                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
+                    PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
-                    AAD_LENGTH = (UIntPtr)aad.Length
+                    AAD_LENGTH = (UIntPtr)aad.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesOcbEncrypt(ref encryption);
@@ -940,16 +959,17 @@ namespace Ais.IO.Csharp
             {
                 AES_OCB_DECRYPT decryption = new AES_OCB_DECRYPT
                 {
-                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     KEY = keyHandle.AddrOfPinnedObject(),
                     IV = ivHandle.AddrOfPinnedObject(),
-                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
+                    CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)key.Length,
+                    CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
-                    AAD_LENGTH = (UIntPtr)aad.Length
+                    AAD_LENGTH = (UIntPtr)aad.Length,
                 };
 
                 int plainTextLength = AesIOInterop.AesOcbDecrypt(ref decryption);
@@ -992,12 +1012,12 @@ namespace Ais.IO.Csharp
             {
                 AES_WRAP_ENCRYPT encryption = new AES_WRAP_ENCRYPT
                 {
-                    PLAINTEXT_KEY = plainKeyHandle.AddrOfPinnedObject(),
-                    WRAP_KEY = wrappingKeyHandle.AddrOfPinnedObject(),
-                    WRAPPED_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
-                    PLAINTEXT_KEY_LENGTH = (UIntPtr)plainKey.Length,
-                    WRAP_KEY_LENGTH = (UIntPtr)wrappingKey.Length,
-                    WRAPPED_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
+                    KEY = plainKeyHandle.AddrOfPinnedObject(),
+                    KEK = wrappingKeyHandle.AddrOfPinnedObject(),
+                    WRAP_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)plainKey.Length,
+                    KEK_LENGTH = (UIntPtr)wrappingKey.Length,
+                    WRAP_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
                 };
 
                 int wrappedKeyLength = AesIOInterop.AesWrapEncrypt(ref encryption);
@@ -1037,12 +1057,12 @@ namespace Ais.IO.Csharp
             {
                 AES_WRAP_DECRYPT decryption = new AES_WRAP_DECRYPT
                 {
-                    WRAPPED_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
-                    WRAPPED_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
-                    WRAP_KEY = wrappingKeyHandle.AddrOfPinnedObject(),
-                    WRAP_KEY_LENGTH = (UIntPtr)wrappingKey.Length,
-                    UNWRAPPED_KEY = unwrappedKeyHandle.AddrOfPinnedObject(),
-                    UNWRAPPED_KEY_LENGTH = (UIntPtr)unwrappedKey.Length,
+                    WRAP_KEY = wrappedKeyHandle.AddrOfPinnedObject(),
+                    WRAP_KEY_LENGTH = (UIntPtr)wrappedKey.Length,
+                    KEK = wrappingKeyHandle.AddrOfPinnedObject(),
+                    KEK_LENGTH = (UIntPtr)wrappingKey.Length,
+                    KEY = unwrappedKeyHandle.AddrOfPinnedObject(),
+                    KEY_LENGTH = (UIntPtr)unwrappedKey.Length,
                 };
 
                 int unwrappedKeyLength = AesIOInterop.AesWrapDecrypt(ref decryption);

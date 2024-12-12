@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-aes -ctr -encrypt -key "0123456789abcdef" -pt "This is AES CTR Encryption/Decryption." -count 1 -out -b16</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-aes -ctr -decrypt -key "0123456789abcdef" -ct -b16 "12797471A34D4664EF9D8C9760767EE1195FE8676A0DFD1B578D751677CF7F755A4A43FCB1C4" -count 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

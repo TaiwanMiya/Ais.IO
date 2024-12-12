@@ -117,202 +117,218 @@ enum SEGMENT_SIZE_OPTION {
     SEGMENT_128_BIT = 128,
 };
 
-#pragma pack(push, 1)
 struct AES_CTR_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     const long long COUNTER;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1)
 struct AES_CTR_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
-    const long long COUNTER;
+    long long COUNTER;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
-#pragma pack(pop)
 
 struct AES_CBC_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
 };
 
 struct AES_CBC_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
 
 struct AES_CFB_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     SEGMENT_SIZE_OPTION SEGMENT_SIZE;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
 };
 
 struct AES_CFB_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     SEGMENT_SIZE_OPTION SEGMENT_SIZE;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
 
 struct AES_OFB_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
 };
 
 struct AES_OFB_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
 
 struct AES_ECB_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
 };
 
 struct AES_ECB_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
 
 struct AES_GCM_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
 };
 
 struct AES_GCM_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
 };
 
 struct AES_CCM_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
     const unsigned char* ADDITIONAL_DATA;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_CCM_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
     const unsigned char* ADDITIONAL_DATA;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_XTS_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY1;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
     const unsigned char* KEY2;
     const unsigned char* TWEAK;
+    size_t KEY1_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
-    unsigned char* CIPHER_TEXT;
+    size_t KEY2_LENGTH;
 };
 
 struct AES_XTS_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY1;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
     const unsigned char* KEY2;
     const unsigned char* TWEAK;
+    size_t KEY1_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
-    unsigned char* PLAIN_TEXT;
+    size_t KEY2_LENGTH;
 };
 
 struct AES_OCB_ENCRYPT {
-    const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t PLAIN_TEXT_LENGTH;
+    const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
     const unsigned char* ADDITIONAL_DATA;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_OCB_DECRYPT {
-    const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
     const unsigned char* IV;
-    size_t CIPHER_TEXT_LENGTH;
+    const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
     const unsigned char* ADDITIONAL_DATA;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_WRAP_ENCRYPT {
-    const unsigned char* PLAINTEXT_KEY;
-    const unsigned char* WRAP_KEY;
-    unsigned char* WRAPPED_KEY;
-    size_t PLAINTEXT_KEY_LENGTH;
+    const unsigned char* KEY;
+    const unsigned char* KEK;
+    unsigned char* WRAP_KEY;
+    size_t KEY_LENGTH;
+    size_t KEK_LENGTH;
     size_t WRAP_KEY_LENGTH;
-    size_t WRAPPED_KEY_LENGTH;
 };
 
 struct AES_WRAP_DECRYPT {
-    const unsigned char* WRAPPED_KEY;
     const unsigned char* WRAP_KEY;
-    unsigned char* UNWRAPPED_KEY;
-    size_t WRAPPED_KEY_LENGTH;
+    const unsigned char* KEK;
+    unsigned char* KEY;
     size_t WRAP_KEY_LENGTH;
-    size_t UNWRAPPED_KEY_LENGTH;
+    size_t KEK_LENGTH;
+    size_t KEY_LENGTH;
 };
 
 // Define function pointer types for all APIs

@@ -144,43 +144,48 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 
 void GetValue(std::string arg, const CRYPT_OPTIONS option, std::vector<unsigned char>& buffer) {
 	size_t length;
+	int resultCode;
 	switch (option) {
 	case CRYPT_OPTIONS::OPTION_TEXT:
 		buffer.clear();
-		buffer.resize(arg.size());
 		buffer.assign(arg.begin(), arg.end());
+		// buffer.push_back('\0');
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE16:
 		length = encoder_execute::CalculateDecodeLength("--base16", arg.size());
 		buffer.clear();
 		buffer.resize(length);
-		length = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (length > 0)
-			buffer.resize(length);
+		resultCode = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
+		if (resultCode > 0)
+			buffer.resize(resultCode);
+		// buffer.push_back('\0');
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE32:
 		length = encoder_execute::CalculateDecodeLength("--base32", arg.size());
 		buffer.clear();
 		buffer.resize(length);
-		length = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (length > 0)
-			buffer.resize(length);
+		resultCode = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
+		if (resultCode > 0)
+			buffer.resize(resultCode);
+		// buffer.push_back('\0');
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE64:
 		length = encoder_execute::CalculateDecodeLength("--base64", arg.size());
 		buffer.clear();
 		buffer.resize(length);
-		length = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (length > 0)
-			buffer.resize(length);
+		resultCode = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
+		if (resultCode > 0)
+			buffer.resize(resultCode);
+		// buffer.push_back('\0');
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE85:
 		length = encoder_execute::CalculateDecodeLength("--base85", arg.size());
 		buffer.clear();
 		buffer.resize(length);
-		length = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (length > 0)
-			buffer.resize(length);
+		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
+		if (resultCode > 0)
+			buffer.resize(resultCode);
+		// buffer.push_back('\0');
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
 		std::ifstream file(arg, std::ios::in | std::ios::binary | std::ios::ate);
@@ -192,6 +197,7 @@ void GetValue(std::string arg, const CRYPT_OPTIONS option, std::vector<unsigned 
 			std::cerr << Error("Failed to read file: " + arg) << std::endl;
 			buffer.clear();
 		}
+		// buffer.push_back('\0');
 		file.close();
 		break;
 	}
@@ -199,45 +205,48 @@ void GetValue(std::string arg, const CRYPT_OPTIONS option, std::vector<unsigned 
 
 void SetValue(std::vector<unsigned char>& buffer, std::string& result_str, const CRYPT_OPTIONS option) {
 	size_t length;
+	int resultCode;
 	std::vector<char> result;
 	switch (option) {
 	case CRYPT_OPTIONS::OPTION_TEXT:
+		if (!buffer.empty() && buffer.back() == '\0')
+			buffer.pop_back();
 		result_str.resize(buffer.size());
 		result_str.assign(buffer.begin(), buffer.end());
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE16:
 		length = encoder_execute::CalculateEncodeLength("--base16", buffer.size());
 		result.resize(length);
-		length = ((Base16Encode)EncodeFunctions.at("-base16-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (length > 0)
-			result.resize(length);
+		resultCode = ((Base16Encode)EncodeFunctions.at("-base16-encode"))(buffer.data(), buffer.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
 		buffer.clear();
-		result_str = result.data();
+		result_str.assign(result.begin(), result.end());
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE32:
 		length = encoder_execute::CalculateEncodeLength("--base32", buffer.size());
 		result.resize(length);
-		length = ((Base32Encode)EncodeFunctions.at("-base32-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (length > 0)
-			result.resize(length);
+		resultCode = ((Base32Encode)EncodeFunctions.at("-base32-encode"))(buffer.data(), buffer.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
 		buffer.clear();
 		result_str = result.data();
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE64:
 		length = encoder_execute::CalculateEncodeLength("--base64", buffer.size());
 		result.resize(length);
-		length = ((Base64Encode)EncodeFunctions.at("-base64-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (length > 0)
-			result.resize(length);
+		resultCode = ((Base64Encode)EncodeFunctions.at("-base64-encode"))(buffer.data(), buffer.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
 		buffer.clear();
 		result_str = result.data();
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE85:
 		length = encoder_execute::CalculateEncodeLength("--base85", buffer.size());
 		result.resize(length);
-		length = ((Base85Encode)EncodeFunctions.at("-base85-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (length > 0)
-			result.resize(length);
+		resultCode = ((Base85Encode)EncodeFunctions.at("-base85-encode"))(buffer.data(), buffer.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
 		buffer.clear();
 		result_str = result.data();
 		break;
@@ -265,25 +274,22 @@ void CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
+	size_t key_size;
 	size_t plaintext_size;
 	const long long counter = std::stoll(aes.Counter);
 	GetValue(aes.Key, aes.key_option, key);
 	GetValue(aes.PlainText, aes.plaintext_option, plaintext);
+	key_size = key.size();
 	plaintext_size = plaintext.size();
 	ciphertext.resize(plaintext_size);
 	AES_CTR_ENCRYPT ctrEncrypt = {
-		plaintext.data(),
 		key.data(),
-		plaintext_size,
+		plaintext.data(),
 		ciphertext.data(),
 		counter,
+		key_size,
+		plaintext_size,
 	};
-
-	std::cout << "PLAIN_TEXT: " << static_cast<void*>(plaintext.data()) << std::endl;
-	std::cout << "PLAIN_TEXT_LENGTH: " << plaintext_size << std::endl;
-	std::cout << "KEY: " << static_cast<void*>(key.data()) << std::endl;
-	std::cout << "CIPHER_TEXT: " << static_cast<void*>(ciphertext.data()) << std::endl;
-	std::cout << "COUNTER: " << counter << std::endl;
 
 	int length = ((AesCtrEncrypt)AesFunctions.at("-ctr-encrypt"))(&ctrEncrypt);
 	result.resize(length);
@@ -294,18 +300,25 @@ void CtrDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
+	size_t key_size;
+	size_t ciphertext_size;
+	const long long counter = std::stoll(aes.Counter);
 	GetValue(aes.Key, aes.key_option, key);
 	GetValue(aes.CipherText, aes.ciphertext_option, ciphertext);
+	key_size = key.size();
+	ciphertext_size = ciphertext.size();
 	plaintext.resize(ciphertext.size());
 	AES_CTR_DECRYPT ctrDecrypt = {
-			ciphertext.data(),
 			key.data(),
-			ciphertext.size(),
+			ciphertext.data(),
 			plaintext.data(),
-			std::stoll(aes.Counter),
+			counter,
+			key_size,
+			ciphertext_size,
 	};
-	((AesCtrDecrypt)AesFunctions.at("-ctr-decrypt"))(&ctrDecrypt);
-	result = plaintext;
+	int length = ((AesCtrDecrypt)AesFunctions.at("-ctr-decrypt"))(&ctrDecrypt);
+	result.resize(length);
+	result.assign(plaintext.begin(), plaintext.end());
 }
 
 void aes_execute::AesStart(Aes& aes) {

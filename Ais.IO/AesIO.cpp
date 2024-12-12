@@ -18,19 +18,6 @@ int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
     return -1;
 }
 
-void longlong_to_bytes(long long counter, unsigned char* buffer, int buffer_size) {
-    // Buffer size must be at least 8 bytes to store the counter
-    if (buffer_size < 8) {
-        std::cerr << "Buffer size too small" << std::endl;
-        return;
-    }
-
-    // Store the counter in the buffer (little-endian order)
-    for (int i = 0; i < 8; ++i) {
-        buffer[i] = (unsigned char)((counter >> (i * 8)) & 0xFF);
-    }
-}
-
 int GenerateKey(unsigned char* key, size_t keyLength) {
     ERR_clear_error();
     if (keyLength != 16 && keyLength != 24 && keyLength != 32)
@@ -139,27 +126,25 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    const int BLOCK_SIZE = 16;
-
-    unsigned char iv_with_counter[16];
+    unsigned char iv_with_counter[8];
     int len, ciphertext_len = 0;
 
-    size_t total_blocks = (encryption->PLAIN_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    std::memcpy(iv_with_counter, &encryption->COUNTER, sizeof(encryption->COUNTER));
 
-    for (int i = 0; i < total_blocks; ++i) {
-        longlong_to_bytes(encryption->COUNTER, iv_with_counter, BLOCK_SIZE);
-
-        if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, encryption->KEY, iv_with_counter))
-            return handleErrors("Initialize AES CTR encryption for the current block failed.", ctx);
-
-        size_t current_block_size = (BLOCK_SIZE < (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE)))
-                                ? BLOCK_SIZE
-                                : (encryption->PLAIN_TEXT_LENGTH - (i * BLOCK_SIZE));
-
-        if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len, encryption->PLAIN_TEXT + (i * BLOCK_SIZE), static_cast<int>(current_block_size)))
-            return handleErrors("Encrypt the current block failed.", ctx);
-        ciphertext_len += len;
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ctr(); break;
+    case 24: cipher = EVP_aes_192_ctr(); break;
+    case 32: cipher = EVP_aes_256_ctr(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
     }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, iv_with_counter))
+        return handleErrors("Initialize AES CTR encryption for the current block failed.", ctx);
+
+    if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
+        return handleErrors("Encrypt the current block failed.", ctx);
+    ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + ciphertext_len, &len))
         return handleErrors("Finalize encryption failed.", ctx);
@@ -175,27 +160,25 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    const int BLOCK_SIZE = 16;
-
-    unsigned char iv_with_counter[16];
+    unsigned char iv_with_counter[8];
     int len, plaintext_len = 0;
 
-    size_t total_blocks = (decryption->CIPHER_TEXT_LENGTH + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    std::memcpy(iv_with_counter, &decryption->COUNTER, sizeof(decryption->COUNTER));
 
-    for (int i = 0; i < total_blocks; ++i) {
-        longlong_to_bytes(decryption->COUNTER, iv_with_counter, BLOCK_SIZE);
-
-        if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ctr(), NULL, decryption->KEY, iv_with_counter))
-            return handleErrors("Initialize AES CTR decryption for the current block failed.", ctx);
-
-        size_t current_block_size = (BLOCK_SIZE < (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE)))
-                                ? BLOCK_SIZE
-                                : (decryption->CIPHER_TEXT_LENGTH - (i * BLOCK_SIZE));
-
-        if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT + plaintext_len, &len, decryption->CIPHER_TEXT + (i * BLOCK_SIZE), static_cast<int>(current_block_size)))
-            return handleErrors("Decrypt the current block failed.", ctx);
-        plaintext_len += len;
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ctr(); break;
+    case 24: cipher = EVP_aes_192_ctr(); break;
+    case 32: cipher = EVP_aes_256_ctr(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
     }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, iv_with_counter))
+        return handleErrors("Initialize AES CTR decryption for the current block failed.", ctx);
+
+    if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
+        return handleErrors("Decrypt the current block failed.", ctx);
+    plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + plaintext_len, &len))
         return handleErrors("Finalize decryption failed.", ctx);
@@ -211,10 +194,18 @@ int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_cbc(); break;
+    case 24: cipher = EVP_aes_192_cbc(); break;
+    case 32: cipher = EVP_aes_256_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
     if (encryption->PKCS7_PADDING == false && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
         return handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, encryption->KEY, encryption->IV))
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
         return handleErrors("Initialize AES CBC encryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
@@ -238,10 +229,18 @@ int AesCbcDecrypt(AES_CBC_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_cbc(); break;
+    case 24: cipher = EVP_aes_192_cbc(); break;
+    case 32: cipher = EVP_aes_256_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
     if (decryption->PKCS7_PADDING == false && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
         return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, decryption->KEY, decryption->IV))
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
         return handleErrors("Initialize AES CBC decryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
@@ -266,19 +265,32 @@ int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
-    switch (encryption->SEGMENT_SIZE) {
-        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT:
-            cipher = EVP_aes_256_cfb1();
-            break;
-        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT:
-            cipher = EVP_aes_256_cfb8();
-            break;
-        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT:
-            cipher = EVP_aes_256_cfb128();
-            break;
-        default:
-            cipher = EVP_aes_256_cfb128();
-            break;
+    switch (encryption->KEY_LENGTH) {
+    case 16:
+        switch (encryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_128_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_128_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_128_cfb128(); break;
+        default: cipher = EVP_aes_128_cfb128(); break;
+        }
+        break;
+    case 24:
+        switch (encryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_192_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_192_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_192_cfb128(); break;
+        default: cipher = EVP_aes_192_cfb128(); break;
+        }
+        break;
+    case 32:
+        switch (encryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_256_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_256_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_256_cfb128(); break;
+        default: cipher = EVP_aes_256_cfb128(); break;
+        }
+        break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -304,19 +316,32 @@ int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
-    switch (decryption->SEGMENT_SIZE) {
-    case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT:
-        cipher = EVP_aes_256_cfb1();
+    switch (decryption->KEY_LENGTH) {
+    case 16:
+        switch (decryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_128_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_128_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_128_cfb128(); break;
+        default: cipher = EVP_aes_128_cfb128(); break;
+        }
         break;
-    case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT:
-        cipher = EVP_aes_256_cfb8();
+    case 24:
+        switch (decryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_192_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_192_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_192_cfb128(); break;
+        default: cipher = EVP_aes_192_cfb128(); break;
+        }
         break;
-    case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT:
-        cipher = EVP_aes_256_cfb128();
+    case 32:
+        switch (decryption->SEGMENT_SIZE) {
+        case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_256_cfb1(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_256_cfb8(); break;
+        case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_256_cfb128(); break;
+        default: cipher = EVP_aes_256_cfb128(); break;
+        }
         break;
-    default:
-        cipher = EVP_aes_256_cfb128();
-        break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -341,7 +366,15 @@ int AesOfbEncrypt(AES_OFB_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ofb(), NULL, encryption->KEY, encryption->IV))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ofb(); break;
+    case 24: cipher = EVP_aes_192_ofb(); break;
+    case 32: cipher = EVP_aes_256_ofb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
         return handleErrors("Initialize AES OFB encryption failed.", ctx);
 
     int len, ciphertext_len = 0;
@@ -363,8 +396,16 @@ int AesOfbDecrypt(AES_OFB_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ofb(), NULL, decryption->KEY, decryption->IV))
-        return handleErrors("Initialize AES OFB encryption failed.", ctx);
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ofb(); break;
+    case 24: cipher = EVP_aes_192_ofb(); break;
+    case 32: cipher = EVP_aes_256_ofb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
+        return handleErrors("Initialize AES OFB decryption failed.", ctx);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
@@ -385,10 +426,18 @@ int AesEcbEncrypt(AES_ECB_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ecb(); break;
+    case 24: cipher = EVP_aes_192_ecb(); break;
+    case 32: cipher = EVP_aes_256_ecb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
     if (encryption->PKCS7_PADDING == false && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
         return handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, encryption->KEY, NULL))
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, NULL))
         return handleErrors("Initialize AES ECB encryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
@@ -412,10 +461,18 @@ int AesEcbDecrypt(AES_ECB_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ecb(); break;
+    case 24: cipher = EVP_aes_192_ecb(); break;
+    case 32: cipher = EVP_aes_256_ecb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
     if (decryption->PKCS7_PADDING == false && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
         return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, decryption->KEY, NULL))
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, NULL))
         return handleErrors("Initialize AES ECB decryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
@@ -439,7 +496,15 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_gcm(); break;
+    case 24: cipher = EVP_aes_192_gcm(); break;
+    case 32: cipher = EVP_aes_256_gcm(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
@@ -470,7 +535,15 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_gcm(); break;
+    case 24: cipher = EVP_aes_192_gcm(); break;
+    case 32: cipher = EVP_aes_256_gcm(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
@@ -502,7 +575,15 @@ int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ccm(); break;
+    case 24: cipher = EVP_aes_192_ccm(); break;
+    case 32: cipher = EVP_aes_256_ccm(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
@@ -542,7 +623,15 @@ int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ccm(); break;
+    case 24: cipher = EVP_aes_192_ccm(); break;
+    case 32: cipher = EVP_aes_256_ccm(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
@@ -575,15 +664,38 @@ int AesXtsEncrypt(AES_XTS_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_xts(), NULL, NULL, NULL))
+    if (encryption->KEY1_LENGTH != encryption->KEY2_LENGTH)
+        return handleErrors("Both sets of keys must be the same length.", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY1_LENGTH) {
+    case 16: cipher = EVP_aes_128_xts(); break;
+    case 32: cipher = EVP_aes_256_xts(); break;
+    default:return handleErrors("Invalid key length. Must be 128 or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
 
-    unsigned char xts_key[64];
-    memcpy(xts_key, encryption->KEY1, 32);
-    memcpy(xts_key + 32, encryption->KEY2, 32);
-
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key, encryption->TWEAK))
-        return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
+    switch (encryption->KEY1_LENGTH) {
+    case 16: {
+        unsigned char xts_key_128[32];
+        memcpy(xts_key_128, encryption->KEY1, 16);
+        memcpy(xts_key_128 + 16, encryption->KEY2, 16);
+        if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key_128, encryption->TWEAK))
+            return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
+        break;
+    }
+    case 32: {
+        unsigned char xts_key_256[64];
+        memcpy(xts_key_256, encryption->KEY1, 32);
+        memcpy(xts_key_256 + 32, encryption->KEY2, 32);
+        if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key_256, encryption->TWEAK))
+            return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
+        break;
+    }
+    default:return handleErrors("Invalid key length. Must be 128 or 256 bits.", ctx);
+    }
 
     int len, ciphertext_len = 0;
 
@@ -605,15 +717,38 @@ int AesXtsDecrypt(AES_XTS_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_xts(), NULL, NULL, NULL))
+    if (decryption->KEY1_LENGTH != decryption->KEY2_LENGTH)
+        return handleErrors("Both sets of keys must be the same length.", ctx);
+
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY1_LENGTH) {
+    case 16: cipher = EVP_aes_128_xts(); break;
+    case 32: cipher = EVP_aes_256_xts(); break;
+    default:return handleErrors("Invalid key length. Must be 128 or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
 
-    unsigned char xts_key[64];
-    memcpy(xts_key, decryption->KEY1, 32);
-    memcpy(xts_key + 32, decryption->KEY2, 32);
-
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key, decryption->TWEAK))
-        return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
+    switch (decryption->KEY1_LENGTH) {
+    case 16: {
+        unsigned char xts_key_128[32];
+        memcpy(xts_key_128, decryption->KEY1, 16);
+        memcpy(xts_key_128 + 16, decryption->KEY2, 16);
+        if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key_128, decryption->TWEAK))
+            return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
+        break;
+    }
+    case 32: {
+        unsigned char xts_key_256[64];
+        memcpy(xts_key_256, decryption->KEY1, 32);
+        memcpy(xts_key_256 + 32, decryption->KEY2, 32);
+        if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key_256, decryption->TWEAK))
+            return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
+        break;
+    }
+    default:return handleErrors("Invalid key length. Must be 128 or 256 bits.", ctx);
+    }
 
     int len, plaintext_len = 0;
 
@@ -635,7 +770,15 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ocb(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (encryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ocb(); break;
+    case 24: cipher = EVP_aes_192_ocb(); break;
+    case 32: cipher = EVP_aes_256_ocb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, encryption->IV_LENGTH, NULL))
@@ -672,7 +815,15 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ocb(), NULL, NULL, NULL))
+    const EVP_CIPHER* cipher = nullptr;
+    switch (decryption->KEY_LENGTH) {
+    case 16: cipher = EVP_aes_128_ocb(); break;
+    case 24: cipher = EVP_aes_192_ocb(); break;
+    case 32: cipher = EVP_aes_256_ocb(); break;
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, decryption->IV_LENGTH, NULL))
@@ -709,33 +860,33 @@ int AesWrapEncrypt(AES_WRAP_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (encryption->WRAP_KEY_LENGTH != 16 && encryption->WRAP_KEY_LENGTH != 24 && encryption->WRAP_KEY_LENGTH != 32)
+    if (encryption->KEK_LENGTH != 16 && encryption->KEK_LENGTH != 24 && encryption->KEK_LENGTH != 32)
         return handleErrors("Invalid wrap key length. Must be 16, 24, or 32 bytes.", ctx);
 
-    if (encryption->PLAINTEXT_KEY_LENGTH < 16)
+    if (encryption->KEY_LENGTH < 16)
         return handleErrors("Invalid plaintext key length. Must be at least 16 bytes.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
-    switch (encryption->WRAP_KEY_LENGTH) {
+    switch (encryption->KEK_LENGTH) {
     case 16: cipher = EVP_aes_128_wrap(); break;
     case 24: cipher = EVP_aes_192_wrap(); break;
     case 32: cipher = EVP_aes_256_wrap(); break;
     default: return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
     }
 
-    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->WRAP_KEY, NULL))
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEK, NULL))
         return handleErrors("Initialize AES WRAP encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
-    if (1 != EVP_EncryptUpdate(ctx, encryption->WRAPPED_KEY, &len, encryption->PLAINTEXT_KEY, encryption->PLAINTEXT_KEY_LENGTH))
+    if (1 != EVP_EncryptUpdate(ctx, encryption->WRAP_KEY, &len, encryption->KEY, encryption->KEY_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
-    if (1 != EVP_EncryptFinal_ex(ctx, encryption->WRAPPED_KEY + len, &len))
+    if (1 != EVP_EncryptFinal_ex(ctx, encryption->WRAP_KEY + len, &len))
         return handleErrors("Final encryption failed.", ctx);
     ciphertext_len += len;
 
-    encryption->WRAPPED_KEY_LENGTH = ciphertext_len;
+    encryption->WRAP_KEY_LENGTH = ciphertext_len;
     EVP_CIPHER_CTX_free(ctx);
     return ciphertext_len;
 }
@@ -746,30 +897,30 @@ int AesWrapDecrypt(AES_WRAP_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (decryption->WRAP_KEY_LENGTH != 16 && decryption->WRAP_KEY_LENGTH != 24 && decryption->WRAP_KEY_LENGTH != 32)
+    if (decryption->KEK_LENGTH != 16 && decryption->KEK_LENGTH != 24 && decryption->KEK_LENGTH != 32)
         return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
-    switch (decryption->WRAP_KEY_LENGTH) {
+    switch (decryption->KEK_LENGTH) {
     case 16: cipher = EVP_aes_128_wrap(); break;
     case 24: cipher = EVP_aes_192_wrap(); break;
     case 32: cipher = EVP_aes_256_wrap(); break;
     default:return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
     }
 
-    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->WRAP_KEY, NULL))
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEK, NULL))
         return handleErrors("Initialize AES WRAP decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
-    if (1 != EVP_DecryptUpdate(ctx, decryption->UNWRAPPED_KEY, &len, decryption->WRAPPED_KEY, decryption->WRAPPED_KEY_LENGTH))
+    if (1 != EVP_DecryptUpdate(ctx, decryption->KEY, &len, decryption->WRAP_KEY, decryption->WRAP_KEY_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
-    if (1 != EVP_DecryptFinal_ex(ctx, decryption->UNWRAPPED_KEY + len, &len))
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->KEY + len, &len))
         return handleErrors("Final decryption failed.", ctx);
     plaintext_len += len;
 
-    decryption->UNWRAPPED_KEY_LENGTH = plaintext_len;
+    decryption->KEY_LENGTH = plaintext_len;
     EVP_CIPHER_CTX_free(ctx);
     return plaintext_len;
 }
