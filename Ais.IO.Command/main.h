@@ -20,13 +20,35 @@
 #include <fstream>
 
 enum CRYPT_OPTIONS : unsigned char {
-    OPTION_NULL = 0,
-    OPTION_TEXT = 1,
-    OPTION_BASE16 = 2,
-    OPTION_BASE32 = 3,
-    OPTION_BASE64 = 4,
-    OPTION_BASE85 = 5,
-    OPTION_FILE = 6,
+    OPTION_TEXT = 0,
+    OPTION_BASE16 = 1,
+    OPTION_BASE32 = 2,
+    OPTION_BASE64 = 3,
+    OPTION_BASE85 = 4,
+    OPTION_FILE = 5,
+};
+
+enum CRYPT_TYPE : unsigned char {
+    CRYPTION_NULL = 0,
+    CRYPTION_ENCRYPT = 1,
+    CRYPTION_DECRYPT = 2,
+    CRYPTION_SIGNED = 3,
+    CRYPTION_VERIFY = 4,
+    CRYPTION_DERIVE = 5,
+};
+
+enum AES_MODE : unsigned long long {
+    AES_NULL = 0x00,
+    AES_CTR = 0x01 << 0,
+    AES_CBC = 0x01 << 1,
+    AES_CFB = 0x01 << 2,
+    AES_OFB = 0x01 << 3,
+    AES_ECB = 0x01 << 4,
+    AES_GCM = 0x01 << 5,
+    AES_CCM = 0x01 << 6,
+    AES_XTS = 0x01 << 7,
+    AES_OCB = 0x01 << 8,
+    AES_WRAP = 0x01 << 9,
 };
 
 struct Command {
@@ -39,27 +61,30 @@ struct Command {
 };
 
 struct Aes {
-    std::string Mode;
-    std::string Crypt;
+    AES_MODE Mode;
+    CRYPT_TYPE Crypt;
     std::string Key;
     std::string IV;
+    std::string PlainText;
+    std::string CipherText;
     std::string Tag;
     std::string Aad;
     std::string Tweak;
     std::string Key2;
-    std::string Wrap;
-    std::string PlainText;
-    std::string CipherText;
+    std::string Output;
 
-    CRYPT_OPTIONS key_option;
-    CRYPT_OPTIONS iv_option;
-    CRYPT_OPTIONS tag_option;
-    CRYPT_OPTIONS aad_option;
-    CRYPT_OPTIONS tweak_option;
-    CRYPT_OPTIONS key2_option;
-    CRYPT_OPTIONS wrap_option;
-    CRYPT_OPTIONS plaintext_option;
-    CRYPT_OPTIONS ciphertext_option;
+    CRYPT_OPTIONS key_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS iv_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS tag_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS aad_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS tweak_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS key2_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
+    std::string Counter;
+    std::string Segment;
 };
 
 enum BINARYIO_TYPE : unsigned char {
@@ -92,6 +117,7 @@ enum SEGMENT_SIZE_OPTION {
     SEGMENT_128_BIT = 128,
 };
 
+#pragma pack(push, 1)
 struct AES_CTR_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
     const unsigned char* KEY;
@@ -99,7 +125,9 @@ struct AES_CTR_ENCRYPT {
     unsigned char* CIPHER_TEXT;
     const long long COUNTER;
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct AES_CTR_DECRYPT {
     const unsigned char* CIPHER_TEXT;
     const unsigned char* KEY;
@@ -107,6 +135,7 @@ struct AES_CTR_DECRYPT {
     unsigned char* PLAIN_TEXT;
     const long long COUNTER;
 };
+#pragma pack(pop)
 
 struct AES_CBC_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
@@ -429,3 +458,7 @@ extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
+
+extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
+extern std::unordered_map<std::string, AES_MODE> AesMode;
+extern std::unordered_map<AES_MODE, std::string> AesDisplay;

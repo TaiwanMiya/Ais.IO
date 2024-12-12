@@ -25,6 +25,38 @@ std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
+std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
+    { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
+    { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
+    { CRYPT_TYPE::CRYPTION_DECRYPT, "Decrypt" },
+    { CRYPT_TYPE::CRYPTION_SIGNED, "Signed" },
+    { CRYPT_TYPE::CRYPTION_VERIFY, "Verify" },
+    { CRYPT_TYPE::CRYPTION_DERIVE, "Derive" }
+};
+std::unordered_map<std::string, AES_MODE> AesMode = {
+    {"-ctr", AES_MODE::AES_CTR },
+    {"-cbc", AES_MODE::AES_CBC },
+    {"-cfb", AES_MODE::AES_CFB },
+    {"-ofb", AES_MODE::AES_OFB },
+    {"-ecb", AES_MODE::AES_ECB },
+    {"-gcm", AES_MODE::AES_GCM },
+    {"-ccm", AES_MODE::AES_CCM },
+    {"-xts", AES_MODE::AES_XTS },
+    {"-ocb", AES_MODE::AES_OCB },
+    {"-wrap", AES_MODE::AES_WRAP },
+};
+std::unordered_map<AES_MODE, std::string> AesDisplay = {
+    { AES_MODE::AES_CTR, "CTR" },
+    { AES_MODE::AES_CBC, "CBC" },
+    { AES_MODE::AES_CFB, "CFB" },
+    { AES_MODE::AES_OFB, "OFB" },
+    { AES_MODE::AES_ECB, "ECB" },
+    { AES_MODE::AES_GCM, "GCM" },
+    { AES_MODE::AES_CCM, "CCM" },
+    { AES_MODE::AES_XTS, "XTS" },
+    { AES_MODE::AES_OCB, "OCB" },
+    { AES_MODE::AES_WRAP, "WRAP" },
+};
 
 constexpr size_t hash(const char* str) {
     size_t hash = 0;
@@ -534,6 +566,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--aes") {
         Aes aes;
         aes_execute::ParseParameters(argc, argv, aes);
+        aes_execute::AesStart(aes);
     }
 
     UNLOAD_LIBRARY(Lib);

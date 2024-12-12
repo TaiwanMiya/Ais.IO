@@ -21,7 +21,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     }
 
     size_t inputLength = size > 0 ? size : cmd.value.size();
-    size_t outputLength = CalculateOutputLength(mode, inputLength);
+    size_t outputLength = CalculateEncodeLength(mode, inputLength);
     if (outputLength == 0) {
         std::cerr << Warn("Invalid mode: ") << Ask(mode) << "\n";
         return;
@@ -52,12 +52,9 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     if (encodeType == "-base85-decode")
         resultCode = ((Base85Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
 
-    if (resultCode < 0) {
+    if (resultCode < 0)
         std::cerr << Error("Encoding/Decoding failed for ") << Ask(mode) << Error(" with code: ") << Ask(std::to_string(resultCode)) << "\n";
-    }
     else {
-        
-
         if (!cmd.output.empty()) {
             if (resultCode > outputBuffer.size()) {
                 std::cerr << Error("Output buffer overflow detected.\n");
@@ -83,20 +80,58 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     buffer.clear();
 }
 
-size_t encoder_execute::CalculateOutputLength(const std::string& mode, size_t inputLength) {
-    if (mode == "--base16") {
-        return inputLength * 2 + 1;
+size_t encoder_execute::CalculateEncodeLength(const std::string& mode, size_t length) {
+    if (mode == "--base16")
+        return length * 2 + 1;
+    else if (mode == "--base32")
+        return ((length + 4) / 5) * 8 + 1;
+    else if (mode == "--base64")
+        return ((length + 2) / 3) * 4 + 1;
+    else if (mode == "--base85")
+        return ((length + 3) / 4) * 5 + 1;
+    else
+        return 0;
+}
+
+size_t encoder_execute::CalculateDecodeLength(const std::string& mode, size_t length) {
+    if (mode == "--base16")
+        return length / 2;
+    else if (mode == "--base32")
+        return (length / 8) * 5;
+    else if (mode == "--base64")
+        return (length / 4) * 3;
+    else if (mode == "--base85")
+        return (length / 5) * 4;
+    else
+        return 0;
+}
+
+size_t encoder_execute::CalculateEncodeLength(const CRYPT_OPTIONS mode, size_t length) {
+    switch (mode) {
+    case CRYPT_OPTIONS::OPTION_BASE16:
+        return length * 2 + 1;
+    case CRYPT_OPTIONS::OPTION_BASE32:
+        return ((length + 4) / 5) * 8 + 1;
+    case CRYPT_OPTIONS::OPTION_BASE64:
+        return ((length + 2) / 3) * 4 + 1;
+    case CRYPT_OPTIONS::OPTION_BASE85:
+        return ((length + 3) / 4) * 5 + 1;
+    default:
+        return 0;
     }
-    else if (mode == "--base32") {
-        return ((inputLength + 4) / 5) * 8 + 1;
-    }
-    else if (mode == "--base64") {
-        return ((inputLength + 2) / 3) * 4 + 1;
-    }
-    else if (mode == "--base85") {
-        return ((inputLength + 3) / 4) * 5 + 1;
-    }
-    else {
+}
+
+size_t encoder_execute::CalculateDecodeLength(const CRYPT_OPTIONS mode, size_t length) {
+    switch (mode) {
+    case CRYPT_OPTIONS::OPTION_BASE16:
+        return length / 2;
+    case CRYPT_OPTIONS::OPTION_BASE32:
+        return (length / 8) * 5;
+    case CRYPT_OPTIONS::OPTION_BASE64:
+        return (length / 4) * 3;
+    case CRYPT_OPTIONS::OPTION_BASE85:
+        return (length / 5) * 4;
+    default:
         return 0;
     }
 }
