@@ -156,6 +156,7 @@
     <ClCompile Include="aes_execute.cpp" />
     <ClCompile Include="binary_execute.cpp" />
     <ClCompile Include="encoder_execute.cpp" />
+    <ClCompile Include="encoder_libary.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="output_colors.cpp" />
     <ClCompile Include="string_case.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="aes_execute.h" />
     <ClInclude Include="binary_execute.h" />
     <ClInclude Include="encoder_execute.h" />
+    <ClInclude Include="encoder_libary.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="output_colors.h" />
     <ClInclude Include="string_case.h" />

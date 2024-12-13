@@ -83,8 +83,8 @@ int ImportKey(const unsigned char* input, size_t inputLength, unsigned char* key
     if (keyLength != 16 && keyLength != 24 && keyLength != 32)
         return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
 
-    memset(key, 0, keyLength);
-    memcpy(key, input, inputLength > keyLength ? keyLength : inputLength);
+    std::memset(key, 0, keyLength);
+    std::memcpy(key, input, inputLength > keyLength ? keyLength : inputLength);
     return 0;
 }
 
@@ -92,8 +92,8 @@ int ImportIV(const unsigned char* input, size_t inputLength, unsigned char* iv, 
     if (ivLength != 12 && ivLength != 16)
         return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
 
-    memset(iv, 0, ivLength);
-    memcpy(iv, input, inputLength > ivLength ? ivLength : inputLength);
+    std::memset(iv, 0, ivLength);
+    std::memcpy(iv, input, inputLength > ivLength ? ivLength : inputLength);
     return 0;
 }
 
@@ -101,22 +101,22 @@ int ImportTag(const unsigned char* input, size_t inputLength, unsigned char* tag
     if (tagLength != 16)
         return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
 
-    memset(tag, 0, tagLength);
-    memcpy(tag, input, inputLength > tagLength ? tagLength : inputLength);
+    std::memset(tag, 0, tagLength);
+    std::memcpy(tag, input, inputLength > tagLength ? tagLength : inputLength);
     return 0;
 }
 
 int ImportAad(const unsigned char* input, size_t inputLength, unsigned char* aad, size_t aadLength) {
-    memset(aad, 0, aadLength);
-    memcpy(aad, input, inputLength > aadLength ? aadLength : inputLength);
+    std::memset(aad, 0, aadLength);
+    std::memcpy(aad, input, inputLength > aadLength ? aadLength : inputLength);
     return 0;
 }
 
 int ImportTweak(const unsigned char* input, size_t inputLength, unsigned char* tweak, size_t tweakLength) {
     if (tweakLength != 16)
         return handleErrors("Invalid Tweak length. Use 128 bits.", NULL);
-    memset(tweak, 0, tweakLength);
-    memcpy(tweak, input, inputLength > tweakLength ? tweakLength : inputLength);
+    std::memset(tweak, 0, tweakLength);
+    std::memcpy(tweak, input, inputLength > tweakLength ? tweakLength : inputLength);
     return 0;
 }
 
@@ -126,9 +126,10 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    unsigned char iv_with_counter[8];
+    unsigned char iv_with_counter[16];
     int len, ciphertext_len = 0;
 
+    std::memset(iv_with_counter, 0, sizeof(iv_with_counter));
     std::memcpy(iv_with_counter, &encryption->COUNTER, sizeof(encryption->COUNTER));
 
     const EVP_CIPHER* cipher = nullptr;
@@ -160,9 +161,10 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    unsigned char iv_with_counter[8];
+    unsigned char iv_with_counter[16];
     int len, plaintext_len = 0;
 
+    std::memset(iv_with_counter, 0, sizeof(iv_with_counter));
     std::memcpy(iv_with_counter, &decryption->COUNTER, sizeof(decryption->COUNTER));
 
     const EVP_CIPHER* cipher = nullptr;
@@ -680,16 +682,18 @@ int AesXtsEncrypt(AES_XTS_ENCRYPT* encryption) {
     switch (encryption->KEY1_LENGTH) {
     case 16: {
         unsigned char xts_key_128[32];
-        memcpy(xts_key_128, encryption->KEY1, 16);
-        memcpy(xts_key_128 + 16, encryption->KEY2, 16);
+        std::memset(xts_key_128, 0, sizeof(xts_key_128));
+        std::memcpy(xts_key_128, encryption->KEY1, 16);
+        std::memcpy(xts_key_128 + 16, encryption->KEY2, 16);
         if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key_128, encryption->TWEAK))
             return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
         break;
     }
     case 32: {
         unsigned char xts_key_256[64];
-        memcpy(xts_key_256, encryption->KEY1, 32);
-        memcpy(xts_key_256 + 32, encryption->KEY2, 32);
+        std::memset(xts_key_256, 0, sizeof(xts_key_256));
+        std::memcpy(xts_key_256, encryption->KEY1, 32);
+        std::memcpy(xts_key_256 + 32, encryption->KEY2, 32);
         if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, xts_key_256, encryption->TWEAK))
             return handleErrors("Initialize AES XTS encryption for the current block failed.", ctx);
         break;
@@ -733,16 +737,18 @@ int AesXtsDecrypt(AES_XTS_DECRYPT* decryption) {
     switch (decryption->KEY1_LENGTH) {
     case 16: {
         unsigned char xts_key_128[32];
-        memcpy(xts_key_128, decryption->KEY1, 16);
-        memcpy(xts_key_128 + 16, decryption->KEY2, 16);
+        std::memset(xts_key_128, 0, sizeof(xts_key_128));
+        std::memcpy(xts_key_128, decryption->KEY1, 16);
+        std::memcpy(xts_key_128 + 16, decryption->KEY2, 16);
         if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key_128, decryption->TWEAK))
             return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
         break;
     }
     case 32: {
         unsigned char xts_key_256[64];
-        memcpy(xts_key_256, decryption->KEY1, 32);
-        memcpy(xts_key_256 + 32, decryption->KEY2, 32);
+        std::memset(xts_key_256, 0, sizeof(xts_key_256));
+        std::memcpy(xts_key_256, decryption->KEY1, 32);
+        std::memcpy(xts_key_256 + 32, decryption->KEY2, 32);
         if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, xts_key_256, decryption->TWEAK))
             return handleErrors("Initialize AES XTS decryption for the current block failed.", ctx);
         break;
