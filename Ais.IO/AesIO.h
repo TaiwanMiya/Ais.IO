@@ -13,6 +13,8 @@
 #define EXT extern "C"
 #endif
 
+#include <cstddef>
+
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,
     SEGMENT_8_BIT = 8,

@@ -3,7 +3,9 @@
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -shared -fPIC -std=c++17
-LDFLAGS = 
+LIB_PATHS := $(shell find /usr -name "libcrypto.so" -o -name "libssl.so" | xargs -n 1 dirname | sort -u)
+LDFLAGS += $(addprefix -L, $(LIB_PATHS))
+LIBS += -lcrypto -lssl
 
 # Detect platform
 UNAME_S := $(shell uname -s)
@@ -44,7 +46,7 @@ $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(
 			$(AISO_DIR)/AesIO.cpp
 	@echo "Compiling shared library file Ais.IO.so..."
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -I$(AISO_DIR)/include -o $@ -ldl
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -I$(AISO_DIR)/include -o $@ $(LIBS) -ldl
 
 $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.cpp $(AISO_CMD_DIR)/main.cpp \
 			$(AISO_CMD_DIR)/binary_execute.cpp $(AISO_CMD_DIR)/encoder_execute.cpp $(AISO_CMD_DIR)/aes_execute.cpp \
