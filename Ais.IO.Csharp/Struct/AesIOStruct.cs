@@ -115,7 +115,7 @@ namespace Ais.IO.Csharp
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
     };
 
-    // AES_CBC_ENCRYPT
+    // AES_ECB_ENCRYPT
     [StructLayout(LayoutKind.Sequential)]
     public struct AES_ECB_ENCRYPT
     {
@@ -127,7 +127,7 @@ namespace Ais.IO.Csharp
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
     }
 
-    // AES_CBC_DECRYPT
+    // AES_ECB_DECRYPT
     [StructLayout(LayoutKind.Sequential)]
     public struct AES_ECB_DECRYPT
     {

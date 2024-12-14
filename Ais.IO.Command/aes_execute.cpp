@@ -142,6 +142,11 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 			aes.Kek = argv[i + 1];
 			i++;
 			break;
+		case hash("-nonce"):
+			aes.nonce_option = cryptography_libary::GetOption(i, argv);
+			aes.Nonce = argv[i + 1];
+			i++;
+			break;
 		case hash("-wrapkey"):
 		case hash("-wk"):
 			aes.wrap_option = cryptography_libary::GetOption(i, argv);
@@ -503,27 +508,27 @@ void aes_execute::EcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-	std::vector<unsigned char> iv;
+	std::vector<unsigned char> nonce;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
 	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
 	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
 	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_GCM_ENCRYPT encryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		plaintext.data(),
 		ciphertext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		plaintext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
 	};
@@ -542,27 +547,27 @@ void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::GcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-    std::vector<unsigned char> iv;
+    std::vector<unsigned char> nonce;
     std::vector<unsigned char> ciphertext;
     std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
     cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-    cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+    cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
     cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
     cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_GCM_DECRYPT decryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		ciphertext.data(),
 		plaintext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		ciphertext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
     };
@@ -577,27 +582,27 @@ void aes_execute::GcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-	std::vector<unsigned char> iv;
+	std::vector<unsigned char> nonce;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
 	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
 	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
 	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_CCM_ENCRYPT encryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		plaintext.data(),
 		ciphertext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		plaintext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
 	};
@@ -616,27 +621,27 @@ void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::CcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-	std::vector<unsigned char> iv;
+	std::vector<unsigned char> nonce;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
 	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
 	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_CCM_DECRYPT decryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		ciphertext.data(),
 		plaintext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		ciphertext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
 	};
@@ -711,27 +716,27 @@ void aes_execute::XtsDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-	std::vector<unsigned char> iv;
+	std::vector<unsigned char> nonce;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
 	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
 	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
 	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_OCB_ENCRYPT encryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		plaintext.data(),
 		ciphertext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		plaintext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
 	};
@@ -750,27 +755,27 @@ void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::OcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
-	std::vector<unsigned char> iv;
+	std::vector<unsigned char> nonce;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
 	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
 	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
 	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_OCB_DECRYPT decryption = {
 		key.data(),
-		iv.data(),
+		nonce.data(),
 		ciphertext.data(),
 		plaintext.data(),
 		tag.data(),
 		aad.data(),
 		key.size(),
 		ciphertext.size(),
-		iv.size(),
+		nonce.size(),
 		tag.size(),
 		aad.size(),
 	};

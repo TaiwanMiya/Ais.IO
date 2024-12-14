@@ -79,6 +79,7 @@ struct Aes {
     std::string Tweak;
     std::string Key2;
     std::string Kek;
+    std::string Nonce;
     std::string Wrap;
     std::string Output;
 
@@ -91,6 +92,7 @@ struct Aes {
     CRYPT_OPTIONS tweak_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS key2_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS kek_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS nonce_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS wrap_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 

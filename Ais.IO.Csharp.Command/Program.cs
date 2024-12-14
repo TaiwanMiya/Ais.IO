@@ -30,6 +30,7 @@ namespace Ais.IO.Csharp.Command
                 string key2 = "Secondary Key for AES-XTS Tweak.";
                 string tweak = "SectorNumber0001";
                 string kek = "This is AES WRAP, 128, 192, 256.";
+                string nonce = "Nonce12bytes";
 
                 //int cryptionCount = 100;
                 //for (int i = 0; i < cryptionCount; i++)
@@ -50,16 +51,16 @@ namespace Ais.IO.Csharp.Command
                 //    AesIO.ECB(text, key, true);
 
                 //    text = "This is AES GCM Encryption/Decryption.";
-                //    AesIO.GCM(text, key, iv, tag, aad);
+                //    AesIO.GCM(text, key, nonce, tag, aad);
 
                 //    text = "This is AES CCM Encryption/Decryption.";
-                //    AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                //    AesIO.CCM(text, key, nonce, tag, aad);
 
                 //    text = "This is AES XTS Encryption/Decryption.";
                 //    AesIO.XTS(text, key, key2, tweak);
 
                 //    text = "This is AES OCB Encryption/Decryption.";
-                //    AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                //    AesIO.OCB(text, key, nonce, tag, aad);
 
                 //    AesIO.WRAP(key, kek);
                 //}
@@ -80,16 +81,16 @@ namespace Ais.IO.Csharp.Command
                 AesIO.ECB(text, key, true);
 
                 text = "This is AES GCM Encryption/Decryption.";
-                AesIO.GCM(text, key, iv, tag, aad);
+                AesIO.GCM(text, key, nonce, tag, aad);
 
                 text = "This is AES CCM Encryption/Decryption.";
-                AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                AesIO.CCM(text, key, nonce, tag, aad);
 
                 text = "This is AES XTS Encryption/Decryption.";
                 AesIO.XTS(text, key, key2, tweak);
 
                 text = "This is AES OCB Encryption/Decryption.";
-                AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                AesIO.OCB(text, key, nonce, tag, aad);
 
                 AesIO.WRAP(key, kek);
 

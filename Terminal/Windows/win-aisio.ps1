@@ -35,10 +35,10 @@ $TWEAK = "SectorNumber0001"
 $COUNTER = 1
 $BASE = "-base16"
 
-$GCM_TAG = "16B75069EFBF361EF2BF1C715B4C17D9"
-$CCM_TAG = "AE77C0D8AE767CA8A371ED8CBC9FDAB0"
-$OCB_TAG = "43F9C56328FD5F501AA0D6D4255DDF09"
-$IV_96 = "stBe128Size."
+$GCM_TAG = "73DD32019CD29E7251D17128DE27FFDD"
+$CCM_TAG = "DB9A881B8A159B079F826BD043A4F8C9"
+$OCB_TAG = "F7F64A75E6575C9093E12AB272CBF024"
+$NONCE = "Nonce12bytes"
 $KEK = "This is AES WRAP, 128, 192, 256."
 # Parse arguments
 while ($args.Count -gt 0) {
@@ -216,11 +216,11 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-aes-cfb' {
             if ($encoder -eq '-e') {
                 Write-Host "Ais AES CFB Encrypt..."
-                .\aisio --aes -cfb -encrypt -key $KEY -iv $IV -segment -plain-text "This is AES CFB Encryption/Decryption." -out $BASE
+                .\aisio --aes -cfb -encrypt -key $KEY -iv $IV -segment 128 -plain-text "This is AES CFB Encryption/Decryption." -out $BASE
             }
             else {
                 Write-Host "Ais AES CFB Decrypt..."
-                .\aisio --aes -cfb -decrypt -key $KEY -iv $IV -segment -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5742591D658641BE4CE31B24041FA41B791F3021531F171CD401"
+                .\aisio --aes -cfb -decrypt -key $KEY -iv $IV -segment 128 -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5742591D658641BE4CE31B24041FA41B791F3021531F171CD401"
             }
         }
         '-aes-ofb' {
@@ -246,21 +246,21 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-aes-gcm' {
             if ($encoder -eq '-e') {
                 Write-Host "Ais AES GCM Encrypt..."
-                .\aisio --aes -gcm -encrypt -key $KEY -iv $IV -tag $TAG -aad $AAD -plain-text "This is AES GCM Encryption/Decryption." -out $BASE
+                .\aisio --aes -gcm -encrypt -key $KEY -nonce $NONCE -tag $TAG -aad $AAD -plain-text "This is AES GCM Encryption/Decryption." -out $BASE
             }
             else {
                 Write-Host "Ais AES GCM Decrypt..."
-                .\aisio --aes -gcm -decrypt -key $KEY -iv $IV -tag $BASE $GCM_TAG -aad $AAD -cipher-text $BASE "05E65C394543DC6E35FE065F3923864209D70BD840AE78C56E33FF0D420DAB10E428EE7ED2C2"
+                .\aisio --aes -gcm -decrypt -key $KEY -nonce $NONCE -tag $BASE $GCM_TAG -aad $AAD -cipher-text $BASE "742389440288A533843D6156F6CC67C28C543B1F397734BA01BE7173FC3E486B70E7A4CD2DF0"
             }
         }
         '-aes-ccm' {
             if ($encoder -eq '-e') {
                 Write-Host "Ais AES CCM Encrypt..."
-                .\aisio --aes -ccm -encrypt -key $KEY -iv $IV_96 -tag $TAG -aad $AAD -plain-text "This is AES CCM Encryption/Decryption." -out $BASE
+                .\aisio --aes -ccm -encrypt -key $KEY -nonce $NONCE -tag $TAG -aad $AAD -plain-text "This is AES CCM Encryption/Decryption." -out $BASE
             }
             else {
                 Write-Host "Ais AES CCM Decrypt..."
-                .\aisio --aes -ccm -decrypt -key $KEY -iv $IV_96 -tag $BASE $CCM_TAG -aad $AAD -cipher-text $BASE "ABF473874A78F308137660237F57704F5FDD9A8C46B645C9D0AD3559BD7D3AD1A232990939FB"
+                .\aisio --aes -ccm -decrypt -key $KEY -nonce $NONCE -tag $BASE $CCM_TAG -aad $AAD -cipher-text $BASE "5245E1C1520D7BC2E1530310E52BA74D96D1C97A8BE395AF88EEFF71D44BEC2EFEF8F6B65761"
             }
         }
         '-aes-xts' {
@@ -276,11 +276,11 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-aes-ocb' {
             if ($encoder -eq '-e') {
                 Write-Host "Ais AES OCB Encrypt..."
-                .\aisio --aes -ocb -encrypt -key $KEY -iv $IV_96 -tag $TAG -aad $AAD -plain-text "This is AES OCB Encryption/Decryption." -out $BASE
+                .\aisio --aes -ocb -encrypt -key $KEY -nonce $NONCE -tag $TAG -aad $AAD -plain-text "This is AES OCB Encryption/Decryption." -out $BASE
             }
             else {
                 Write-Host "Ais AES OCB Decrypt..."
-                .\aisio --aes -ocb -decrypt -key $KEY -iv $IV_96 -tag $BASE $OCB_TAG -aad $AAD -cipher-text $BASE "D9AC0A50E32A6D64EF32BD008DCF5130D9A3FBD0B25FA10F33BF830429FB87685BAE0308BB56"
+                .\aisio --aes -ocb -decrypt -key $KEY -nonce $NONCE -tag $BASE $OCB_TAG -aad $AAD -cipher-text $BASE "3F405A527F7E26DAA3DB8F55D32D33A63C48A9ED40E0ED410CD9E8FC3E090B9627FCC10355A3"
             }
         }
         '-aes-wrap' {
