@@ -40,6 +40,9 @@ $CCM_TAG = "DB9A881B8A159B079F826BD043A4F8C9"
 $OCB_TAG = "F7F64A75E6575C9093E12AB272CBF024"
 $NONCE = "Nonce12bytes"
 $KEK = "This is AES WRAP, 128, 192, 256."
+
+$startTime = [datetime]::UtcNow
+
 # Parse arguments
 while ($args.Count -gt 0) {
     switch ($args[0]) {
@@ -300,3 +303,8 @@ for ($i = 1; $i -le $iterations; $i++) {
         break
     }
 }
+
+$endTime = [datetime]::UtcNow
+$elapsedTime = ($endTime - $startTime).TotalSeconds
+$formattedTime = "{0:F6}" -f $elapsedTime
+Write-Host "Execution time: $formattedTime seconds"

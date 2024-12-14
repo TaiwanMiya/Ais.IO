@@ -36,6 +36,8 @@ OCB_TAG="F7F64A75E6575C9093E12AB272CBF024"
 NONCE="Nonce12bytes"
 KEK="This is AES WRAP, 128, 192, 256."
 
+start_time=$(date +%s%N)
+
 if [ "$#" -eq 0 ]; then
     Usage
 fi
@@ -231,4 +233,7 @@ for ((i=1; i<=iterations; i++)); do
             ;;
     esac
 done
-
+end_time=$(date +%s%N)
+elapsed_time=$((end_time - start_time))
+elapsed_time_sec=$(echo "scale=6; $elapsed_time / 1000000000" | bc)
+printf "Execution time: %.6f seconds\n" "$elapsed_time_sec"
