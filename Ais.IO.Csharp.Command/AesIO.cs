@@ -141,7 +141,7 @@ namespace Ais.IO.Csharp.Command
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
-        public static void GCM(string text, string key, string iv, string tag, string aad)
+        public static void GCM(string text, string key, string nonce, string tag, string aad)
         {
             try
             {
@@ -149,21 +149,21 @@ namespace Ais.IO.Csharp.Command
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] nonceResult = aes.ImportIV(nonce);
                 byte[] tagResult = aes.ImportTag(tag);
                 byte[] aadResult = aes.ImportAad(aad);
-                byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
+                byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                plainText = aes.GcmDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+                plainText = aes.GcmDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
-        public static void CCM(string text, string key, string iv, string tag, string aad)
+        public static void CCM(string text, string key, string nonce, string tag, string aad)
         {
             try
             {
@@ -171,14 +171,14 @@ namespace Ais.IO.Csharp.Command
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] nonceResult = aes.ImportIV(nonce);
                 byte[] tagResult = aes.ImportTag(tag);
                 byte[] aadResult = aes.ImportAad(aad);
-                byte[] cipherText = aes.CcmEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
+                byte[] cipherText = aes.CcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                plainText = aes.CcmDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+                plainText = aes.CcmDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }
@@ -207,7 +207,7 @@ namespace Ais.IO.Csharp.Command
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
-        public static void OCB(string text, string key, string iv, string tag, string aad)
+        public static void OCB(string text, string key, string nonce, string tag, string aad)
         {
             try
             {
@@ -216,14 +216,14 @@ namespace Ais.IO.Csharp.Command
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] nonceResult = aes.ImportIV(nonce);
                 byte[] tagResult = aes.ImportTag(tag);
                 byte[] aadResult = aes.ImportAad(aad);
-                byte[] cipherText = aes.OcbEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
+                byte[] cipherText = aes.OcbEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                plainText = aes.OcbDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
+                plainText = aes.OcbDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }

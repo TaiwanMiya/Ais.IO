@@ -117,56 +117,56 @@ struct AES_ECB_DECRYPT {
 
 struct AES_GCM_ENCRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_GCM_DECRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_CCM_ENCRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_CCM_DECRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
@@ -195,28 +195,28 @@ struct AES_XTS_DECRYPT {
 
 struct AES_OCB_ENCRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };
 
 struct AES_OCB_DECRYPT {
     const unsigned char* KEY;
-    const unsigned char* IV;
+    const unsigned char* NONCE;
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
     const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
-    size_t IV_LENGTH;
+    size_t NONCE_LENGTH;
     size_t TAG_LENGTH;
     size_t AAD_LENGTH;
 };

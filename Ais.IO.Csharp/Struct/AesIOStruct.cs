@@ -144,14 +144,14 @@ namespace Ais.IO.Csharp
     public struct AES_GCM_ENCRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr PLAIN_TEXT;                   // 指向明文數據
         public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 指向唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
@@ -161,14 +161,14 @@ namespace Ais.IO.Csharp
     public struct AES_GCM_DECRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
@@ -178,14 +178,14 @@ namespace Ais.IO.Csharp
     public struct AES_CCM_ENCRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr PLAIN_TEXT;                   // 指向明文數據
         public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
@@ -195,14 +195,14 @@ namespace Ais.IO.Csharp
     public struct AES_CCM_DECRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
@@ -240,14 +240,14 @@ namespace Ais.IO.Csharp
     public struct AES_OCB_ENCRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr PLAIN_TEXT;                   // 指向密文數據
         public IntPtr CIPHER_TEXT;                  // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 密文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
@@ -257,14 +257,14 @@ namespace Ais.IO.Csharp
     public struct AES_OCB_DECRYPT
     {
         public IntPtr KEY;                          // 指向密鑰
-        public IntPtr IV;                           // 指向 IV
+        public IntPtr NONCE;                        // 指向唯一值
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
         public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
-        public UIntPtr IV_LENGTH;                   // IV 長度
+        public UIntPtr NONCE_LENGTH;                // 唯一值長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
         public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };

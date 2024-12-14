@@ -570,12 +570,12 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public byte[] GcmEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] GcmEncrypt(byte[] plainText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] cipherText = new byte[plainText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -586,14 +586,14 @@ namespace Ais.IO.Csharp
                 AES_GCM_ENCRYPT encryption = new AES_GCM_ENCRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length,
                 };
@@ -619,18 +619,18 @@ namespace Ais.IO.Csharp
             {
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
             }
         }
 
-        public byte[] GcmDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] GcmDecrypt(byte[] cipherText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] plainText = new byte[cipherText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -641,14 +641,14 @@ namespace Ais.IO.Csharp
                 AES_GCM_DECRYPT decryption = new AES_GCM_DECRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length,
                 };
@@ -674,18 +674,18 @@ namespace Ais.IO.Csharp
             {
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
             }
         }
 
-        public byte[] CcmEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] CcmEncrypt(byte[] plainText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] cipherText = new byte[plainText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -696,14 +696,14 @@ namespace Ais.IO.Csharp
                 AES_CCM_ENCRYPT encryption = new AES_CCM_ENCRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length,
                 };
@@ -729,19 +729,19 @@ namespace Ais.IO.Csharp
             {
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
                 if (aadHandle.IsAllocated) aadHandle.Free();
             }
         }
 
-        public byte[] CcmDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] CcmDecrypt(byte[] cipherText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] plainText = new byte[cipherText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -752,14 +752,14 @@ namespace Ais.IO.Csharp
                 AES_CCM_DECRYPT decryption = new AES_CCM_DECRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length
                 };
@@ -785,7 +785,7 @@ namespace Ais.IO.Csharp
             {
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
                 if (aadHandle.IsAllocated) aadHandle.Free();
@@ -894,12 +894,12 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public byte[] OcbEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] OcbEncrypt(byte[] plainText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] cipherText = new byte[plainText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -910,14 +910,14 @@ namespace Ais.IO.Csharp
                 AES_OCB_ENCRYPT encryption = new AES_OCB_ENCRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length,
                 };
@@ -943,19 +943,19 @@ namespace Ais.IO.Csharp
             {
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
                 if (aadHandle.IsAllocated) aadHandle.Free();
             }
         }
 
-        public byte[] OcbDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
+        public byte[] OcbDecrypt(byte[] cipherText, byte[] key, byte[] nonce, byte[] tag, byte[] aad)
         {
             byte[] plainText = new byte[cipherText.Length];
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
-            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
+            GCHandle nonceHandle = GCHandle.Alloc(nonce, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
@@ -966,14 +966,14 @@ namespace Ais.IO.Csharp
                 AES_OCB_DECRYPT decryption = new AES_OCB_DECRYPT
                 {
                     KEY = keyHandle.AddrOfPinnedObject(),
-                    IV = ivHandle.AddrOfPinnedObject(),
+                    NONCE = nonceHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
                     AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
-                    IV_LENGTH = (UIntPtr)iv.Length,
+                    NONCE_LENGTH = (UIntPtr)nonce.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
                     AAD_LENGTH = (UIntPtr)aad.Length,
                 };
@@ -999,7 +999,7 @@ namespace Ais.IO.Csharp
             {
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
-                if (ivHandle.IsAllocated) ivHandle.Free();
+                if (nonceHandle.IsAllocated) nonceHandle.Free();
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (tagHandle.IsAllocated) tagHandle.Free();
                 if (aadHandle.IsAllocated) aadHandle.Free();

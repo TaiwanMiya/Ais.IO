@@ -509,10 +509,10 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set GCM IV length.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->NONCE))
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
@@ -551,10 +551,10 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set GCM IV length.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->NONCE))
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
@@ -593,13 +593,13 @@ int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, encryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set CCM IV length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, encryption->TAG_LENGTH, NULL))
         return handleErrors("Failed to set CCM Tag length.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->NONCE))
         return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
@@ -641,13 +641,13 @@ int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, decryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set CCM IV length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
         return handleErrors("Failed to set CCM Tag length.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->NONCE))
         return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
@@ -792,13 +792,13 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, encryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set OCB IV length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, encryption->TAG_LENGTH, NULL))
         return handleErrors("Failed to set OCB Tag length.", ctx);
 
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->IV))
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->NONCE))
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
@@ -837,13 +837,13 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, decryption->IV_LENGTH, NULL))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
         return handleErrors("Failed to set OCB IV length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
         return handleErrors("Failed to set OCB Tag length.", ctx);
 
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->IV))
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->NONCE))
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
