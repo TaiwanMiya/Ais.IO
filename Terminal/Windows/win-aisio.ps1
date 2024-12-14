@@ -23,10 +23,27 @@ if ($args.Count -eq 0) {
 
 $operation = ""
 $indexList = ""
+$encoder = "-e"
 
+# Cryptography Settings...
+$KEY = "Key length must be 128, 192, 256"
+$IV = "IvMustBe128Size."
+$TAG = "TagMustBe128Size"
+$AAD = "Additional Authenticated Data (AAD) can be of any length"
+$KEY2 = "Secondary Key for AES-XTS Tweak."
+$TWEAK = "SectorNumber0001"
+$COUNTER = 1
+$BASE = "-base16"
+
+$GCM_TAG = "16B75069EFBF361EF2BF1C715B4C17D9"
+$CCM_TAG = "AE77C0D8AE767CA8A371ED8CBC9FDAB0"
+$OCB_TAG = "43F9C56328FD5F501AA0D6D4255DDF09"
+$IV_96 = "stBe128Size."
+$KEK = "This is AES WRAP, 128, 192, 256."
 # Parse arguments
 while ($args.Count -gt 0) {
     switch ($args[0]) {
+        # IO
         '-w' { $operation = '-w'; $args = $args[1..$args.Count]; break }
         '-a' { $operation = '-a'; $args = $args[1..$args.Count]; break }
         '-i' { $operation = '-i'; $args = $args[1..$args.Count]; break }
@@ -34,6 +51,28 @@ while ($args.Count -gt 0) {
         '-id' { $operation = '-id'; $args = $args[1..$args.Count]; break }
         '-rm' { $operation = '-rm'; $args = $args[1..$args.Count]; break }
         '-rs' { $operation = '-rs'; $args = $args[1..$args.Count]; break }
+
+        # BASE
+        '-b16' { $operation = '-b16'; $args = $args[1..$args.Count]; break }
+        '-b32' { $operation = '-b32'; $args = $args[1..$args.Count]; break }
+        '-b64' { $operation = '-b64'; $args = $args[1..$args.Count]; break }
+        '-b85' { $operation = '-b85'; $args = $args[1..$args.Count]; break }
+
+        #AES
+        '-aes-ctr' { $operation = '-aes-ctr'; $args = $args[1..$args.Count]; break }
+        '-aes-cbc' { $operation = '-aes-cbc'; $args = $args[1..$args.Count]; break }
+        '-aes-cfb' { $operation = '-aes-cfb'; $args = $args[1..$args.Count]; break }
+        '-aes-ofb' { $operation = '-aes-ofb'; $args = $args[1..$args.Count]; break }
+        '-aes-ecb' { $operation = '-aes-ecb'; $args = $args[1..$args.Count]; break }
+        '-aes-gcm' { $operation = '-aes-gcm'; $args = $args[1..$args.Count]; break }
+        '-aes-ccm' { $operation = '-aes-ccm'; $args = $args[1..$args.Count]; break }
+        '-aes-xts' { $operation = '-aes-xts'; $args = $args[1..$args.Count]; break }
+        '-aes-ocb' { $operation = '-aes-ocb'; $args = $args[1..$args.Count]; break }
+        '-aes-wrap' { $operation = '-aes-wrap'; $args = $args[1..$args.Count]; break }
+
+        # OTHER
+        '-e' { $encoder = '-e'; $args = $args[1..$args.Count]; break }
+        '-d' { $encoder = '-d'; $args = $args[1..$args.Count]; break }
         '-f' {
             if ($args.Count -gt 1) {
                 $file = $args[1]
@@ -77,6 +116,7 @@ for ($i = 1; $i -le $iterations; $i++) {
         Write-Host "Iteration $i/1"
     }
     switch ($operation) {
+        # IO
         '-w' {
             Write-Host "Ais Binary IO Write..."
             .\aisio --write $file -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "This is Ais.IO Function Byte Array." -string "This is Ais.IO Function String."
@@ -108,7 +148,150 @@ for ($i = 1; $i -le $iterations; $i++) {
             Write-Host "Ais Binary IO Remove Index..."
             $arguments = @("--remove-index", $file, $indexList)
             Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
-            break
+        }
+
+        # BASE
+        '-b16' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais Base 16 Encode..."
+                .\aisio "--base16" "-encode" "This is Base16 Encode/Decode."
+            }
+            else {
+                Write-Host "Ais Base 16 Decode..."
+                .\aisio "--base16" "-decode" "546869732069732042617365313620456E636F64652F4465636F64652E"
+            }
+        }
+        '-b32' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais Base 32 Encode..."
+                .\aisio "--base32" "-encode" "This is Base32 Encode/Decode."
+            }
+            else {
+                Write-Host "Ais Base 32 Decode..."
+                .\aisio "--base32" "-decode" "KRUGS4ZANFZSAQTBONSTGMRAIVXGG33EMUXUIZLDN5SGKLQ="
+            }
+        }
+        '-b64' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais Base 64 Encode..."
+                .\aisio "--base64" "-encode" "This is Base64 Encode/Decode."
+            }
+            else {
+                Write-Host "Ais Base 64 Decode..."
+                .\aisio "--base64" "-decode" "VGhpcyBpcyBCYXNlNjQgRW5jb2RlL0RlY29kZS4="
+            }
+        }
+        '-b85' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais Base 85 Encode..."
+                .\aisio "--base85" "-encode" "This is Base85 Encode/Decode."
+            }
+            else {
+                Write-Host "Ais Base 85 Decode..."
+                .\aisio "--base85" "-decode" "RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k"
+            }
+        }
+
+        # AES
+        '-aes-ctr' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES CTR Encrypt..."
+                .\aisio --aes -ctr -encrypt -key $KEY -counter $COUNTER -plain-text "This is AES CTR Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES CTR Decrypt..."
+                .\aisio --aes -ctr -decrypt -key $KEY -counter $COUNTER -cipher-text $BASE "7F603AB98AF7073B205309B91FCAFC9581DD36055EB25C533429C9EB0C41ACF5070FA94FD62A"
+            }
+        }
+        '-aes-cbc' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES CBC Encrypt..."
+                .\aisio --aes -cbc -encrypt -key $KEY -iv $IV -padding -plain-text "This is AES CBC Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES CBC Decrypt..."
+                .\aisio --aes -cbc -decrypt -key $KEY -iv $IV -padding -cipher-text $BASE "FAFEF277E6AF54441F3407175D3860D16BEDC9570CBB83F9609E2CE90AB1596D02167AA72C5A199D7810C0D0FEC674F8"
+            }
+        }
+        '-aes-cfb' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES CFB Encrypt..."
+                .\aisio --aes -cfb -encrypt -key $KEY -iv $IV -segment -plain-text "This is AES CFB Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES CFB Decrypt..."
+                .\aisio --aes -cfb -decrypt -key $KEY -iv $IV -segment -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5742591D658641BE4CE31B24041FA41B791F3021531F171CD401"
+            }
+        }
+        '-aes-ofb' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES OFB Encrypt..."
+                .\aisio --aes -ofb -encrypt -key $KEY -iv $IV -plain-text "This is AES OFB Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES OFB Decrypt..."
+                .\aisio --aes -ofb -decrypt -key $KEY -iv $IV -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5B42591DCF29C1A2F23F43E35CB140041964E890070AAC2913E0"
+            }
+        }
+        '-aes-ecb' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES ECB Encrypt..."
+                .\aisio --aes -ecb -encrypt -key $KEY -padding -plain-text "This is AES ECB Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES ECB Decrypt..."
+                .\aisio --aes -ecb -decrypt -key $KEY -padding -cipher-text $BASE "1CD7A6E38BDBDD9F1EFE4BA5A17AB72CDB9CE185F374FBA7DC7C839C5AC30F7CC070E0DD9FA85879BCF8C8049E637406"
+            }
+        }
+        '-aes-gcm' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES GCM Encrypt..."
+                .\aisio --aes -gcm -encrypt -key $KEY -iv $IV -tag $TAG -aad $AAD -plain-text "This is AES GCM Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES GCM Decrypt..."
+                .\aisio --aes -gcm -decrypt -key $KEY -iv $IV -tag $BASE $GCM_TAG -aad $AAD -cipher-text $BASE "05E65C394543DC6E35FE065F3923864209D70BD840AE78C56E33FF0D420DAB10E428EE7ED2C2"
+            }
+        }
+        '-aes-ccm' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES CCM Encrypt..."
+                .\aisio --aes -ccm -encrypt -key $KEY -iv $IV_96 -tag $TAG -aad $AAD -plain-text "This is AES CCM Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES CCM Decrypt..."
+                .\aisio --aes -ccm -decrypt -key $KEY -iv $IV_96 -tag $BASE $CCM_TAG -aad $AAD -cipher-text $BASE "ABF473874A78F308137660237F57704F5FDD9A8C46B645C9D0AD3559BD7D3AD1A232990939FB"
+            }
+        }
+        '-aes-xts' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES XTS Encrypt..."
+                .\aisio --aes -xts -encrypt -key $KEY -key2 $KEY2 -tweak $TWEAK -plain-text "This is AES XTS Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES XTS Decrypt..."
+                .\aisio --aes -xts -decrypt -key $KEY -key2 $KEY2 -tweak $TWEAK -cipher-text $BASE "2BC71BB83EEA376368F9429D09470359293905826B14EDA8B170C3E7A4958020C6AF061181B4"
+            }
+        }
+        '-aes-ocb' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES OCB Encrypt..."
+                .\aisio --aes -ocb -encrypt -key $KEY -iv $IV_96 -tag $TAG -aad $AAD -plain-text "This is AES OCB Encryption/Decryption." -out $BASE
+            }
+            else {
+                Write-Host "Ais AES OCB Decrypt..."
+                .\aisio --aes -ocb -decrypt -key $KEY -iv $IV_96 -tag $BASE $OCB_TAG -aad $AAD -cipher-text $BASE "D9AC0A50E32A6D64EF32BD008DCF5130D9A3FBD0B25FA10F33BF830429FB87685BAE0308BB56"
+            }
+        }
+        '-aes-wrap' {
+            if ($encoder -eq '-e') {
+                Write-Host "Ais AES WRAP Encrypt..."
+                .\aisio --aes -wrap -encrypt -key $KEY -kek $KEK -out $BASE
+            }
+            else {
+                Write-Host "Ais AES WRAP Decrypt..."
+                .\aisio --aes -wrap -decrypt -wrapkey $BASE "4A0953B24807510E39F18A1AF98153FBA9BF306092D15BB4FB75A04A95148C25B99D7F3A5589FD26" -kek $KEK
+            }
         }
         default { Usage }
     }

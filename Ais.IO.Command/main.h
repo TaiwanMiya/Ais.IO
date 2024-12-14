@@ -18,6 +18,7 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
+#include <cstring>
 
 enum CRYPT_OPTIONS : unsigned char {
     OPTION_TEXT = 0,
@@ -51,6 +52,12 @@ enum AES_MODE : unsigned long long {
     AES_WRAP = 0x01 << 9,
 };
 
+enum SEGMENT_SIZE_OPTION {
+    SEGMENT_1_BIT = 1,
+    SEGMENT_8_BIT = 8,
+    SEGMENT_128_BIT = 128,
+};
+
 struct Command {
     std::string type;
     std::string value;
@@ -71,6 +78,8 @@ struct Aes {
     std::string Aad;
     std::string Tweak;
     std::string Key2;
+    std::string Kek;
+    std::string Wrap;
     std::string Output;
 
     CRYPT_OPTIONS key_option = CRYPT_OPTIONS::OPTION_TEXT;
@@ -81,10 +90,13 @@ struct Aes {
     CRYPT_OPTIONS aad_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS tweak_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS key2_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS kek_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS wrap_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
-    std::string Counter;
-    std::string Segment;
+    long long Counter = 0;
+    bool Padding = false;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
 };
 
 enum BINARYIO_TYPE : unsigned char {
@@ -110,12 +122,6 @@ struct BINARYIO_INDICES {
     uint64_t LENGTH;
 };
 #pragma pack(pop)
-
-enum SEGMENT_SIZE_OPTION {
-    SEGMENT_1_BIT = 1,
-    SEGMENT_8_BIT = 8,
-    SEGMENT_128_BIT = 128,
-};
 
 struct AES_CTR_ENCRYPT {
     const unsigned char* KEY;
@@ -217,10 +223,12 @@ struct AES_GCM_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
 };
 
 struct AES_GCM_DECRYPT {
@@ -229,10 +237,12 @@ struct AES_GCM_DECRYPT {
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;
     size_t TAG_LENGTH;
+    size_t AAD_LENGTH;
 };
 
 struct AES_CCM_ENCRYPT {
@@ -241,7 +251,7 @@ struct AES_CCM_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
@@ -255,7 +265,7 @@ struct AES_CCM_DECRYPT {
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;
@@ -291,7 +301,7 @@ struct AES_OCB_ENCRYPT {
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
     unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
     size_t IV_LENGTH;
@@ -305,7 +315,7 @@ struct AES_OCB_DECRYPT {
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
     const unsigned char* TAG;
-    const unsigned char* ADDITIONAL_DATA;
+    const unsigned char* AAD;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;
     size_t IV_LENGTH;

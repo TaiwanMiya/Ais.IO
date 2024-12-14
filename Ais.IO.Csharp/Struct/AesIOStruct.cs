@@ -148,10 +148,12 @@ namespace Ais.IO.Csharp
         public IntPtr PLAIN_TEXT;                   // 指向明文數據
         public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
         public UIntPtr IV_LENGTH;                   // IV 長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
+        public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
 
     // AES_GCM_DECRYPT
@@ -163,10 +165,12 @@ namespace Ais.IO.Csharp
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
         public UIntPtr IV_LENGTH;                   // IV 長度
         public UIntPtr TAG_LENGTH;                  // 認證標籤長度
+        public UIntPtr AAD_LENGTH;                  // 附加驗證資料長度
     };
 
     // AES_CCM_ENCRYPT
@@ -178,7 +182,7 @@ namespace Ais.IO.Csharp
         public IntPtr PLAIN_TEXT;                   // 指向明文數據
         public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
-        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
         public UIntPtr IV_LENGTH;                   // IV 長度
@@ -195,7 +199,7 @@ namespace Ais.IO.Csharp
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
-        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
         public UIntPtr IV_LENGTH;                   // IV 長度
@@ -240,7 +244,7 @@ namespace Ais.IO.Csharp
         public IntPtr PLAIN_TEXT;                   // 指向密文數據
         public IntPtr CIPHER_TEXT;                  // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
-        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 密文長度
         public UIntPtr IV_LENGTH;                   // IV 長度
@@ -257,7 +261,7 @@ namespace Ais.IO.Csharp
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
         public IntPtr TAG;                          // 指向認證標籤
-        public IntPtr ADDITIONAL_DATA;              // 指向附加驗證資料
+        public IntPtr AAD;                          // 指向附加驗證資料
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度
         public UIntPtr IV_LENGTH;                   // IV 長度

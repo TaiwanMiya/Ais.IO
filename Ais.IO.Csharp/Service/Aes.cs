@@ -570,7 +570,7 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public byte[] GcmEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag)
+        public byte[] GcmEncrypt(byte[] plainText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
         {
             byte[] cipherText = new byte[plainText.Length];
 
@@ -579,6 +579,7 @@ namespace Ais.IO.Csharp
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+            GCHandle aadHandle = GCHandle.Alloc(aad, GCHandleType.Pinned);
 
             try
             {
@@ -589,10 +590,12 @@ namespace Ais.IO.Csharp
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
                     TAG_LENGTH = (UIntPtr)tag.Length,
+                    AAD_LENGTH = (UIntPtr)aad.Length,
                 };
 
                 int cipherTextLength = AesIOInterop.AesGcmEncrypt(ref encryption);
@@ -622,7 +625,7 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public byte[] GcmDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag)
+        public byte[] GcmDecrypt(byte[] cipherText, byte[] key, byte[] iv, byte[] tag, byte[] aad)
         {
             byte[] plainText = new byte[cipherText.Length];
 
@@ -631,6 +634,7 @@ namespace Ais.IO.Csharp
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle tagHandle = GCHandle.Alloc(tag, GCHandleType.Pinned);
+            GCHandle aadHandle = GCHandle.Alloc(aad, GCHandleType.Pinned);
 
             try
             {
@@ -641,10 +645,12 @@ namespace Ais.IO.Csharp
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
-                    TAG_LENGTH = (UIntPtr)tag.Length
+                    TAG_LENGTH = (UIntPtr)tag.Length,
+                    AAD_LENGTH = (UIntPtr)aad.Length,
                 };
 
                 int plainTextLength = AesIOInterop.AesGcmDecrypt(ref decryption);
@@ -694,7 +700,7 @@ namespace Ais.IO.Csharp
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
-                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
@@ -750,7 +756,7 @@ namespace Ais.IO.Csharp
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
-                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
@@ -908,7 +914,7 @@ namespace Ais.IO.Csharp
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
-                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,
@@ -964,7 +970,7 @@ namespace Ais.IO.Csharp
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     TAG = tagHandle.AddrOfPinnedObject(),
-                    ADDITIONAL_DATA = aadHandle.AddrOfPinnedObject(),
+                    AAD = aadHandle.AddrOfPinnedObject(),
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
                     IV_LENGTH = (UIntPtr)iv.Length,

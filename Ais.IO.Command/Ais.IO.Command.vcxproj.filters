@@ -45,7 +45,7 @@
     <ClCompile Include="aes_execute.cpp">
       <Filter>來源檔案\Execute</Filter>
     </ClCompile>
-    <ClCompile Include="encoder_libary.cpp">
+    <ClCompile Include="cryptography_libary.cpp">
       <Filter>來源檔案\Libary</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,7 +68,7 @@
     <ClInclude Include="aes_execute.h">
       <Filter>標頭檔\Execute</Filter>
     </ClInclude>
-    <ClInclude Include="encoder_libary.h">
+    <ClInclude Include="cryptography_libary.h">
       <Filter>標頭檔\Libary</Filter>
     </ClInclude>
   </ItemGroup>

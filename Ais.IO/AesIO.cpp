@@ -516,6 +516,9 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
+    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->AAD, encryption->AAD_LENGTH))
+        return handleErrors("Failed to set AAD data for GCM encryption.", ctx);
+
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
@@ -555,6 +558,9 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
+    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->AAD, decryption->AAD_LENGTH))
+        return handleErrors("Failed to set AAD data for GCM decryption.", ctx);
+
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);
     plaintext_len += len;
@@ -562,9 +568,8 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
         return handleErrors("Failed to set GCM Tag length.", ctx);
 
-    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len)) {
+    if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
         return handleErrors("Final decryption failed.", ctx);
-    }
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -601,8 +606,8 @@ int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
     if (1 != EVP_EncryptUpdate(ctx, NULL, &len, NULL, encryption->PLAIN_TEXT_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
 
-    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->ADDITIONAL_DATA, encryption->AAD_LENGTH))
-        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->AAD, encryption->AAD_LENGTH))
+        return handleErrors("Failed to set CCM AAD length and AAD data.", ctx);
 
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
@@ -649,8 +654,8 @@ int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
     if (1 != EVP_DecryptUpdate(ctx, NULL, &len, NULL, decryption->CIPHER_TEXT_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);
 
-    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->ADDITIONAL_DATA, decryption->AAD_LENGTH))
-        return handleErrors("Failed to set CCM ADD length and ADD data.", ctx);
+    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->AAD, decryption->AAD_LENGTH))
+        return handleErrors("Failed to set CCM AAD length and AAD data.", ctx);
 
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);
@@ -797,8 +802,8 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
-    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->ADDITIONAL_DATA, encryption->AAD_LENGTH))
-        return handleErrors("Failed to set OCB ADD length and ADD data.", ctx);
+    if (encryption->AAD_LENGTH > 0 && 1 != EVP_EncryptUpdate(ctx, NULL, &len, encryption->AAD, encryption->AAD_LENGTH))
+        return handleErrors("Failed to set OCB AAD length and AAD data.", ctx);
 
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, encryption->PLAIN_TEXT_LENGTH))
         return handleErrors("Encrypt the current block failed.", ctx);
@@ -842,8 +847,8 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
-    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->ADDITIONAL_DATA, decryption->AAD_LENGTH))
-        return handleErrors("Failed to set OCB ADD length and ADD data.", ctx);
+    if (decryption->AAD_LENGTH > 0 && 1 != EVP_DecryptUpdate(ctx, NULL, &len, decryption->AAD, decryption->AAD_LENGTH))
+        return handleErrors("Failed to set OCB AAD length and AAD data.", ctx);
 
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, decryption->CIPHER_TEXT_LENGTH))
         return handleErrors("Decrypt the current block failed.", ctx);

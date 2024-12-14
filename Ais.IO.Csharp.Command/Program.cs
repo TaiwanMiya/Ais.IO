@@ -29,71 +29,69 @@ namespace Ais.IO.Csharp.Command
                 string aad = "Additional Authenticated Data (AAD) can be of any length";
                 string key2 = "Secondary Key for AES-XTS Tweak.";
                 string tweak = "SectorNumber0001";
+                string kek = "This is AES WRAP, 128, 192, 256.";
 
-                string plainKey = "This is AES WRAP Encrypt/Decrypt";
-                string wrapKey = "This is AES WRAP, 128, 192, 256.";
+                //int cryptionCount = 100;
+                //for (int i = 0; i < cryptionCount; i++)
+                //{
+                //    text = "This is AES CTR Encryption/Decryption.";
+                //    AesIO.CTR(text, key, 1);
 
-                int cryptionCount = 100;
-                for (int i = 0; i < cryptionCount; i++)
-                {
-                    text = "This is AES CTR Encryption/Decryption.";
-                    AesIO.CTR(text, key, 1);
+                //    text = "This is AES CBC Encryption/Decryption.";
+                //    AesIO.CBC(text, key, iv, true);
 
-                    text = "This is AES CBC Encryption/Decryption.";
-                    AesIO.CBC(text, key, iv, true);
+                //    text = "This is AES CFB Encryption/Decryption.";
+                //    AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
 
-                    text = "This is AES CFB Encryption/Decryption.";
-                    AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
+                //    text = "This is AES OFB Encryption/Decryption.";
+                //    AesIO.OFB(text, key, iv);
 
-                    text = "This is AES OFB Encryption/Decryption.";
-                    AesIO.OFB(text, key, iv);
+                //    text = "This is AES ECB Encryption/Decryption.";
+                //    AesIO.ECB(text, key, true);
 
-                    text = "This is AES ECB Encryption/Decryption.";
-                    AesIO.ECB(text, key, true);
+                //    text = "This is AES GCM Encryption/Decryption.";
+                //    AesIO.GCM(text, key, iv, tag, aad);
 
-                    text = "This is AES GCM Encryption/Decryption.";
-                    AesIO.GCM(text, key, iv, tag);
+                //    text = "This is AES CCM Encryption/Decryption.";
+                //    AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
 
-                    text = "This is AES CCM Encryption/Decryption.";
-                    AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                //    text = "This is AES XTS Encryption/Decryption.";
+                //    AesIO.XTS(text, key, key2, tweak);
 
-                    text = "This is AES XTS Encryption/Decryption.";
-                    AesIO.XTS(text, key, key2, tweak);
+                //    text = "This is AES OCB Encryption/Decryption.";
+                //    AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
 
-                    text = "This is AES OCB Encryption/Decryption.";
-                    AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                //    AesIO.WRAP(key, kek);
+                //}
 
-                    AesIO.WRAP(plainKey, wrapKey);
-                }
+                text = "This is AES CTR Encryption/Decryption.";
+                AesIO.CTR(text, key, 1);
 
-                //text = "This is AES CTR Encryption/Decryption.";
-                //AesIO.CTR(text, key, 1);
+                text = "This is AES CBC Encryption/Decryption.";
+                AesIO.CBC(text, key, iv, true);
 
-                //text = "This is AES CBC Encryption/Decryption.";
-                //AesIO.CBC(text, key, iv, true);
+                text = "This is AES CFB Encryption/Decryption.";
+                AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
 
-                //text = "This is AES CFB Encryption/Decryption.";
-                //AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
+                text = "This is AES OFB Encryption/Decryption.";
+                AesIO.OFB(text, key, iv);
 
-                //text = "This is AES OFB Encryption/Decryption.";
-                //AesIO.OFB(text, key, iv);
+                text = "This is AES ECB Encryption/Decryption.";
+                AesIO.ECB(text, key, true);
 
-                //text = "This is AES ECB Encryption/Decryption.";
-                //AesIO.ECB(text, key, true);
+                text = "This is AES GCM Encryption/Decryption.";
+                AesIO.GCM(text, key, iv, tag, aad);
 
-                //text = "This is AES GCM Encryption/Decryption.";
-                //AesIO.GCM(text, key, iv, tag);
+                text = "This is AES CCM Encryption/Decryption.";
+                AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
 
-                //text = "This is AES CCM Encryption/Decryption.";
-                //AesIO.CCM(text, key, new string([.. iv.Skip(4)]), tag, aad);
+                text = "This is AES XTS Encryption/Decryption.";
+                AesIO.XTS(text, key, key2, tweak);
 
-                //text = "This is AES XTS Encryption/Decryption.";
-                //AesIO.XTS(text, key, key2, tweak);
+                text = "This is AES OCB Encryption/Decryption.";
+                AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
 
-                //text = "This is AES OCB Encryption/Decryption.";
-                //AesIO.OCB(text, key, new string([.. iv.Skip(4)]), tag, aad);
-
-                //AesIO.WRAP(plainKey, wrapKey);
+                AesIO.WRAP(key, kek);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");

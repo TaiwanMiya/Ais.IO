@@ -1,16 +1,24 @@
 #include "aes_execute.h"
 #include "string_case.h"
-#include "encoder_execute.h"
-#include <filesystem>
+#include "output_colors.h"
+#include "cryptography_libary.h"
 
-constexpr size_t hash(const char* str) {
+void printHex(const char* label, const unsigned char* data, size_t length) {
+	std::cout << label << ": ";
+	for (size_t i = 0; i < length; ++i) {
+		printf("%02x", data[i]);
+	}
+	std::cout << std::endl;
+}
+
+constexpr size_t aes_execute::hash(const char* str) {
 	size_t hash = 0;
 	while (*str)
 		hash = hash * 31 + *str++;
 	return hash;
 }
 
-size_t set_hash(const char* str) {
+size_t aes_execute::set_hash(const char* str) {
 	size_t hash = 0;
 	while (*str)
 		hash = hash * 31 + *str++;
@@ -37,34 +45,6 @@ bool aes_execute::GetCrypt(int& i, std::string arg, char* argv[], Aes& crypt) {
 	}
 }
 
-CRYPT_OPTIONS aes_execute::GetOption(int& i, char* argv[], Aes& crypt) {
-	std::string arg_option = ToLower(argv[i + 1]);
-	switch (set_hash(arg_option.c_str())) {
-	case hash("-file"):
-	case hash("-f"):
-		i++;
-		return CRYPT_OPTIONS::OPTION_FILE;
-	case hash("-base16"):
-	case hash("-b16"):
-		i++;
-		return CRYPT_OPTIONS::OPTION_BASE16;
-	case hash("-base32"):
-	case hash("-b32"):
-		i++;
-		return CRYPT_OPTIONS::OPTION_BASE32;
-	case hash("-base64"):
-	case hash("-b64"):
-		i++;
-		return CRYPT_OPTIONS::OPTION_BASE64;
-	case hash("-base85"):
-	case hash("-b85"):
-		i++;
-		return CRYPT_OPTIONS::OPTION_BASE85;
-	default:
-		return CRYPT_OPTIONS::OPTION_TEXT;
-	}
-}
-
 void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 	for (int i = 0; i < argc; ++i) {
 		std::string arg = ToLower(argv[i]);
@@ -83,236 +63,103 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 				return;
 			break;
 		case hash("-key"):
-			aes.key_option = GetOption(i, argv, aes);
+			aes.key_option = cryptography_libary::GetOption(i, argv);
 			aes.Key = argv[i + 1];
 			i++;
 			break;
 		case hash("-iv"):
-			aes.iv_option = GetOption(i, argv, aes);
+			aes.iv_option = cryptography_libary::GetOption(i, argv);
 			aes.IV = argv[i + 1];
-			i++;
-			break;
-		case hash("-tag"):
-			aes.tag_option = GetOption(i, argv, aes);
-			aes.Tag = argv[i + 1];
-			i++;
-			break;
-		case hash("-aad"):
-			aes.aad_option = GetOption(i, argv, aes);
-			aes.Aad = argv[i + 1];
-			i++;
-			break;
-		case hash("-tweak"):
-			aes.tweak_option = GetOption(i, argv, aes);
-			aes.Tweak = argv[i + 1];
-			i++;
-			break;
-		case hash("-key2"):
-			aes.key2_option = GetOption(i, argv, aes);
-			aes.Key2 = argv[i + 1];
 			i++;
 			break;
 		case hash("-plain-text"):
 		case hash("-pt"):
-			aes.plaintext_option = GetOption(i, argv, aes);
+			aes.plaintext_option = cryptography_libary::GetOption(i, argv);
 			aes.PlainText = argv[i + 1];
 			i++;
 			break;
 		case hash("-cipher-text"):
 		case hash("-ct"):
-			aes.ciphertext_option = GetOption(i, argv, aes);
+			aes.ciphertext_option = cryptography_libary::GetOption(i, argv);
 			aes.CipherText = argv[i + 1];
 			i++;
 			break;
 		case hash("-output"):
 		case hash("-out"):
-			aes.output_option = GetOption(i, argv, aes);
+			aes.output_option = cryptography_libary::GetOption(i, argv);
 			if (aes.output_option == CRYPT_OPTIONS::OPTION_FILE)
 				aes.Output = argv[i + 1];
 			i++;
 			break;
+
+		// Mode Define
 		case hash("-counter"):
 		case hash("-count"):
 			if (IsULong(argv[i + 1])) {
-				aes.Counter = argv[i + 1];
+				aes.Counter = std::stoll(argv[i + 1]);
 				i++;
 			}
+			break;
+		case hash("-padding"):
+		case hash("-pad"):
+			aes.Padding = true;
+			break;
+		case hash("-segment"):
+		case hash("-seg"):
+			if (IsULong(argv[i + 1])) {
+				const long long segment = std::stoll(argv[i + 1]);
+				if (segment <= 1)
+					aes.Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
+				else if (segment > 1 && segment <= 8)
+					aes.Segment = SEGMENT_SIZE_OPTION::SEGMENT_8_BIT;
+				else
+					aes.Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
+				i++;
+			}
+			break;
+		case hash("-tag"):
+			aes.tag_option = cryptography_libary::GetOption(i, argv);
+			aes.Tag = argv[i + 1];
+			i++;
+			break;
+		case hash("-aad"):
+			aes.aad_option = cryptography_libary::GetOption(i, argv);
+			aes.Aad = argv[i + 1];
+			i++;
+			break;
+		case hash("-tweak"):
+			aes.tweak_option = cryptography_libary::GetOption(i, argv);
+			aes.Tweak = argv[i + 1];
+			i++;
+			break;
+		case hash("-key2"):
+			aes.key2_option = cryptography_libary::GetOption(i, argv);
+			aes.Key2 = argv[i + 1];
+			i++;
+			break;
+		case hash("-kek"):
+			aes.kek_option = cryptography_libary::GetOption(i, argv);
+			aes.Kek = argv[i + 1];
+			i++;
+			break;
+		case hash("-wrapkey"):
+		case hash("-wk"):
+			aes.wrap_option = cryptography_libary::GetOption(i, argv);
+			aes.Wrap = argv[i + 1];
+			i++;
 			break;
 		}
 	}
 }
 
-void GetValue(std::string arg, const CRYPT_OPTIONS option, std::vector<unsigned char>& buffer) {
-	size_t length;
-	int resultCode;
-	switch (option) {
-	case CRYPT_OPTIONS::OPTION_TEXT:
-		buffer.clear();
-		buffer.assign(arg.begin(), arg.end());
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE16:
-		length = encoder_execute::CalculateDecodeLength("--base16", arg.size());
-		buffer.clear();
-		buffer.resize(length);
-		resultCode = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (resultCode > 0)
-			buffer.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE32:
-		length = encoder_execute::CalculateDecodeLength("--base32", arg.size());
-		buffer.clear();
-		buffer.resize(length);
-		resultCode = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (resultCode > 0)
-			buffer.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE64:
-		length = encoder_execute::CalculateDecodeLength("--base64", arg.size());
-		buffer.clear();
-		buffer.resize(length);
-		resultCode = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (resultCode > 0)
-			buffer.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE85:
-		length = encoder_execute::CalculateDecodeLength("--base85", arg.size());
-		buffer.clear();
-		buffer.resize(length);
-		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(arg.c_str(), arg.size(), buffer.data(), length);
-		if (resultCode > 0)
-			buffer.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_FILE:
-		std::ifstream file(arg, std::ios::in | std::ios::binary | std::ios::ate);
-		size_t size = file.tellg();
-		file.seekg(0, std::ios::beg);
-		buffer.clear();
-		buffer.resize(size);
-		if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
-			std::cerr << Error("Failed to read file: " + arg) << std::endl;
-			buffer.clear();
-		}
-		file.close();
-		break;
-	}
-}
-
-void SetValue(std::vector<unsigned char>& buffer, std::string& result_str, const CRYPT_OPTIONS option) {
-	size_t length;
-	int resultCode;
-	std::vector<char> result;
-	switch (option) {
-	case CRYPT_OPTIONS::OPTION_TEXT:
-		if (!buffer.empty() && buffer.back() == '\0')
-			buffer.pop_back();
-		result_str.resize(buffer.size());
-		result_str.assign(buffer.begin(), buffer.end());
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE16:
-		length = encoder_execute::CalculateEncodeLength("--base16", buffer.size());
-		result.resize(length);
-		resultCode = ((Base16Encode)EncodeFunctions.at("-base16-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (resultCode > 0)
-			result.resize(resultCode);
-		buffer.clear();
-		result_str.assign(result.begin(), result.end());
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE32:
-		length = encoder_execute::CalculateEncodeLength("--base32", buffer.size());
-		result.resize(length);
-		resultCode = ((Base32Encode)EncodeFunctions.at("-base32-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (resultCode > 0)
-			result.resize(resultCode);
-		buffer.clear();
-		result_str = result.data();
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE64:
-		length = encoder_execute::CalculateEncodeLength("--base64", buffer.size());
-		result.resize(length);
-		resultCode = ((Base64Encode)EncodeFunctions.at("-base64-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (resultCode > 0)
-			result.resize(resultCode);
-		buffer.clear();
-		result_str = result.data();
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE85:
-		length = encoder_execute::CalculateEncodeLength("--base85", buffer.size());
-		result.resize(length);
-		resultCode = ((Base85Encode)EncodeFunctions.at("-base85-encode"))(buffer.data(), buffer.size(), result.data(), length);
-		if (resultCode > 0)
-			result.resize(resultCode);
-		buffer.clear();
-		result_str = result.data();
-		break;
-	case CRYPT_OPTIONS::OPTION_FILE:
-		std::ofstream file(result_str, std::ios::out | std::ios::binary);
-		file.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
-		buffer.clear();
-		file.close();
-		result_str = std::filesystem::absolute(result_str).string();
-		break;
-	}
-}
-
-void EndHandling(std::vector<unsigned char>& result, Aes& aes) {
+void aes_execute::EndHandling(std::vector<unsigned char>& result, Aes& aes) {
 	std::string algorithm = "AES";
 	std::string mode = AesDisplay[aes.Mode];
 	std::string crypt = CryptDisplay[aes.Crypt];
 	std::string result_str = aes.Output;
 	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
-	SetValue(result, result_str, aes.output_option);
+	cryptography_libary::ValueDecode(aes.output_option, result, result_str);
 	std::cout << Ask(result_str) << std::endl;
-}
-
-void CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
-	std::vector<unsigned char> key;
-	std::vector<unsigned char> plaintext;
-	std::vector<unsigned char> ciphertext;
-	size_t key_size;
-	size_t plaintext_size;
-	const long long counter = std::stoll(aes.Counter);
-	GetValue(aes.Key, aes.key_option, key);
-	GetValue(aes.PlainText, aes.plaintext_option, plaintext);
-	key_size = key.size();
-	plaintext_size = plaintext.size();
-	ciphertext.resize(plaintext_size);
-	AES_CTR_ENCRYPT ctrEncrypt = {
-		key.data(),
-		plaintext.data(),
-		ciphertext.data(),
-		counter,
-		key_size,
-		plaintext_size,
-	};
-
-	int length = ((AesCtrEncrypt)AesFunctions.at("-ctr-encrypt"))(&ctrEncrypt);
-	result.resize(length);
-	result.assign(ciphertext.begin(), ciphertext.end());
-}
-
-void CtrDecrypt(std::vector<unsigned char>& result, Aes& aes) {
-	std::vector<unsigned char> key;
-	std::vector<unsigned char> ciphertext;
-	std::vector<unsigned char> plaintext;
-	size_t key_size;
-	size_t ciphertext_size;
-	const long long counter = std::stoll(aes.Counter);
-	GetValue(aes.Key, aes.key_option, key);
-	GetValue(aes.CipherText, aes.ciphertext_option, ciphertext);
-	key_size = key.size();
-	ciphertext_size = ciphertext.size();
-	plaintext.resize(ciphertext_size);
-	AES_CTR_DECRYPT ctrDecrypt = {
-			key.data(),
-			ciphertext.data(),
-			plaintext.data(),
-			counter,
-			key_size,
-			ciphertext_size,
-	};
-	int length = ((AesCtrDecrypt)AesFunctions.at("-ctr-decrypt"))(&ctrDecrypt);
-	result.resize(length);
-	result.assign(plaintext.begin(), plaintext.end());
 }
 
 void aes_execute::AesStart(Aes& aes) {
@@ -324,12 +171,31 @@ void aes_execute::AesStart(Aes& aes) {
 			CtrEncrypt(result, aes);
 			break;
 		case AES_MODE::AES_CBC:
+			CbcEncrypt(result, aes);
 			break;
 		case AES_MODE::AES_CFB:
+			CfbEncrypt(result, aes);
 			break;
 		case AES_MODE::AES_OFB:
+			OfbEncrypt(result, aes);
 			break;
 		case AES_MODE::AES_ECB:
+			EcbEncrypt(result, aes);
+			break;
+		case AES_MODE::AES_GCM:
+			GcmEncrypt(result, aes);
+			break;
+		case AES_MODE::AES_CCM:
+			CcmEncrypt(result, aes);
+			break;
+		case AES_MODE::AES_XTS:
+			XtsEncrypt(result, aes);
+			break;
+		case AES_MODE::AES_OCB:
+			OcbEncrypt(result, aes);
+			break;
+		case AES_MODE::AES_WRAP:
+			WrapEncrypt(result, aes);
 			break;
 		default:
 			break;
@@ -342,12 +208,31 @@ void aes_execute::AesStart(Aes& aes) {
 			CtrDecrypt(result, aes);
 			break;
 		case AES_MODE::AES_CBC:
+			CbcDecrypt(result, aes);
 			break;
 		case AES_MODE::AES_CFB:
+			CfbDecrypt(result, aes);
 			break;
 		case AES_MODE::AES_OFB:
+			OfbDecrypt(result, aes);
 			break;
 		case AES_MODE::AES_ECB:
+			EcbDecrypt(result, aes);
+			break;
+		case AES_MODE::AES_GCM:
+			GcmDecrypt(result, aes);
+			break;
+		case AES_MODE::AES_CCM:
+			CcmDecrypt(result, aes);
+			break;
+		case AES_MODE::AES_XTS:
+			XtsDecrypt(result, aes);
+			break;
+		case AES_MODE::AES_OCB:
+			OcbDecrypt(result, aes);
+			break;
+		case AES_MODE::AES_WRAP:
+			WrapDecrypt(result, aes);
 			break;
 		default:
 			break;
@@ -357,3 +242,592 @@ void aes_execute::AesStart(Aes& aes) {
 	}
 	EndHandling(result, aes);
 }
+
+#pragma region Functionality
+void aes_execute::CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	ciphertext.resize(plaintext.size());
+	AES_CTR_ENCRYPT encryption = {
+		key.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		aes.Counter,
+		key.size(),
+		plaintext.size(),
+	};
+
+	int length = ((AesCtrEncrypt)AesFunctions.at("-ctr-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES CTR Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::CtrDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	plaintext.resize(ciphertext.size());
+	AES_CTR_DECRYPT decryption = {
+			key.data(),
+			ciphertext.data(),
+			plaintext.data(),
+			aes.Counter,
+			key.size(),
+			ciphertext.size(),
+	};
+	int length = ((AesCtrDecrypt)AesFunctions.at("-ctr-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CTR Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::CbcEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	ciphertext.resize(aes.Padding ? plaintext.size() + 16: plaintext.size());
+	AES_CBC_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		aes.Padding,
+		key.size(),
+		plaintext.size(),
+	};
+	int length = ((AesCbcEncrypt)AesFunctions.at("-cbc-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES CBC Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::CbcDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	plaintext.resize(aes.Padding ? ciphertext.size() + 16: ciphertext.size());
+	AES_CBC_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		aes.Padding,
+		key.size(),
+		ciphertext.size(),
+	};
+	int length = ((AesCbcDecrypt)AesFunctions.at("-cbc-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CBC Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::CfbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	ciphertext.resize(plaintext.size());
+	AES_CFB_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		aes.Segment,
+		key.size(),
+		plaintext.size(),
+	};
+	int length = ((AesCfbEncrypt)AesFunctions.at("-cfb-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES CFB Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::CfbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	plaintext.resize(ciphertext.size());
+	AES_CFB_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		aes.Segment,
+		key.size(),
+		ciphertext.size(),
+	};
+	int length = ((AesCfbDecrypt)AesFunctions.at("-cfb-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CFB Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::OfbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	ciphertext.resize(plaintext.size());
+	AES_OFB_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		key.size(),
+		plaintext.size(),
+	};
+	int length = ((AesOfbEncrypt)AesFunctions.at("-ofb-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES OFB Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::OfbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	plaintext.resize(ciphertext.size());
+	AES_OFB_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		key.size(),
+		ciphertext.size(),
+	};
+	int length = ((AesOfbDecrypt)AesFunctions.at("-ofb-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES OFB Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::EcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	ciphertext.resize(aes.Padding ? plaintext.size() + 16 : plaintext.size());
+	AES_ECB_ENCRYPT encryption = {
+		key.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		aes.Padding,
+		key.size(),
+		plaintext.size(),
+	};
+	int length = ((AesEcbEncrypt)AesFunctions.at("-ecb-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES ECB Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::EcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	plaintext.resize(aes.Padding ? ciphertext.size() + 16: ciphertext.size());
+	AES_ECB_DECRYPT decryption = {
+		key.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		aes.Padding,
+		key.size(),
+		ciphertext.size(),
+	};
+	int length = ((AesEcbDecrypt)AesFunctions.at("-ecb-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES ECB Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	ciphertext.resize(plaintext.size());
+	AES_GCM_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		plaintext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+	};
+	int length = ((AesGcmEncrypt)AesFunctions.at("-gcm-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES GCM Encrypt Failed.") << std::endl;
+		return;
+	}
+	std::string verify_tag;
+	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	std::cout << Ask(verify_tag) << std::endl;
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::GcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+    std::vector<unsigned char> iv;
+    std::vector<unsigned char> ciphertext;
+    std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+    cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+    cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+    cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+    cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	plaintext.resize(ciphertext.size());
+	AES_GCM_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		ciphertext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+    };
+    int length = ((AesGcmDecrypt)AesFunctions.at("-gcm-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES GCM Decrypt Failed.") << std::endl;
+		return;
+	}
+    result.assign(plaintext.begin(), plaintext.end());
+    result.resize(length);
+}
+
+void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	ciphertext.resize(plaintext.size());
+	AES_CCM_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		plaintext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+	};
+	int length = ((AesCcmEncrypt)AesFunctions.at("-ccm-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES CCM Encrypt Failed.") << std::endl;
+		return;
+	}
+	std::string verify_tag;
+	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	std::cout << Ask(verify_tag) << std::endl;
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::CcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	plaintext.resize(ciphertext.size());
+	AES_CCM_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		ciphertext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+	};
+	int length = ((AesCcmDecrypt)AesFunctions.at("-ccm-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CCM Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::XtsEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key1;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> key2;
+	std::vector<unsigned char> tweak;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key1);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueEncode(aes.key2_option, aes.Key2, key2);
+	cryptography_libary::ValueEncode(aes.tweak_option, aes.Tweak, tweak);
+	ciphertext.resize(plaintext.size());
+	AES_XTS_ENCRYPT encryption = {
+		key1.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		key2.data(),
+		tweak.data(),
+		key1.size(),
+		plaintext.size(),
+		key2.size(),
+	};
+	int length = ((AesXtsEncrypt)AesFunctions.at("-xts-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES XTS Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::XtsDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key1;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> key2;
+	std::vector<unsigned char> tweak;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key1);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueEncode(aes.key2_option, aes.Key2, key2);
+	cryptography_libary::ValueEncode(aes.tweak_option, aes.Tweak, tweak);
+	plaintext.resize(ciphertext.size());
+	AES_XTS_DECRYPT decryption = {
+		key1.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		key2.data(),
+		tweak.data(),
+		key1.size(),
+		ciphertext.size(),
+		key2.size(),
+	};
+	int length = ((AesXtsDecrypt)AesFunctions.at("-xts-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES XTS Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	ciphertext.resize(plaintext.size());
+	AES_OCB_ENCRYPT encryption = {
+		key.data(),
+		iv.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		plaintext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+	};
+	int length = ((AesOcbEncrypt)AesFunctions.at("-ocb-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES OCB Encrypt Failed.") << std::endl;
+		return;
+	}
+	std::string verify_tag;
+	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	std::cout << Ask(verify_tag) << std::endl;
+	result.assign(ciphertext.begin(), ciphertext.end());
+	result.resize(length);
+}
+
+void aes_execute::OcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> tag;
+	std::vector<unsigned char> aad;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	plaintext.resize(ciphertext.size());
+	AES_OCB_DECRYPT decryption = {
+		key.data(),
+		iv.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		tag.data(),
+		aad.data(),
+		key.size(),
+		ciphertext.size(),
+		iv.size(),
+		tag.size(),
+		aad.size(),
+	};
+	int length = ((AesOcbDecrypt)AesFunctions.at("-ocb-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CCM Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(plaintext.begin(), plaintext.end());
+	result.resize(length);
+}
+
+void aes_execute::WrapEncrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> key;
+	std::vector<unsigned char> kek;
+	std::vector<unsigned char> wrap;
+	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueEncode(aes.kek_option, aes.Kek, kek);
+	wrap.resize(key.size() + 8);
+	AES_WRAP_ENCRYPT encryption = {
+		key.data(),
+		kek.data(),
+		wrap.data(),
+		key.size(),
+		kek.size(),
+		wrap.size(),
+	};
+	int length = ((AesWrapEncrypt)AesFunctions.at("-wrap-encrypt"))(&encryption);
+	if (length < 0) {
+		std::cerr << Error("AES WRAP Encrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(wrap.begin(), wrap.end());
+	result.resize(length);
+}
+
+void aes_execute::WrapDecrypt(std::vector<unsigned char>& result, Aes& aes) {
+	std::vector<unsigned char> wrap;
+	std::vector<unsigned char> kek;
+	std::vector<unsigned char> key;
+	cryptography_libary::ValueEncode(aes.wrap_option, aes.Wrap, wrap);
+	cryptography_libary::ValueEncode(aes.kek_option, aes.Kek, kek);
+	key.resize(wrap.size() - 8);
+	AES_WRAP_DECRYPT decryption = {
+		wrap.data(),
+		kek.data(),
+		key.data(),
+		wrap.size(),
+		kek.size(),
+		key.size(),
+	};
+	int length = ((AesWrapDecrypt)AesFunctions.at("-wrap-decrypt"))(&decryption);
+	if (length < 0) {
+		std::cerr << Error("AES CCM Decrypt Failed.") << std::endl;
+		return;
+	}
+	result.assign(key.begin(), key.end());
+	result.resize(length);
+}
+#pragma endregion

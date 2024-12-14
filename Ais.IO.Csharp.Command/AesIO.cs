@@ -141,7 +141,7 @@ namespace Ais.IO.Csharp.Command
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
-        public static void GCM(string text, string key, string iv, string tag)
+        public static void GCM(string text, string key, string iv, string tag, string aad)
         {
             try
             {
@@ -151,11 +151,12 @@ namespace Ais.IO.Csharp.Command
                 byte[] keyResult = aes.ImportKey(key);
                 byte[] ivResult = aes.ImportIV(iv);
                 byte[] tagResult = aes.ImportTag(tag);
-                byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, ivResult, tagResult);
+                byte[] aadResult = aes.ImportAad(aad);
+                byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, ivResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
 
-                plainText = aes.GcmDecrypt(cipherText, keyResult, ivResult, tagResult);
+                plainText = aes.GcmDecrypt(cipherText, keyResult, ivResult, tagResult, aadResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }

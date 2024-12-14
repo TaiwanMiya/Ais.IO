@@ -58,13 +58,6 @@ std::unordered_map<AES_MODE, std::string> AesDisplay = {
     { AES_MODE::AES_WRAP, "WRAP" },
 };
 
-constexpr size_t hash(const char* str) {
-    size_t hash = 0;
-    while (*str)
-        hash = hash * 31 + *str++;
-    return hash;
-}
-
 void ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
     std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
