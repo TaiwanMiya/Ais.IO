@@ -1,6 +1,5 @@
 #include "cryptography_libary.h"
 #include "output_colors.h"
-#include <filesystem>
 #include "string_case.h"
 
 constexpr size_t cryptography_libary::hash(const char* str) {

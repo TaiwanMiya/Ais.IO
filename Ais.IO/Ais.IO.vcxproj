@@ -222,6 +222,7 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
     <ClInclude Include="BinaryWriterIO.h" />
     <ClInclude Include="BaseEncoderIO.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="RandIO.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StructT.h" />
@@ -235,6 +236,7 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
     <ClCompile Include="BinaryWriterIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="BaseEncoderIO.cpp" />
+    <ClCompile Include="RandIO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -23,19 +23,19 @@ namespace Ais.IO.Csharp.Command
             string inputIV = "IvMustBe128Size.";
             byte[] inputIVBuffer = new byte[inputIV.Length];
 
-            if (AesIOInterop.GenerateKey(key128, key128.Length) == 0)
+            if (AesIOInterop.Generate(key128, key128.Length) == 0)
                 Console.WriteLine("Generated Key (128 bits): " + BitConverter.ToString(key128).Replace("-", ""));
-            if (AesIOInterop.GenerateKey(key192, key192.Length) == 0)
+            if (AesIOInterop.Generate(key192, key192.Length) == 0)
                 Console.WriteLine("Generated Key (192 bits): " + BitConverter.ToString(key192).Replace("-", ""));
-            if (AesIOInterop.GenerateKey(key256, key256.Length) == 0)
+            if (AesIOInterop.Generate(key256, key256.Length) == 0)
                 Console.WriteLine("Generated Key (256 bits): " + BitConverter.ToString(key256).Replace("-", ""));
-            if (AesIOInterop.GenerateIV(iv, iv.Length) == 0)
+            if (AesIOInterop.Generate(iv, iv.Length) == 0)
                 Console.WriteLine("Generated IV (128 bits): " + BitConverter.ToString(iv).Replace("-", ""));
 
-            if (AesIOInterop.ImportKey(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
+            if (AesIOInterop.Import(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputKeyBuffer).Replace("-", ""));
-            if (AesIOInterop.ImportIV(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
-                Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
+            if (AesIOInterop.Import(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
+                Console.WriteLine("Generated IV from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
         public static void CTR(string text, string key, long counter)
@@ -46,7 +46,7 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
+                byte[] keyResult = aes.Import(key);
                 byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -66,8 +66,8 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] keyResult = aes.Import(key);
+                byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -87,8 +87,8 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] keyResult = aes.Import(key);
+                byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.CfbEncrypt(plainText, keyResult, ivResult, segmentSize);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -108,8 +108,8 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] ivResult = aes.ImportIV(iv);
+                byte[] keyResult = aes.Import(key);
+                byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.OfbEncrypt(plainText, keyResult, ivResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -129,7 +129,7 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
+                byte[] keyResult = aes.Import(key);
                 byte[] cipherText = aes.EcbEncrypt(plainText, keyResult, pkcs7Padding);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -148,10 +148,10 @@ namespace Ais.IO.Csharp.Command
                 byte[] plainText = Encoding.UTF8.GetBytes(text);
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] nonceResult = aes.ImportIV(nonce);
-                byte[] tagResult = aes.ImportTag(tag);
-                byte[] aadResult = aes.ImportAad(aad);
+                byte[] keyResult = aes.Import(key);
+                byte[] nonceResult = aes.Import(nonce);
+                byte[] tagResult = aes.Import(tag);
+                byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -170,10 +170,10 @@ namespace Ais.IO.Csharp.Command
                 byte[] plainText = Encoding.UTF8.GetBytes(text);
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] nonceResult = aes.ImportIV(nonce);
-                byte[] tagResult = aes.ImportTag(tag);
-                byte[] aadResult = aes.ImportAad(aad);
+                byte[] keyResult = aes.Import(key);
+                byte[] nonceResult = aes.Import(nonce);
+                byte[] tagResult = aes.Import(tag);
+                byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.CcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -193,8 +193,8 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] key1Result = aes.ImportKey(key1);
-                byte[] key2Result = aes.ImportKey(key2);
+                byte[] key1Result = aes.Import(key1);
+                byte[] key2Result = aes.Import(key2);
                 byte[] tweakResult = Encoding.UTF8.GetBytes(tweak);
                 byte[] cipherText = aes.XtsEncrypt(plainText, key1Result, key2Result, tweakResult);
 
@@ -215,10 +215,10 @@ namespace Ais.IO.Csharp.Command
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] nonceResult = aes.ImportIV(nonce);
-                byte[] tagResult = aes.ImportTag(tag);
-                byte[] aadResult = aes.ImportAad(aad);
+                byte[] keyResult = aes.Import(key);
+                byte[] nonceResult = aes.Import(nonce);
+                byte[] tagResult = aes.Import(tag);
+                byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.OcbEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
                 Console.WriteLine(encoder.Encode<string>(cipherText));
@@ -236,8 +236,8 @@ namespace Ais.IO.Csharp.Command
             {
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
-                byte[] keyResult = aes.ImportKey(key);
-                byte[] wrapkeyResult = aes.ImportKey(wrapey);
+                byte[] keyResult = aes.Import(key);
+                byte[] wrapkeyResult = aes.Import(wrapey);
                 byte[] wrappedKey = aes.WrapEncrypt(keyResult, wrapkeyResult);
 
                 Console.WriteLine(encoder.Encode<string>(wrappedKey));

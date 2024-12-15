@@ -10,23 +10,6 @@ namespace Ais.IO.Csharp
 {
     public class Aes
     {
-        private int[] AcceptGenerateKeySize = new int[]
-        {
-            16, 24, 32, 128, 192, 256
-        };
-        private int[] AcceptImportKeySize = new int[]
-        {
-            16, 24, 32
-        };
-        private int[] AcceptGenerateIvSize = new int[]
-        {
-            12, 16, 96, 128
-        };
-        private int[] AcceptImportIvSize = new int[]
-        {
-            12, 16
-        };
-
         private byte[] Key { get; set; }
         private byte[] IV { get; set; }
         private byte[] Tag { get; set; }
@@ -34,82 +17,19 @@ namespace Ais.IO.Csharp
 
         public Aes() { }
 
-        public byte[] GenerateKey(int size)
+        public byte[] Generate(int size)
         {
-            if (!this.AcceptGenerateKeySize.Contains(size))
-                throw new FormatException("Key size must be 128, 192, 256 bits, or 16, 24, 32 bytes.");
-            byte[] key = size > 32
-                ? new byte[size / 8]
-                : new byte[size];
-            AesIOInterop.GenerateKey(key, size > 32 ? size / 8 : size);
-            this.Key = key;
-            return key;
+            byte[] content = new byte[size];
+            AesIOInterop.Generate(content, size);
+            return content;
         }
 
-        public byte[] GenerateIV(int size)
+        public byte[] Import(string content)
         {
-            if (!this.AcceptGenerateIvSize.Contains(size))
-                throw new FormatException("IV size must be 96, 128 bits, or 12, 16 bytes.");
-            byte[] iv = size > 16
-                ? new byte[size / 8]
-                : new byte[size];
-            AesIOInterop.GenerateIV(iv, size > 16 ? size / 8 : size);
-            this.IV = iv;
-            return iv;
-        }
-
-        public byte[] GenerateTag()
-        {
-            byte[] tag = new byte[16];
-            AesIOInterop.GenerateTag(tag, 16);
-            this.Tag = tag;
-            return tag;
-        }
-
-        public byte[] GenerateAad(int size)
-        {
-            byte[] aad = new byte[16];
-            AesIOInterop.GenerateAad(aad, size);
-            this.Aad = aad;
-            return aad;
-        }
-
-        public byte[] ImportKey(string content)
-        {
-            if (!this.AcceptImportKeySize.Contains(content.Length))
-                throw new FormatException("Key size must be 128, 192, 256 bits, or 16, 24, 32 bytes.");
-            byte[] key = new byte[content.Length];
-            AesIOInterop.ImportKey(content, content.Length, key, key.Length);
-            this.Key = key;
-            return key;
-        }
-
-        public byte[] ImportIV(string content)
-        {
-            if (!this.AcceptImportIvSize.Contains(content.Length))
-                    throw new FormatException("IV size must be 96, 128 bits, or 12, 16 bytes.");
-            byte[] iv = new byte[content.Length];
-            AesIOInterop.ImportIV(content, content.Length, iv, iv.Length);
-            this.IV = iv;
-            return iv;
-        }
-
-        public byte[] ImportTag(string content)
-        {
-            if (content.Length != 16)
-                throw new FormatException("Tag size must be 128 bits, or 16 bytes.");
-            byte[] tag = new byte[content.Length];
-            AesIOInterop.ImportTag(content, content.Length, tag, tag.Length);
-            this.Tag = tag;
-            return tag;
-        }
-
-        public byte[] ImportAad(string content)
-        {
-            byte[] aad = new byte[content.Length];
-            AesIOInterop.ImportAad(content, content.Length, aad, aad.Length);
-            this.Aad = aad;
-            return aad;
+            byte[] output = new byte[content.Length];
+            AesIOInterop.Import(content, content.Length, output, output.Length);
+            this.Aad = output;
+            return output;
         }
 
         public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0)

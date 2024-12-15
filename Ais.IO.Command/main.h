@@ -19,6 +19,8 @@
 #include <thread>
 #include <fstream>
 #include <cstring>
+#include <filesystem>
+#include <functional>
 
 enum CRYPT_OPTIONS : unsigned char {
     OPTION_TEXT = 0,
@@ -448,16 +450,8 @@ typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const siz
 #pragma endregion
 
 #pragma region AesIO
-typedef int (*GenerateKey)(unsigned char*, size_t);
-typedef int (*GenerateIV)(unsigned char*, size_t);
-typedef int (*GenerateTag)(unsigned char*, size_t);
-typedef int (*GenerateAad)(unsigned char*, size_t);
-typedef int (*GenerateTweak)(unsigned char*, size_t);
-typedef int (*ImportKey)(const unsigned char*, size_t, unsigned char*, size_t);
-typedef int (*ImportIV)(const unsigned char*, size_t, unsigned char*, size_t);
-typedef int (*ImportTag)(const unsigned char*, size_t, unsigned char*, size_t);
-typedef int (*ImportAad)(const unsigned char*, size_t, unsigned char*, size_t);
-typedef int (*ImportTweak)(const unsigned char*, size_t, unsigned char*, size_t);
+typedef int (*Generate)(unsigned char*, size_t);
+typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
 typedef int (*AesCtrEncrypt)(AES_CTR_ENCRYPT*);
 typedef int (*AesCtrDecrypt)(AES_CTR_DECRYPT*);
 typedef int (*AesCbcEncrypt)(AES_CBC_ENCRYPT*);

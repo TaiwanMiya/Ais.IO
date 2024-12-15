@@ -60,6 +60,9 @@
     <ClInclude Include="BinaryInserterIO.h">
       <Filter>標頭檔\Binary</Filter>
     </ClInclude>
+    <ClInclude Include="RandIO.h">
+      <Filter>標頭檔\Cryptography</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -91,6 +94,9 @@
     </ClCompile>
     <ClCompile Include="BinaryInserterIO.cpp">
       <Filter>來源檔案\Binary</Filter>
+    </ClCompile>
+    <ClCompile Include="RandIO.cpp">
+      <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

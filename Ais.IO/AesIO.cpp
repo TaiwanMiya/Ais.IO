@@ -1,14 +1,5 @@
 ﻿#include "pch.h"
 #include "AesIO.h"
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-#include <openssl/err.h>
-#include <cstring>
-#include <iostream>
-#include <random>
-#include <ctime>
-#include <algorithm>
-#include <string>
 
 // Handle Errors
 int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
@@ -16,108 +7,6 @@ int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
     if (ctx != NULL)
         EVP_CIPHER_CTX_free(ctx);
     return -1;
-}
-
-int GenerateKey(unsigned char* key, size_t keyLength) {
-    ERR_clear_error();
-    if (keyLength != 16 && keyLength != 24 && keyLength != 32)
-        return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-
-    for (size_t i = 0; i < keyLength; ++i)
-        key[i] = static_cast<unsigned char>(dis(gen));
-    return 0;
-}
-
-int GenerateIV(unsigned char* iv, size_t ivLength) {
-    ERR_clear_error();
-    if (ivLength != 12 && ivLength != 16)
-        return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-
-    for (size_t i = 0; i < ivLength; ++i)
-        iv[i] = static_cast<unsigned char>(dis(gen));
-    return 0;
-}
-
-int GenerateTag(unsigned char* tag, size_t tagLength) {
-    ERR_clear_error();
-    if (tagLength != 16)
-        return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    for (size_t i = 0; i < tagLength; ++i)
-        tag[i] = static_cast<unsigned char>(dis(gen));
-    return 0;
-}
-
-int GenerateAad(unsigned char* aad, size_t aadLength) {
-    ERR_clear_error();
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    for (size_t i = 0; i < aadLength; ++i)
-        aad[i] = static_cast<unsigned char>(dis(gen));
-    return 0;
-}
-
-int GenerateTweak(unsigned char* tweak, size_t tweakLength) {
-    ERR_clear_error();
-    if (tweakLength != 16)
-        return handleErrors("Invalid Tweak length. Use 128 bits.", NULL);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    for (size_t i = 0; i < tweakLength; ++i)
-        tweak[i] = static_cast<unsigned char>(dis(gen));
-    return 0;
-}
-
-int ImportKey(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength) {
-    ERR_clear_error();
-    if (keyLength != 16 && keyLength != 24 && keyLength != 32)
-        return handleErrors("Invalid Key length. Use 128, 192, or 256 bits.", NULL);
-
-    std::memset(key, 0, keyLength);
-    std::memcpy(key, input, inputLength > keyLength ? keyLength : inputLength);
-    return 0;
-}
-
-int ImportIV(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength) {
-    if (ivLength != 12 && ivLength != 16)
-        return handleErrors("Invalid IV length. Use 96, 128 bits.", NULL);
-
-    std::memset(iv, 0, ivLength);
-    std::memcpy(iv, input, inputLength > ivLength ? ivLength : inputLength);
-    return 0;
-}
-
-int ImportTag(const unsigned char* input, size_t inputLength, unsigned char* tag, size_t tagLength) {
-    if (tagLength != 16)
-        return handleErrors("Invalid Tag length. Use 128 bits.", NULL);
-
-    std::memset(tag, 0, tagLength);
-    std::memcpy(tag, input, inputLength > tagLength ? tagLength : inputLength);
-    return 0;
-}
-
-int ImportAad(const unsigned char* input, size_t inputLength, unsigned char* aad, size_t aadLength) {
-    std::memset(aad, 0, aadLength);
-    std::memcpy(aad, input, inputLength > aadLength ? aadLength : inputLength);
-    return 0;
-}
-
-int ImportTweak(const unsigned char* input, size_t inputLength, unsigned char* tweak, size_t tweakLength) {
-    if (tweakLength != 16)
-        return handleErrors("Invalid Tweak length. Use 128 bits.", NULL);
-    std::memset(tweak, 0, tweakLength);
-    std::memcpy(tweak, input, inputLength > tweakLength ? tweakLength : inputLength);
-    return 0;
 }
 
 int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {

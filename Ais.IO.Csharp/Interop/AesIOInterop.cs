@@ -11,55 +11,14 @@ namespace Ais.IO.Csharp
     {
         private const string DllName = "..\\Ais.IO.dll";
 
-        // Import GenerateKey function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateKey(byte[] key, long keyLength);
-
-        // Import GenerateIV function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateIV(byte[] iv, long ivLength);
-
-        // Import GenerateTag function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateTag(byte[] tag, long tagLength);
-
-        // Import GenerateAad function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateAad(byte[] aad, long aadLength);
-
-        // Import GenerateTweak function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GenerateTweak(byte[] tweak, long tweakLength);
+        public static extern int Generate(byte[] content, long length);
 
         // Import ImportKey function from the DLL
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportKey(byte[] input, long inputLength, byte[] key, long keyLength);
+        public static extern int Import(byte[] input, long inputLength, byte[] output, long outputLength);
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportKey(string input, long inputLength, byte[] key, long keyLength);
-
-        // Import ImportIV function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportIV(byte[] input, long inputLength, byte[] iv, long ivLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportIV(string input, long inputLength, byte[] iv, long ivLength);
-
-        // Import ImportTag function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportTag(byte[] input, long inputLength, byte[] tag, long tagLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportTag(string input, long inputLength, byte[] tag, long tagLength);
-
-        // Import ImportAad function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportAad(byte[] input, long inputLength, byte[] aad, long aadLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportAad(string input, long inputLength, byte[] aad, long aadLength);
-
-        // Import ImportTweak function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportTweak(byte[] input, long inputLength, byte[] tweak, long tweakLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ImportTweak(string input, long inputLength, byte[] tweak, long tweakLength);
+        public static extern int Import(string input, long inputLength, byte[] output, long outputLength);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesCtrEncrypt(ref AES_CTR_ENCRYPT encryption);

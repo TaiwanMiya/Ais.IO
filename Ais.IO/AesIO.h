@@ -14,6 +14,15 @@
 #endif
 
 #include <cstddef>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <cstring>
+#include <iostream>
+#include <random>
+#include <ctime>
+#include <algorithm>
+#include <string>
 
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,
@@ -238,28 +247,6 @@ struct AES_WRAP_DECRYPT {
     size_t KEK_LENGTH;
     size_t KEY_LENGTH;
 };
-
-// Generate a random Key with length 128, 192, 256 bits
-EXT AESIO_API int GenerateKey(unsigned char* key, size_t keyLength);
-// Generate a random IV with length 96, 128 bits
-EXT AESIO_API int GenerateIV(unsigned char* iv, size_t ivLength);
-// Generate a random Tag with length 128 bits
-EXT AESIO_API int GenerateTag(unsigned char* tag, size_t tagLength);
-// Generate a random Aad with any length
-EXT AESIO_API int GenerateAad(unsigned char* aad, size_t aadLength);
-// Generate a random Tweak with length 128 bits
-EXT AESIO_API int GenerateTweak(unsigned char* tweak, size_t tweakLength);
-// Generate a Key with specified length using input data
-EXT AESIO_API int ImportKey(const unsigned char* input, size_t inputLength, unsigned char* key, size_t keyLength);
-// Generate an IV with specified length using input data
-EXT AESIO_API int ImportIV(const unsigned char* input, size_t inputLength, unsigned char* iv, size_t ivLength);
-// Generate an Tag with specified length using input data
-EXT AESIO_API int ImportTag(const unsigned char* input, size_t inputLength, unsigned char* tag, size_t tagLength);
-// Generate an Aad with specified length using input data
-EXT AESIO_API int ImportAad(const unsigned char* input, size_t inputLength, unsigned char* aad, size_t aadLength);
-// Generate an Tweak with specified length using input data
-EXT AESIO_API int ImportTweak(const unsigned char* input, size_t inputLength, unsigned char* tweak, size_t tweakLength);
-
 
 EXT AESIO_API int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption);
 EXT AESIO_API int AesCtrDecrypt(AES_CTR_DECRYPT* decryption);
