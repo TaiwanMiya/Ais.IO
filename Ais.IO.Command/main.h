@@ -31,6 +31,11 @@ enum CRYPT_OPTIONS : unsigned char {
     OPTION_FILE = 5,
 };
 
+enum RAND_TYPE : unsigned char {
+    RAND_GENERATE = 0,
+    RAND_IMPORT = 1,
+};
+
 enum CRYPT_TYPE : unsigned char {
     CRYPTION_NULL = 0,
     CRYPTION_ENCRYPT = 1,
@@ -67,6 +72,14 @@ struct Command {
     uint64_t length{};
     std::string input;
     std::string output;
+};
+
+struct Rand {
+    std::string Value;
+    std::string Output;
+    RAND_TYPE Type;
+    CRYPT_OPTIONS rand_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 };
 
 struct Aes {
@@ -449,9 +462,13 @@ typedef int (*Base85Encode)(const unsigned char*, const size_t, char*, const siz
 typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const size_t);
 #pragma endregion
 
-#pragma region AesIO
+#pragma region RandIO
 typedef int (*Generate)(unsigned char*, size_t);
 typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
+#pragma endregion
+
+
+#pragma region AesIO
 typedef int (*AesCtrEncrypt)(AES_CTR_ENCRYPT*);
 typedef int (*AesCtrDecrypt)(AES_CTR_DECRYPT*);
 typedef int (*AesCbcEncrypt)(AES_CBC_ENCRYPT*);
@@ -480,6 +497,7 @@ extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
+extern std::unordered_map<std::string, void*> RandFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
 extern std::unordered_map<std::string, AES_MODE> AesMode;

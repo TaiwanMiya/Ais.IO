@@ -87,8 +87,10 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 		case hash("-output"):
 		case hash("-out"):
 			aes.output_option = cryptography_libary::GetOption(i, argv);
-			if (aes.output_option == CRYPT_OPTIONS::OPTION_FILE)
+			if (aes.output_option == CRYPT_OPTIONS::OPTION_FILE) {
 				aes.Output = argv[i + 1];
+				i++;
+			}
 			i++;
 			break;
 

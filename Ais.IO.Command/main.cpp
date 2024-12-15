@@ -6,6 +6,7 @@
 #include "binary_execute.h"
 #include "encoder_execute.h"
 #include "aes_execute.h"
+#include "cryptography_libary.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -25,6 +26,7 @@ std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
+std::unordered_map<std::string, void*> RandFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
     { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
@@ -104,13 +106,13 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
-        "--aes"
+        "--generate", "--import", "--aes"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-aes", "--aes"}
+        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -414,6 +416,9 @@ void LoadFunctions() {
     AesFunctions["-ocb-decrypt"] = GET_PROC_ADDRESS(Lib, "AesOcbDecrypt");
     AesFunctions["-wrap-encrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapEncrypt");
     AesFunctions["-wrap-decrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapDecrypt");
+
+    RandFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
+    RandFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
 }
 
 int main(int argc, char* argv[]) {
@@ -560,6 +565,11 @@ int main(int argc, char* argv[]) {
         Aes aes;
         aes_execute::ParseParameters(argc, argv, aes);
         aes_execute::AesStart(aes);
+    }
+    else if (mode == "--generate" || mode == "--import") {
+        Rand rand;
+        cryptography_libary::ParseParameters(argc, argv, rand);
+        cryptography_libary::RandStart(rand);
     }
 
     UNLOAD_LIBRARY(Lib);

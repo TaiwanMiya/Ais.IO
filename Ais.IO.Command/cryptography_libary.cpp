@@ -211,3 +211,70 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::vector<un
 		break;
 	}
 }
+
+void cryptography_libary::ParseParameters(int argc, char* argv[], Rand& rand) {
+	for (int i = 0; i < argc; ++i) {
+		std::string arg = ToLower(argv[i]);
+		switch (set_hash(arg.c_str())) {
+		case hash("--generate"):
+		case hash("-gen"):
+			rand.Type = RAND_TYPE::RAND_GENERATE;
+			rand.rand_option = GetOption(i, argv);
+			if (rand.rand_option == CRYPT_OPTIONS::OPTION_FILE) {
+				rand.Output = argv[i + 1];
+				i++;
+			}
+			if (IsULong(argv[i + 1]))
+				rand.Value = argv[i + 1];
+			else {
+				std::cerr << Error("[Generate] Only integers of size can be entered.") << std::endl;
+				return;
+			}
+			i++;
+			break;
+		case hash("--import"):
+		case hash("-imp"):
+			rand.Type = RAND_TYPE::RAND_IMPORT;
+			rand.rand_option = GetOption(i, argv);
+			if (rand.rand_option == CRYPT_OPTIONS::OPTION_FILE) {
+				rand.Output = argv[i + 1];
+				i++;
+			}
+			rand.Value = argv[i + 1];
+			break;
+		case hash("-output"):
+		case hash("-out"):
+			rand.output_option = cryptography_libary::GetOption(i, argv);
+			if (rand.output_option == CRYPT_OPTIONS::OPTION_FILE) {
+				rand.Output = argv[i + 1];
+				i++;
+			}
+			i++;
+			break;
+		}
+		}
+	return;
+}
+
+void cryptography_libary::RandStart(Rand& rand) {
+	std::vector<unsigned char> result;
+	std::vector<unsigned char> outputResult;
+	std::string result_str = rand.Output;
+	switch (rand.Type) {
+	case RAND_TYPE::RAND_GENERATE:
+		result.resize(std::stoull(rand.Value));
+		((Generate)RandFunctions.at("-generate"))(result.data(), result.size());
+		ValueDecode(rand.output_option, result, result_str);
+		std::cout << Hint("<Generate>") << std::endl;
+		std::cout << Ask(result_str) << std::endl;
+		break;
+	case RAND_TYPE::RAND_IMPORT:
+		ValueEncode(rand.rand_option, rand.Value, result);
+		outputResult.resize(result.size());
+		((Import)RandFunctions.at("-import"))(result.data(), result.size(), outputResult.data(), outputResult.size());
+		ValueDecode(rand.output_option, result, result_str);
+		std::cout << Hint("<Import>") << std::endl;
+		std::cout << Ask(result_str) << std::endl;
+		break;
+	}
+}

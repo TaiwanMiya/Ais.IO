@@ -4,6 +4,8 @@
 
 class cryptography_libary {
 public:
+	static void ParseParameters(int argc, char* argv[], Rand& rand);
+	static void RandStart(Rand& rand);
 	static size_t CalculateEncodeLength(const std::string& mode, size_t length);
 	static size_t CalculateDecodeLength(const std::string& mode, size_t length);
 	static size_t CalculateEncodeLength(const CRYPT_OPTIONS mode, size_t length);

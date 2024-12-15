@@ -24,6 +24,7 @@ if ($args.Count -eq 0) {
 $operation = ""
 $indexList = ""
 $encoder = "-e"
+$mode=""
 
 # Cryptography Settings...
 $KEY = "Key length must be 128, 192, 256"
@@ -60,6 +61,10 @@ while ($args.Count -gt 0) {
         '-b32' { $operation = '-b32'; $args = $args[1..$args.Count]; break }
         '-b64' { $operation = '-b64'; $args = $args[1..$args.Count]; break }
         '-b85' { $operation = '-b85'; $args = $args[1..$args.Count]; break }
+
+        #RAND
+        '-gen' { $operation = '-gen'; $args = $args[1..$args.Count]; break }
+        '-imp' { $operation = '-imp'; $args = $args[1..$args.Count]; break }
 
         #AES
         '-aes-ctr' { $operation = '-aes-ctr'; $args = $args[1..$args.Count]; break }
@@ -193,6 +198,16 @@ for ($i = 1; $i -le $iterations; $i++) {
                 Write-Host "Ais Base 85 Decode..."
                 .\aisio "--base85" "-decode" "RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k"
             }
+        }
+
+        # RAND
+        '-gen' {
+            Write-Host "Ais Generate Any Random Value..."
+            .\aisio -gen 32 -out $BASE
+        }
+        '-imp' {
+            Write-Host "Ais Import Any String..."
+            .\aisio -imp $KEY -out $BASE
         }
 
         # AES
