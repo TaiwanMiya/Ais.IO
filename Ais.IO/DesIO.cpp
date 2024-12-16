@@ -169,9 +169,9 @@ int DesOfbEncrypt(DES_OFB_ENCRYPT* encryption) {
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
     case 14:
-    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 16: cipher = EVP_des_ede_ofb(); break;
     case 21:
-    case 24: cipher = EVP_des_ede3_cbc(); break;
+    case 24: cipher = EVP_des_ede3_ofb(); break;
     default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
@@ -200,9 +200,9 @@ int DesOfbDecrypt(DES_OFB_DECRYPT* decryption) {
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
     case 14:
-    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 16: cipher = EVP_des_ede_ofb(); break;
     case 21:
-    case 24: cipher = EVP_des_ede3_cbc(); break;
+    case 24: cipher = EVP_des_ede3_ofb(); break;
     default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
@@ -232,9 +232,9 @@ int DesEcbEncrypt(DES_ECB_ENCRYPT* encryption) {
 
     switch (encryption->KEY_LENGTH) {
     case 14:
-    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 16: cipher = EVP_des_ede_ecb(); break;
     case 21:
-    case 24: cipher = EVP_des_ede3_cbc(); break;
+    case 24: cipher = EVP_des_ede3_ecb(); break;
     default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
@@ -268,9 +268,9 @@ int DesEcbDecrypt(DES_ECB_DECRYPT* decryption) {
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
     case 14:
-    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 16: cipher = EVP_des_ede_ecb(); break;
     case 21:
-    case 24: cipher = EVP_des_ede3_cbc(); break;
+    case 24: cipher = EVP_des_ede3_ecb(); break;
     default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
