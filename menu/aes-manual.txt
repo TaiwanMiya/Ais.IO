@@ -2,7 +2,7 @@ AES (Advanced Encryption Standard):
 
     1. CTR (Counter Mode)
     
-        [原理與規則]
+        - [原理與規則]
             - 每個加密塊的明文與一個生成的計數器值(nonce + counter)加密後進行異或(XOR)操作，得到密文。
             - 計數器值是唯一的，且隨每個塊遞增。
             - 加密和解密過程相同。
@@ -16,12 +16,12 @@ AES (Advanced Encryption Standard):
             - 沒有內置完整性保護。
 
         - [輸入]
-            Key : 加密密鑰，固定大小 (128、192、256 bits)。
-            Counter : 唯一值，由 Nonce 和計數器組成。
-            Plain Text : 待加密數據，任意大小。
+            - Key : 加密密鑰，固定大小 (128、192、256 bits)。
+            - Counter : 唯一值，由 Nonce 和計數器組成。
+            - Plain Text : 待加密數據，任意大小。
 
         - [輸出]
-            Cipher Text : 加密後的數據，與明文大小相同。
+            - Cipher Text : 加密後的數據，與明文大小相同。
 
     2. CBC (Cipher Block Chaining)
     
@@ -173,16 +173,16 @@ AES (Advanced Encryption Standard):
             - 不適合流數據或小塊加密。
 
         - [輸入]
-            Key1 : 加密密鑰 1，固定大小 (128、192、256 bits)。
-            Key2 : 調整密鑰，必須與 Key1 大小相同。
-            Tweak : 扭曲值，磁碟扇區編號，也稱扇區索引，通常由內部算法自動生成。固定大小 (128 bits)。
-            Plain Text : 待加密數據，通常要求塊大小的整數倍 (不滿時使用 CipherText Stealing 處理)。
+            - Key1 : 加密密鑰 1，固定大小 (128、192、256 bits)。
+            - Key2 : 調整密鑰，必須與 Key1 大小相同。
+            - Tweak : 扭曲值，磁碟扇區編號，也稱扇區索引，通常由內部算法自動生成。固定大小 (128 bits)。
+            - Plain Text : 待加密數據，通常要求塊大小的整數倍 (不滿時使用 CipherText Stealing 處理)。
 
         - [輸出]
-            Cipher Text : 加密後的數據，與明文大小相同。
+            - Cipher Text : 加密後的數據，與明文大小相同。
 
         - [特殊規定]
-            適用於大數據塊 (如扇區)的加密，典型塊大小為 512 bytes 或 4096 bytes。
+            - 適用於大數據塊 (如扇區)的加密，典型塊大小為 512 bytes 或 4096 bytes。
 
     9. OCB (Offset Codebook Mode)
 
@@ -200,15 +200,15 @@ AES (Advanced Encryption Standard):
             - 要求使用唯一的 nonce，否則可能導致安全性降低。
 
         - [輸入]
-            Key : 加密密鑰，固定大小 (128、192、256 bits)。
-            Nonce : 唯一值，大小一般為 64、72、80、88、96 bits。
-            Tag : 認證標籤，大小一般為 64、72、80、88、96、104、112、120、128 bits。
-            Additional Authenticated Data (AAD) : 可選，大小無限制，用於完整性驗證。
-            Plain Text : 待加密數據，大小無限制。
+            - Key : 加密密鑰，固定大小 (128、192、256 bits)。
+            - Nonce : 唯一值，大小一般為 64、72、80、88、96 bits。
+            - Tag : 認證標籤，大小一般為 64、72、80、88、96、104、112、120、128 bits。
+            - Additional Authenticated Data (AAD) : 可選，大小無限制，用於完整性驗證。
+            - Plain Text : 待加密數據，大小無限制。
 
         - [輸出]
-            Cipher Text : 加密後的數據，與明文大小相同。
-            Authentication Tag : 完整性標籤，大小通常為 128 bits。
+            - Cipher Text : 加密後的數據，與明文大小相同。
+            - Authentication Tag : 完整性標籤，大小通常為 128 bits。
 
     10. WRAP (Key Wrap Mode)
 
@@ -226,14 +226,14 @@ AES (Advanced Encryption Standard):
             - 依賴於加密密鑰的強度和唯一性。
 
         - [輸入]
-            Key : 待保護的密鑰，大小通常為 64 bits 的倍數。
-            Key Encryption Key (KEK) : 加密密鑰，固定大小 (128、192、256 bits)。
+            - Key : 待保護的密鑰，大小通常為 64 bits 的倍數。
+            - Key Encryption Key (KEK) : 加密密鑰，固定大小 (128、192、256 bits)。
 
         - [輸出]
-            Wrapped Key : 加密後的密鑰，大小為原始密鑰的整數倍。
+            - Wrapped Key : 加密後的密鑰，大小為原始密鑰的整數倍。
 
         - [特殊規定]
-            設計用於對敏感密鑰進行封裝與保護，適用於密鑰管理。
+            - 設計用於對敏感密鑰進行封裝與保護，適用於密鑰管理。
 
 # 總結與選擇建議
     CTR/GCM : 適合高效加密與傳輸，並行性能好。

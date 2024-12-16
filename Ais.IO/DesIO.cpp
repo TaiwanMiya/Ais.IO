@@ -10,9 +10,11 @@ int DesCbcEncrypt(DES_CBC_ENCRYPT* encryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
+    case 14:
     case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
     case 24: cipher = EVP_des_ede3_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 8 != 0)
@@ -44,9 +46,11 @@ int DesCbcDecrypt(DES_CBC_DECRYPT* decryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
+    case 14:
     case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
     case 24: cipher = EVP_des_ede3_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 8 != 0)
@@ -78,12 +82,14 @@ int DesCfbEncrypt(DES_CFB_ENCRYPT* encryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
+    case 14:
     case 16:
         switch (encryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede_cfb64(); break;
         default:return handleErrors("Invalid segment size. Must be 64 bits.", ctx);
         }
         break;
+    case 21:
     case 24:
         switch (encryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_des_ede3_cfb1(); break;
@@ -92,7 +98,7 @@ int DesCfbEncrypt(DES_CFB_ENCRYPT* encryption) {
         default:return handleErrors("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -119,12 +125,14 @@ int DesCfbDecrypt(DES_CFB_DECRYPT* decryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
+    case 14:
     case 16:
         switch (decryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede_cfb64(); break;
         default:return handleErrors("Invalid segment size. Must be 64 bits.", ctx);
         }
         break;
+    case 21:
     case 24:
         switch (decryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_des_ede3_cfb1(); break;
@@ -133,7 +141,7 @@ int DesCfbDecrypt(DES_CFB_DECRYPT* decryption) {
         default:return handleErrors("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -160,9 +168,11 @@ int DesOfbEncrypt(DES_OFB_ENCRYPT* encryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
-    case 16: cipher = EVP_des_ede_ofb(); break;
-    case 24: cipher = EVP_des_ede3_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    case 14:
+    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
+    case 24: cipher = EVP_des_ede3_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -189,9 +199,11 @@ int DesOfbDecrypt(DES_OFB_DECRYPT* decryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
-    case 16: cipher = EVP_des_ede_ofb(); break;
-    case 24: cipher = EVP_des_ede3_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    case 14:
+    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
+    case 24: cipher = EVP_des_ede3_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -219,9 +231,11 @@ int DesEcbEncrypt(DES_ECB_ENCRYPT* encryption) {
     const EVP_CIPHER* cipher = nullptr;
 
     switch (encryption->KEY_LENGTH) {
-    case 16: cipher = EVP_des_ede_ecb(); break;
-    case 24: cipher = EVP_des_ede3_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    case 14:
+    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
+    case 24: cipher = EVP_des_ede3_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 8 != 0)
@@ -253,9 +267,11 @@ int DesEcbDecrypt(DES_ECB_DECRYPT* decryption) {
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
-    case 16: cipher = EVP_des_ede_ecb(); break;
-    case 24: cipher = EVP_des_ede3_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 128 or 192 bits. (16 or 24 bytes.)", ctx);
+    case 14:
+    case 16: cipher = EVP_des_ede_cbc(); break;
+    case 21:
+    case 24: cipher = EVP_des_ede3_cbc(); break;
+    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 8 != 0)
@@ -285,18 +301,19 @@ int DesWrapEncrypt(DES_WRAP_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (encryption->KEK_LENGTH != 24)
-        return handleErrors("Invalid wrap key length. Must be 24 bytes.", ctx);
+    if (encryption->KEK_LENGTH != 21 && encryption->KEK_LENGTH != 24)
+        return handleErrors("Invalid wrap key length. Must be 21 or 24 bytes.", ctx);
 
-    if (encryption->KEY_LENGTH < 16)
-        return handleErrors("Invalid plaintext key length. Must be at least 16 bytes.", ctx);
+    if (encryption->KEY_LENGTH < 14)
+        return handleErrors("Invalid plaintext key length. Must be at least 14 bytes.", ctx);
 
     memset(encryption->WRAP_KEY, 0, encryption->WRAP_KEY_LENGTH);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEK_LENGTH) {
+    case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid wrap key length. Must be 192 bits.", ctx);
+    default: return handleErrors("Invalid wrap key length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEK, NULL))
@@ -322,15 +339,16 @@ int DesWrapDecrypt(DES_WRAP_DECRYPT* decryption) {
     if (!ctx)
         return handleErrors("An error occurred during ctx generation.", ctx);
 
-    if (decryption->KEK_LENGTH != 24)
+    if (decryption->KEK_LENGTH != 21 && decryption->KEK_LENGTH != 24)
         return handleErrors("Invalid wrap key length. Must be 24 bytes.", ctx);
 
     memset(decryption->KEY, 0, decryption->KEY_LENGTH);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEK_LENGTH) {
+    case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid wrap key length. Must be 192 bits.", ctx);
+    default: return handleErrors("Invalid wrap key length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEK, NULL))
