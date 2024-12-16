@@ -7,14 +7,6 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    // AES_CFB - SEGMENT_SIZE
-    public enum SEGMENT_SIZE_OPTION
-    {
-        SEGMENT_1_BIT = 1,
-        SEGMENT_8_BIT = 8,
-        SEGMENT_128_BIT = 128,
-    }
-
     // AES_CTR_ENCRYPT
     [StructLayout(LayoutKind.Sequential)]
     public struct AES_CTR_ENCRYPT

@@ -3,14 +3,6 @@
 #include "output_colors.h"
 #include "cryptography_libary.h"
 
-void printHex(const char* label, const unsigned char* data, size_t length) {
-	std::cout << label << ": ";
-	for (size_t i = 0; i < length; ++i) {
-		printf("%02x", data[i]);
-	}
-	std::cout << std::endl;
-}
-
 constexpr size_t aes_execute::hash(const char* str) {
 	size_t hash = 0;
 	while (*str)
@@ -139,14 +131,14 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 			aes.Key2 = argv[i + 1];
 			i++;
 			break;
-		case hash("-kek"):
-			aes.kek_option = cryptography_libary::GetOption(i, argv);
-			aes.Kek = argv[i + 1];
-			i++;
-			break;
 		case hash("-nonce"):
 			aes.nonce_option = cryptography_libary::GetOption(i, argv);
 			aes.Nonce = argv[i + 1];
+			i++;
+			break;
+		case hash("-kek"):
+			aes.kek_option = cryptography_libary::GetOption(i, argv);
+			aes.Kek = argv[i + 1];
 			i++;
 			break;
 		case hash("-wrapkey"):

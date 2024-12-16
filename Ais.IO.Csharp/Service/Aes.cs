@@ -8,29 +8,9 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public class Aes
+    public class Aes : Asymmetric
     {
-        private byte[] Key { get; set; }
-        private byte[] IV { get; set; }
-        private byte[] Tag { get; set; }
-        private byte[] Aad { get; set; }
-
         public Aes() { }
-
-        public byte[] Generate(int size)
-        {
-            byte[] content = new byte[size];
-            AesIOInterop.Generate(content, size);
-            return content;
-        }
-
-        public byte[] Import(string content)
-        {
-            byte[] output = new byte[content.Length];
-            AesIOInterop.Import(content, content.Length, output, output.Length);
-            this.Aad = output;
-            return output;
-        }
 
         public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0)
         {

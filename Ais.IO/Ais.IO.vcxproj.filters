@@ -60,7 +60,10 @@
     <ClInclude Include="BinaryInserterIO.h">
       <Filter>標頭檔\Binary</Filter>
     </ClInclude>
-    <ClInclude Include="RandIO.h">
+    <ClInclude Include="AsymmetricIO.h">
+      <Filter>標頭檔\Cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="DesIO.h">
       <Filter>標頭檔\Cryptography</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,7 +98,10 @@
     <ClCompile Include="BinaryInserterIO.cpp">
       <Filter>來源檔案\Binary</Filter>
     </ClCompile>
-    <ClCompile Include="RandIO.cpp">
+    <ClCompile Include="AsymmetricIO.cpp">
+      <Filter>來源檔案\Cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="DesIO.cpp">
       <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
   </ItemGroup>
@@ -103,9 +109,5 @@
     <ResourceCompile Include="Ais.IO.rc">
       <Filter>資源檔</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="libcrypto-3-x64.dll" />
-    <None Include="libssl-3-x64.dll" />
   </ItemGroup>
 </Project>

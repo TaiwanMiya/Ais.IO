@@ -5,8 +5,9 @@
 #include "output_colors.h"
 #include "binary_execute.h"
 #include "encoder_execute.h"
-#include "aes_execute.h"
 #include "cryptography_libary.h"
+#include "aes_execute.h"
+#include "des_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -26,7 +27,8 @@ std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
-std::unordered_map<std::string, void*> RandFunctions;
+std::unordered_map<std::string, void*> DesFunctions;
+std::unordered_map<std::string, void*> AsymmetricFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
     { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
@@ -59,6 +61,20 @@ std::unordered_map<AES_MODE, std::string> AesDisplay = {
     { AES_MODE::AES_OCB, "OCB" },
     { AES_MODE::AES_WRAP, "WRAP" },
 };
+std::unordered_map<std::string, DES_MODE> DesMode = {
+    {"-cbc", DES_MODE::DES_CBC },
+    {"-cfb", DES_MODE::DES_CFB },
+    {"-ofb", DES_MODE::DES_OFB },
+    {"-ecb", DES_MODE::DES_ECB },
+    {"-wrap", DES_MODE::DES_WRAP },
+};
+std::unordered_map<DES_MODE, std::string> DesDisplay = {
+    { DES_MODE::DES_CBC, "CBC" },
+    { DES_MODE::DES_CFB, "CFB" },
+    { DES_MODE::DES_OFB, "OFB" },
+    { DES_MODE::DES_ECB, "ECB" },
+    { DES_MODE::DES_WRAP, "WRAP" },
+};
 
 void ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
@@ -81,21 +97,40 @@ void ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
 
     std::cout << Hint("Usage:\n");
-    std::cout << Hint("  [-id | --indexes] <path>\n");
-    std::cout << Hint("  [-rl | --read-all] <path>\n");
-    std::cout << Hint("  [-r | --read] <path> [--type] ...\n");
-    std::cout << Hint("  [-w | --write] <path> [--type] <value> ...\n");
-    std::cout << Hint("  [-a | --append] <path> [--type] <value> ...\n");
-    std::cout << Hint("  [-i | --insert] <path> [--type] <value> <position> ...\n");
-    std::cout << Hint("  [-rm | --remove] <path> [--type] <position> <length> ...\n");
-    std::cout << Hint("  [-rs | --remove-index] <path> <index> ...\n");
-    std::cout << Hint("  [-b16 | --base16] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
-    std::cout << Hint("  [-b32 | --base32] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
-    std::cout << Hint("  [-b64 | --base64] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
-    std::cout << Hint("  [-b85 | --base85] [-e | -encode | -d -decode] [Null | -in | -input <path>] [Null | -out | -output <path>] <value>\n");
-    std::cout << Hint("  --colors\n");
-    std::cout << Hint("Supported [--type]:\n");
-    std::cout << Hint("  -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
+    std::cout << "" << std::endl;
+    std::cout << Hint("  Commands for IO operations:\n");
+    std::cout << Hint("    [-id | --indexes] <path>\n");
+    std::cout << Hint("    [-rl | --read-all] <path>\n");
+    std::cout << Hint("    [-r | --read] <path> [--type] ...\n");
+    std::cout << Hint("    [-w | --write] <path> [--type] <value> ...\n");
+    std::cout << Hint("    [-a | --append] <path> [--type] <value> ...\n");
+    std::cout << Hint("    [-i | --insert] <path> [--type] <value> <position> ...\n");
+    std::cout << Hint("    [-rm | --remove] <path> [--type] <position> <length> ...\n");
+    std::cout << Hint("    [-rs | --remove-index] <path> <index> ...\n");
+    std::cout << Hint("  Supported [--type]:\n");
+    std::cout << Hint("    -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
+    std::cout << "" << std::endl;
+    std::cout << Hint("  Commands for Base encoding/decoding:\n");
+    std::cout << Hint("    [-b16 | --base16] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
+    std::cout << Hint("    [-b32 | --base32] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
+    std::cout << Hint("    [-b64 | --base64] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
+    std::cout << Hint("    [-b85 | --base85] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
+    std::cout << "" << std::endl;
+    std::cout << Hint("  Commands for Aes Cryptography:\n");
+    std::cout << Hint("    [-aes | --aes] [--mode] [-e | -encrypt | -d | -decrypt] [-key | -iv | [-count | -counter] | [-pad | -padding] | [-seg | -segment] | -tag | -aad | -tweak | -key2 | -kek | -nonce | [-wk | -wrapkey]]\n");
+    std::cout << Hint("    [[-pt | -plain-text] | [-ct | -cipher-text]] [--pattern] [-out] [--pattern]\n");
+    std::cout << Hint("  Supported [--pattern]:\n");
+    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
+    std::cout << "" << std::endl;
+    std::cout << Hint("  Commands for Des Cryptography:\n");
+    std::cout << Hint("    [-des | --des] [--mode] [-e | -encrypt | -d | -decrypt] [-key | -iv | [-pad | -padding] | [-seg | -segment] | -kek | [-wk | -wrapkey]]\n");
+    std::cout << Hint("    [[-pt | -plain-text] | [-ct | -cipher-text]] [--pattern] [-out] [--pattern]\n");
+    std::cout << Hint("  Supported [--pattern]:\n");
+    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
+    std::cout << "" << std::endl;
+    std::cout << Hint("  Additional commands:\n");
+    std::cout << Hint("    --colors\n");
+    std::cout << "" << std::endl;
 }
 
 bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, std::vector<Command>& commands) {
@@ -106,13 +141,13 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
-        "--generate", "--import", "--aes"
+        "--generate", "--import", "--aes", "--des"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}
+        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -417,8 +452,19 @@ void LoadFunctions() {
     AesFunctions["-wrap-encrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapEncrypt");
     AesFunctions["-wrap-decrypt"] = GET_PROC_ADDRESS(Lib, "AesWrapDecrypt");
 
-    RandFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
-    RandFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
+    DesFunctions["-cbc-encrypt"] = GET_PROC_ADDRESS(Lib, "DesCbcEncrypt");
+    DesFunctions["-cbc-decrypt"] = GET_PROC_ADDRESS(Lib, "DesCbcDecrypt");
+    DesFunctions["-cfb-encrypt"] = GET_PROC_ADDRESS(Lib, "DesCfbEncrypt");
+    DesFunctions["-cfb-decrypt"] = GET_PROC_ADDRESS(Lib, "DesCfbDecrypt");
+    DesFunctions["-ofb-encrypt"] = GET_PROC_ADDRESS(Lib, "DesOfbEncrypt");
+    DesFunctions["-ofb-decrypt"] = GET_PROC_ADDRESS(Lib, "DesOfbDecrypt");
+    DesFunctions["-ecb-encrypt"] = GET_PROC_ADDRESS(Lib, "DesEcbEncrypt");
+    DesFunctions["-ecb-decrypt"] = GET_PROC_ADDRESS(Lib, "DesEcbDecrypt");
+    DesFunctions["-wrap-encrypt"] = GET_PROC_ADDRESS(Lib, "DesWrapEncrypt");
+    DesFunctions["-wrap-decrypt"] = GET_PROC_ADDRESS(Lib, "DesWrapDecrypt");
+
+    AsymmetricFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
+    AsymmetricFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
 }
 
 int main(int argc, char* argv[]) {
@@ -566,6 +612,11 @@ int main(int argc, char* argv[]) {
         aes_execute::ParseParameters(argc, argv, aes);
         aes_execute::AesStart(aes);
     }
+    else if (mode == "--des") {
+        Des des;
+        des_execute::ParseParameters(argc, argv, des);
+        des_execute::DesStart(des);
+        }
     else if (mode == "--generate" || mode == "--import") {
         Rand rand;
         cryptography_libary::ParseParameters(argc, argv, rand);

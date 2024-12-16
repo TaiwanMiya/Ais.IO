@@ -1,13 +1,6 @@
 ﻿#include "pch.h"
 #include "AesIO.h"
-
-// Handle Errors
-int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
-    std::cerr << "ERROR: " << message << std::endl;
-    if (ctx != NULL)
-        EVP_CIPHER_CTX_free(ctx);
-    return -1;
-}
+#include "AsymmetricIO.h"
 
 int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     ERR_clear_error();
@@ -26,7 +19,7 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_ctr(); break;
     case 24: cipher = EVP_aes_192_ctr(); break;
     case 32: cipher = EVP_aes_256_ctr(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, iv_with_counter))
@@ -61,7 +54,7 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_ctr(); break;
     case 24: cipher = EVP_aes_192_ctr(); break;
     case 32: cipher = EVP_aes_256_ctr(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, iv_with_counter))
@@ -90,10 +83,10 @@ int AesCbcEncrypt(AES_CBC_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_cbc(); break;
     case 24: cipher = EVP_aes_192_cbc(); break;
     case 32: cipher = EVP_aes_256_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
-    if (encryption->PKCS7_PADDING == false && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
+    if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
         return handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -125,10 +118,10 @@ int AesCbcDecrypt(AES_CBC_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_cbc(); break;
     case 24: cipher = EVP_aes_192_cbc(); break;
     case 32: cipher = EVP_aes_256_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
-    if (decryption->PKCS7_PADDING == false && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
+    if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
         return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -162,7 +155,7 @@ int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_128_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_128_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_128_cfb128(); break;
-        default: cipher = EVP_aes_128_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
     case 24:
@@ -170,7 +163,7 @@ int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_192_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_192_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_192_cfb128(); break;
-        default: cipher = EVP_aes_192_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
     case 32:
@@ -178,10 +171,10 @@ int AesCfbEncrypt(AES_CFB_ENCRYPT* encryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_256_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_256_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_256_cfb128(); break;
-        default: cipher = EVP_aes_256_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -213,7 +206,7 @@ int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_128_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_128_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_128_cfb128(); break;
-        default: cipher = EVP_aes_128_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
     case 24:
@@ -221,7 +214,7 @@ int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_192_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_192_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_192_cfb128(); break;
-        default: cipher = EVP_aes_192_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
     case 32:
@@ -229,10 +222,10 @@ int AesCfbDecrypt(AES_CFB_DECRYPT* decryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_aes_256_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_aes_256_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_128_BIT: cipher = EVP_aes_256_cfb128(); break;
-        default: cipher = EVP_aes_256_cfb128(); break;
+        default:return handleErrors("Invalid segment size. Must be 1, 8, 128 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -262,7 +255,7 @@ int AesOfbEncrypt(AES_OFB_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_ofb(); break;
     case 24: cipher = EVP_aes_192_ofb(); break;
     case 32: cipher = EVP_aes_256_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
@@ -292,7 +285,7 @@ int AesOfbDecrypt(AES_OFB_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_ofb(); break;
     case 24: cipher = EVP_aes_192_ofb(); break;
     case 32: cipher = EVP_aes_256_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
@@ -322,10 +315,10 @@ int AesEcbEncrypt(AES_ECB_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_ecb(); break;
     case 24: cipher = EVP_aes_192_ecb(); break;
     case 32: cipher = EVP_aes_256_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
-    if (encryption->PKCS7_PADDING == false && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
+    if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 16 != 0)
         return handleErrors("PlainText block must be 16 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, NULL))
@@ -357,10 +350,10 @@ int AesEcbDecrypt(AES_ECB_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_ecb(); break;
     case 24: cipher = EVP_aes_192_ecb(); break;
     case 32: cipher = EVP_aes_256_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
-    if (decryption->PKCS7_PADDING == false && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
+    if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 16 != 0)
         return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, NULL))
@@ -392,7 +385,7 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_gcm(); break;
     case 24: cipher = EVP_aes_192_gcm(); break;
     case 32: cipher = EVP_aes_256_gcm(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
@@ -434,7 +427,7 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_gcm(); break;
     case 24: cipher = EVP_aes_192_gcm(); break;
     case 32: cipher = EVP_aes_256_gcm(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
@@ -476,7 +469,7 @@ int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_ccm(); break;
     case 24: cipher = EVP_aes_192_ccm(); break;
     case 32: cipher = EVP_aes_256_ccm(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
@@ -524,7 +517,7 @@ int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_ccm(); break;
     case 24: cipher = EVP_aes_192_ccm(); break;
     case 32: cipher = EVP_aes_256_ccm(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))
@@ -675,7 +668,7 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
     case 16: cipher = EVP_aes_128_ocb(); break;
     case 24: cipher = EVP_aes_192_ocb(); break;
     case 32: cipher = EVP_aes_256_ocb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL))
@@ -720,7 +713,7 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
     case 16: cipher = EVP_aes_128_ocb(); break;
     case 24: cipher = EVP_aes_192_ocb(); break;
     case 32: cipher = EVP_aes_256_ocb(); break;
-    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid key length. Must be 128, 192, or 256 bits. (16, 24, 32 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, NULL, NULL))

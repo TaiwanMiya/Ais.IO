@@ -23,12 +23,7 @@
 #include <ctime>
 #include <algorithm>
 #include <string>
-
-enum SEGMENT_SIZE_OPTION {
-    SEGMENT_1_BIT = 1,
-    SEGMENT_8_BIT = 8,
-    SEGMENT_128_BIT = 128,
-};
+#include "AsymmetricIO.h"
 
 struct AES_CTR_ENCRYPT {
     const unsigned char* KEY;

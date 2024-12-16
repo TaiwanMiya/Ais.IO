@@ -263,7 +263,7 @@ void cryptography_libary::RandStart(Rand& rand) {
 	switch (rand.Type) {
 	case RAND_TYPE::RAND_GENERATE:
 		result.resize(std::stoull(rand.Value));
-		((Generate)RandFunctions.at("-generate"))(result.data(), result.size());
+		((Generate)AsymmetricFunctions.at("-generate"))(result.data(), result.size());
 		ValueDecode(rand.output_option, result, result_str);
 		std::cout << Hint("<Generate>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
@@ -271,7 +271,7 @@ void cryptography_libary::RandStart(Rand& rand) {
 	case RAND_TYPE::RAND_IMPORT:
 		ValueEncode(rand.rand_option, rand.Value, result);
 		outputResult.resize(result.size());
-		((Import)RandFunctions.at("-import"))(result.data(), result.size(), outputResult.data(), outputResult.size());
+		((Import)AsymmetricFunctions.at("-import"))(result.data(), result.size(), outputResult.data(), outputResult.size());
 		ValueDecode(rand.output_option, result, result_str);
 		std::cout << Hint("<Import>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;

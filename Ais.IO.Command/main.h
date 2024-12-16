@@ -59,9 +59,19 @@ enum AES_MODE : unsigned long long {
     AES_WRAP = 0x01 << 9,
 };
 
+enum DES_MODE : unsigned long long {
+    DES_NULL = 0x00,
+    DES_CBC = 0x01 << 0,
+    DES_CFB = 0x01 << 1,
+    DES_OFB = 0x01 << 2,
+    DES_ECB = 0x01 << 3,
+    DES_WRAP = 0x01 << 4,
+};
+
 enum SEGMENT_SIZE_OPTION {
     SEGMENT_1_BIT = 1,
     SEGMENT_8_BIT = 8,
+    SEGMENT_64_BIT = 64,
     SEGMENT_128_BIT = 128,
 };
 
@@ -93,8 +103,8 @@ struct Aes {
     std::string Aad;
     std::string Tweak;
     std::string Key2;
-    std::string Kek;
     std::string Nonce;
+    std::string Kek;
     std::string Wrap;
     std::string Output;
 
@@ -106,12 +116,35 @@ struct Aes {
     CRYPT_OPTIONS aad_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS tweak_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS key2_option = CRYPT_OPTIONS::OPTION_TEXT;
-    CRYPT_OPTIONS kek_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS nonce_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS kek_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS wrap_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     long long Counter = 0;
+    bool Padding = false;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
+};
+
+struct Des {
+    DES_MODE Mode;
+    CRYPT_TYPE Crypt;
+    std::string Key;
+    std::string IV;
+    std::string PlainText;
+    std::string CipherText;
+    std::string Kek;
+    std::string Wrap;
+    std::string Output;
+
+    CRYPT_OPTIONS key_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS iv_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS kek_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS wrap_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
     bool Padding = false;
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
 };
@@ -358,6 +391,100 @@ struct AES_WRAP_DECRYPT {
     size_t KEY_LENGTH;
 };
 
+struct DES_CBC_ENCRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct DES_CBC_DECRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
+};
+
+struct DES_CFB_ENCRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    SEGMENT_SIZE_OPTION SEGMENT_SIZE;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct DES_CFB_DECRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    SEGMENT_SIZE_OPTION SEGMENT_SIZE;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
+};
+
+struct DES_OFB_ENCRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct DES_OFB_DECRYPT {
+    const unsigned char* KEY;
+    const unsigned char* IV;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
+};
+
+struct DES_ECB_ENCRYPT {
+    const unsigned char* KEY;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct DES_ECB_DECRYPT {
+    const unsigned char* KEY;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    bool PKCS7_PADDING;
+    size_t KEY_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
+};
+
+struct DES_WRAP_ENCRYPT {
+    const unsigned char* KEY;
+    const unsigned char* KEK;
+    unsigned char* WRAP_KEY;
+    size_t KEY_LENGTH;
+    size_t KEK_LENGTH;
+    size_t WRAP_KEY_LENGTH;
+};
+
+struct DES_WRAP_DECRYPT {
+    const unsigned char* WRAP_KEY;
+    const unsigned char* KEK;
+    unsigned char* KEY;
+    size_t WRAP_KEY_LENGTH;
+    size_t KEK_LENGTH;
+    size_t KEY_LENGTH;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -462,7 +589,7 @@ typedef int (*Base85Encode)(const unsigned char*, const size_t, char*, const siz
 typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const size_t);
 #pragma endregion
 
-#pragma region RandIO
+#pragma region AsymmetricIO
 typedef int (*Generate)(unsigned char*, size_t);
 typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
 #pragma endregion
@@ -491,14 +618,31 @@ typedef int (*AesWrapEncrypt)(AES_WRAP_ENCRYPT*);
 typedef int (*AesWrapDecrypt)(AES_WRAP_DECRYPT*);
 #pragma endregion
 
+#pragma region DesIO
+typedef int (*DesCbcEncrypt)(DES_CBC_ENCRYPT*);
+typedef int (*DesCbcDecrypt)(DES_CBC_DECRYPT*);
+typedef int (*DesCfbEncrypt)(DES_CFB_ENCRYPT*);
+typedef int (*DesCfbDecrypt)(DES_CFB_DECRYPT*);
+typedef int (*DesOfbEncrypt)(DES_OFB_ENCRYPT*);
+typedef int (*DesOfbDecrypt)(DES_OFB_DECRYPT*);
+typedef int (*DesEcbEncrypt)(DES_ECB_ENCRYPT*);
+typedef int (*DesEcbDecrypt)(DES_ECB_DECRYPT*);
+typedef int (*DesWrapEncrypt)(DES_WRAP_ENCRYPT*);
+typedef int (*DesWrapDecrypt)(DES_WRAP_DECRYPT*);
+#pragma endregion
+
+
 extern std::unordered_map<std::string, void*> ReadFunctions;
 extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
-extern std::unordered_map<std::string, void*> RandFunctions;
+extern std::unordered_map<std::string, void*> DesFunctions;
+extern std::unordered_map<std::string, void*> AsymmetricFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
 extern std::unordered_map<std::string, AES_MODE> AesMode;
 extern std::unordered_map<AES_MODE, std::string> AesDisplay;
+extern std::unordered_map<std::string, DES_MODE> DesMode;
+extern std::unordered_map<DES_MODE, std::string> DesDisplay;

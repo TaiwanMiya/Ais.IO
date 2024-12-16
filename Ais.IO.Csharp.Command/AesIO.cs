@@ -23,18 +23,18 @@ namespace Ais.IO.Csharp.Command
             string inputIV = "IvMustBe128Size.";
             byte[] inputIVBuffer = new byte[inputIV.Length];
 
-            if (AesIOInterop.Generate(key128, key128.Length) == 0)
+            if (AsymmetricIOInterop.Generate(key128, key128.Length) == 0)
                 Console.WriteLine("Generated Key (128 bits): " + BitConverter.ToString(key128).Replace("-", ""));
-            if (AesIOInterop.Generate(key192, key192.Length) == 0)
+            if (AsymmetricIOInterop.Generate(key192, key192.Length) == 0)
                 Console.WriteLine("Generated Key (192 bits): " + BitConverter.ToString(key192).Replace("-", ""));
-            if (AesIOInterop.Generate(key256, key256.Length) == 0)
+            if (AsymmetricIOInterop.Generate(key256, key256.Length) == 0)
                 Console.WriteLine("Generated Key (256 bits): " + BitConverter.ToString(key256).Replace("-", ""));
-            if (AesIOInterop.Generate(iv, iv.Length) == 0)
+            if (AsymmetricIOInterop.Generate(iv, iv.Length) == 0)
                 Console.WriteLine("Generated IV (128 bits): " + BitConverter.ToString(iv).Replace("-", ""));
 
-            if (AesIOInterop.Import(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
+            if (AsymmetricIOInterop.Import(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputKeyBuffer).Replace("-", ""));
-            if (AesIOInterop.Import(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
+            if (AsymmetricIOInterop.Import(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
                 Console.WriteLine("Generated IV from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
@@ -230,14 +230,14 @@ namespace Ais.IO.Csharp.Command
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
-        public static void WRAP(string key, string wrapey)
+        public static void WRAP(string key, string wrapkey)
         {
             try
             {
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.Import(key);
-                byte[] wrapkeyResult = aes.Import(wrapey);
+                byte[] wrapkeyResult = aes.Import(wrapkey);
                 byte[] wrappedKey = aes.WrapEncrypt(keyResult, wrapkeyResult);
 
                 Console.WriteLine(encoder.Encode<string>(wrappedKey));

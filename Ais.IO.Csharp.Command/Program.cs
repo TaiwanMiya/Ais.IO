@@ -22,79 +22,11 @@ namespace Ais.IO.Csharp.Command
                 //EncoderIO.BaseEncode(out byte[] b16, out byte[] b32, out byte[] b64, out byte[] b85);
                 //EncoderIO.BaseDecode(b16, b32, b64, b85);
 
-                AesIO.Generate();
+                //AesIO.Generate();
 
-                //string text = string.Empty;
-                //string key = "Key length must be 128, 192, 256";
-                //string iv = "IvMustBe128Size.";
-                //string tag = "TagMustBe128Size";
-                //string aad = "Additional Authenticated Data (AAD) can be of any length";
-                //string key2 = "Secondary Key for AES-XTS Tweak.";
-                //string tweak = "SectorNumber0001";
-                //string kek = "This is AES WRAP, 128, 192, 256.";
-                //string nonce = "Nonce12bytes";
+                StartAes(1);
 
-                //int cryptionCount = 100;
-                //for (int i = 0; i < cryptionCount; i++)
-                //{
-                //    text = "This is AES CTR Encryption/Decryption.";
-                //    AesIO.CTR(text, key, 1);
-
-                //    text = "This is AES CBC Encryption/Decryption.";
-                //    AesIO.CBC(text, key, iv, true);
-
-                //    text = "This is AES CFB Encryption/Decryption.";
-                //    AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
-
-                //    text = "This is AES OFB Encryption/Decryption.";
-                //    AesIO.OFB(text, key, iv);
-
-                //    text = "This is AES ECB Encryption/Decryption.";
-                //    AesIO.ECB(text, key, true);
-
-                //    text = "This is AES GCM Encryption/Decryption.";
-                //    AesIO.GCM(text, key, nonce, tag, aad);
-
-                //    text = "This is AES CCM Encryption/Decryption.";
-                //    AesIO.CCM(text, key, nonce, tag, aad);
-
-                //    text = "This is AES XTS Encryption/Decryption.";
-                //    AesIO.XTS(text, key, key2, tweak);
-
-                //    text = "This is AES OCB Encryption/Decryption.";
-                //    AesIO.OCB(text, key, nonce, tag, aad);
-
-                //    AesIO.WRAP(key, kek);
-                //}
-
-                //text = "This is AES CTR Encryption/Decryption.";
-                //AesIO.CTR(text, key, 1);
-
-                //text = "This is AES CBC Encryption/Decryption.";
-                //AesIO.CBC(text, key, iv, true);
-
-                //text = "This is AES CFB Encryption/Decryption.";
-                //AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
-
-                //text = "This is AES OFB Encryption/Decryption.";
-                //AesIO.OFB(text, key, iv);
-
-                //text = "This is AES ECB Encryption/Decryption.";
-                //AesIO.ECB(text, key, true);
-
-                //text = "This is AES GCM Encryption/Decryption.";
-                //AesIO.GCM(text, key, nonce, tag, aad);
-
-                //text = "This is AES CCM Encryption/Decryption.";
-                //AesIO.CCM(text, key, nonce, tag, aad);
-
-                //text = "This is AES XTS Encryption/Decryption.";
-                //AesIO.XTS(text, key, key2, tweak);
-
-                //text = "This is AES OCB Encryption/Decryption.";
-                //AesIO.OCB(text, key, nonce, tag, aad);
-
-                //AesIO.WRAP(key, kek);
+                StartDes(1);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");
@@ -104,6 +36,78 @@ namespace Ais.IO.Csharp.Command
             catch (Exception ex)
             {
                 Console.WriteLine("Error: " + ex.Message);
+            }
+        }
+
+        private static void StartAes(int range)
+        {
+            string text = string.Empty;
+            string key = "Key length must be 128, 192, 256";
+            string iv = "IvMustBe128Size.";
+            string tag = "TagMustBe128Size";
+            string aad = "Additional Authenticated Data (AAD) can be of any length";
+            string key2 = "Secondary Key for AES-XTS Tweak.";
+            string tweak = "SectorNumber0001";
+            string kek = "This is AES WRAP, 128, 192, 256.";
+            string nonce = "Nonce12bytes";
+
+            for (int i = 0; i < range; i++)
+            {
+                text = "This is AES CTR Encryption/Decryption.";
+                AesIO.CTR(text, key, 1);
+
+                text = "This is AES CBC Encryption/Decryption.";
+                AesIO.CBC(text, key, iv, true);
+
+                text = "This is AES CFB Encryption/Decryption.";
+                AesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_128_BIT);
+
+                text = "This is AES OFB Encryption/Decryption.";
+                AesIO.OFB(text, key, iv);
+
+                text = "This is AES ECB Encryption/Decryption.";
+                AesIO.ECB(text, key, true);
+
+                text = "This is AES GCM Encryption/Decryption.";
+                AesIO.GCM(text, key, nonce, tag, aad);
+
+                text = "This is AES CCM Encryption/Decryption.";
+                AesIO.CCM(text, key, nonce, tag, aad);
+
+                text = "This is AES XTS Encryption/Decryption.";
+                AesIO.XTS(text, key, key2, tweak);
+
+                text = "This is AES OCB Encryption/Decryption.";
+                AesIO.OCB(text, key, nonce, tag, aad);
+
+                AesIO.WRAP(key, kek);
+            }
+        }
+
+        private static void StartDes(int range)
+        {
+            string text = string.Empty;
+            string key128 = "This key is 128.";
+            string key = "Key Must Be 128,192 Size";
+            string kek = "WRAP Key 128 192 by DES.";
+            string kek128 = "WRAP Key by 128.";
+            string iv = "Iv8Bytes";
+
+            for (int i = 0; i < range; i++)
+            {
+                text = "This is DES CBC Encryption/Decryption.";
+                DesIO.CBC(text, key, iv, true);
+
+                text = "This is DES CFB Encryption/Decryption.";
+                DesIO.CFB(text, key, iv, SEGMENT_SIZE_OPTION.SEGMENT_64_BIT);
+
+                text = "This is DES OFB Encryption/Decryption.";
+                DesIO.OFB(text, key, iv);
+
+                text = "This is DES ECB Encryption/Decryption.";
+                DesIO.ECB(text, key, true);
+
+                DesIO.WRAP(key, kek);
             }
         }
     }

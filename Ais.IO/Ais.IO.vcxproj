@@ -110,7 +110,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AddModuleNamesToAssembly>
       </AddModuleNamesToAssembly>
     </Link>
@@ -119,8 +119,16 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy /y "$(ProjectDir)libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+      <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,7 +149,7 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AddModuleNamesToAssembly>
       </AddModuleNamesToAssembly>
     </Link>
@@ -150,8 +158,16 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy /y "$(ProjectDir)libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+      <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -169,7 +185,7 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AddModuleNamesToAssembly>
       </AddModuleNamesToAssembly>
     </Link>
@@ -178,8 +194,16 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy /y "$(ProjectDir)libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+      <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -200,7 +224,7 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AddModuleNamesToAssembly>
       </AddModuleNamesToAssembly>
     </Link>
@@ -209,8 +233,16 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy /y "$(ProjectDir)libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+      <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -221,8 +253,9 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
     <ClInclude Include="BinaryReaderIO.h" />
     <ClInclude Include="BinaryWriterIO.h" />
     <ClInclude Include="BaseEncoderIO.h" />
+    <ClInclude Include="DesIO.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="RandIO.h" />
+    <ClInclude Include="AsymmetricIO.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StructT.h" />
@@ -234,9 +267,10 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
     <ClCompile Include="BinaryIO.cpp" />
     <ClCompile Include="BinaryReaderIO.cpp" />
     <ClCompile Include="BinaryWriterIO.cpp" />
+    <ClCompile Include="DesIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="BaseEncoderIO.cpp" />
-    <ClCompile Include="RandIO.cpp" />
+    <ClCompile Include="AsymmetricIO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -247,46 +281,6 @@ copy /y "$(ProjectDir)libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ais.IO.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="libcrypto-3-x64.dll">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </DeploymentContent>
-    </None>
-    <None Include="libssl-3-x64.dll">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </DeploymentContent>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </DeploymentContent>
-    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

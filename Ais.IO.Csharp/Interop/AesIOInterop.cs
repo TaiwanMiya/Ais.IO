@@ -12,15 +12,6 @@ namespace Ais.IO.Csharp
         private const string DllName = "..\\Ais.IO.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Generate(byte[] content, long length);
-
-        // Import ImportKey function from the DLL
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Import(byte[] input, long inputLength, byte[] output, long outputLength);
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Import(string input, long inputLength, byte[] output, long outputLength);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int AesCtrEncrypt(ref AES_CTR_ENCRYPT encryption);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

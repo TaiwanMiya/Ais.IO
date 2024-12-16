@@ -1,5 +1,12 @@
 #include "pch.h"
-#include "RandIO.h"
+#include "AsymmetricIO.h"
+
+int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
+    std::cerr << "ERROR: " << message << std::endl;
+    if (ctx != NULL)
+        EVP_CIPHER_CTX_free(ctx);
+    return -1;
+}
 
 int Generate(unsigned char* key, size_t keyLength) {
     std::random_device rd;

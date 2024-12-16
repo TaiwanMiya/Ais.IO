@@ -8,7 +8,7 @@ public:
 private:
 	static constexpr size_t hash(const char* str);
 	static size_t set_hash(const char* str);
-	static bool GetCrypt(int& i, std::string arg, char* argv[], Aes& crypt);
+	static bool GetCrypt(int& i, std::string arg, char* argv[], Aes& aes);
 	static void EndHandling(std::vector<unsigned char>& result, Aes& aes);
 	static void CtrEncrypt(std::vector<unsigned char>& result, Aes& aes);
 	static void CtrDecrypt(std::vector<unsigned char>& result, Aes& aes);
