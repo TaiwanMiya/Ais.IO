@@ -27,6 +27,9 @@ DEPS = libssl-dev g++
 all: install_deps compile
 
 install_deps:
+	@echo "CXX = $(CXX)"
+	@echo "CXXCXXFLAGS = $(CXXCXXFLAGS)"
+	@echo "LDFLAGS = $(LDFLAGS)"
 	@echo "Checking and installing dependencies..."
 	@if ! command -v g++ 2>&1; then \
 		sudo apt-get update && sudo apt-get install -y $(DEPS); \

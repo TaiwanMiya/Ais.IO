@@ -65,6 +65,7 @@ goto menu
 
 :git_push
 echo You chose - Git Push
+git config core.autocrlf false
 git -c diff.mnemonicprefix=false -c core.quotepath=false --no-optional-locks add -f -- .
 set /p commit_message="Please enter commit message:"
 git -c diff.mnemonicprefix=false -c core.quotepath=false --no-optional-locks commit -v -q -m "%commit_message%"

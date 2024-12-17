@@ -1,3 +1,4 @@
+#!/bin/bash
 Usage(){
 	echo "Usage:"
 	echo "$0 <operation>"
@@ -61,6 +62,7 @@ case "$operation" in
 		;;
 	-ps)
 		echo "You chose - Git Push"
+		git config core.autocrlf false
 		git -c core.quotepath=false --no-optional-locks add -f -- .
 		git -c core.quotepath=false --no-optional-locks commit -v -q -m "$message"
 		git -c core.quotepath=false --no-optional-locks push -v --tags origin master:master

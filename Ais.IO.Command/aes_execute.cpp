@@ -531,7 +531,7 @@ void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		std::cerr << Error("AES GCM Encrypt Failed.") << std::endl;
 		return;
 	}
-	std::string verify_tag;
+	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
@@ -605,7 +605,7 @@ void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		std::cerr << Error("AES CCM Encrypt Failed.") << std::endl;
 		return;
 	}
-	std::string verify_tag;
+	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
@@ -739,7 +739,7 @@ void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		std::cerr << Error("AES OCB Encrypt Failed.") << std::endl;
 		return;
 	}
-	std::string verify_tag;
+	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
