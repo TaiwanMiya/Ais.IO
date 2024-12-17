@@ -302,10 +302,10 @@ int DesWrapEncrypt(DES_WRAP_ENCRYPT* encryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     if (encryption->KEK_LENGTH != 21 && encryption->KEK_LENGTH != 24)
-        return handleErrors("Invalid wrap key length. Must be 21 or 24 bytes.", ctx);
+        return handleErrors("Invalid KEK length. Must be 21 or 24 bytes.", ctx);
 
     if (encryption->KEY_LENGTH < 14)
-        return handleErrors("Invalid plaintext key length. Must be at least 14 bytes.", ctx);
+        return handleErrors("Invalid key length. Must be at least 14 bytes.", ctx);
 
     memset(encryption->WRAP_KEY, 0, encryption->WRAP_KEY_LENGTH);
 
@@ -313,7 +313,7 @@ int DesWrapEncrypt(DES_WRAP_ENCRYPT* encryption) {
     switch (encryption->KEK_LENGTH) {
     case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid wrap key length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
+    default: return handleErrors("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEK, NULL))
@@ -340,7 +340,7 @@ int DesWrapDecrypt(DES_WRAP_DECRYPT* decryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     if (decryption->KEK_LENGTH != 21 && decryption->KEK_LENGTH != 24)
-        return handleErrors("Invalid wrap key length. Must be 24 bytes.", ctx);
+        return handleErrors("Invalid KEK length. Must be 24 bytes.", ctx);
 
     memset(decryption->KEY, 0, decryption->KEY_LENGTH);
 
@@ -348,7 +348,7 @@ int DesWrapDecrypt(DES_WRAP_DECRYPT* decryption) {
     switch (decryption->KEK_LENGTH) {
     case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid wrap key length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
+    default: return handleErrors("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEK, NULL))

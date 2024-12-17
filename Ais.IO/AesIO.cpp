@@ -392,7 +392,7 @@ int AesGcmEncrypt(AES_GCM_ENCRYPT* encryption) {
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set GCM IV length.", ctx);
+        return handleErrors("Failed to set GCM NONCE length.", ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, encryption->KEY, encryption->NONCE))
         return handleErrors("Initialize AES GCM encryption for the current block failed.", ctx);
@@ -434,7 +434,7 @@ int AesGcmDecrypt(AES_GCM_DECRYPT* decryption) {
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set GCM IV length.", ctx);
+        return handleErrors("Failed to set GCM NONCE length.", ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, decryption->KEY, decryption->NONCE))
         return handleErrors("Initialize AES GCM decryption for the current block failed.", ctx);
@@ -476,7 +476,7 @@ int AesCcmEncrypt(AES_CCM_ENCRYPT* encryption) {
         return handleErrors("Initialize AES CCM encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set CCM IV length.", ctx);
+        return handleErrors("Failed to set CCM NONCE length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, encryption->TAG_LENGTH, NULL))
         return handleErrors("Failed to set CCM Tag length.", ctx);
@@ -524,7 +524,7 @@ int AesCcmDecrypt(AES_CCM_DECRYPT* decryption) {
         return handleErrors("Initialize AES CCM decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set CCM IV length.", ctx);
+        return handleErrors("Failed to set CCM NONCE length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
         return handleErrors("Failed to set CCM Tag length.", ctx);
@@ -675,7 +675,7 @@ int AesOcbEncrypt(AES_OCB_ENCRYPT* encryption) {
         return handleErrors("Initialize AES OCB encryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, encryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set OCB IV length.", ctx);
+        return handleErrors("Failed to set OCB NONCE length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, encryption->TAG_LENGTH, NULL))
         return handleErrors("Failed to set OCB Tag length.", ctx);
@@ -720,7 +720,7 @@ int AesOcbDecrypt(AES_OCB_DECRYPT* decryption) {
         return handleErrors("Initialize AES OCB decryption for the current block failed.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, decryption->NONCE_LENGTH, NULL))
-        return handleErrors("Failed to set OCB IV length.", ctx);
+        return handleErrors("Failed to set OCB NONCE length.", ctx);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, decryption->TAG_LENGTH, (void*)decryption->TAG))
         return handleErrors("Failed to set OCB Tag length.", ctx);
@@ -754,17 +754,17 @@ int AesWrapEncrypt(AES_WRAP_ENCRYPT* encryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     if (encryption->KEK_LENGTH != 16 && encryption->KEK_LENGTH != 24 && encryption->KEK_LENGTH != 32)
-        return handleErrors("Invalid wrap key length. Must be 16, 24, or 32 bytes.", ctx);
+        return handleErrors("Invalid KEK length. Must be 16, 24, or 32 bytes.", ctx);
 
     if (encryption->KEY_LENGTH < 16)
-        return handleErrors("Invalid plaintext key length. Must be at least 16 bytes.", ctx);
+        return handleErrors("Invalid key length. Must be at least 16 bytes.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEK_LENGTH) {
     case 16: cipher = EVP_aes_128_wrap(); break;
     case 24: cipher = EVP_aes_192_wrap(); break;
     case 32: cipher = EVP_aes_256_wrap(); break;
-    default: return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+    default: return handleErrors("Invalid KEK length. Must be 128, 192, or 256 bits.", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEK, NULL))
@@ -791,14 +791,14 @@ int AesWrapDecrypt(AES_WRAP_DECRYPT* decryption) {
         return handleErrors("An error occurred during ctx generation.", ctx);
 
     if (decryption->KEK_LENGTH != 16 && decryption->KEK_LENGTH != 24 && decryption->KEK_LENGTH != 32)
-        return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+        return handleErrors("Invalid KEK length. Must be 128, 192, or 256 bits.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEK_LENGTH) {
     case 16: cipher = EVP_aes_128_wrap(); break;
     case 24: cipher = EVP_aes_192_wrap(); break;
     case 32: cipher = EVP_aes_256_wrap(); break;
-    default:return handleErrors("Invalid wrap key length. Must be 128, 192, or 256 bits.", ctx);
+    default:return handleErrors("Invalid KEK length. Must be 128, 192, or 256 bits.", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEK, NULL))
