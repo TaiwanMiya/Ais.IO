@@ -158,6 +158,7 @@
     <ClCompile Include="des_execute.cpp" />
     <ClCompile Include="encoder_execute.cpp" />
     <ClCompile Include="cryptography_libary.cpp" />
+    <ClCompile Include="hash_execute.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="output_colors.cpp" />
     <ClCompile Include="string_case.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="des_execute.h" />
     <ClInclude Include="encoder_execute.h" />
     <ClInclude Include="cryptography_libary.h" />
+    <ClInclude Include="hash_execute.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="output_colors.h" />
     <ClInclude Include="string_case.h" />

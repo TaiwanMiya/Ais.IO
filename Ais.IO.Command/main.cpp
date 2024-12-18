@@ -8,6 +8,7 @@
 #include "cryptography_libary.h"
 #include "aes_execute.h"
 #include "des_execute.h"
+#include "hash_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -26,9 +27,10 @@ std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
+std::unordered_map<std::string, void*> AsymmetricFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
 std::unordered_map<std::string, void*> DesFunctions;
-std::unordered_map<std::string, void*> AsymmetricFunctions;
+std::unordered_map<std::string, void*> HashFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
     { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
@@ -74,6 +76,60 @@ std::unordered_map<DES_MODE, std::string> DesDisplay = {
     { DES_MODE::DES_OFB, "OFB" },
     { DES_MODE::DES_ECB, "ECB" },
     { DES_MODE::DES_WRAP, "WRAP" },
+};
+std::unordered_map<std::string, HASH_TYPE> HashMode = {
+    { "-md5", HASH_TYPE::HASH_MD5 },
+    { "-md5-sha1", HASH_TYPE::HASH_MD5_SHA1 },
+    { "-sha1", HASH_TYPE::HASH_SHA1 },
+    { "-sha2-224", HASH_TYPE::HASH_SHA2_224 },
+    { "-sha2-256", HASH_TYPE::HASH_SHA2_256 },
+    { "-sha2-384", HASH_TYPE::HASH_SHA2_384 },
+    { "-sha2-512", HASH_TYPE::HASH_SHA2_512 },
+    { "-sha224", HASH_TYPE::HASH_SHA2_224 },
+    { "-sha256", HASH_TYPE::HASH_SHA2_256 },
+    { "-sha384", HASH_TYPE::HASH_SHA2_384 },
+    { "-sha512", HASH_TYPE::HASH_SHA2_512 },
+    { "-sha2-512-224", HASH_TYPE::HASH_SHA2_512_224 },
+    { "-sha2-512-256", HASH_TYPE::HASH_SHA2_512_256 },
+    { "-sha512-224", HASH_TYPE::HASH_SHA2_512_224 },
+    { "-sha512-256", HASH_TYPE::HASH_SHA2_512_256 },
+    { "-sha3-224", HASH_TYPE::HASH_SHA3_224 },
+    { "-sha3-256", HASH_TYPE::HASH_SHA3_256 },
+    { "-sha3-384", HASH_TYPE::HASH_SHA3_384 },
+    { "-sha3-512", HASH_TYPE::HASH_SHA3_512 },
+    { "-sha3-ke-128", HASH_TYPE::HASH_SHA3_KE_128 },
+    { "-sha3-ke-256", HASH_TYPE::HASH_SHA3_KE_256 },
+    { "-shake128", HASH_TYPE::HASH_SHA3_KE_128 },
+    { "-shake256", HASH_TYPE::HASH_SHA3_KE_256 },
+    { "-blake2s-256", HASH_TYPE::HASH_BLAKE2S_256 },
+    { "-blake2b-512", HASH_TYPE::HASH_BLAKE2B_512 },
+    { "-blake2s", HASH_TYPE::HASH_BLAKE2S_256 },
+    { "-blake2b", HASH_TYPE::HASH_BLAKE2B_512 },
+    { "-blake256", HASH_TYPE::HASH_BLAKE2S_256 },
+    { "-blake512", HASH_TYPE::HASH_BLAKE2B_512 },
+    { "-sm3", HASH_TYPE::HASH_SM3 },
+    { "-ripemd160", HASH_TYPE::HASH_RIPEMD160 },
+};
+std::unordered_map<HASH_TYPE, std::string> HashDisplay = {
+    { HASH_TYPE::HASH_MD5, "MD5"},
+    { HASH_TYPE::HASH_MD5_SHA1, "MD5 & SHA1"},
+    { HASH_TYPE::HASH_SHA1, "SHA1"},
+    { HASH_TYPE::HASH_SHA2_224, "SHA2-224"},
+    { HASH_TYPE::HASH_SHA2_256, "SHA2-256"},
+    { HASH_TYPE::HASH_SHA2_384, "SHA2-384"},
+    { HASH_TYPE::HASH_SHA2_512, "SHA2-512"},
+    { HASH_TYPE::HASH_SHA2_512_224, "SHA2-512 & 224"},
+    { HASH_TYPE::HASH_SHA2_512_256, "SHA2-512 & 256"},
+    { HASH_TYPE::HASH_SHA3_224, "SHA3-224"},
+    { HASH_TYPE::HASH_SHA3_256, "SHA3-256"},
+    { HASH_TYPE::HASH_SHA3_384, "SHA3-384"},
+    { HASH_TYPE::HASH_SHA3_512, "SHA3-512"},
+    { HASH_TYPE::HASH_SHA3_KE_128, "SHA3-KE-128"},
+    { HASH_TYPE::HASH_SHA3_KE_256, "SHA3-KE-256"},
+    { HASH_TYPE::HASH_BLAKE2S_256, "BLAKE2S-256"},
+    { HASH_TYPE::HASH_BLAKE2B_512, "BLAKE2B-512"},
+    { HASH_TYPE::HASH_SM3, "SM3"},
+    { HASH_TYPE::HASH_RIPEMD160, "RIPEMD160"},
 };
 
 void ShowUsage() {
@@ -128,6 +184,13 @@ void ShowUsage() {
     std::cout << Hint("  Supported [--pattern]:\n");
     std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
     std::cout << "" << std::endl;
+    std::cout << Hint("  Commands for Hash Calculation:\n");
+    std::cout << Hint("    [-hash | --hash] [--mode] [-in | -input] [--pattern] <value> | -salt [--pattern] <value> | [--sequence] | [-out] [--pattern]\n");
+    std::cout << Hint("  Supported [--sequence]:\n");
+    std::cout << Hint("    [-fir | -first], [-las | -last] | [-mid | -middle]\n");
+    std::cout << Hint("  Supported [--pattern]:\n");
+    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
+    std::cout << "" << std::endl;
     std::cout << Hint("  Additional commands:\n");
     std::cout << Hint("    --colors\n");
     std::cout << "" << std::endl;
@@ -141,13 +204,13 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     std::unordered_set<std::string> validMode = {
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
-        "--generate", "--import", "--aes", "--des"
+        "--generate", "--import", "--aes", "--des", "--hash"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}
+        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -463,6 +526,9 @@ void LoadFunctions() {
     DesFunctions["-wrap-encrypt"] = GET_PROC_ADDRESS(Lib, "DesWrapEncrypt");
     DesFunctions["-wrap-decrypt"] = GET_PROC_ADDRESS(Lib, "DesWrapDecrypt");
 
+    HashFunctions["-hash"] = GET_PROC_ADDRESS(Lib, "Hash");
+    HashFunctions["-hash-length"] = GET_PROC_ADDRESS(Lib, "GetHashLength");
+
     AsymmetricFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     AsymmetricFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
 }
@@ -616,7 +682,12 @@ int main(int argc, char* argv[]) {
         Des des;
         des_execute::ParseParameters(argc, argv, des);
         des_execute::DesStart(des);
-        }
+    }
+    else if (mode == "--hash") {
+        Hashes hash;
+        hash_execute::ParseParameters(argc, argv, hash);
+        hash_execute::HashStart(hash);
+    }
     else if (mode == "--generate" || mode == "--import") {
         Rand rand;
         cryptography_libary::ParseParameters(argc, argv, rand);

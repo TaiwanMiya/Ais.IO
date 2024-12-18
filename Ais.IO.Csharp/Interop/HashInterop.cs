@@ -12,6 +12,9 @@ namespace Ais.IO.Csharp
         private const string DllName = "..\\Ais.IO.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int HashMd5(ref HASH_MD5 hash);
+        public static extern int Hash(ref HASH_STRUCTURE hash);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetHashLength(HASH_TYPE hash);
     }
 }

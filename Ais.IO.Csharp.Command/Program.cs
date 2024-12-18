@@ -1,5 +1,6 @@
 ﻿using Ais.IO.Csharp;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -89,10 +90,8 @@ namespace Ais.IO.Csharp.Command
         private static void StartDes(int range)
         {
             string text = string.Empty;
-            string key128 = "This key is 128.";
             string key = "Key Must Be 128,192 Size";
             string kek = "WRAP Key 128 192 by DES.";
-            string kek128 = "WRAP Key by 128.";
             string iv = "Iv8Bytes";
 
             for (int i = 0; i < range; i++)
@@ -120,10 +119,17 @@ namespace Ais.IO.Csharp.Command
             Hash hash = new Hash();
 
             for (int i = 0; i < range; i++)
+
             {
-                text = "This is HASH MD5 Calculation.";
-                salt = "This is HASH MD5 Salt..";
-                HashIO.MD5(text, salt, SALT_SEQUENCE.SALT_LAST);
+                HASH_TYPE[] types = (HASH_TYPE[]) Enum.GetValues(typeof(HASH_TYPE));
+                foreach (HASH_TYPE type in types)
+                {
+                    string display = new string(type.ToString().TakeLast(type.ToString().Length - 5).ToArray()).Replace("_", " ");
+                    text = $"This is HASH {type} Calculation.";
+                    salt = $"This is HASH {type} Salt..";
+                    Console.WriteLine(text);
+                    HashIO.Run(text, salt, type, SALT_SEQUENCE.SALT_MIDDLE);
+                }
             }
         }
     }

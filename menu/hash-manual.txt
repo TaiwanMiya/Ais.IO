@@ -1,0 +1,24 @@
+|       哈希類型        |   位元數   |   位元組數 (bytes)  |                 備註                  |
+|-----------------------|------------|---------------------|---------------------------------------|
+| `HASH_MDC2`           | 128 bits   | 16 bytes            | 適用於基於 DES 的哈希。               |
+| `HASH_MD4`            | 128 bits   | 16 bytes            | 舊哈希演算法，安全性已不被推薦。      |
+| `HASH_MD5`            | 128 bits   | 16 bytes            | 廣泛使用但已不安全。                  |
+| `HASH_MD5_SHA1`       | 288 bits   | 36 bytes            | MD5 和 SHA1 結合，用於 TLS 1.2。      |
+| `HASH_SHA1`           | 160 bits   | 20 bytes            | 安全性已被認為不足。                  |
+| `HASH_SHA2_224`       | 224 bits   | 28 bytes            | SHA-2 家族，適用於輕量化應用。        |
+| `HASH_SHA2_256`       | 256 bits   | 32 bytes            | SHA-2 家族，最常見的選擇之一。        |
+| `HASH_SHA2_384`       | 384 bits   | 48 bytes            | SHA-2 家族，提供更高安全性。          |
+| `HASH_SHA2_512`       | 512 bits   | 64 bytes            | SHA-2 家族，提供最高安全性。          |
+| `HASH_SHA2_512_224`   | 224 bits   | 28 bytes            | SHA-512 的截短版本。                  |
+| `HASH_SHA2_512_256`   | 256 bits   | 32 bytes            | SHA-512 的截短版本。                  |
+| `HASH_SHA3_224`       | 224 bits   | 28 bytes            | SHA-3 家族，Keccak 架構。             |
+| `HASH_SHA3_256`       | 256 bits   | 32 bytes            | SHA-3 家族，最常見選擇之一。          |
+| `HASH_SHA3_384`       | 384 bits   | 48 bytes            | SHA-3 家族，提供更高安全性。          |
+| `HASH_SHA3_512`       | 512 bits   | 64 bytes            | SHA-3 家族，最高安全性。              |
+| `HASH_SHA3_KE_128`    | 可變長度   | -                   | SHAKE128，輸出由用戶決定。            |
+| `HASH_SHA3_KE_256`    | 可變長度   | -                   | SHAKE256，輸出由用戶決定。            |
+| `HASH_BLAKE2S_256`    | 256 bits   | 32 bytes            | 高效安全的替代演算法。                |
+| `HASH_BLAKE2B_512`    | 512 bits   | 64 bytes            | 高效安全的替代演算法。                |
+| `HASH_SM3`            | 256 bits   | 32 bytes            | 中國國密標準的哈希演算法。            |
+| `HASH_RIPEMD160`      | 160 bits   | 20 bytes            | 安全性比 MD5 和 SHA-1 略高。          |
+| `HASH_WHIRLPOOL`      | 512 bits   | 64 bytes            | 基於 Merkle-Damgård 結構的哈希。      |

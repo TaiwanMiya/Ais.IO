@@ -43,13 +43,14 @@ compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
 
 $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(AISO_DIR)/BinaryWriterIO.cpp \
 			$(AISO_DIR)/BinaryAppenderIO.cpp $(AISO_DIR)/BinaryInserterIO.cpp $(AISO_DIR)/BaseEncoderIO.cpp \
-			$(AISO_DIR)/AsymmetricIO.cpp $(AISO_DIR)/AesIO.cpp $(AISO_DIR)/DesIO.cpp
+			$(AISO_DIR)/AsymmetricIO.cpp $(AISO_DIR)/AesIO.cpp $(AISO_DIR)/DesIO.cpp $(AISO_DIR)/HashIO.cpp
 	@echo "Compiling shared library file Ais.IO.so..."
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -I$(AISO_DIR)/include -o $@ $(LIBS) -ldl
 
 $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.cpp $(AISO_CMD_DIR)/main.cpp \
-			$(AISO_CMD_DIR)/binary_execute.cpp $(AISO_CMD_DIR)/encoder_execute.cpp $(AISO_CMD_DIR)/aes_execute.cpp $(AISO_CMD_DIR)/des_execute.cpp \
+			$(AISO_CMD_DIR)/binary_execute.cpp $(AISO_CMD_DIR)/encoder_execute.cpp \
+			$(AISO_CMD_DIR)/aes_execute.cpp $(AISO_CMD_DIR)/des_execute.cpp $(AISO_CMD_DIR)/hash_execute.cpp \
 			$(AISO_CMD_DIR)/cryptography_libary.cpp
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl

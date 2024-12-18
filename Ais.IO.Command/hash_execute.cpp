@@ -1,0 +1,120 @@
+#include "hash_execute.h"
+#include "string_case.h"
+#include "output_colors.h"
+#include "cryptography_libary.h"
+
+constexpr size_t hash_execute::hash(const char* str) {
+	size_t hash = 0;
+	while (*str)
+		hash = hash * 31 + *str++;
+	return hash;
+}
+
+size_t hash_execute::set_hash(const char* str) {
+	size_t hash = 0;
+	while (*str)
+		hash = hash * 31 + *str++;
+	return hash;
+}
+
+void hash_execute::ParseParameters(int argc, char* argv[], Hashes& hash) {
+	for (int i = 0; i < argc; ++i) {
+		std::string arg = ToLower(argv[i]);
+		switch (set_hash(arg.c_str())) {
+		case hash_execute::hash("-md5"):
+		case hash_execute::hash("-md5-sha1"):
+		case hash_execute::hash("-sha1"):
+		case hash_execute::hash("-sha2-224"):
+		case hash_execute::hash("-sha2-256"):
+		case hash_execute::hash("-sha2-384"):
+		case hash_execute::hash("-sha2-512"):
+		case hash_execute::hash("-sha224"):
+		case hash_execute::hash("-sha256"):
+		case hash_execute::hash("-sha384"):
+		case hash_execute::hash("-sha512"):
+		case hash_execute::hash("-sha2-512-224"):
+		case hash_execute::hash("-sha2-512-256"):
+		case hash_execute::hash("-sha512-224"):
+		case hash_execute::hash("-sha512-256"):
+		case hash_execute::hash("-sha3-224"):
+		case hash_execute::hash("-sha3-256"):
+		case hash_execute::hash("-sha3-384"):
+		case hash_execute::hash("-sha3-512"):
+		case hash_execute::hash("-sha3-ke-128"):
+		case hash_execute::hash("-sha3-ke-256"):
+		case hash_execute::hash("-shake128"):
+		case hash_execute::hash("-shake256"):
+		case hash_execute::hash("-blake2s-256"):
+		case hash_execute::hash("-blake2b-512"):
+		case hash_execute::hash("-blake2s"):
+		case hash_execute::hash("-blake2b"):
+		case hash_execute::hash("-blake256"):
+		case hash_execute::hash("-blake512"):
+		case hash_execute::hash("-sm3"):
+		case hash_execute::hash("-ripemd160"):
+			hash.Mode = HashMode[arg];
+			break;
+		case hash_execute::hash("-input"):
+		case hash_execute::hash("-in"):
+			hash.input_option = cryptography_libary::GetOption(i, argv);
+			hash.Input = argv[i + 1];
+			i++;
+			break;
+		case hash_execute::hash("-salt"):
+			hash.salt_option = cryptography_libary::GetOption(i, argv);
+			hash.Salt = argv[i + 1];
+			i++;
+			break;
+		case hash_execute::hash("-first"):
+		case hash_execute::hash("-fir"):
+			hash.Sequence = static_cast<SALT_SEQUENCE>(hash.Sequence | SALT_SEQUENCE::SALT_FIRST);
+			break;
+		case hash_execute::hash("-last"):
+		case hash_execute::hash("-las"):
+			hash.Sequence = static_cast<SALT_SEQUENCE>(hash.Sequence | SALT_SEQUENCE::SALT_LAST);
+			break;
+		case hash_execute::hash("-middle"):
+		case hash_execute::hash("-mid"):
+			hash.Sequence = static_cast<SALT_SEQUENCE>(hash.Sequence | SALT_SEQUENCE::SALT_MIDDLE);
+			break;
+		case hash_execute::hash("-output"):
+		case hash_execute::hash("-out"):
+			hash.output_option = cryptography_libary::GetOption(i, argv);
+			if (hash.output_option == CRYPT_OPTIONS::OPTION_FILE) {
+				hash.Output = argv[i + 1];
+				i++;
+			}
+			i++;
+			break;
+		}
+	}
+}
+
+void hash_execute::HashStart(Hashes& hash) {
+	std::vector<unsigned char> input;
+	std::vector<unsigned char> salt;
+	std::vector<unsigned char> output;
+	cryptography_libary::ValueEncode(hash.input_option, hash.Input, input);
+	cryptography_libary::ValueEncode(hash.salt_option, hash.Salt, salt);
+	int length = ((GetHashLength)HashFunctions.at("-hash-length"))(hash.Mode);
+	output.resize(length);
+	HASH_STRUCTURE hashes = {
+		.INPUT = input.data(),
+		.SALT = salt.data(),
+		.OUTPUT = output.data(),
+		.HASH_TYPE = hash.Mode,
+		.SEQUENCE = hash.Sequence,
+		.INPUT_LENGTH = input.size(),
+		.SALT_LENGTH = salt.size(),
+		.OUTPUT_LENGTH = output.size(),
+	};
+	int result = ((Hash)HashFunctions.at("-hash"))(&hashes);
+	std::string algorithm = "HASH";
+	std::string mode = HashDisplay[hash.Mode];
+	std::string result_str = hash.Output;
+	if (result < 0)
+		std::cerr << Error("HASH " + mode + " Encrypt Failed.") << std::endl;
+	std::cout << Hint("<" + algorithm + " " + mode + ">") << std::endl;
+	cryptography_libary::ValueDecode(hash.output_option, output, result_str);
+	std::cout << Ask(result_str) << std::endl;
+}

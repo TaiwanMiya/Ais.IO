@@ -51,6 +51,9 @@
     <ClCompile Include="des_execute.cpp">
       <Filter>來源檔案\Execute</Filter>
     </ClCompile>
+    <ClCompile Include="hash_execute.cpp">
+      <Filter>來源檔案\Execute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -75,6 +78,9 @@
       <Filter>標頭檔\Libary</Filter>
     </ClInclude>
     <ClInclude Include="des_execute.h">
+      <Filter>標頭檔\Execute</Filter>
+    </ClInclude>
+    <ClInclude Include="hash_execute.h">
       <Filter>標頭檔\Execute</Filter>
     </ClInclude>
   </ItemGroup>

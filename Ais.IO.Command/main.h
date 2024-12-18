@@ -46,26 +46,26 @@ enum CRYPT_TYPE : unsigned char {
 };
 
 enum AES_MODE : unsigned long long {
-    AES_NULL = 0x00,
-    AES_CTR = 0x01 << 0,
-    AES_CBC = 0x01 << 1,
-    AES_CFB = 0x01 << 2,
-    AES_OFB = 0x01 << 3,
-    AES_ECB = 0x01 << 4,
-    AES_GCM = 0x01 << 5,
-    AES_CCM = 0x01 << 6,
-    AES_XTS = 0x01 << 7,
-    AES_OCB = 0x01 << 8,
-    AES_WRAP = 0x01 << 9,
+    AES_NULL = 0,
+    AES_CTR = 1,
+    AES_CBC = 2,
+    AES_CFB = 3,
+    AES_OFB = 4,
+    AES_ECB = 5,
+    AES_GCM = 6,
+    AES_CCM = 7,
+    AES_XTS = 8,
+    AES_OCB = 9,
+    AES_WRAP = 10,
 };
 
 enum DES_MODE : unsigned long long {
-    DES_NULL = 0x00,
-    DES_CBC = 0x01 << 0,
-    DES_CFB = 0x01 << 1,
-    DES_OFB = 0x01 << 2,
-    DES_ECB = 0x01 << 3,
-    DES_WRAP = 0x01 << 4,
+    DES_NULL = 0,
+    DES_CBC = 1,
+    DES_CFB = 2,
+    DES_OFB = 3,
+    DES_ECB = 4,
+    DES_WRAP = 5,
 };
 
 enum SEGMENT_SIZE_OPTION {
@@ -73,6 +73,35 @@ enum SEGMENT_SIZE_OPTION {
     SEGMENT_8_BIT = 8,
     SEGMENT_64_BIT = 64,
     SEGMENT_128_BIT = 128,
+};
+
+enum SALT_SEQUENCE {
+    SALT_NULL = 0,
+    SALT_FIRST = 1 << 0,
+    SALT_LAST = 1 << 1,
+    SALT_MIDDLE = 1 << 2,
+};
+
+enum HASH_TYPE {
+    HASH_MD5 = 0,
+    HASH_MD5_SHA1 = 1,
+    HASH_SHA1 = 2,
+    HASH_SHA2_224 = 3,
+    HASH_SHA2_256 = 4,
+    HASH_SHA2_384 = 5,
+    HASH_SHA2_512 = 6,
+    HASH_SHA2_512_224 = 7,
+    HASH_SHA2_512_256 = 8,
+    HASH_SHA3_224 = 9,
+    HASH_SHA3_256 = 10,
+    HASH_SHA3_384 = 11,
+    HASH_SHA3_512 = 12,
+    HASH_SHA3_KE_128 = 13,
+    HASH_SHA3_KE_256 = 14,
+    HASH_BLAKE2S_256 = 15,
+    HASH_BLAKE2B_512 = 16,
+    HASH_SM3 = 17,
+    HASH_RIPEMD160 = 18,
 };
 
 struct Command {
@@ -146,7 +175,20 @@ struct Des {
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     bool Padding = false;
-    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_64_BIT;
+};
+
+struct Hashes {
+    HASH_TYPE Mode;
+    std::string Input;
+    std::string Salt;
+    std::string Output;
+
+    CRYPT_OPTIONS input_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS salt_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
+    SALT_SEQUENCE Sequence = SALT_SEQUENCE::SALT_NULL;
 };
 
 enum BINARYIO_TYPE : unsigned char {
@@ -485,6 +527,17 @@ struct DES_WRAP_DECRYPT {
     size_t KEY_LENGTH;
 };
 
+struct HASH_STRUCTURE {
+    const unsigned char* INPUT;
+    const unsigned char* SALT;
+    unsigned char* OUTPUT;
+    HASH_TYPE HASH_TYPE;
+    SALT_SEQUENCE SEQUENCE;
+    size_t INPUT_LENGTH;
+    size_t SALT_LENGTH;
+    size_t OUTPUT_LENGTH;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -594,7 +647,6 @@ typedef int (*Generate)(unsigned char*, size_t);
 typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
 #pragma endregion
 
-
 #pragma region AesIO
 typedef int (*AesCtrEncrypt)(AES_CTR_ENCRYPT*);
 typedef int (*AesCtrDecrypt)(AES_CTR_DECRYPT*);
@@ -631,18 +683,26 @@ typedef int (*DesWrapEncrypt)(DES_WRAP_ENCRYPT*);
 typedef int (*DesWrapDecrypt)(DES_WRAP_DECRYPT*);
 #pragma endregion
 
+#pragma region HashIO
+typedef int (*Hash)(HASH_STRUCTURE*);
+typedef int (*GetHashLength)(HASH_TYPE);
+#pragma endregion
+
 
 extern std::unordered_map<std::string, void*> ReadFunctions;
 extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
+extern std::unordered_map<std::string, void*> AsymmetricFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
 extern std::unordered_map<std::string, void*> DesFunctions;
-extern std::unordered_map<std::string, void*> AsymmetricFunctions;
+extern std::unordered_map<std::string, void*> HashFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
 extern std::unordered_map<std::string, AES_MODE> AesMode;
 extern std::unordered_map<AES_MODE, std::string> AesDisplay;
 extern std::unordered_map<std::string, DES_MODE> DesMode;
 extern std::unordered_map<DES_MODE, std::string> DesDisplay;
+extern std::unordered_map<std::string, HASH_TYPE> HashMode;
+extern std::unordered_map<HASH_TYPE, std::string> HashDisplay;

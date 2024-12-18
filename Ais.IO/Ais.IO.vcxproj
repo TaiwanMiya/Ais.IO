@@ -120,7 +120,15 @@
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll"
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll"
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll"
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll"
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll"
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll"
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,7 +159,15 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll"
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll"
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll"
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll"
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll"
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll"
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -210,7 +226,15 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy /y "$(ProjectDir)dll\libcrypto-3-x64.dll" "$(OutDir)libcrypto-3-x64.dll"
-copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command>
+copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"
+copy /y "$(ProjectDir)dll\capi.dll" "$(OutDir)capi.dll"
+copy /y "$(ProjectDir)dll\dasync.dll" "$(OutDir)dasync.dll"
+copy /y "$(ProjectDir)dll\legacy.dll" "$(OutDir)legacy.dll"
+copy /y "$(ProjectDir)dll\loader_attic.dll" "$(OutDir)loader_attic.dll"
+copy /y "$(ProjectDir)dll\ossltest.dll" "$(OutDir)ossltest.dll"
+copy /y "$(ProjectDir)dll\padlock.dll" "$(OutDir)padlock.dll"
+copy /y "$(ProjectDir)dll\p_minimal.dll" "$(OutDir)p_minimal.dll"
+copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
