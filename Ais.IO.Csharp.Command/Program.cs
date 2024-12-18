@@ -24,9 +24,11 @@ namespace Ais.IO.Csharp.Command
 
                 //AesIO.Generate();
 
-                StartAes(1);
+                //StartAes(1);
 
-                StartDes(1);
+                //StartDes(1);
+
+                StartHash(1);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");
@@ -108,6 +110,20 @@ namespace Ais.IO.Csharp.Command
                 DesIO.ECB(text, key, true);
 
                 DesIO.WRAP(key, kek);
+            }
+        }
+
+        private static void StartHash(int range)
+        {
+            string text = string.Empty;
+            string salt = string.Empty;
+            Hash hash = new Hash();
+
+            for (int i = 0; i < range; i++)
+            {
+                text = "This is HASH MD5 Calculation.";
+                salt = "This is HASH MD5 Salt..";
+                HashIO.MD5(text, salt, SALT_SEQUENCE.SALT_LAST);
             }
         }
     }

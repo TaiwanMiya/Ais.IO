@@ -8,6 +8,13 @@ int handleErrors(std::string message, EVP_CIPHER_CTX* ctx) {
     return -1;
 }
 
+int handleErrors(std::string message, EVP_MD_CTX* ctx) {
+    std::cerr << "ERROR: " << message << std::endl;
+    if (ctx != NULL)
+        EVP_MD_CTX_free(ctx);
+    return -1;
+}
+
 int Generate(unsigned char* key, size_t keyLength) {
     std::random_device rd;
     std::mt19937 gen(rd());

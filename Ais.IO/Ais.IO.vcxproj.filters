@@ -66,6 +66,9 @@
     <ClInclude Include="DesIO.h">
       <Filter>標頭檔\Cryptography</Filter>
     </ClInclude>
+    <ClInclude Include="HashIO.h">
+      <Filter>標頭檔\Cryptography</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -102,6 +105,9 @@
       <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
     <ClCompile Include="DesIO.cpp">
+      <Filter>來源檔案\Cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="HashIO.cpp">
       <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,5 +29,6 @@ enum SEGMENT_SIZE_OPTION {
 };
 
 int handleErrors(std::string message, EVP_CIPHER_CTX* ctx);
+int handleErrors(std::string message, EVP_MD_CTX* ctx);
 EXT ASYMMETRICIO_API int Generate(unsigned char* content, size_t length);
 EXT ASYMMETRICIO_API int Import(const unsigned char* input, size_t inputLength, unsigned char* output, size_t outputLength);
