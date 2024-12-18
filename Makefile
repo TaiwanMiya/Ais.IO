@@ -27,9 +27,6 @@ DEPS = libssl-dev g++
 all: install_deps compile
 
 install_deps:
-	@echo "CXX = $(CXX)"
-	@echo "CXXCXXFLAGS = $(CXXCXXFLAGS)"
-	@echo "LDFLAGS = $(LDFLAGS)"
 	@echo "Checking and installing dependencies..."
 	@if ! command -v g++ 2>&1; then \
 		sudo apt-get update && sudo apt-get install -y $(DEPS); \
@@ -57,10 +54,8 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl
 
-	@cp -p Terminal/Linux/linux-aisio.sh $(BIN_DIR)/linux-aisio.sh
-	@cp -p Terminal/Linux/terminal-colors.sh $(BIN_DIR)/colors.sh
-	@chmod +x $(BIN_DIR)/linux-aisio.sh
-	@chmod +x $(BIN_DIR)/colors.sh
+	@cp -p Terminal/Linux/*.sh $(BIN_DIR)/
+	@chmod 777 $(BIN_DIR)/*.sh
 
 clean:
 	@echo "Cleaning up..."
