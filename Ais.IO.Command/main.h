@@ -531,7 +531,7 @@ struct HASH_STRUCTURE {
     const unsigned char* INPUT;
     const unsigned char* SALT;
     unsigned char* OUTPUT;
-    HASH_TYPE HASH_TYPE;
+    HASH_TYPE TYPE;
     SALT_SEQUENCE SEQUENCE;
     size_t INPUT_LENGTH;
     size_t SALT_LENGTH;

@@ -102,7 +102,7 @@ void hash_execute::HashStart(Hashes& hash) {
 		.INPUT = input.data(),
 		.SALT = salt.data(),
 		.OUTPUT = output.data(),
-		.HASH_TYPE = hash.Mode,
+		.TYPE = hash.Mode,
 		.SEQUENCE = hash.Sequence,
 		.INPUT_LENGTH = input.size(),
 		.SALT_LENGTH = salt.size(),

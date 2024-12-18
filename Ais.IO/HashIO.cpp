@@ -8,7 +8,7 @@ int Hash(HASH_STRUCTURE* hash) {
 		return handleErrors("An error occurred during ctx generation.", ctx);
 
 	const EVP_MD* md = nullptr;
-	switch (hash->HASH_TYPE) {
+	switch (hash->TYPE) {
 	case HASH_TYPE::HASH_MD5:md = EVP_md5(); break;
 	case HASH_TYPE::HASH_MD5_SHA1:md = EVP_md5_sha1(); break;
 	case HASH_TYPE::HASH_SHA1:md = EVP_sha1(); break;
@@ -63,7 +63,7 @@ int Hash(HASH_STRUCTURE* hash) {
 	}
 	
 	unsigned int length = 0;
-	if (hash->HASH_TYPE != HASH_TYPE::HASH_SHA3_KE_128 && hash->HASH_TYPE != HASH_TYPE::HASH_SHA3_KE_256) {
+	if (hash->TYPE != HASH_TYPE::HASH_SHA3_KE_128 && hash->TYPE != HASH_TYPE::HASH_SHA3_KE_256) {
 		if (1 != EVP_DigestFinal_ex(ctx, hash->OUTPUT, &length))
 			return handleErrors("Failed to finalize digest.", ctx);
 	}
