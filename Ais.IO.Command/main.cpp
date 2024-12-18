@@ -186,6 +186,11 @@ void ShowUsage() {
     std::cout << "" << std::endl;
     std::cout << Hint("  Commands for Hash Calculation:\n");
     std::cout << Hint("    [-hash | --hash] [--mode] [-in | -input] [--pattern] <value> | -salt [--pattern] <value> | [--sequence] | [-out] [--pattern]\n");
+    std::cout << Hint("  Supported [--mode]:\n");
+    std::cout << Hint("    -md5, -md5-sha1, -sha1, [-sha224 | -sha2-224], [-sha256 | -sha2-256], [-sha384 | -sha2-384], [-sha512 | -sha2-512],\n");
+    std::cout << Hint("    [-sha512-224 | -sha2-512-224], [-sha512-256 | -sha2-512-256], -sha3-224, -sha3-256, -sha3-384, -sha3-512,\n");
+    std::cout << Hint("    [-shake128, -sha3-ke-128], [-shake256, -sha3-ke-256], [-blake2s | -blake256 | -blake2s-256], [-blake2b | -blake512 | -blake2b-512],\n");
+    std::cout << Hint("    -sm3, -ripemd160\n");
     std::cout << Hint("  Supported [--sequence]:\n");
     std::cout << Hint("    [-fir | -first], [-las | -last] | [-mid | -middle]\n");
     std::cout << Hint("  Supported [--pattern]:\n");
