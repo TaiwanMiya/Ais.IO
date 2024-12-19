@@ -1,5 +1,4 @@
 #!/bin/bash
-
 source ./Aisio-shell-function.sh
 
 operation=""
@@ -48,11 +47,15 @@ while [[ "$#" -gt 0 ]]; do
 			operation="$1"
 			shift
 			;;
-		-aes|-des)
+		-aes|-des|-hash)
 			operation="$1"
 			shift
 			;;
 		-ctr|-cbc|-cfb|-ofb|-ecb|-gcm|-ccm|-xts|-ocb|-wrap)
+			mode="$1"
+			shift
+			;;
+		-md5|-md5-sha1|-sha1|-sha2-224|-sha2-256|-sha2-384|-sha2-512|-sha2-512-224|-sha2-512-256|-sha3-224|-sha3-256|-sha3-384|-sha3-512|-sha3-ke-128|-sha3-ke-256|-blake2s-256|-blake2b-512|-sm3|-ripemd160)
 			mode="$1"
 			shift
 			;;
@@ -217,9 +220,6 @@ for ((i=1; i<=iterations; i++)); do
 					;;
 				-sha3-ke-128)
 					HASH_SHA3_KE_128
-					;;
-				-sha3-ke-256)
-					HASH_SHA3_KE_256
 					;;
 				-blake2s-256)
 					HASH_BLAKE2S_256
