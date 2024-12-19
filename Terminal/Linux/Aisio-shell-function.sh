@@ -226,3 +226,79 @@ DES_WRAP() {
 		./aisio -des -wrap -decrypt -wrapkey "$BASE" "F033669ADDDD49C08A5D3BEE5198897D97F6B4E14644E30547CE756961857C28E437634A8D4A1C0B" -kek "$DES_KEK"
 	fi
 }
+
+HASH_MD5() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_MD5_SHA1() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA1() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_224() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_256() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_384() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_512() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_512_224() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA2_512_256() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_224() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_256() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_384() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_512() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_KE_128() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SHA3_KE_256() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_BLAKE2S_256() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_BLAKE2B_512() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_SM3() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}
+
+HASH_RIPEMD160() {
+	./aisio -hash -md5 -in "This is ??? by the Hash libary." -salt "This is Salt by the Hash." -fir -mid -las -out $BASE
+}

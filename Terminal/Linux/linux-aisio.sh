@@ -174,6 +174,67 @@ for ((i=1; i<=iterations; i++)); do
 					;;
 			esac
 			;;
+		-hash)
+			case "$mode" in
+				-md5)
+					HASH_MD5
+					;;
+				-md5-sha1)
+					HASH_MD5_SHA1
+					;;
+				-sha1)
+					HASH_SHA1
+					;;
+				-sha2-224)
+					HASH_SHA2_224
+					;;
+				-sha2-256)
+					HASH_SHA2_256
+					;;
+				-sha2-384)
+					HASH_SHA2_384
+					;;
+				-sha2-512)
+					HASH_SHA2_512
+					;;
+				-sha2-512-224)
+					HASH_SHA2_512_224
+					;;
+				-sha2-512-256)
+					HASH_SHA2_512_256
+					;;
+				-sha3-224)
+					HASH_SHA3_224
+					;;
+				-sha3-256)
+					HASH_SHA3_256
+					;;
+				-sha3-384)
+					HASH_SHA3_384
+					;;
+				-sha3-512)
+					HASH_SHA3_512
+					;;
+				-sha3-ke-128)
+					HASH_SHA3_KE_128
+					;;
+				-blake2s-256)
+					HASH_SHA3_KE_256
+					;;
+				-blake2s-256)
+					HASH_BLAKE2S_256
+					;;
+				-blake2b-512)
+					HASH_BLAKE2B_512
+					;;
+				-sm3)
+					HASH_SM3
+					;;
+				-ripemd160)
+					HASH_RIPEMD160
+					;;
+			esac
+			;;
 		*)
 			Usage
 			;;
