@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./Aisio-aes-shell.sh
+source ./Aisio-shell-function.sh
 
 operation=""
 mode=""
