@@ -70,6 +70,9 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 
 	@dos2unix Terminal/Linux/*.sh
 	@dos2unix *.sh
+	@dos2unix Makefile
+	@chmod 777 Terminal/Linux/*.sh
+	@chmod 777 *.sh
 	@cp -p Terminal/Linux/*.sh $(BIN_DIR)/
 	@chmod 777 $(BIN_DIR)/*.sh
 
