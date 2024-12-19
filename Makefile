@@ -21,6 +21,8 @@ BIN_DIR = unix
 
 # Dependencies
 DEPS = libssl-dev g++
+DOS2 = dos2unix
+VIM = vim vim-gtk3 vim-motif vim-nox neovim
 
 .PHONY: all install_deps compile clean
 
@@ -29,15 +31,26 @@ all: install_deps compile
 install_deps:
 	@echo "Checking and installing dependencies..."
 	@if ! command -v g++ 2>&1; then \
-		sudo apt-get update && sudo apt-get install -y $(DEPS); \
+		sudo apt update && sudo apt install -y $(DEPS); \
 	else \
 		echo "g++ Already installed."; \
 	fi
 	@if ! command -v openssl 2>&1; then \
-		sudo apt-get update && sudo apt-get install -y $(DEPS); \
+		sudo apt update && sudo apt install -y $(DEPS); \
 	else \
 		echo "openssl Already installed."; \
 	fi
+	@if ! command -v dos2unix 2>&1; then \
+		sudo apt update && sudo apt install -y dos2unix; \
+	else \
+		echo "dos2unix Already installed."; \
+	fi
+	@if ! command -v vim 2>&1; then \
+		sudo apt update && sudo apt install $(VIM); \
+	else \
+		echo "vim Already installed."; \
+	fi
+
 
 compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
 
@@ -55,6 +68,8 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl
 
+	@dos2unix Terminal/Linux/*.sh
+	@dos2unix *.sh
 	@cp -p Terminal/Linux/*.sh $(BIN_DIR)/
 	@chmod 777 $(BIN_DIR)/*.sh
 
