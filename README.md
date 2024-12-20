@@ -1,3 +1,5 @@
+![Project Banner](./AisIO.png)
+
 # Manual
 
 The repository contains binary file operations, Base encoding, and the use of encryption algorithms.
