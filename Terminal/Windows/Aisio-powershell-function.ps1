@@ -112,7 +112,7 @@ function BASE_85 {
     }
     else {
         Write-Host "Ais Base 85 Decode..."
-        .\aisio "--base85" "-decode" "RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k"
+        .\aisio "--base85" "-decode" 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
     }
 }
 

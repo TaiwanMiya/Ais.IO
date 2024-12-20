@@ -102,7 +102,7 @@ BASE_85() {
 	if [[ $encoder == '-e' ]]; then
 		./aisio --base85 -encode "This is Base85 Encode/Decode."
 	else
-		./aisio --base85 -decode "RA^~)AZc?TLSb\`dI5i+eZewp\`WiLc!V{c?-E&u=k"
+		./aisio --base85 -decode 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
 	fi
 }
 
