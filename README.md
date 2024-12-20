@@ -246,6 +246,7 @@ AES_GCM_TAG="73DD32019CD29E7251D17128DE27FFDD"
 AES_CCM_TAG="DB9A881B8A159B079F826BD043A4F8C9"
 AES_OCB_TAG="F7F64A75E6575C9093E12AB272CBF024"
 AES_KEK="This is AES WRAP, 128, 192, 256."
+BASE="-base16"
 
 # AES CTR Encryption/Decryption
 ./aisio --aes -ctr -encrypt -key "$AES_KEY" -counter "$AES_COUNTER" -plain-text "This is AES CTR Encryption/Decryption." -out "$BASE"
@@ -333,6 +334,7 @@ DES (Data Encryption Standard) is used for secure communication in legacy system
 DES_KEY="Key Must Be 128,192 Size"
 DES_IV="Iv8Bytes"
 DES_KEK="WRAP Key 128 192 by DES."
+BASE="-base16"
 
 # DES CBC Encryption/Decryption
 ./aisio -des -cbc -encrypt -key "$DES_KEY" -iv "$DES_IV" -padding -plain-text "This is DES CBC Encryption/Decryption." -out "$BASE"
@@ -438,6 +440,8 @@ Hash functions provide data integrity by generating fixed-length digests.
 
 #### *shell*
 ```shell
+BASE="-base16"
+
 # HASH MD5
 ./aisio -hash -md5 -in "This is HASH-MD5 by the Hash libary." -salt "This is HASH-MD5 Salt by the Hash." -fir -mid -las -out "$BASE"
 
