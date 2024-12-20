@@ -175,7 +175,7 @@ Base text encoding involves converting binary data into textual representations.
 ./aisio --base85 -encode "This is Base85 Encode/Decode."
 
 # Base85 Decode
-./aisio --base85 -decode "RA^~)AZc?TLSb\`dI5i+eZewp\`WiLc!V{c?-E&u=k"
+./aisio --base85 -decode 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
 ```
 ---
 
