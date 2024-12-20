@@ -775,7 +775,7 @@ void aes_execute::OcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	};
 	int length = ((AesOcbDecrypt)AesFunctions.at("-ocb-decrypt"))(&decryption);
 	if (length < 0) {
-		std::cerr << Error("AES CCM Decrypt Failed.") << std::endl;
+		std::cerr << Error("AES OCB Decrypt Failed.") << std::endl;
 		return;
 	}
 	result.assign(plaintext.begin(), plaintext.end());
@@ -823,7 +823,7 @@ void aes_execute::WrapDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	};
 	int length = ((AesWrapDecrypt)AesFunctions.at("-wrap-decrypt"))(&decryption);
 	if (length < 0) {
-		std::cerr << Error("AES CCM Decrypt Failed.") << std::endl;
+		std::cerr << Error("AES WRAP Decrypt Failed.") << std::endl;
 		return;
 	}
 	result.assign(key.begin(), key.end());
