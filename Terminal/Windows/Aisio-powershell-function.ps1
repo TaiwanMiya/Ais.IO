@@ -386,14 +386,14 @@ function HASH_SHA3_KE_128 {
     Write-Host "Ais HASH SHA3-KE-128 Calculation..."
     $content = "This is HASH SHA3-KE-128 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-128."
-    .\aisio --hash -sha3-ke-128 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-ke-128 -input $content -salt $salt -first -middle -last -length 16 -out $BASE
 }
 
 function HASH_SHA3_KE_256 {
     Write-Host "Ais HASH SHA3-KE-256 Calculation..."
     $content = "This is HASH SHA3-KE-256 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-256."
-    .\aisio --hash -sha3-ke-256 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-ke-256 -input $content -salt $salt -first -middle -last -length 32 -out $BASE
 }
 
 function HASH_BLAKE2S_256 {

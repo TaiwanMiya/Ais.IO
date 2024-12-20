@@ -1,0 +1,294 @@
+#include "usage_libary.h"
+#include "output_colors.h"
+
+void usage_libary::ShowUsage() {
+    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
+    std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
+    std::cout << Any("              A:::A               i::::i                       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
+    std::cout << Any("             A:::::A               iiii                        I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
+    std::cout << Any("            A:::::::A                                          II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
+    std::cout << Any("           A:::::::::A           iiiiiii     ssssssssss          I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("          A:::::A:::::A          i:::::i   ss::::::::::s         I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("         A:::::A A:::::A          i::::i ss:::::::::::::s        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
+    std::cout << Any("        A:::::A   A:::::A         i::::i s::::::ssss:::::s       I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
+    std::cout << Any("       A:::::A     A:::::A        i::::i  s:::::s  ssssss        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
+    std::cout << Any("      A:::::AAAAAAAAA:::::A       i::::i    s::::::s             I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
+    std::cout << Any("     A:::::::::::::::::::::A      i::::i       s::::::s          I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
+    std::cout << Any("    A:::::AAAAAAAAAAAAA:::::A     i::::i ssssss   s:::::s        I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("   A:::::A             A:::::A   i::::::is:::::ssss::::::s     II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("  A:::::A               A:::::A  i::::::is::::::::::::::s      I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
+    std::cout << Any(" A:::::A                 A:::::A i::::::i s:::::::::::ss       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
+    std::cout << Any("AAAAAAA                   AAAAAAAiiiiiiii  sssssssssss         IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
+    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
+    
+    std::cout << Mark("Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    Help List:\n") << std::endl;
+    std::cout << Hint("    1. Helper by Binary:") << std::endl;
+    std::cout << Info("        --help -binary") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    2. Helper by Base:") << std::endl;
+    std::cout << Info("        --help -base") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    3. Helper by Aes:") << std::endl;
+    std::cout << Info("        --help -aes") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    4. Helper by Des:") << std::endl;
+    std::cout << Info("        --help -des") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    5. Helper by Hash:") << std::endl;
+    std::cout << Info("        --help -hash") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    Show Colors:\n") << std::endl;
+    std::cout << Info("        --colors") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowBinaryUsage() {
+    std::cout << Common("      :::::::::") << Error("      :::::::::::") << Warn("      ::::    :::") << Hint("          ::: ") << Ask("      :::::::::") << Mark("   :::   ::: ") << std::endl;
+    std::cout << Common("     :+:    :+:") << Error("         :+:     ") << Warn("     :+:+:   :+: ") << Hint("       :+: :+:") << Ask("     :+:    :+:") << Mark("  :+:   :+:  ") << std::endl;
+    std::cout << Common("    +:+    +:+ ") << Error("        +:+      ") << Warn("    :+:+:+  +:+  ") << Hint("     +:+   +:+") << Ask("    +:+    +:+ ") << Mark("  +:+ +:+    ") << std::endl;
+    std::cout << Common("   +#++:++#+   ") << Error("       +#+       ") << Warn("   +#+ +:+ +#+   ") << Hint("   +#++:++#++:") << Ask("   +#++:++#:   ") << Mark("  +#++:      ") << std::endl;
+    std::cout << Common("  +#+    +#+   ") << Error("      +#+        ") << Warn("  +#+  +#+#+#    ") << Hint("  +#+     +#+ ") << Ask("  +#+    +#+   ") << Mark("  +#+        ") << std::endl;
+    std::cout << Common(" #+#    #+#    ") << Error("     #+#         ") << Warn(" #+#   #+#+#     ") << Hint(" #+#     #+#  ") << Ask(" #+#    #+#    ") << Mark(" #+#         ") << std::endl;
+    std::cout << Common("#########      ") << Error("###########      ") << Warn("###    ####      ") << Hint("###     ###   ") << Ask("###    ###     ") << Mark("###          ") << std::endl;
+
+    std::cout << Mark("Binary Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("1") << ". " << Hint("Get Information About All Data Indexes:") << std::endl;
+    std::cout << Info("        [-id | --indexes] <path>") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("2") << ". " << Hint("Read Binary Data (All):") << std::endl;
+    std::cout << Info("        [-rl | --read-all] <path>") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("3") << ". " << Hint("Read Binary Data (Specify):") << std::endl;
+    std::cout << Info("        [-r | --read] <path> [--type] ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("4") << ". " << Hint("Write Binary Data:") << std::endl;
+    std::cout << Info("        [-w | --write] <path> [--type] <value> ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("5") << ". " << Hint("Append Binary Data:") << std::endl;
+    std::cout << Info("        [-a | --append] <path> [--type] <value> ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("6") << ". " << Hint("Insert Binary Data:") << std::endl;
+    std::cout << Info("        [-i | --insert] <path> [--type] <value> <position> ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("7") << ". " << Hint("Remove Binary Data (Index information input, fast speed):") << std::endl;
+    std::cout << Info("        [-rm | --remove] <path> [--type] <position> <length> ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("8") << ". " << Hint("Remove Binary Data (Index position input, slow speed):") << std::endl;
+    std::cout << Info("        [-rs | --remove-index] <path> <index> ...") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    Supported [--type]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-bool") << Warn("   Boolean                -> false, true") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-byte") << Warn("   Unsigned Byte          -> 0 ~ 255") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-sbyte") << Warn("  Signed Byte            -> -128 ~ 127") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-short") << Warn("  Signed Short Integer   -> -32768 ~ 32767") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("-ushort") << Warn(" Unsigned Short Integer -> 0 ~ 65535") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("-int") << Warn("    Signed Integer         -> -2147483648 ~ 2147483647") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("-uint") << Warn("   Unsigned Integer       -> 0 ~ 4294967295") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("-long") << Warn("   Signed Long Integer    -> -9223372036854775808 ~ 9223372036854775807") << std::endl;
+    std::cout << "        " << Mark(" 9") << ". " << Info("-ulong") << Warn("  Unsigned Long Integer  -> 0 ~ 18446744073709551615") << std::endl;
+    std::cout << "        " << Mark("10") << ". " << Info("-float") << Warn("  Single Floating Point  -> ~-3.402823e38 ~ ~3.402823e38") << std::endl;
+    std::cout << "        " << Mark("11") << ". " << Info("-double") << Warn(" Double Floating Point  -> ~-1.7976931348623157e308 ~ ~1.7976931348623157e308") << std::endl;
+    std::cout << "        " << Mark("12") << ". " << Info("-bytes") << Warn("  Bytes Array            -> N/A") << std::endl;
+    std::cout << "        " << Mark("13") << ". " << Info("-string") << Warn(" String                 -> N/A") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowBaseUsage() {
+    std::cout << Error("      :::::::::") << Warn("          ::: ") << Hint("      ::::::::") << Info("      :::::::::: ") << std::endl;
+    std::cout << Error("     :+:    :+:") << Warn("       :+: :+:") << Hint("    :+:    :+:") << Info("     :+:         ") << std::endl;
+    std::cout << Error("    +:+    +:+ ") << Warn("     +:+   +:+") << Hint("   +:+        ") << Info("    +:+          ") << std::endl;
+    std::cout << Error("   +#++:++#+   ") << Warn("   +#++:++#++:") << Hint("  +#++:++#++  ") << Info("   +#++:++#      ") << std::endl;
+    std::cout << Error("  +#+    +#+   ") << Warn("  +#+     +#+ ") << Hint("        +#+   ") << Info("  +#+            ") << std::endl;
+    std::cout << Error(" #+#    #+#    ") << Warn(" #+#     #+#  ") << Hint("#+#    #+#    ") << Info(" #+#             ") << std::endl;
+    std::cout << Error("#########      ") << Warn("###     ###   ") << Hint("########      ") << Info("##########       ") << std::endl;
+    
+    std::cout << Mark("Base Encoding Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("1") << ". " << Hint("Base16 Encode/Decode:") << std::endl;
+    std::cout << Info("        [-b16 | --base16] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("2") << ". " << Hint("Base32 Encode/Decode:") << std::endl;
+    std::cout << Info("        [-b32 | --base32] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("3") << ". " << Hint("Base64 Encode/Decode:") << std::endl;
+    std::cout << Info("        [-b64 | --base64] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("4") << ". " << Hint("Base85 Encode/Decode:") << std::endl;
+    std::cout << Info("        [-b85 | --base85] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowAesUsage() {
+    std::cout << Error("          ::: ") << Hint("      ::::::::::") << Ask("      :::::::: ") << std::endl;
+    std::cout << Error("       :+: :+:") << Hint("     :+:        ") << Ask("    :+:    :+: ") << std::endl;
+    std::cout << Error("     +:+   +:+") << Hint("    +:+         ") << Ask("   +:+         ") << std::endl;
+    std::cout << Error("   +#++:++#++:") << Hint("   +#++:++#     ") << Ask("  +#++:++#++   ") << std::endl;
+    std::cout << Error("  +#+     +#+ ") << Hint("  +#+           ") << Ask("        +#+    ") << std::endl;
+    std::cout << Error(" #+#     #+#  ") << Hint(" #+#            ") << Ask("#+#    #+#     ") << std::endl;
+    std::cout << Error("###     ###   ") << Hint("##########      ") << Ask("########       ") << std::endl;
+    
+    std::cout << Mark("Aes Cryptography Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 1") << ". " << Hint("AES CTR Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ctr [-e | -encrypt | -d | -decrypt] -key [--way] [-count | -counter] <counter> [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 2") << ". " << Hint("AES CBC Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -cbc [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-pad | -padding] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("AES CFB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -cfb [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-seg | -segment] <segment> [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("AES OFB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ofb [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("AES ECB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ecb [-e | -encrypt | -d | -decrypt] -key [--way] [-pad | -padding] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("AES GCM Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -gcm [-e | -encrypt | -d | -decrypt] -key [--way] -nonce [--way] -tag [--way] -aad [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("AES CCM Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ccm [-e | -encrypt | -d | -decrypt] -key [--way] -nonce [--way] -tag [--way] -aad [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("AES XTS Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -xts [-e | -encrypt | -d | -decrypt] -key [--way] -key2 [--way] -tweak [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("AES OCB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ocb [-e | -encrypt | -d | -decrypt] -key [--way] -nonce [--way] -tag [--way] -aad [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("AES WRAP Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-aes | --aes] -wrap [-e | -encrypt | -d | -decrypt] -key [--way] -kek [--way] -wrapkey [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--way]:\n");
+    std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowDesUsage() {
+    std::cout << Warn("      :::::::::") << Info("      ::::::::::") << Mark("      :::::::: ") << std::endl;
+    std::cout << Warn("     :+:    :+:") << Info("     :+:        ") << Mark("    :+:    :+: ") << std::endl;
+    std::cout << Warn("    +:+    +:+ ") << Info("    +:+         ") << Mark("   +:+         ") << std::endl;
+    std::cout << Warn("   +#+    +:+  ") << Info("   +#++:++#     ") << Mark("  +#++:++#++   ") << std::endl;
+    std::cout << Warn("  +#+    +#+   ") << Info("  +#+           ") << Mark("        +#+    ") << std::endl;
+    std::cout << Warn(" #+#    #+#    ") << Info(" #+#            ") << Mark("#+#    #+#     ") << std::endl;
+    std::cout << Warn("#########      ") << Info("##########      ") << Mark("########       ") << std::endl;
+    std::cout << Mark("Des Cryptography Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 1") << ". " << Hint("DES CBC Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-des | --des] -cbc [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-pad | -padding] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 2") << ". " << Hint("DES CFB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-des | --des] -cfb [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-seg | -segment] <segment> [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("DES OFB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-des | --des] -ofb [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("DES ECB Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-des | --des] -ecb [-e | -encrypt | -d | -decrypt] -key [--way] [-pad | -padding] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("DES WRAP Encrypt/Decrypt:") << std::endl;
+    std::cout << Info("        [-des | --des] -wrap [-e | -encrypt | -d | -decrypt] -key [--way] -kek [--way] -wrapkey [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--way]:\n");
+    std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowHashUsage() {
+    std::cout << Common("      :::    :::") << Error("          ::: ") << Warn("      ::::::::") << Hint("      :::    ::: ") << std::endl;
+    std::cout << Common("     :+:    :+: ") << Error("       :+: :+:") << Warn("    :+:    :+:") << Hint("     :+:    :+:  ") << std::endl;
+    std::cout << Common("    +:+    +:+  ") << Error("     +:+   +:+") << Warn("   +:+        ") << Hint("    +:+    +:+   ") << std::endl;
+    std::cout << Common("   +#++:++#++   ") << Error("   +#++:++#++:") << Warn("  +#++:++#++  ") << Hint("   +#++:++#++    ") << std::endl;
+    std::cout << Common("  +#+    +#+    ") << Error("  +#+     +#+ ") << Warn("        +#+   ") << Hint("  +#+    +#+     ") << std::endl;
+    std::cout << Common(" #+#    #+#     ") << Error(" #+#     #+#  ") << Warn("#+#    #+#    ") << Hint(" #+#    #+#      ") << std::endl;
+    std::cout << Common("###    ###      ") << Error("###     ###   ") << Warn("########      ") << Hint("###    ###       ") << std::endl;
+    std::cout << Mark("Hash Calculation Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 1") << ". " << Hint("HASH MD5 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -md5 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 2") << ". " << Hint("HASH MD5-SHA1 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -md5-sha1 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("HASH SHA1 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sha1 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("HASH SHA2-224 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha224 | -sha2-224] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("HASH SHA2-256 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha256 | -sha2-256] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("HASH SHA2-384 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha384 | -sha2-384] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("HASH SHA2-512 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha512 | -sha2-512] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("HASH SHA2-512-224 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha512-224 | -sha2-512-224] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("HASH SHA2-512-256 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-sha512-256 | -sha2-512-256] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("HASH SHA3-224 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sha3-224 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("HASH SHA3-256 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sha3-256 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("12") << ". " << Hint("HASH SHA3-384 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sha3-384 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("13") << ". " << Hint("HASH SHA3-512 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sha3-512 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("14") << ". " << Hint("HASH SHA3-KE-128 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-shake128 | -sha3-ke-128] [-in | -input] [--way] -salt [--way] [--salt-pos] [-len | -length] <length> [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("15") << ". " << Hint("HASH SHA3-KE-256 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-shake256 | -sha3-ke-256] [-in | -input] [--way] -salt [--way] [--salt-pos] [-len | -length] <length> [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("16") << ". " << Hint("HASH BLAKE2S-256 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-blake2s | -blake256 | -blake2s-256] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("17") << ". " << Hint("HASH BLAKE2B-512 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] [-blake2b | -blake512 | -blake2s-512] [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("18") << ". " << Hint("HASH SM3 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -sm3 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("19") << ". " << Hint("HASH RIPEMD160 Hash Calculation:") << std::endl;
+    std::cout << Info("        [-hash | --hash] -ripemd160 [-in | -input] [--way] -salt [--way] [--salt-pos] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--salt-pos]:\n");
+    std::cout << "        " << Mark("1") << ". " << Info("[-fir | -first]") << Warn("            -> Add Salt (First, can be added)") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-mid | -middle]") << Warn("           -> Add Salt (Middle, can be added)") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-las | -last]") << Warn("             -> Add Salt (Last, can be added)") << std::endl;
+    std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--way]:\n");
+    std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
+    std::cout << "" << std::endl;
+}

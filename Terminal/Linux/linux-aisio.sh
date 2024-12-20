@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source ./Aisio-shell-function.sh
 
 operation=""
@@ -47,15 +48,11 @@ while [[ "$#" -gt 0 ]]; do
 			operation="$1"
 			shift
 			;;
-		-aes|-des|-hash)
+		-aes|-des)
 			operation="$1"
 			shift
 			;;
 		-ctr|-cbc|-cfb|-ofb|-ecb|-gcm|-ccm|-xts|-ocb|-wrap)
-			mode="$1"
-			shift
-			;;
-		-md5|-md5-sha1|-sha1|-sha2-224|-sha2-256|-sha2-384|-sha2-512|-sha2-512-224|-sha2-512-256|-sha3-224|-sha3-256|-sha3-384|-sha3-512|-sha3-ke-128|-sha3-ke-256|-blake2s-256|-blake2b-512|-sm3|-ripemd160)
 			mode="$1"
 			shift
 			;;
@@ -174,64 +171,6 @@ for ((i=1; i<=iterations; i++)); do
 					DES_WRAP
 					;;
 				*)
-					;;
-			esac
-			;;
-		-hash)
-			case "$mode" in
-				-md5)
-					HASH_MD5
-					;;
-				-md5-sha1)
-					HASH_MD5_SHA1
-					;;
-				-sha1)
-					HASH_SHA1
-					;;
-				-sha2-224)
-					HASH_SHA2_224
-					;;
-				-sha2-256)
-					HASH_SHA2_256
-					;;
-				-sha2-384)
-					HASH_SHA2_384
-					;;
-				-sha2-512)
-					HASH_SHA2_512
-					;;
-				-sha2-512-224)
-					HASH_SHA2_512_224
-					;;
-				-sha2-512-256)
-					HASH_SHA2_512_256
-					;;
-				-sha3-224)
-					HASH_SHA3_224
-					;;
-				-sha3-256)
-					HASH_SHA3_256
-					;;
-				-sha3-384)
-					HASH_SHA3_384
-					;;
-				-sha3-512)
-					HASH_SHA3_512
-					;;
-				-sha3-ke-128)
-					HASH_SHA3_KE_128
-					;;
-				-blake2s-256)
-					HASH_BLAKE2S_256
-					;;
-				-blake2b-512)
-					HASH_BLAKE2B_512
-					;;
-				-sm3)
-					HASH_SM3
-					;;
-				-ripemd160)
-					HASH_RIPEMD160
 					;;
 			esac
 			;;

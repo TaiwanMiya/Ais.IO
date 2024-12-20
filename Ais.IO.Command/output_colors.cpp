@@ -37,6 +37,10 @@ void ListColorTable() {
     std::cout << "\033[0m" << std::endl;
 }
 
+std::string Hide(const std::string str) {
+    return "\033[1;30m" + str + "\033[0m"; // Black
+}
+
 std::string Error(const std::string str) {
     return "\033[1;31m" + str + "\033[0m"; // Red
 }
@@ -55,6 +59,14 @@ std::string Ask(const std::string str) {
 
 std::string Mark(const std::string str) {
     return "\033[1;35m" + str + "\033[0m"; // Purple
+}
+
+std::string Info(const std::string str) {
+    return "\033[1;36m" + str + "\033[0m"; // Cyan
+}
+
+std::string Common(const std::string str) {
+    return "\033[1;37m" + str + "\033[0m"; // White
 }
 
 std::string Any(const std::string str, int colorInt) {

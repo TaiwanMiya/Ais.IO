@@ -9,6 +9,7 @@
 #include "aes_execute.h"
 #include "des_execute.h"
 #include "hash_execute.h"
+#include "usage_libary.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -207,6 +208,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
 
     std::unordered_set<std::string> validMode = {
+        "--help",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
         "--generate", "--import", "--aes", "--des", "--hash"
@@ -216,6 +218,10 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
         {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}
+    };
+
+    std::unordered_set<std::string> validHelper = {
+        "-binary", "-base", "-aes", "-des", "-hash"
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -248,6 +254,29 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     if (!validMode.count(mode)) {
         std::cerr << Error("Invalid mode: ") << Ask(mode) << std::endl;
         return false;
+    }
+
+    if (mode == "--help") {
+        if (argc > 2) {
+            std::string helper = ToLower(argv[2]);
+            if (!validHelper.count(helper))
+                usage_libary::ShowUsage();
+            if (helper == "-binary")
+                usage_libary::ShowBinaryUsage();
+            if (helper == "-base")
+                usage_libary::ShowBaseUsage();
+            if (helper == "-aes")
+                usage_libary::ShowAesUsage();
+            if (helper == "-des")
+                usage_libary::ShowDesUsage();
+            if (helper == "-hash")
+                usage_libary::ShowHashUsage();
+            exit(0);
+        }
+        else {
+            usage_libary::ShowUsage();
+            exit(0);
+        }
     }
 
     if (mode == "--read" || mode == "--write" || mode == "--append") {
@@ -553,7 +582,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!ParseArguments(argc, argv, mode, filePath, commands)) {
-        ShowUsage();
+        usage_libary::ShowUsage();
         return 1;
     }
 

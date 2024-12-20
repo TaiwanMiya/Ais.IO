@@ -183,6 +183,7 @@ struct Hashes {
     std::string Input;
     std::string Salt;
     std::string Output;
+    size_t Length = 0;
 
     CRYPT_OPTIONS input_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS salt_option = CRYPT_OPTIONS::OPTION_TEXT;

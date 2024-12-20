@@ -20,10 +20,13 @@ enum TERMINAL_STYLE {
 };
 
 void ListColorTable();
+std::string Hide(std::string str);
 std::string Error(std::string str);
 std::string Warn(std::string str);
 std::string Hint(std::string str);
 std::string Ask(std::string str);
 std::string Mark(std::string str);
+std::string Info(std::string str);
+std::string Common(std::string str);
 std::string Any(std::string str, TERMINAL_STYLE style, int colorInt);
 std::string Any(std::string str, int colorInt);

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 Usage() {
 	echo "Usage:"
 	echo "	$0 <operation> [-f <filename>] [-n <iterations>]"
@@ -225,83 +226,3 @@ DES_WRAP() {
 		./aisio -des -wrap -decrypt -wrapkey "$BASE" "F033669ADDDD49C08A5D3BEE5198897D97F6B4E14644E30547CE756961857C28E437634A8D4A1C0B" -kek "$DES_KEK"
 	fi
 }
-
-
-
-
-HASH_MD5(){   
-	./aisio -hash -md5          -in "This is HASH-MD5 by the Hash libary." -salt "This is HASH-MD5 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_MD5_SHA1(){   
-	./aisio -hash -md5-sha1     -in "This is HASH-MD5-SHA1 by the Hash libary." -salt "This is HASH-MD5-SHA1 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA1(){   
-	./aisio -hash -sha1         -in "This is HASH-SHA1 by the Hash libary." -salt "This is HASH-SHA1 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_224(){   
-	./aisio -hash -sha2-224     -in "This is HASH-SHA2-224 by the Hash libary." -salt "This is HASH-SHA2-224 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_256(){   
-	./aisio -hash -sha2-256     -in "This is HASH-SHA2-256 by the Hash libary." -salt "This is HASH-SHA2-256 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_384(){   
-	./aisio -hash -sha2-384     -in "This is HASH-SHA2-384 by the Hash libary." -salt "This is HASH-SHA2-384 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_512(){   
-	./aisio -hash -sha2-512     -in "This is HASH-SHA2-512 by the Hash libary." -salt "This is HASH-SHA2-512 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_512_224(){   
-	./aisio -hash -sha2-512-224 -in "This is HASH-SHA2-512-224 by the Hash libary." -salt "This is HASH-SHA2-512-224 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA2_512_256(){   
-	./aisio -hash -sha2-512-256 -in "This is HASH-SHA2-512-256 by the Hash libary." -salt "This is HASH-SHA2-512-256 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_224(){   
-	./aisio -hash -sha3-224     -in "This is HASH-SHA3-224 by the Hash libary." -salt "This is HASH-SHA3-224 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_256(){   
-	./aisio -hash -sha3-256     -in "This is HASH-SHA3-256 by the Hash libary." -salt "This is HASH-SHA3-256 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_384(){   
-	./aisio -hash -sha3-384     -in "This is HASH-SHA3-384 by the Hash libary." -salt "This is HASH-SHA3-384 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_512(){   
-	./aisio -hash -sha3-512     -in "This is HASH-SHA3-512 by the Hash libary." -salt "This is HASH-SHA3-512 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_KE_128(){   
-	./aisio -hash -sha3-ke-128  -in "This is HASH-SHA3-KE-128 by the Hash libary." -salt "This is HASH-SHA3-KE-128 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SHA3_KE_256(){   
-	./aisio -hash -sha3-ke-256  -in "This is HASH-SHA3-KE-256 by the Hash libary." -salt "This is HASH-SHA3-KE-256 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_BLAKE2S_256(){   
-	./aisio -hash -blake2s-256  -in "This is HASH-BLAKE2S-256 by the Hash libary." -salt "This is HASH-BLAKE2S-256 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_BLAKE2B_512(){   
-	./aisio -hash -blake2b-512  -in "This is HASH-BLAKE2B-512 by the Hash libary." -salt "This is HASH-BLAKE2B-512 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_SM3(){   
-	./aisio -hash -sm3          -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-SM3 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-
-HASH_RIPEMD160(){   
-	./aisio -hash -sm3          -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out $BASE
-} 
-

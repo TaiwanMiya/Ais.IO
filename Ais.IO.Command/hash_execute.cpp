@@ -77,6 +77,13 @@ void hash_execute::ParseParameters(int argc, char* argv[], Hashes& hash) {
 		case hash_execute::hash("-mid"):
 			hash.Sequence = static_cast<SALT_SEQUENCE>(hash.Sequence | SALT_SEQUENCE::SALT_MIDDLE);
 			break;
+		case hash_execute::hash("-length"):
+		case hash_execute::hash("-len"):
+			if (IsULong(argv[i + 1])) {
+				hash.Length = std::stoull(argv[i + 1]);
+				i++;
+			}
+			break;
 		case hash_execute::hash("-output"):
 		case hash_execute::hash("-out"):
 			hash.output_option = cryptography_libary::GetOption(i, argv);
@@ -96,7 +103,9 @@ void hash_execute::HashStart(Hashes& hash) {
 	std::vector<unsigned char> output;
 	cryptography_libary::ValueEncode(hash.input_option, hash.Input, input);
 	cryptography_libary::ValueEncode(hash.salt_option, hash.Salt, salt);
-	int length = ((GetHashLength)HashFunctions.at("-hash-length"))(hash.Mode);
+	int length = (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_128) || (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_256)
+		? hash.Length 
+		: ((GetHashLength)HashFunctions.at("-hash-length"))(hash.Mode);
 	output.resize(length);
 	HASH_STRUCTURE hashes = {
 		.INPUT = input.data(),

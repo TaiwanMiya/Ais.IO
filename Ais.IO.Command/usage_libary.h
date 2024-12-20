@@ -1,0 +1,13 @@
+#pragma once
+
+#include "main.h"
+class usage_libary {
+public:
+	static void ShowUsage();
+	static void ShowBinaryUsage();
+	static void ShowBaseUsage();
+	static void ShowAesUsage();
+	static void ShowDesUsage();
+	static void ShowHashUsage();
+};
+
