@@ -20,6 +20,8 @@
 #include <openssl/err.h>
 #include <openssl/x509.h>
 #include <openssl/bn.h>
+#include <openssl/core_names.h>
+#include <openssl/param_build.h>
 #include <cstring>
 #include <iostream>
 #include <random>
@@ -36,10 +38,10 @@ struct RSA_PARAMETERS {
     size_t PUBLIC_EXPONENT_LENGTH;
     unsigned char* PRIVATE_EXPONENT;
     size_t PRIVATE_EXPONENT_LENGTH;
-    unsigned char* PRIME1;
-    size_t PRIME1_LENGTH;
-    unsigned char* PRIME2;
-    size_t PRIME2_LENGTH;
+    unsigned char* FACTOR1;
+    size_t FACTOR1_LENGTH;
+    unsigned char* FACTOR2;
+    size_t FACTOR2_LENGTH;
     unsigned char* EXPONENT1;
     size_t EXPONENT1_LENGTH;
     unsigned char* EXPONENT2;

@@ -23,6 +23,7 @@ void* Lib = LOAD_LIBRARY("./Ais.IO.so");
 
 #ifdef _WIN32
 #include <windows.h>
+#include <vector>
 
 void EnableVirtualTerminalProcessing() {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -72,11 +73,11 @@ struct RSA_PARAMETERS {
     unsigned char* PRIVATE_EXPONENT;
     size_t PRIVATE_EXPONENT_LENGTH;
 
-    unsigned char* PRIME1;
-    size_t PRIME1_LENGTH;
+    unsigned char* FACTOR1;
+    size_t FACTOR1_LENGTH;
 
-    unsigned char* PRIME2;
-    size_t PRIME2_LENGTH;
+    unsigned char* FACTOR2;
+    size_t FACTOR2_LENGTH;
 
     unsigned char* EXPONENT1;
     size_t EXPONENT1_LENGTH;
@@ -133,6 +134,47 @@ int main() {
     };
 
     getParamters(&paramters);
+
+    std::vector<char> paramtersString;
+    paramtersString.resize(paramters.MODULUS_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.MODULUS, paramters.MODULUS_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Modulus (n)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.PUBLIC_EXPONENT_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.PUBLIC_EXPONENT, paramters.PUBLIC_EXPONENT_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Public Exponent (e)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.PRIVATE_EXPONENT_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.PRIVATE_EXPONENT, paramters.PRIVATE_EXPONENT_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Private Exponent (d)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.FACTOR1_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.FACTOR1, paramters.FACTOR1_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Factor1 (p)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.FACTOR2_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.FACTOR2, paramters.FACTOR2_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Factor2 (p)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.EXPONENT1_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.EXPONENT1, paramters.EXPONENT1_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Exponent1 (dmp1)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.EXPONENT2_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.EXPONENT2, paramters.EXPONENT2_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Exponent2 (dmp2)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
+
+    paramtersString.resize(paramters.COEFFICIENT_LENGTH * 2 + 1);
+    Base16Encode_Func(paramters.COEFFICIENT, paramters.COEFFICIENT_LENGTH, paramtersString.data(), paramtersString.size());
+    std::cout << "[Coefficient (iqmp)]\n" << paramtersString.data() << std::endl;
+    paramtersString.clear();
 
    /* RsaGenerate generate = (RsaGenerate)GET_PROC_ADDRESS(Lib, "RsaGenerate");
 
