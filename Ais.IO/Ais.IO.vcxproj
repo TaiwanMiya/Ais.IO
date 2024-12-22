@@ -239,6 +239,7 @@ copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AesIO.h" />
+    <ClInclude Include="AsymmetricIO.h" />
     <ClInclude Include="BinaryAppenderIO.h" />
     <ClInclude Include="BinaryInserterIO.h" />
     <ClInclude Include="BinaryIO.h" />
@@ -247,14 +248,16 @@ copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
     <ClInclude Include="BaseEncoderIO.h" />
     <ClInclude Include="DesIO.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="AsymmetricIO.h" />
+    <ClInclude Include="SymmetryIO.h" />
     <ClInclude Include="HashIO.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RsaIO.h" />
     <ClInclude Include="StructT.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AesIO.cpp" />
+    <ClCompile Include="AsymmetricIO.cpp" />
     <ClCompile Include="BinaryAppenderIO.cpp" />
     <ClCompile Include="BinaryInserterIO.cpp" />
     <ClCompile Include="BinaryIO.cpp" />
@@ -263,7 +266,7 @@ copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
     <ClCompile Include="DesIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="BaseEncoderIO.cpp" />
-    <ClCompile Include="AsymmetricIO.cpp" />
+    <ClCompile Include="SymmetryIO.cpp" />
     <ClCompile Include="HashIO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -271,6 +274,7 @@ copy /y "$(ProjectDir)dll\p_test.dll" "$(OutDir)p_test.dll"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RsaIO.cpp" />
     <ClCompile Include="StructT.cpp" />
   </ItemGroup>
   <ItemGroup>

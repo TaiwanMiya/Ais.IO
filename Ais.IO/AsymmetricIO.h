@@ -21,14 +21,10 @@
 #include <cstring>
 #include <random>
 
-enum SEGMENT_SIZE_OPTION {
-    SEGMENT_1_BIT = 1,
-    SEGMENT_8_BIT = 8,
-    SEGMENT_64_BIT = 64,
-    SEGMENT_128_BIT = 128,
+enum ASYMMETRIC_KEY_FORMAT {
+    ASYMMETRIC_KEY_PEM = 0,
+    ASYMMETRIC_KEY_DER = 1,
 };
 
-int handleErrors(std::string message, EVP_CIPHER_CTX* ctx);
-int handleErrors(std::string message, EVP_MD_CTX* ctx);
-EXT ASYMMETRICIO_API int Generate(unsigned char* content, size_t length);
-EXT ASYMMETRICIO_API int Import(const unsigned char* input, size_t inputLength, unsigned char* output, size_t outputLength);
+int handleErrors_asymmetric(std::string message, EVP_PKEY_CTX* ctx);
+int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* pkey);

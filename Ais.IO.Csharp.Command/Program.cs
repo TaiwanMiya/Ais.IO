@@ -29,7 +29,9 @@ namespace Ais.IO.Csharp.Command
 
                 //StartDes(1);
 
-                StartHash(1);
+                //StartHash(1);
+
+                StartRsa(10);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");
@@ -116,7 +118,6 @@ namespace Ais.IO.Csharp.Command
         {
             string text = string.Empty;
             string salt = string.Empty;
-            Hash hash = new Hash();
 
             for (int i = 0; i < range; i++)
 
@@ -130,6 +131,18 @@ namespace Ais.IO.Csharp.Command
                     Console.WriteLine(text);
                     HashIO.Run(text, salt, type, SALT_SEQUENCE.SALT_MIDDLE);
                 }
+            }
+        }
+
+        private static void StartRsa(int range)
+        {
+            for (int i = 0; i < range; i++)
+            {
+                //RsaIO.GetParamters(2048);
+
+                RsaIO.GeneratePEM(2048);
+
+                RsaIO.GenerateDER(2048);
             }
         }
     }

@@ -5,7 +5,7 @@ int Hash(HASH_STRUCTURE* hash) {
 	ERR_clear_error();
 	EVP_MD_CTX* ctx = EVP_MD_CTX_new();
 	if (!ctx)
-		return handleErrors("An error occurred during ctx generation.", ctx);
+		return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
 	const EVP_MD* md = nullptr;
 	switch (hash->TYPE) {
@@ -28,48 +28,48 @@ int Hash(HASH_STRUCTURE* hash) {
 	case HASH_TYPE::HASH_BLAKE2B_512:md = EVP_blake2b512(); break;
 	case HASH_TYPE::HASH_SM3:md = EVP_sm3(); break;
 	case HASH_TYPE::HASH_RIPEMD160:md = EVP_ripemd160(); break;
-	default:return handleErrors("Invalid hash type, see \"HASH_OPTIONS\".", ctx);
+	default:return handleErrors_symmetry("Invalid hash type, see \"HASH_OPTIONS\".", ctx);
 	}
 	if (!md)
-		return handleErrors("Not supported by this OpenSSL build.", ctx);
+		return handleErrors_symmetry("Not supported by this OpenSSL build.", ctx);
 
 	if (1 != EVP_DigestInit_ex(ctx, md, NULL))
-		return handleErrors("Failed to initialize digest.", ctx);
+		return handleErrors_symmetry("Failed to initialize digest.", ctx);
 
 	if ((hash->SEQUENCE & SALT_SEQUENCE::SALT_FIRST) && hash->SALT_LENGTH > 0) {
 		if (1 != EVP_DigestUpdate(ctx, hash->SALT, hash->SALT_LENGTH))
-			return handleErrors("Failed to update digest with salt (first).", ctx);
+			return handleErrors_symmetry("Failed to update digest with salt (first).", ctx);
 	}
 
 	if ((hash->SEQUENCE & SALT_SEQUENCE::SALT_MIDDLE) && hash->SALT_LENGTH > 0) {
 		size_t mid = hash->INPUT_LENGTH / 2;
 
 		if (1 != EVP_DigestUpdate(ctx, hash->INPUT, mid))
-			return handleErrors("Failed to update digest with input (first half).", ctx);
+			return handleErrors_symmetry("Failed to update digest with input (first half).", ctx);
 
 		if (1 != EVP_DigestUpdate(ctx, hash->SALT, hash->SALT_LENGTH))
-			return handleErrors("Failed to update digest with salt (middle).", ctx);
+			return handleErrors_symmetry("Failed to update digest with salt (middle).", ctx);
 		
 		if (1 != EVP_DigestUpdate(ctx, hash->INPUT + mid, hash->INPUT_LENGTH - mid))
-			return handleErrors("Failed to update digest with input (second half).", ctx);
+			return handleErrors_symmetry("Failed to update digest with input (second half).", ctx);
 	}
 	else
 		if (1 != EVP_DigestUpdate(ctx, hash->INPUT, hash->INPUT_LENGTH))
-			return handleErrors("Failed to update digest.", ctx);
+			return handleErrors_symmetry("Failed to update digest.", ctx);
 
 	if ((hash->SEQUENCE & SALT_SEQUENCE::SALT_LAST) && hash->SALT_LENGTH > 0) {
 		if (1 != EVP_DigestUpdate(ctx, hash->SALT, hash->SALT_LENGTH))
-			return handleErrors("Failed to update digest with salt (last).", ctx);
+			return handleErrors_symmetry("Failed to update digest with salt (last).", ctx);
 	}
 	
 	unsigned int length = 0;
 	if (hash->TYPE != HASH_TYPE::HASH_SHA3_KE_128 && hash->TYPE != HASH_TYPE::HASH_SHA3_KE_256) {
 		if (1 != EVP_DigestFinal_ex(ctx, hash->OUTPUT, &length))
-			return handleErrors("Failed to finalize digest.", ctx);
+			return handleErrors_symmetry("Failed to finalize digest.", ctx);
 	}
 	else {
 		if (1 != EVP_DigestFinalXOF(ctx, hash->OUTPUT, hash->OUTPUT_LENGTH))
-			return handleErrors("Failed to finalize digest.", ctx);
+			return handleErrors_symmetry("Failed to finalize digest.", ctx);
 		length = hash->OUTPUT_LENGTH;
 	}
 

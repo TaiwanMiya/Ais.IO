@@ -1,12 +1,12 @@
 ﻿#include "pch.h"
 #include "DesIO.h"
-#include "AsymmetricIO.h"
+#include "SymmetryIO.h"
 
 int DesCbcEncrypt(DES_CBC_ENCRYPT* encryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
@@ -14,24 +14,24 @@ int DesCbcEncrypt(DES_CBC_ENCRYPT* encryption) {
     case 16: cipher = EVP_des_ede_cbc(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 8 != 0)
-        return handleErrors("PlainText block must be 8 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
+        return handleErrors_symmetry("PlainText block must be 8 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
-        return handleErrors("Initialize DES CBC encryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES CBC encryption for the current block failed.", ctx);
     
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
     int len, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
-        return handleErrors("Encrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
-        return handleErrors("Final encryption failed.", ctx);
+        return handleErrors_symmetry("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -42,7 +42,7 @@ int DesCbcDecrypt(DES_CBC_DECRYPT* decryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
@@ -50,24 +50,24 @@ int DesCbcDecrypt(DES_CBC_DECRYPT* decryption) {
     case 16: cipher = EVP_des_ede_cbc(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_cbc(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 8 != 0)
-        return handleErrors("CipherText block must be 8 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
+        return handleErrors_symmetry("CipherText block must be 8 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
-        return handleErrors("Initialize DES CBC decryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES CBC decryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
-        return handleErrors("Decrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
-        return handleErrors("Final decryption failed.", ctx);
+        return handleErrors_symmetry("Final decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -78,7 +78,7 @@ int DesCfbEncrypt(DES_CFB_ENCRYPT* encryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
@@ -86,7 +86,7 @@ int DesCfbEncrypt(DES_CFB_ENCRYPT* encryption) {
     case 16:
         switch (encryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede_cfb64(); break;
-        default:return handleErrors("Invalid segment size. Must be 64 bits.", ctx);
+        default:return handleErrors_symmetry("Invalid segment size. Must be 64 bits.", ctx);
         }
         break;
     case 21:
@@ -95,22 +95,22 @@ int DesCfbEncrypt(DES_CFB_ENCRYPT* encryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_des_ede3_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_des_ede3_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede3_cfb64(); break;
-        default:return handleErrors("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
+        default:return handleErrors_symmetry("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
-        return handleErrors("Initialize DES CFB encryption failed.", ctx);
+        return handleErrors_symmetry("Initialize DES CFB encryption failed.", ctx);
 
     int len, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
-        return handleErrors("Encrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
-        return handleErrors("Final encryption failed.", ctx);
+        return handleErrors_symmetry("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -121,7 +121,7 @@ int DesCfbDecrypt(DES_CFB_DECRYPT* decryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
@@ -129,7 +129,7 @@ int DesCfbDecrypt(DES_CFB_DECRYPT* decryption) {
     case 16:
         switch (decryption->SEGMENT_SIZE) {
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede_cfb64(); break;
-        default:return handleErrors("Invalid segment size. Must be 64 bits.", ctx);
+        default:return handleErrors_symmetry("Invalid segment size. Must be 64 bits.", ctx);
         }
         break;
     case 21:
@@ -138,22 +138,22 @@ int DesCfbDecrypt(DES_CFB_DECRYPT* decryption) {
         case SEGMENT_SIZE_OPTION::SEGMENT_1_BIT: cipher = EVP_des_ede3_cfb1(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_8_BIT: cipher = EVP_des_ede3_cfb8(); break;
         case SEGMENT_SIZE_OPTION::SEGMENT_64_BIT: cipher = EVP_des_ede3_cfb64(); break;
-        default:return handleErrors("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
+        default:return handleErrors_symmetry("Invalid segment size. Must be 1, 8, 64 bits.", ctx);
         }
         break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
-        return handleErrors("Initialize DES CFB decryption failed.", ctx);
+        return handleErrors_symmetry("Initialize DES CFB decryption failed.", ctx);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
-        return handleErrors("Decrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
-        return handleErrors("Final decryption failed.", ctx);
+        return handleErrors_symmetry("Final decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -164,7 +164,7 @@ int DesOfbEncrypt(DES_OFB_ENCRYPT* encryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
@@ -172,19 +172,19 @@ int DesOfbEncrypt(DES_OFB_ENCRYPT* encryption) {
     case 16: cipher = EVP_des_ede_ofb(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, encryption->IV))
-        return handleErrors("Initialize DES OFB encryption failed.", ctx);
+        return handleErrors_symmetry("Initialize DES OFB encryption failed.", ctx);
 
     int len, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
-        return handleErrors("Encrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
-        return handleErrors("Final encryption failed.", ctx);
+        return handleErrors_symmetry("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -195,7 +195,7 @@ int DesOfbDecrypt(DES_OFB_DECRYPT* decryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
@@ -203,19 +203,19 @@ int DesOfbDecrypt(DES_OFB_DECRYPT* decryption) {
     case 16: cipher = EVP_des_ede_ofb(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_ofb(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, decryption->IV))
-        return handleErrors("Initialize DES OFB decryption failed.", ctx);
+        return handleErrors_symmetry("Initialize DES OFB decryption failed.", ctx);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
-        return handleErrors("Decrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
-        return handleErrors("Final decryption failed.", ctx);
+        return handleErrors_symmetry("Final decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -226,7 +226,7 @@ int DesEcbEncrypt(DES_ECB_ENCRYPT* encryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
 
@@ -235,24 +235,24 @@ int DesEcbEncrypt(DES_ECB_ENCRYPT* encryption) {
     case 16: cipher = EVP_des_ede_ecb(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!encryption->PKCS7_PADDING && encryption->PLAIN_TEXT_LENGTH % 8 != 0)
-        return handleErrors("PlainText block must be 8 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
+        return handleErrors_symmetry("PlainText block must be 8 bytes, But you give " + std::to_string(encryption->PLAIN_TEXT_LENGTH), ctx);
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEY, NULL))
-        return handleErrors("Initialize DES ECB encryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES ECB encryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, encryption->PKCS7_PADDING ? 1 : 0);
 
     int len = 0, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->CIPHER_TEXT, &len, encryption->PLAIN_TEXT, static_cast<int>(encryption->PLAIN_TEXT_LENGTH)))
-        return handleErrors("Encrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->CIPHER_TEXT + len, &len))
-        return handleErrors("Final encryption failed.", ctx);
+        return handleErrors_symmetry("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -263,7 +263,7 @@ int DesEcbDecrypt(DES_ECB_DECRYPT* decryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
@@ -271,24 +271,24 @@ int DesEcbDecrypt(DES_ECB_DECRYPT* decryption) {
     case 16: cipher = EVP_des_ede_ecb(); break;
     case 21:
     case 24: cipher = EVP_des_ede3_ecb(); break;
-    default:return handleErrors("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
+    default:return handleErrors_symmetry("Invalid key length. Must be 112, 128 or 168, 192 bits. (14, 16 or 21, 24 bytes.)", ctx);
     }
 
     if (!decryption->PKCS7_PADDING && decryption->CIPHER_TEXT_LENGTH % 8 != 0)
-        return handleErrors("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
+        return handleErrors_symmetry("CipherText block must be 16 bytes, But you give " + std::to_string(decryption->CIPHER_TEXT_LENGTH), ctx);
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEY, NULL))
-        return handleErrors("Initialize DES ECB decryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES ECB decryption for the current block failed.", ctx);
 
     EVP_CIPHER_CTX_set_padding(ctx, decryption->PKCS7_PADDING ? 1 : 0);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->PLAIN_TEXT, &len, decryption->CIPHER_TEXT, static_cast<int>(decryption->CIPHER_TEXT_LENGTH)))
-        return handleErrors("Decrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->PLAIN_TEXT + len, &len))
-        return handleErrors("Final decryption failed.", ctx);
+        return handleErrors_symmetry("Final decryption failed.", ctx);
     plaintext_len += len;
 
     EVP_CIPHER_CTX_free(ctx);
@@ -299,13 +299,13 @@ int DesWrapEncrypt(DES_WRAP_ENCRYPT* encryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     if (encryption->KEK_LENGTH != 21 && encryption->KEK_LENGTH != 24)
-        return handleErrors("Invalid KEK length. Must be 21 or 24 bytes.", ctx);
+        return handleErrors_symmetry("Invalid KEK length. Must be 21 or 24 bytes.", ctx);
 
     if (encryption->KEY_LENGTH < 14)
-        return handleErrors("Invalid key length. Must be at least 14 bytes.", ctx);
+        return handleErrors_symmetry("Invalid key length. Must be at least 14 bytes.", ctx);
 
     memset(encryption->WRAP_KEY, 0, encryption->WRAP_KEY_LENGTH);
 
@@ -313,19 +313,19 @@ int DesWrapEncrypt(DES_WRAP_ENCRYPT* encryption) {
     switch (encryption->KEK_LENGTH) {
     case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
+    default: return handleErrors_symmetry("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, encryption->KEK, NULL))
-        return handleErrors("Initialize DES WRAP encryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES WRAP encryption for the current block failed.", ctx);
 
     int len, ciphertext_len = 0;
     if (1 != EVP_EncryptUpdate(ctx, encryption->WRAP_KEY, &len, encryption->KEY, encryption->KEY_LENGTH))
-        return handleErrors("Encrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Encrypt the current block failed.", ctx);
     ciphertext_len += len;
 
     if (1 != EVP_EncryptFinal_ex(ctx, encryption->WRAP_KEY + len, &len))
-        return handleErrors("Final encryption failed.", ctx);
+        return handleErrors_symmetry("Final encryption failed.", ctx);
     ciphertext_len += len;
 
     encryption->WRAP_KEY_LENGTH = ciphertext_len;
@@ -337,10 +337,10 @@ int DesWrapDecrypt(DES_WRAP_DECRYPT* decryption) {
     ERR_clear_error();
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return handleErrors("An error occurred during ctx generation.", ctx);
+        return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
     if (decryption->KEK_LENGTH != 21 && decryption->KEK_LENGTH != 24)
-        return handleErrors("Invalid KEK length. Must be 24 bytes.", ctx);
+        return handleErrors_symmetry("Invalid KEK length. Must be 24 bytes.", ctx);
 
     memset(decryption->KEY, 0, decryption->KEY_LENGTH);
 
@@ -348,19 +348,19 @@ int DesWrapDecrypt(DES_WRAP_DECRYPT* decryption) {
     switch (decryption->KEK_LENGTH) {
     case 21:
     case 24: cipher = EVP_des_ede3_wrap(); break;
-    default: return handleErrors("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
+    default: return handleErrors_symmetry("Invalid KEK length. Must be 168, 192 bits. (21, 24 bytes.)", ctx);
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, decryption->KEK, NULL))
-        return handleErrors("Initialize DES WRAP decryption for the current block failed.", ctx);
+        return handleErrors_symmetry("Initialize DES WRAP decryption for the current block failed.", ctx);
 
     int len, plaintext_len = 0;
     if (1 != EVP_DecryptUpdate(ctx, decryption->KEY, &len, decryption->WRAP_KEY, decryption->WRAP_KEY_LENGTH))
-        return handleErrors("Decrypt the current block failed.", ctx);
+        return handleErrors_symmetry("Decrypt the current block failed.", ctx);
     plaintext_len += len;
 
     if (1 != EVP_DecryptFinal_ex(ctx, decryption->KEY + len, &len))
-        return handleErrors("Final decryption failed.", ctx);
+        return handleErrors_symmetry("Final decryption failed.", ctx);
     plaintext_len += len;
 
     decryption->KEY_LENGTH = plaintext_len;

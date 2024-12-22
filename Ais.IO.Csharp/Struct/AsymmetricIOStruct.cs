@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    // CFB - SEGMENT_SIZE
-    public enum SEGMENT_SIZE_OPTION
+    public enum ASYMMETRIC_KEY_FORMAT
     {
-        SEGMENT_1_BIT = 1,
-        SEGMENT_8_BIT = 8,
-        SEGMENT_64_BIT = 64,
-        SEGMENT_128_BIT = 128,
-    }
+        ASYMMETRIC_KEY_PEM = 0,
+        ASYMMETRIC_KEY_DER = 1,
+    };
 }

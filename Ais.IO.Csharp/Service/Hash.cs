@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public class Hash : Asymmetric
+    public class Hash : Symmetry
     {
         public Hash() { }
 

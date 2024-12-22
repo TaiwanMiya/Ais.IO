@@ -23,18 +23,18 @@ namespace Ais.IO.Csharp.Command
             string inputIV = "IvMustBe128Size.";
             byte[] inputIVBuffer = new byte[inputIV.Length];
 
-            if (AsymmetricIOInterop.Generate(key128, key128.Length) == 0)
+            if (SymmetryIOInterop.Generate(key128, key128.Length) == 0)
                 Console.WriteLine("Generated Key (128 bits): " + BitConverter.ToString(key128).Replace("-", ""));
-            if (AsymmetricIOInterop.Generate(key192, key192.Length) == 0)
+            if (SymmetryIOInterop.Generate(key192, key192.Length) == 0)
                 Console.WriteLine("Generated Key (192 bits): " + BitConverter.ToString(key192).Replace("-", ""));
-            if (AsymmetricIOInterop.Generate(key256, key256.Length) == 0)
+            if (SymmetryIOInterop.Generate(key256, key256.Length) == 0)
                 Console.WriteLine("Generated Key (256 bits): " + BitConverter.ToString(key256).Replace("-", ""));
-            if (AsymmetricIOInterop.Generate(iv, iv.Length) == 0)
+            if (SymmetryIOInterop.Generate(iv, iv.Length) == 0)
                 Console.WriteLine("Generated IV (128 bits): " + BitConverter.ToString(iv).Replace("-", ""));
 
-            if (AsymmetricIOInterop.Import(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
+            if (SymmetryIOInterop.Import(inputKey, inputKey.Length, inputKeyBuffer, inputKeyBuffer.Length) == 0)
                 Console.WriteLine("Generated Key from Input (256 bits): " + BitConverter.ToString(inputKeyBuffer).Replace("-", ""));
-            if (AsymmetricIOInterop.Import(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
+            if (SymmetryIOInterop.Import(inputIV, inputIV.Length, inputIVBuffer, inputIVBuffer.Length) == 0)
                 Console.WriteLine("Generated IV from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 

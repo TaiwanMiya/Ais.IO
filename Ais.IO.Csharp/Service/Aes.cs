@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public class Aes : Asymmetric
+    public class Aes : Symmetry
     {
         public Aes() { }
 

@@ -28,7 +28,7 @@ std::unordered_map<std::string, void*> WriteFunctions;
 std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
-std::unordered_map<std::string, void*> AsymmetricFunctions;
+std::unordered_map<std::string, void*> SymmetryFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
 std::unordered_map<std::string, void*> DesFunctions;
 std::unordered_map<std::string, void*> HashFunctions;
@@ -563,8 +563,8 @@ void LoadFunctions() {
     HashFunctions["-hash"] = GET_PROC_ADDRESS(Lib, "Hash");
     HashFunctions["-hash-length"] = GET_PROC_ADDRESS(Lib, "GetHashLength");
 
-    AsymmetricFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
-    AsymmetricFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
+    SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
+    SymmetryFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
 }
 
 int main(int argc, char* argv[]) {

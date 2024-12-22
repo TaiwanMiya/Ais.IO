@@ -23,7 +23,7 @@
 #include <ctime>
 #include <algorithm>
 #include <string>
-#include "AsymmetricIO.h"
+#include "SymmetryIO.h"
 
 enum SALT_SEQUENCE {
 	SALT_NULL	= 0,

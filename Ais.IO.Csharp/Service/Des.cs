@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public class Des : Asymmetric
+    public class Des : Symmetry
     {
         public Des() { }
 

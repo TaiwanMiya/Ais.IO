@@ -643,7 +643,7 @@ typedef int (*Base85Encode)(const unsigned char*, const size_t, char*, const siz
 typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const size_t);
 #pragma endregion
 
-#pragma region AsymmetricIO
+#pragma region SymmetryIO
 typedef int (*Generate)(unsigned char*, size_t);
 typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
 #pragma endregion
@@ -695,7 +695,7 @@ extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
-extern std::unordered_map<std::string, void*> AsymmetricFunctions;
+extern std::unordered_map<std::string, void*> SymmetryFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
 extern std::unordered_map<std::string, void*> DesFunctions;
 extern std::unordered_map<std::string, void*> HashFunctions;

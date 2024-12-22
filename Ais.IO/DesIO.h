@@ -23,7 +23,7 @@
 #include <ctime>
 #include <algorithm>
 #include <string>
-#include "AsymmetricIO.h"
+#include "SymmetryIO.h"
 
 struct DES_CBC_ENCRYPT {
     const unsigned char* KEY;
