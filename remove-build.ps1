@@ -9,6 +9,8 @@ $directoriesToDelete = @(
     "Ais.IO\Release",
     "Ais.IO.Command\Debug",
     "Ais.IO.Command\Release",
+    "Ais.IO.Debug\x64",
+    "Ais.IO.Debug\x86",
     "Ais.IO.Csharp\obj",
     "Ais.IO.Csharp.Command\obj",
     "Sample\Python\__pycache__"
