@@ -33,20 +33,20 @@
 struct RSA_PARAMETERS {
     const size_t KEY_SIZE;
     unsigned char* MODULUS;
-    size_t MODULUS_LENGTH;
     unsigned char* PUBLIC_EXPONENT;
-    size_t PUBLIC_EXPONENT_LENGTH;
     unsigned char* PRIVATE_EXPONENT;
-    size_t PRIVATE_EXPONENT_LENGTH;
     unsigned char* FACTOR1;
-    size_t FACTOR1_LENGTH;
     unsigned char* FACTOR2;
-    size_t FACTOR2_LENGTH;
     unsigned char* EXPONENT1;
-    size_t EXPONENT1_LENGTH;
     unsigned char* EXPONENT2;
-    size_t EXPONENT2_LENGTH;
     unsigned char* COEFFICIENT;
+    size_t MODULUS_LENGTH;
+    size_t PUBLIC_EXPONENT_LENGTH;
+    size_t PRIVATE_EXPONENT_LENGTH;
+    size_t FACTOR1_LENGTH;
+    size_t FACTOR2_LENGTH;
+    size_t EXPONENT1_LENGTH;
+    size_t EXPONENT2_LENGTH;
     size_t COEFFICIENT_LENGTH;
 };
 
@@ -59,5 +59,6 @@ struct RSA_KEY_PAIR {
     size_t PRIVATE_KEY_LENGTH;
 };
 
+EXT RSAIO_API int GetRsaParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int GenerateRsaParameters(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGenerate(RSA_KEY_PAIR* generate);

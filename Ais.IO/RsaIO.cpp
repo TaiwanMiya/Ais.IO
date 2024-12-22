@@ -1,19 +1,31 @@
 ﻿#include "pch.h"
 #include "RsaIO.h"
 
+#define DIV_ROUND_UP(x, y) (((x) + (y) - 1) / (y))
+
+int GetRsaParametersLength(RSA_PARAMETERS* params) {
+    params->MODULUS_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 8);
+    params->PUBLIC_EXPONENT_LENGTH = 3;
+    params->PRIVATE_EXPONENT_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 8);
+    params->FACTOR1_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 16);
+    params->FACTOR2_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 16);
+    params->EXPONENT1_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 16);
+    params->EXPONENT2_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 16);
+    params->COEFFICIENT_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 16);
+    return 0;
+}
+
 int GenerateRsaParameters(RSA_PARAMETERS* params) {
     ERR_clear_error();
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_SIZE);
-
     if (!pkey)
         return handleErrors_asymmetric("RSA key generate Pair failed.", NULL);
 
-    RAND_poll();
     BIGNUM* bn = NULL;
 
     // 提取 Modulus (n)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, &bn))
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL, NULL, pkey);
     params->MODULUS_LENGTH = BN_num_bytes(bn);
     params->MODULUS = new unsigned char[params->MODULUS_LENGTH];
@@ -22,7 +34,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Public Exponent (e)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, &bn))
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL, NULL, pkey);
     params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(bn);
     params->PUBLIC_EXPONENT = new unsigned char[params->PUBLIC_EXPONENT_LENGTH];
@@ -31,7 +43,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Private Exponent (d)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_D, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_D, &bn))
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL, NULL, pkey);
     params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(bn);
     params->PRIVATE_EXPONENT = new unsigned char[params->PRIVATE_EXPONENT_LENGTH];
@@ -40,7 +52,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Factor1 (p)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR1, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR1, &bn))
         return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL, NULL, pkey);
     params->FACTOR1_LENGTH = BN_num_bytes(bn);
     params->FACTOR1 = new unsigned char[params->FACTOR1_LENGTH];
@@ -49,7 +61,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Factor2 (q)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR2, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR2, &bn))
         return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL, NULL, pkey);
     params->FACTOR2_LENGTH = BN_num_bytes(bn);
     params->FACTOR2 = new unsigned char[params->FACTOR2_LENGTH];
@@ -58,7 +70,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Exponent1 (dmp1)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1, &bn))
         return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL, NULL, pkey);
     params->EXPONENT1_LENGTH = BN_num_bytes(bn);
     params->EXPONENT1 = new unsigned char[params->EXPONENT1_LENGTH];
@@ -67,7 +79,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Exponent2 (dmq1)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2, &bn))
         return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL, NULL, pkey);
     params->EXPONENT2_LENGTH = BN_num_bytes(bn);
     params->EXPONENT2 = new unsigned char[params->EXPONENT2_LENGTH];
@@ -76,7 +88,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
 
     // 提取 Coefficient (iqmp)
     bn = BN_new();
-    if (EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, &bn) <= 0)
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, &bn))
         return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL, NULL, pkey);
     params->COEFFICIENT_LENGTH = BN_num_bytes(bn);
     params->COEFFICIENT = new unsigned char[params->COEFFICIENT_LENGTH];
@@ -111,16 +123,6 @@ int RsaGenerate(RSA_KEY_PAIR* generate) {
     RAND_poll();
     BIO* pub_bio = BIO_new(BIO_s_mem());
     BIO* priv_bio = BIO_new(BIO_s_mem());
-    
-    /*EVP_PKEY_print_public(pub_bio, pkey, 4, nullptr);
-    EVP_PKEY_print_private(priv_bio, pkey, 4, nullptr);*/
-
-    /*std::string pubkeyStr(2056, 0);
-    std::cout << "pub_bio num bytes read: " << BIO_read(pub_bio, pubkeyStr.data(), pubkeyStr.size()) << std::endl;
-    std::cout << "pub_bio keyStr: " << pubkeyStr << std::endl;
-    std::string privkeyStr(2056, 0);
-    std::cout << "priv_bio num bytes read: " << BIO_read(pub_bio, privkeyStr.data(), privkeyStr.size()) << std::endl;
-    std::cout << "priv_bio keyStr: " << privkeyStr << std::endl;*/
 
     switch (generate->FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
