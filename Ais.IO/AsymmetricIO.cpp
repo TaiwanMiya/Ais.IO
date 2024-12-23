@@ -18,3 +18,16 @@ int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* 
         EVP_PKEY_free(pkey);
     return -1;
 }
+
+int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* pkey, EVP_PKEY* pkey2) {
+    std::cerr << "ERROR: " << message << std::endl;
+    if (pub != NULL)
+        BIO_free(pub);
+    if (priv != NULL)
+        BIO_free(priv);
+    if (pkey != NULL)
+        EVP_PKEY_free(pkey);
+    if (pkey2 != NULL)
+        EVP_PKEY_free(pkey2);
+    return -1;
+}

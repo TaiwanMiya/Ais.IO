@@ -28,3 +28,4 @@ enum ASYMMETRIC_KEY_FORMAT {
 
 int handleErrors_asymmetric(std::string message, EVP_PKEY_CTX* ctx);
 int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* pkey);
+int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* pkey, EVP_PKEY* pkey2);
