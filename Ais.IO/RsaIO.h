@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS
@@ -116,5 +116,7 @@ struct EXPORT_RSA_PARAMTERS {
 EXT RSAIO_API int GetRsaParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int GenerateRsaParameters(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGenerate(RSA_KEY_PAIR* generate);
+// 從金鑰導出參數
 EXT RSAIO_API int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params);
+// 從參數導出金鑰
 EXT RSAIO_API int ExportRsaKeysFromParameters(EXPORT_RSA_PARAMTERS* params);

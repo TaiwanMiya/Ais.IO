@@ -180,122 +180,142 @@ int RsaGenerate(RSA_KEY_PAIR* generate) {
 
 int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
     ERR_clear_error();
+
     BIO* pub_bio = BIO_new_mem_buf(params->PUBLIC_KEY, static_cast<int>(params->PUBLIC_KEY_LENGTH));
     BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
     if (!pub_bio || !priv_bio)
-        return handleErrors_asymmetric("Failed to create BIOs for key data.", NULL);
+    return handleErrors_asymmetric("Failed to create BIOs for key data.", NULL);
 
     EVP_PKEY* pub_pkey = nullptr;
     EVP_PKEY* priv_pkey = nullptr;
 
-    switch (params->FORMAT)
-    {
+    switch (params->FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
         pub_pkey = PEM_read_bio_PUBKEY(pub_bio, NULL, NULL, NULL);
-        if (!pub_pkey)
-            return handleErrors_asymmetric("Failed to read PEM public key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
         priv_pkey = PEM_read_bio_PrivateKey(priv_bio, NULL, NULL, NULL);
-        if (!priv_pkey)
-            return handleErrors_asymmetric("Failed to read PEM private key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
         pub_pkey = d2i_PUBKEY_bio(pub_bio, NULL);
-        if (!pub_pkey)
-            return handleErrors_asymmetric("Failed to read DER private key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
         priv_pkey = d2i_PrivateKey_bio(priv_bio, NULL);
-        if (!priv_pkey)
-            return handleErrors_asymmetric("Failed to read DER private key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
         break;
-    default:return handleErrors_asymmetric("Invalid RSA key format.", pub_bio, priv_bio, pub_pkey, priv_pkey);
+    default:
+        return handleErrors_asymmetric("Invalid RSA key format.", pub_bio, priv_bio, pub_pkey, priv_pkey);
     }
 
     if (!pub_pkey || !priv_pkey)
-        return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
+    return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pub_pkey, priv_pkey);
+
     BIO_free(pub_bio);
     BIO_free(priv_bio);
 
-    BIGNUM* bn = NULL;
+    BIGNUM* n = NULL;
+    BIGNUM* e = NULL;
+    BIGNUM* d = NULL;
+    BIGNUM* p = NULL;
+    BIGNUM* q = NULL;
+    BIGNUM* dmp1 = NULL;
+    BIGNUM* dmq1 = NULL;
+    BIGNUM* iqmp = NULL;
+    BIGNUM* bits = NULL;
 
     // 提取 Modulus (n)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(pub_pkey, OSSL_PKEY_PARAM_RSA_N, &bn))
+    if (1 == EVP_PKEY_get_bn_param(pub_pkey, OSSL_PKEY_PARAM_RSA_N, &n)) {
+        params->MODULUS_LENGTH = BN_num_bytes(n);
+        params->MODULUS = new unsigned char[params->MODULUS_LENGTH];
+        BN_bn2bin(n, params->MODULUS);
+        BN_free(n);
+    }
+    else {
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->MODULUS_LENGTH = BN_num_bytes(bn);
-    params->MODULUS = new unsigned char[params->MODULUS_LENGTH];
-    BN_bn2bin(bn, params->MODULUS);
-    BN_free(bn);
+    }
 
     // 提取 Public Exponent (e)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(pub_pkey, OSSL_PKEY_PARAM_RSA_E, &bn))
+    if (1 == EVP_PKEY_get_bn_param(pub_pkey, OSSL_PKEY_PARAM_RSA_E, &e)) {
+        params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(e);
+        params->PUBLIC_EXPONENT = new unsigned char[params->PUBLIC_EXPONENT_LENGTH];
+        BN_bn2bin(e, params->PUBLIC_EXPONENT);
+        BN_free(e);
+    }
+    else {
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(bn);
-    params->PUBLIC_EXPONENT = new unsigned char[params->PUBLIC_EXPONENT_LENGTH];
-    BN_bn2bin(bn, params->PUBLIC_EXPONENT);
-    BN_free(bn);
+    }
 
     // 提取 Private Exponent (d)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_D, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_D, &d)) {
+        params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(d);
+        params->PRIVATE_EXPONENT = new unsigned char[params->PRIVATE_EXPONENT_LENGTH];
+        BN_bn2bin(d, params->PRIVATE_EXPONENT);
+        BN_free(d);
+    }
+    else {
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(bn);
-    params->PRIVATE_EXPONENT = new unsigned char[params->PRIVATE_EXPONENT_LENGTH];
-    BN_bn2bin(bn, params->PRIVATE_EXPONENT);
-    BN_free(bn);
+    }
 
     // 提取 Factor1 (p)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_FACTOR1, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_FACTOR1, &p)) {
+        params->FACTOR1_LENGTH = BN_num_bytes(p);
+        params->FACTOR1 = new unsigned char[params->FACTOR1_LENGTH];
+        BN_bn2bin(p, params->FACTOR1);
+        BN_free(p);
+    }
+    else {
         return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->FACTOR1_LENGTH = BN_num_bytes(bn);
-    params->FACTOR1 = new unsigned char[params->FACTOR1_LENGTH];
-    BN_bn2bin(bn, params->FACTOR1);
-    BN_free(bn);
+    }
 
     // 提取 Factor2 (q)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_FACTOR2, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_FACTOR2, &q)) {
+        params->FACTOR2_LENGTH = BN_num_bytes(q);
+        params->FACTOR2 = new unsigned char[params->FACTOR2_LENGTH];
+        BN_bn2bin(q, params->FACTOR2);
+        BN_free(q);
+    }
+    else {
         return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->FACTOR2_LENGTH = BN_num_bytes(bn);
-    params->FACTOR2 = new unsigned char[params->FACTOR2_LENGTH];
-    BN_bn2bin(bn, params->FACTOR2);
-    BN_free(bn);
+    }
 
     // 提取 Exponent1 (dmp1)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1, &dmp1)) {
+        params->EXPONENT1_LENGTH = BN_num_bytes(dmp1);
+        params->EXPONENT1 = new unsigned char[params->EXPONENT1_LENGTH];
+        BN_bn2bin(dmp1, params->EXPONENT1);
+        BN_free(dmp1);
+    }
+    else {
         return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->EXPONENT1_LENGTH = BN_num_bytes(bn);
-    params->EXPONENT1 = new unsigned char[params->EXPONENT1_LENGTH];
-    BN_bn2bin(bn, params->EXPONENT1);
-    BN_free(bn);
+    }
 
     // 提取 Exponent2 (dmq1)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2, &dmq1)) {
+        params->EXPONENT2_LENGTH = BN_num_bytes(dmq1);
+        params->EXPONENT2 = new unsigned char[params->EXPONENT2_LENGTH];
+        BN_bn2bin(dmq1, params->EXPONENT2);
+        BN_free(dmq1);
+    }
+    else {
         return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->EXPONENT2_LENGTH = BN_num_bytes(bn);
-    params->EXPONENT2 = new unsigned char[params->EXPONENT2_LENGTH];
-    BN_bn2bin(bn, params->EXPONENT2);
-    BN_free(bn);
+    }
 
     // 提取 Coefficient (iqmp)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, &iqmp)) {
+        params->COEFFICIENT_LENGTH = BN_num_bytes(iqmp);
+        params->COEFFICIENT = new unsigned char[params->COEFFICIENT_LENGTH];
+        BN_bn2bin(iqmp, params->COEFFICIENT);
+        BN_free(iqmp);
+    }
+    else {
         return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->COEFFICIENT_LENGTH = BN_num_bytes(bn);
-    params->COEFFICIENT = new unsigned char[params->COEFFICIENT_LENGTH];
-    BN_bn2bin(bn, params->COEFFICIENT);
-    BN_free(bn);
+    }
 
     // 提取 Bits (bits)
-    bn = NULL;
-    if (1 != EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_BITS, &bn))
+    if (1 == EVP_PKEY_get_bn_param(priv_pkey, OSSL_PKEY_PARAM_RSA_BITS, &bits)) {
+        params->BITS_LENGTH = BN_num_bytes(bits);
+        params->BITS = new unsigned char[params->BITS_LENGTH];
+        BN_bn2bin(bits, params->BITS);
+        BN_free(bits);
+    }
+    else {
         return handleErrors_asymmetric("Get Bits (bits) failed.", NULL, NULL, pub_pkey, priv_pkey);
-    params->BITS_LENGTH = BN_num_bytes(bn);
-    params->BITS = new unsigned char[params->BITS_LENGTH];
-    BN_bn2bin(bn, params->BITS);
-    BN_free(bn);
+    }
 
     EVP_PKEY_free(pub_pkey);
     EVP_PKEY_free(priv_pkey);
