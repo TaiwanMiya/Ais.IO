@@ -76,7 +76,7 @@ Store your binary content, which can be used as sensitive data, identification n
 ### *Binary Instruction Usage*
 
 #### *shell*
-```shell
+```bash
 # Example Binary File Instructions
 file="test.bin"
 
@@ -152,7 +152,7 @@ Base text encoding involves converting binary data into textual representations.
 ### *Base Instruction Usage*
 
 #### *shell*
-```shell
+```bash
 # Base16 Encode
 ./aisio --base16 -encode "This is Base16 Encode/Decode."
 
@@ -231,7 +231,7 @@ AES (Advanced Encryption Standard) supports multiple encryption modes for secure
 ### *Aes Instruction Usage*
 
 #### *shell*
-```shell
+```bash
 # Example Aes Instructions
 # Aes Settings...
 AES_KEY="Key length must be 128, 192, 256"
@@ -328,7 +328,7 @@ DES (Data Encryption Standard) is used for secure communication in legacy system
 ### *Aes Instruction Usage*
 
 #### *shell*
-```shell
+```bash
 # Example Des Instructions
 # Des Settings...
 DES_KEY="Key Must Be 128,192 Size"
@@ -439,7 +439,7 @@ Hash functions provide data integrity by generating fixed-length digests.
 ### *Hash Instruction Usage*
 
 #### *shell*
-```shell
+```bash
 BASE="-base16"
 
 # HASH MD5

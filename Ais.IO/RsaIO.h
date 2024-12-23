@@ -61,4 +61,5 @@ struct RSA_KEY_PAIR {
 
 EXT RSAIO_API int GetRsaParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int GenerateRsaParameters(RSA_PARAMETERS* params);
+EXT RSAIO_API int ImportRsaParameters(RSA_PARAMETERS* params, const unsigned char* key, size_t key_length, ASYMMETRIC_KEY_FORMAT format);
 EXT RSAIO_API int RsaGenerate(RSA_KEY_PAIR* generate);

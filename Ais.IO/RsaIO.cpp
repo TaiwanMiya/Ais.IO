@@ -98,6 +98,111 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
     return 0;
 }
 
+int ImportRsaParameters(RSA_PARAMETERS* params, const unsigned char* key, size_t key_length, ASYMMETRIC_KEY_FORMAT format) {
+    ERR_clear_error();
+    BIO* bio = BIO_new_mem_buf(key, (int)key_length);
+    if (!bio) {
+        return handleErrors_asymmetric("Failed to create BIO for key import.", NULL);
+    }
+
+    EVP_PKEY* pkey = nullptr;
+
+    switch (format)
+    {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        pkey = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
+        if (!pkey)
+            return handleErrors_asymmetric("Failed to read PEM private key.", NULL, bio, pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        pkey = d2i_PrivateKey_bio(bio, NULL);
+        if (!pkey)
+            return handleErrors_asymmetric("Failed to read DER private key.", NULL, bio, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid RSA key format.", NULL, bio, pkey);
+    }
+
+    BIO_free(bio);
+
+    BIGNUM* bn = NULL;
+
+    // 提取 Modulus (n)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, &bn))
+        return handleErrors_asymmetric("Get Modulus (n) failed.", NULL, NULL, pkey);
+    params->MODULUS_LENGTH = BN_num_bytes(bn);
+    params->MODULUS = new unsigned char[params->MODULUS_LENGTH];
+    BN_bn2bin(bn, params->MODULUS);
+    BN_free(bn);
+
+    // 提取 Public Exponent (e)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, &bn))
+        return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL, NULL, pkey);
+    params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(bn);
+    params->PUBLIC_EXPONENT = new unsigned char[params->PUBLIC_EXPONENT_LENGTH];
+    BN_bn2bin(bn, params->PUBLIC_EXPONENT);
+    BN_free(bn);
+
+    // 提取 Private Exponent (d)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_D, &bn))
+        return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL, NULL, pkey);
+    params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(bn);
+    params->PRIVATE_EXPONENT = new unsigned char[params->PRIVATE_EXPONENT_LENGTH];
+    BN_bn2bin(bn, params->PRIVATE_EXPONENT);
+    BN_free(bn);
+
+    // 提取 Factor1 (p)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR1, &bn))
+        return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL, NULL, pkey);
+    params->FACTOR1_LENGTH = BN_num_bytes(bn);
+    params->FACTOR1 = new unsigned char[params->FACTOR1_LENGTH];
+    BN_bn2bin(bn, params->FACTOR1);
+    BN_free(bn);
+
+    // 提取 Factor2 (q)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR2, &bn))
+        return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL, NULL, pkey);
+    params->FACTOR2_LENGTH = BN_num_bytes(bn);
+    params->FACTOR2 = new unsigned char[params->FACTOR2_LENGTH];
+    BN_bn2bin(bn, params->FACTOR2);
+    BN_free(bn);
+
+    // 提取 Exponent1 (dmp1)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1, &bn))
+        return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL, NULL, pkey);
+    params->EXPONENT1_LENGTH = BN_num_bytes(bn);
+    params->EXPONENT1 = new unsigned char[params->EXPONENT1_LENGTH];
+    BN_bn2bin(bn, params->EXPONENT1);
+    BN_free(bn);
+
+    // 提取 Exponent2 (dmq1)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2, &bn))
+        return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL, NULL, pkey);
+    params->EXPONENT2_LENGTH = BN_num_bytes(bn);
+    params->EXPONENT2 = new unsigned char[params->EXPONENT2_LENGTH];
+    BN_bn2bin(bn, params->EXPONENT2);
+    BN_free(bn);
+
+    // 提取 Coefficient (iqmp)
+    bn = BN_new();
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, &bn))
+        return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL, NULL, pkey);
+    params->COEFFICIENT_LENGTH = BN_num_bytes(bn);
+    params->COEFFICIENT = new unsigned char[params->COEFFICIENT_LENGTH];
+    BN_bn2bin(bn, params->COEFFICIENT);
+    BN_free(bn);
+
+    EVP_PKEY_free(pkey);
+
+    return 0;
+}
+
 int RsaGenerate(RSA_KEY_PAIR* generate) {
     ERR_clear_error();
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
