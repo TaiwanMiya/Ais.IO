@@ -40,7 +40,6 @@ struct RSA_PARAMETERS {
     unsigned char* EXPONENT1;
     unsigned char* EXPONENT2;
     unsigned char* COEFFICIENT;
-    unsigned char* BITS;
     size_t MODULUS_LENGTH;
     size_t PUBLIC_EXPONENT_LENGTH;
     size_t PRIVATE_EXPONENT_LENGTH;
@@ -49,7 +48,6 @@ struct RSA_PARAMETERS {
     size_t EXPONENT1_LENGTH;
     size_t EXPONENT2_LENGTH;
     size_t COEFFICIENT_LENGTH;
-    size_t BITS_LENGTH;
 };
 
 struct RSA_KEY_PAIR {
@@ -70,7 +68,6 @@ struct IMPORT_RSA_PARAMTERS {
     unsigned char* EXPONENT1;
     unsigned char* EXPONENT2;
     unsigned char* COEFFICIENT;
-    unsigned char* BITS;
     size_t MODULUS_LENGTH;
     size_t PUBLIC_EXPONENT_LENGTH;
     size_t PRIVATE_EXPONENT_LENGTH;
@@ -79,7 +76,6 @@ struct IMPORT_RSA_PARAMTERS {
     size_t EXPONENT1_LENGTH;
     size_t EXPONENT2_LENGTH;
     size_t COEFFICIENT_LENGTH;
-    size_t BITS_LENGTH;
     const ASYMMETRIC_KEY_FORMAT FORMAT;
     const unsigned char* PUBLIC_KEY;
     const unsigned char* PRIVATE_KEY;
@@ -96,7 +92,6 @@ struct EXPORT_RSA_PARAMTERS {
     unsigned char* EXPONENT1;
     unsigned char* EXPONENT2;
     unsigned char* COEFFICIENT;
-    unsigned char* BITS;
     const size_t MODULUS_LENGTH;
     const size_t PUBLIC_EXPONENT_LENGTH;
     const size_t PRIVATE_EXPONENT_LENGTH;
@@ -105,7 +100,6 @@ struct EXPORT_RSA_PARAMTERS {
     const size_t EXPONENT1_LENGTH;
     const size_t EXPONENT2_LENGTH;
     const size_t COEFFICIENT_LENGTH;
-    const size_t BITS_LENGTH;
     const ASYMMETRIC_KEY_FORMAT FORMAT;
     unsigned char* PUBLIC_KEY;
     unsigned char* PRIVATE_KEY;
