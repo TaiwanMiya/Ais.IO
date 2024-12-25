@@ -59,7 +59,7 @@ struct RSA_KEY_PAIR {
     size_t PRIVATE_KEY_LENGTH;
 };
 
-struct IMPORT_RSA_PARAMTERS {
+struct EXPORT_RSA_PARAMTERS {
     unsigned char* MODULUS;
     unsigned char* PUBLIC_EXPONENT;
     unsigned char* PRIVATE_EXPONENT;
@@ -83,7 +83,7 @@ struct IMPORT_RSA_PARAMTERS {
     const size_t PRIVATE_KEY_LENGTH;
 };
 
-struct EXPORT_RSA_PARAMTERS {
+struct EXPORT_RSA_KEY {
     unsigned char* MODULUS;
     unsigned char* PUBLIC_EXPONENT;
     unsigned char* PRIVATE_EXPONENT;
@@ -109,8 +109,8 @@ struct EXPORT_RSA_PARAMTERS {
 
 EXT RSAIO_API int GetRsaParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int GenerateRsaParameters(RSA_PARAMETERS* params);
-EXT RSAIO_API int RsaGenerate(RSA_KEY_PAIR* generate);
+EXT RSAIO_API int GenerateRsaKeys(RSA_KEY_PAIR* generate);
 // 從金鑰導出參數
-EXT RSAIO_API int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params);
+EXT RSAIO_API int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params);
 // 從參數導出金鑰
-EXT RSAIO_API int ExportRsaKeysFromParameters(EXPORT_RSA_PARAMTERS* params);
+EXT RSAIO_API int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params);

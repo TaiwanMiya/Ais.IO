@@ -49,9 +49,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(n, params->MODULUS);
         BN_free(n);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL);
-    }
 
     if (param_e && OSSL_PARAM_get_BN(param_e, &e)) {
         params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(e);
@@ -59,9 +58,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(e, params->PUBLIC_EXPONENT);
         BN_free(e);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL);
-    }
 
     if (param_d && OSSL_PARAM_get_BN(param_d, &d)) {
         params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(d);
@@ -69,9 +67,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(d, params->PRIVATE_EXPONENT);
         BN_free(d);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL);
-    }
 
     if (param_p && OSSL_PARAM_get_BN(param_p, &p)) {
         params->FACTOR1_LENGTH = BN_num_bytes(p);
@@ -79,9 +76,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(p, params->FACTOR1);
         BN_free(p);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL);
-    }
 
     if (param_q && OSSL_PARAM_get_BN(param_q, &q)) {
         params->FACTOR2_LENGTH = BN_num_bytes(q);
@@ -89,9 +85,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(q, params->FACTOR2);
         BN_free(q);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL);
-    }
 
     if (param_dmp1 && OSSL_PARAM_get_BN(param_dmp1, &dmp1)) {
         params->EXPONENT1_LENGTH = BN_num_bytes(dmp1);
@@ -99,9 +94,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(dmp1, params->EXPONENT1);
         BN_free(dmp1);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL);
-    }
 
     if (param_dmq1 && OSSL_PARAM_get_BN(param_dmq1, &dmq1)) {
         params->EXPONENT2_LENGTH = BN_num_bytes(dmq1);
@@ -109,9 +103,8 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(dmq1, params->EXPONENT2);
         BN_free(dmq1);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL);
-    }
 
     if (param_iqmp && OSSL_PARAM_get_BN(param_iqmp, &iqmp)) {
         params->COEFFICIENT_LENGTH = BN_num_bytes(iqmp);
@@ -119,16 +112,17 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
         BN_bn2bin(iqmp, params->COEFFICIENT);
         BN_free(iqmp);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL);
-    };
 
     EVP_PKEY_free(pkey);
     return 0;
 }
 
-int RsaGenerate(RSA_KEY_PAIR* generate) {
+int GenerateRsaKeys(RSA_KEY_PAIR* generate) {
     ERR_clear_error();
+    RAND_poll();
+
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     if (!ctx)
         return handleErrors_asymmetric("An error occurred during ctx generation.", ctx);
@@ -197,13 +191,14 @@ int RsaGenerate(RSA_KEY_PAIR* generate) {
     return 0;
 }
 
-int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
+int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
     ERR_clear_error();
+    RAND_poll();
 
     BIO* pub_bio = BIO_new_mem_buf(params->PUBLIC_KEY, static_cast<int>(params->PUBLIC_KEY_LENGTH));
     BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
     if (!pub_bio || !priv_bio)
-    return handleErrors_asymmetric("Failed to create BIOs for key data.", NULL);
+        return handleErrors_asymmetric("Failed to create BIOs for key data.", NULL);
 
     EVP_PKEY* pkey = nullptr;
 
@@ -221,7 +216,7 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
     }
 
     if (!pkey)
-    return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pkey);
+        return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pkey);
 
     BIO_free(pub_bio);
     BIO_free(priv_bio);
@@ -230,7 +225,7 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
     if (1 != EVP_PKEY_todata(pkey, EVP_PKEY_KEYPAIR, &paramters))
         return handleErrors_asymmetric("Get Pkey to data failed.", pub_bio, priv_bio, pkey);
 
-    OSSL_PARAM *param_n = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_N);
+    OSSL_PARAM* param_n = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_N);
     OSSL_PARAM* param_e = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_E);
     OSSL_PARAM* param_d = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_D);
     OSSL_PARAM* param_p = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_FACTOR1);
@@ -254,9 +249,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(n, params->MODULUS);
         BN_free(n);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL);
-    }
 
     if (param_e && OSSL_PARAM_get_BN(param_e, &e)) {
         params->PUBLIC_EXPONENT_LENGTH = BN_num_bytes(e);
@@ -264,9 +258,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(e, params->PUBLIC_EXPONENT);
         BN_free(e);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL);
-    }
 
     if (param_d && OSSL_PARAM_get_BN(param_d, &d)) {
         params->PRIVATE_EXPONENT_LENGTH = BN_num_bytes(d);
@@ -274,9 +267,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(d, params->PRIVATE_EXPONENT);
         BN_free(d);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL);
-    }
 
     if (param_p && OSSL_PARAM_get_BN(param_p, &p)) {
         params->FACTOR1_LENGTH = BN_num_bytes(p);
@@ -284,9 +276,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(p, params->FACTOR1);
         BN_free(p);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL);
-    }
 
     if (param_q && OSSL_PARAM_get_BN(param_q, &q)) {
         params->FACTOR2_LENGTH = BN_num_bytes(q);
@@ -294,9 +285,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(q, params->FACTOR2);
         BN_free(q);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL);
-    }
 
     if (param_dmp1 && OSSL_PARAM_get_BN(param_dmp1, &dmp1)) {
         params->EXPONENT1_LENGTH = BN_num_bytes(dmp1);
@@ -304,9 +294,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(dmp1, params->EXPONENT1);
         BN_free(dmp1);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL);
-    }
 
     if (param_dmq1 && OSSL_PARAM_get_BN(param_dmq1, &dmq1)) {
         params->EXPONENT2_LENGTH = BN_num_bytes(dmq1);
@@ -314,9 +303,8 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(dmq1, params->EXPONENT2);
         BN_free(dmq1);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL);
-    }
 
     if (param_iqmp && OSSL_PARAM_get_BN(param_iqmp, &iqmp)) {
         params->COEFFICIENT_LENGTH = BN_num_bytes(iqmp);
@@ -324,18 +312,17 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
         BN_bn2bin(iqmp, params->COEFFICIENT);
         BN_free(iqmp);
     }
-    else {
+    else
         return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL);
-    }
 
     EVP_PKEY_free(pkey);
 
     return 0;
 }
 
-int ExportRsaKeysFromParameters(EXPORT_RSA_PARAMTERS* params) {
+int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
     ERR_clear_error();
-    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     if (!ctx)
         return handleErrors_asymmetric("Failed to create EVP_PKEY context.", ctx);
 
