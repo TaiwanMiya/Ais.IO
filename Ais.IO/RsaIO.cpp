@@ -239,14 +239,14 @@ int ImportRsaParametersFromKeys(IMPORT_RSA_PARAMTERS* params) {
     OSSL_PARAM* param_dmq1 = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_EXPONENT2);
     OSSL_PARAM* param_iqmp = OSSL_PARAM_locate(paramters, OSSL_PKEY_PARAM_RSA_COEFFICIENT1);
 
-    BIGNUM* n = BN_new();
-    BIGNUM* e = BN_new();
-    BIGNUM* d = BN_new();
-    BIGNUM* p = BN_new();
-    BIGNUM* q = BN_new();
-    BIGNUM* dmp1 = BN_new();
-    BIGNUM* dmq1 = BN_new();
-    BIGNUM* iqmp = BN_new();
+    BIGNUM* n = NULL;
+    BIGNUM* e = NULL;
+    BIGNUM* d = NULL;
+    BIGNUM* p = NULL;
+    BIGNUM* q = NULL;
+    BIGNUM* dmp1 = NULL;
+    BIGNUM* dmq1 = NULL;
+    BIGNUM* iqmp = NULL;
 
     if (param_n && OSSL_PARAM_get_BN(param_n, &n)) {
         params->MODULUS_LENGTH = BN_num_bytes(n);
@@ -344,7 +344,6 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_PARAMTERS* params) {
         EVP_PKEY_CTX_free(ctx);
         return handleErrors_asymmetric("Failed to initialize fromdata.", NULL, NULL, pkey);
     }
-
     OSSL_PARAM paramters[] = {
         OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, params->MODULUS, params->MODULUS_LENGTH),
         OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH),
