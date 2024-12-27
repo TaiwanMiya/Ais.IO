@@ -331,7 +331,33 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
         EVP_PKEY_CTX_free(ctx);
         return handleErrors_asymmetric("Failed to initialize fromdata.", NULL, NULL, pkey);
     }
-    OSSL_PARAM paramters[] = {
+
+    OSSL_PARAM param_n = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, params->MODULUS, params->MODULUS_LENGTH);
+    OSSL_PARAM param_e = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH);
+    OSSL_PARAM param_d = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH);
+    OSSL_PARAM param_p = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR1, params->FACTOR1, params->FACTOR1_LENGTH);
+    OSSL_PARAM param_q = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR2, params->FACTOR2, params->FACTOR2_LENGTH);
+    OSSL_PARAM param_dmp1 = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, params->EXPONENT1, params->EXPONENT1_LENGTH);
+    OSSL_PARAM param_dmq1 = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT2, params->EXPONENT2, params->EXPONENT2_LENGTH);
+    OSSL_PARAM param_iqmp = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_COEFFICIENT1, params->COEFFICIENT, params->COEFFICIENT_LENGTH);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_n) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA n param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_e) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA e param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_d) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA d param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_p) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA p param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_q) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA q param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_dmp1) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA dmp1 param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_dmq1) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA dmq1 param.", ctx, NULL, NULL, pkey, NULL);
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_iqmp) <= 0)
+        return handleErrors_asymmetric("Failed to generate RSA iqmp param.", ctx, NULL, NULL, pkey, NULL);
+
+    /*OSSL_PARAM paramters[] = {
         OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, params->MODULUS, params->MODULUS_LENGTH),
         OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH),
         OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH),
@@ -346,7 +372,7 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
     if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, paramters) <= 0) {
         EVP_PKEY_CTX_free(ctx);
         return handleErrors_asymmetric("Failed to generate RSA key.", NULL, NULL, pkey);
-    }
+    }*/
 
     BIO* pub_bio = BIO_new(BIO_s_mem());
     BIO* priv_bio = BIO_new(BIO_s_mem());

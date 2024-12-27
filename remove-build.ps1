@@ -3,6 +3,7 @@ $rootPath = Get-Location
 $directoriesToDelete = @(
     ".vs",
     ".github",
+    ".vscode",
     "bin",
     "packages",
     "Ais.IO\Debug",

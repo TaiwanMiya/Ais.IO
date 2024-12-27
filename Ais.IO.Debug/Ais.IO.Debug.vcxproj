@@ -72,9 +72,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
+    <IncludePath>include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\x64\$(Configuration)\</OutDir>
+    <IncludePath>include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -86,6 +94,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -102,6 +111,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -114,6 +124,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,6 +143,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>lib\VC\x64\MD\capi.lib;lib\VC\x64\MD\dasync.lib;lib\VC\x64\MD\ec_internal_test.lib;lib\VC\x64\MD\evp_extra_test2.lib;lib\VC\x64\MD\legacy.lib;lib\VC\x64\MD\libapps.lib;lib\VC\x64\MD\libcommon.lib;lib\VC\x64\MD\libcrypto.lib;lib\VC\x64\MD\libcrypto_static.lib;lib\VC\x64\MD\libdefault.lib;lib\VC\x64\MD\liblegacy.lib;lib\VC\x64\MD\libssl.lib;lib\VC\x64\MD\libssl_static.lib;lib\VC\x64\MD\libtestutil.lib;lib\VC\x64\MD\loader_attic.lib;lib\VC\x64\MD\openssl.lib;lib\VC\x64\MD\ossltest.lib;lib\VC\x64\MD\padlock.lib;lib\VC\x64\MD\p_minimal.lib;lib\VC\x64\MD\p_test.lib;lib\VC\x64\MDd\libcrypto.lib;lib\VC\x64\MDd\libcrypto_static.lib;lib\VC\x64\MDd\libssl.lib;lib\VC\x64\MDd\libssl_static.lib;lib\VC\x64\MT\libcrypto.lib;lib\VC\x64\MT\libcrypto_static.lib;lib\VC\x64\MT\libssl.lib;lib\VC\x64\MT\libssl_static.lib;lib\VC\x64\MTd\libcrypto.lib;lib\VC\x64\MTd\libcrypto_static.lib;lib\VC\x64\MTd\libssl.lib;lib\VC\x64\MTd\libssl_static.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

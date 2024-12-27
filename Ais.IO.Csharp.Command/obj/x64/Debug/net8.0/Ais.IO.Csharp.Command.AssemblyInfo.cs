@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ais.IO.Csharp.Command")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.8.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.8+f71a571becbaf745a5772e07409ec1262605affa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.8+8b273414662f1af9899390045d20ab0489c8b447")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ais.IO.Csharp.Command")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ais.IO.Csharp.Command")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.8.0")]
