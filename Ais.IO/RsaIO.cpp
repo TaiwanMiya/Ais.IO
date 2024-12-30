@@ -3,6 +3,25 @@
 
 #define DIV_ROUND_UP(x, y) (((x) + (y) - 1) / (y))
 
+bool needs_padding(const unsigned char* data, size_t length) {
+    if (length == 0) return false; // 沒有數據，不需要填充
+    return (data[0] & 0x80) != 0; // 如果最高位是 1，則需要填充
+}
+
+unsigned char* add_padding_if_needed(const unsigned char* data, size_t& length) {
+    if (!needs_padding(data, length)) {
+        unsigned char* result = new unsigned char[length];
+        memcpy(result, data, length);
+        return result; // 不需要填充，直接返回
+    }
+
+    length = length + 1; // 長度加 1
+    unsigned char* result = new unsigned char[length];
+    result[0] = 0x00; // 添加 0x00 到高位
+    memcpy(result + 1, data, length);
+    return result;
+}
+
 int GetRsaParametersLength(RSA_PARAMETERS* params) {
     params->MODULUS_LENGTH = DIV_ROUND_UP(params->KEY_SIZE, 8);
     params->PUBLIC_EXPONENT_LENGTH = 3;
@@ -248,6 +267,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->MODULUS = new unsigned char[params->MODULUS_LENGTH];
         BN_bn2bin(n, params->MODULUS);
         BN_free(n);
+        params->MODULUS = add_padding_if_needed(params->MODULUS, params->MODULUS_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL);
@@ -257,6 +277,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->PUBLIC_EXPONENT = new unsigned char[params->PUBLIC_EXPONENT_LENGTH];
         BN_bn2bin(e, params->PUBLIC_EXPONENT);
         BN_free(e);
+        params->PUBLIC_EXPONENT = add_padding_if_needed(params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL);
@@ -266,6 +287,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->PRIVATE_EXPONENT = new unsigned char[params->PRIVATE_EXPONENT_LENGTH];
         BN_bn2bin(d, params->PRIVATE_EXPONENT);
         BN_free(d);
+        params->PRIVATE_EXPONENT = add_padding_if_needed(params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL);
@@ -275,6 +297,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->FACTOR1 = new unsigned char[params->FACTOR1_LENGTH];
         BN_bn2bin(p, params->FACTOR1);
         BN_free(p);
+        params->FACTOR1 = add_padding_if_needed(params->FACTOR1, params->FACTOR1_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Factor1 (p) failed.", NULL);
@@ -284,6 +307,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->FACTOR2 = new unsigned char[params->FACTOR2_LENGTH];
         BN_bn2bin(q, params->FACTOR2);
         BN_free(q);
+        params->FACTOR2 = add_padding_if_needed(params->FACTOR2, params->FACTOR2_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Factor2 (q) failed.", NULL);
@@ -293,6 +317,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->EXPONENT1 = new unsigned char[params->EXPONENT1_LENGTH];
         BN_bn2bin(dmp1, params->EXPONENT1);
         BN_free(dmp1);
+        params->EXPONENT1 = add_padding_if_needed(params->EXPONENT1, params->EXPONENT1_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Exponent1 (dmp1) failed.", NULL);
@@ -302,6 +327,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->EXPONENT2 = new unsigned char[params->EXPONENT2_LENGTH];
         BN_bn2bin(dmq1, params->EXPONENT2);
         BN_free(dmq1);
+        params->EXPONENT2 = add_padding_if_needed(params->EXPONENT2, params->EXPONENT2_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Exponent2 (dmq1) failed.", NULL);
@@ -311,6 +337,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         params->COEFFICIENT = new unsigned char[params->COEFFICIENT_LENGTH];
         BN_bn2bin(iqmp, params->COEFFICIENT);
         BN_free(iqmp);
+        params->COEFFICIENT = add_padding_if_needed(params->COEFFICIENT, params->COEFFICIENT_LENGTH);
     }
     else
         return handleErrors_asymmetric("Get Coefficient (iqmp) failed.", NULL);
@@ -326,53 +353,35 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
     if (!ctx)
         return handleErrors_asymmetric("Failed to create EVP_PKEY context.", ctx);
 
-    EVP_PKEY* pkey = NULL;
-    if (1 != EVP_PKEY_fromdata_init(ctx)) {
-        EVP_PKEY_CTX_free(ctx);
-        return handleErrors_asymmetric("Failed to initialize fromdata.", NULL, NULL, pkey);
-    }
+    EVP_PKEY* pkey = EVP_PKEY_new();
+    if (1 != EVP_PKEY_fromdata_init(ctx))
+        return handleErrors_asymmetric("Failed to initialize fromdata.", ctx, NULL, NULL, pkey, NULL);
 
-    OSSL_PARAM param_n = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, params->MODULUS, params->MODULUS_LENGTH);
-    OSSL_PARAM param_e = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH);
-    OSSL_PARAM param_d = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH);
-    OSSL_PARAM param_p = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR1, params->FACTOR1, params->FACTOR1_LENGTH);
-    OSSL_PARAM param_q = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR2, params->FACTOR2, params->FACTOR2_LENGTH);
-    OSSL_PARAM param_dmp1 = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, params->EXPONENT1, params->EXPONENT1_LENGTH);
-    OSSL_PARAM param_dmq1 = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT2, params->EXPONENT2, params->EXPONENT2_LENGTH);
-    OSSL_PARAM param_iqmp = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_COEFFICIENT1, params->COEFFICIENT, params->COEFFICIENT_LENGTH);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_n) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA n param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_e) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA e param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_d) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA d param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_p) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA p param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_q) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA q param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_dmp1) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA dmp1 param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_dmq1) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA dmq1 param.", ctx, NULL, NULL, pkey, NULL);
-    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, &param_iqmp) <= 0)
-        return handleErrors_asymmetric("Failed to generate RSA iqmp param.", ctx, NULL, NULL, pkey, NULL);
+    unsigned char* n_data = add_padding_if_needed(params->MODULUS, params->MODULUS_LENGTH);
+    unsigned char* e_data = add_padding_if_needed(params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH);
+    unsigned char* d_data = add_padding_if_needed(params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH);
+    unsigned char* p_data = add_padding_if_needed(params->FACTOR1, params->FACTOR1_LENGTH);
+    unsigned char* q_data = add_padding_if_needed(params->FACTOR2, params->FACTOR2_LENGTH);
+    unsigned char* dmp1_data = add_padding_if_needed(params->EXPONENT1, params->EXPONENT1_LENGTH);
+    unsigned char* dmq1_data = add_padding_if_needed(params->EXPONENT2, params->EXPONENT2_LENGTH);
+    unsigned char* iqmp_data = add_padding_if_needed(params->COEFFICIENT, params->COEFFICIENT_LENGTH);
 
-    /*OSSL_PARAM paramters[] = {
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, params->MODULUS, params->MODULUS_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, params->PUBLIC_EXPONENT, params->PUBLIC_EXPONENT_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, params->PRIVATE_EXPONENT, params->PRIVATE_EXPONENT_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR1, params->FACTOR1, params->FACTOR1_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR2, params->FACTOR2, params->FACTOR2_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, params->EXPONENT1, params->EXPONENT1_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT2, params->EXPONENT2, params->EXPONENT2_LENGTH),
-        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_COEFFICIENT1, params->COEFFICIENT, params->COEFFICIENT_LENGTH),
+    OSSL_PARAM paramters[] = {
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, n_data, params->MODULUS_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, e_data, params->PUBLIC_EXPONENT_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, d_data, params->PRIVATE_EXPONENT_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR1, p_data, params->FACTOR1_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR2, q_data, params->FACTOR2_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1_data, params->EXPONENT1_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT2, dmq1_data, params->EXPONENT2_LENGTH),
+        OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp_data, params->COEFFICIENT_LENGTH),
         OSSL_PARAM_construct_end(),
     };
 
     if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, paramters) <= 0) {
         EVP_PKEY_CTX_free(ctx);
         return handleErrors_asymmetric("Failed to generate RSA key.", NULL, NULL, pkey);
-    }*/
+    }
 
     BIO* pub_bio = BIO_new(BIO_s_mem());
     BIO* priv_bio = BIO_new(BIO_s_mem());
@@ -381,16 +390,12 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
 
     switch (params->FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        if (PEM_write_bio_PUBKEY(pub_bio, pkey) <= 0 ||
-            PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL) <= 0) {
+        if (PEM_write_bio_PUBKEY(pub_bio, pkey) <= 0 || PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL) <= 0)
             return handleErrors_asymmetric("Failed to write keys in PEM format.", pub_bio, priv_bio, pkey);
-        }
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        if (i2d_PUBKEY_bio(pub_bio, pkey) <= 0 ||
-            i2d_PrivateKey_bio(priv_bio, pkey) <= 0) {
+        if (i2d_PUBKEY_bio(pub_bio, pkey) <= 0 || i2d_PrivateKey_bio(priv_bio, pkey) <= 0)
             return handleErrors_asymmetric("Failed to write keys in DER format.", pub_bio, priv_bio, pkey);
-        }
         break;
     default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
     }
