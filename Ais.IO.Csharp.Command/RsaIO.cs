@@ -8,10 +8,21 @@ namespace Ais.IO.Csharp.Command
 {
     internal class RsaIO
     {
-        public static void GetParamters(int size)
+        public static void GetParamters(ulong size)
         {
             Rsa rsa = new Rsa();
-            rsa.GenerateParamters(size);
+            BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+            RsaParamters paramters = rsa.GenerateParamters(size);
+            if (paramters == null)
+                return;
+            Console.WriteLine("Modulus (N):\n" + encoder.Encode<string>(paramters.N));
+            Console.WriteLine("Public Exponent (E):\n" + encoder.Encode<string>(paramters.E));
+            Console.WriteLine("Private Exponent (D):\n" + encoder.Encode<string>(paramters.D));
+            Console.WriteLine("First Prime Factor (P):\n" + encoder.Encode<string>(paramters.P));
+            Console.WriteLine("Second Prime Factor (Q):\n" + encoder.Encode<string>(paramters.Q));
+            Console.WriteLine("First CRT Exponent (DP):\n" + encoder.Encode<string>(paramters.DP));
+            Console.WriteLine("Second CRT Exponent (DQ):\n" + encoder.Encode<string>(paramters.DQ));
+            Console.WriteLine("CRT Coefficient (QI):\n" + encoder.Encode<string>(paramters.QI));
         }
 
         public static void GeneratePEM(int size)

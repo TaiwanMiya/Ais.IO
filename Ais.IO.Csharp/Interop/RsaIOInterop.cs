@@ -12,6 +12,9 @@ namespace Ais.IO.Csharp
         private const string DllName = "..\\Ais.IO.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetRsaParametersLength(ref RSA_PARAMETERS @params);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GenerateRsaParameters(ref RSA_PARAMETERS @params);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

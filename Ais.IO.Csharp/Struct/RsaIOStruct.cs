@@ -1,38 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct RSA_PARAMETERS
     {
-        public UIntPtr KEY_SIZE;
-
-        public IntPtr MODULUS;
-        public UIntPtr MODULUS_LENGTH;
-
-        public IntPtr PUBLIC_EXPONENT;
-        public UIntPtr PUBLIC_EXPONENT_LENGTH;
-
-        public IntPtr PRIVATE_EXPONENT;
-        public UIntPtr PRIVATE_EXPONENT_LENGTH;
-
-        public IntPtr PRIME1;
-        public UIntPtr PRIME1_LENGTH;
-
-        public IntPtr PRIME2;
-        public UIntPtr PRIME2_LENGTH;
-
-        public IntPtr EXPONENT1;
-        public UIntPtr EXPONENT1_LENGTH;
-
-        public IntPtr EXPONENT2;
-        public UIntPtr EXPONENT2_LENGTH;
-
-        public IntPtr COEFFICIENT;
-        public UIntPtr COEFFICIENT_LENGTH;
+        public ulong KEY_LENGTH;
+        public IntPtr N;
+        public IntPtr E;
+        public IntPtr D;
+        public IntPtr P;
+        public IntPtr Q;
+        public IntPtr DP;
+        public IntPtr DQ;
+        public IntPtr QI;
+        public ulong N_LENGTH;
+        public ulong E_LENGTH;
+        public ulong D_LENGTH;
+        public ulong P_LENGTH;
+        public ulong Q_LENGTH;
+        public ulong DP_LENGTH;
+        public ulong DQ_LENGTH;
+        public ulong QI_LENGTH;
     }
 
     public struct RSA_KEY_PAIR

@@ -138,11 +138,13 @@ namespace Ais.IO.Csharp.Command
         {
             for (int i = 0; i < range; i++)
             {
-                //RsaIO.GetParamters(2048);
+                Console.WriteLine($"{i + 1}. Rsa...");
 
-                RsaIO.GeneratePEM(2048);
+                RsaIO.GetParamters(2048);
 
-                RsaIO.GenerateDER(2048);
+                //RsaIO.GeneratePEM(2048);
+
+                //RsaIO.GenerateDER(2048);
             }
         }
     }
