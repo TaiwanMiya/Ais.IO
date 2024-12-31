@@ -34,7 +34,7 @@ namespace Ais.IO.Csharp.Command
             BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
             byte[] publicKey = [];
             byte[] privateKey = [];
-            rsa.Generate(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref publicKey, ref privateKey);
+            rsa.GenerateKeys(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref publicKey, ref privateKey);
 
             if (publicKey.Length == 0 || privateKey.Length == 0)
                 return;
@@ -48,7 +48,7 @@ namespace Ais.IO.Csharp.Command
             BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
             byte[] publicKey = [];
             byte[] privateKey = [];
-            rsa.Generate(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_DER, ref publicKey, ref privateKey);
+            rsa.GenerateKeys(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_DER, ref publicKey, ref privateKey);
             
             if (publicKey.Length == 0 || privateKey.Length == 0)
                 return;

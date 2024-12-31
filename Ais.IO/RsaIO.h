@@ -59,32 +59,7 @@ struct RSA_KEY_PAIR {
     size_t PRIVATE_KEY_LENGTH;
 };
 
-struct EXPORT_RSA_PARAMTERS {
-    size_t KEY_LENGTH;
-    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    unsigned char* N;
-    unsigned char* E;
-    unsigned char* D;
-    unsigned char* P;
-    unsigned char* Q;
-    unsigned char* DP;
-    unsigned char* DQ;
-    unsigned char* QI;
-    size_t N_LENGTH;
-    size_t E_LENGTH;
-    size_t D_LENGTH;
-    size_t P_LENGTH;
-    size_t Q_LENGTH;
-    size_t DP_LENGTH;
-    size_t DQ_LENGTH;
-    size_t QI_LENGTH;
-    const unsigned char* PUBLIC_KEY;
-    const unsigned char* PRIVATE_KEY;
-    const size_t PUBLIC_KEY_LENGTH;
-    const size_t PRIVATE_KEY_LENGTH;
-};
-
-struct EXPORT_RSA_KEY {
+struct EXPORT_RSA {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* N;
@@ -109,9 +84,9 @@ struct EXPORT_RSA_KEY {
     size_t PRIVATE_KEY_LENGTH;
 };
 
-EXT RSAIO_API int GetRsaParametersLength(RSA_PARAMETERS* params);
-EXT RSAIO_API int GetRsaKeyLength(RSA_KEY_PAIR* params);
-EXT RSAIO_API int GenerateRsaParameters(RSA_PARAMETERS* params);
-EXT RSAIO_API int GenerateRsaKeys(RSA_KEY_PAIR* generate);
-EXT RSAIO_API int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params);
-EXT RSAIO_API int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params);
+EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);
+EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
+EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params);
+EXT RSAIO_API int RsaGenerateKeys(RSA_KEY_PAIR* generate);
+EXT RSAIO_API int RsaExportParameters(EXPORT_RSA* params);
+EXT RSAIO_API int RsaExportKeys(EXPORT_RSA* params);

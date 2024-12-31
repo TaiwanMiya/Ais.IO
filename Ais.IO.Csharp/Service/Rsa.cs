@@ -38,7 +38,7 @@ namespace Ais.IO.Csharp
                     DQ_LENGTH = 0,
                     QI_LENGTH = 0,
                 };
-                int result = RsaIOInterop.GetRsaParametersLength(ref paramters);
+                int result = RsaIOInterop.RsaGetParametersLength(ref paramters);
                 if (result == 0)
                     return new RsaParamters()
                     {
@@ -77,7 +77,7 @@ namespace Ais.IO.Csharp
                     PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
                 };
-                int result = RsaIOInterop.GetRsaKeyLength(ref keypair);
+                int result = RsaIOInterop.RsaGetKeyLength(ref keypair);
                 if (result != 0)
                     throw new Exception("Error Get Key Length.");
                 return keypair.KEY_LENGTH;
@@ -131,7 +131,7 @@ namespace Ais.IO.Csharp
                     QI_LENGTH = (ulong)output.QI.LongLength,
                 };
 
-                int result = RsaIOInterop.GenerateRsaParameters(ref paramters);
+                int result = RsaIOInterop.RsaGenerateParameters(ref paramters);
                 if (result != 0)
                     throw new Exception("Error Get Paramters.");
                 return output;
@@ -154,7 +154,7 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public void Generate(ulong size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
+        public void GenerateKeys(ulong size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
         {
             publicKey = new byte[size];
             privateKey = new byte[size];
@@ -174,7 +174,7 @@ namespace Ais.IO.Csharp
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
                 };
 
-                int result = RsaIOInterop.GenerateRsaKeys(ref keypair);
+                int result = RsaIOInterop.RsaGenerateKeys(ref keypair);
                 if (result != 0)
                 {
                     publicKey = new byte[0];
@@ -219,7 +219,7 @@ namespace Ais.IO.Csharp
 
             try
             {
-                EXPORT_RSA_PARAMTERS paramters = new EXPORT_RSA_PARAMTERS
+                EXPORT_RSA paramters = new EXPORT_RSA
                 {
                     KEY_LENGTH = size,
                     KEY_FORMAT = format,
@@ -244,7 +244,7 @@ namespace Ais.IO.Csharp
                     PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
                 };
-                int result = RsaIOInterop.ExportRsaParametersFromKeys(ref paramters);
+                int result = RsaIOInterop.RsaExportParameters(ref paramters);
                 if (result != 0)
                     throw new Exception("Error To Rsa Key To Paramters.");
                 return output;
@@ -287,7 +287,7 @@ namespace Ais.IO.Csharp
 
             try
             {
-                EXPORT_RSA_KEY keypair = new EXPORT_RSA_KEY
+                EXPORT_RSA keypair = new EXPORT_RSA
                 {
                     KEY_LENGTH = size,
                     KEY_FORMAT = format,
@@ -312,7 +312,7 @@ namespace Ais.IO.Csharp
                     PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
                 };
-                int result = RsaIOInterop.ExportRsaKeysFromParameters(ref keypair);
+                int result = RsaIOInterop.RsaExportKeys(ref keypair);
                 if (result != 0)
                 {
                     publicKey = new byte[0];

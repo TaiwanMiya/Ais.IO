@@ -3,7 +3,7 @@
 
 #define DIV_ROUND_UP(x, y) (((x) + (y) - 1) / (y))
 
-int GetRsaParametersLength(RSA_PARAMETERS* params) {
+int RsaGetParametersLength(RSA_PARAMETERS* params) {
     params->N_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);
     params->E_LENGTH = 3;
     params->D_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);
@@ -15,7 +15,7 @@ int GetRsaParametersLength(RSA_PARAMETERS* params) {
     return 0;
 }
 
-int GetRsaKeyLength(RSA_KEY_PAIR* params) {
+int RsaGetKeyLength(RSA_KEY_PAIR* params) {
     ERR_clear_error();
     RAND_poll();
 
@@ -52,7 +52,7 @@ int GetRsaKeyLength(RSA_KEY_PAIR* params) {
     return 0;
 }
 
-int GenerateRsaParameters(RSA_PARAMETERS* params) {
+int RsaGenerateParameters(RSA_PARAMETERS* params) {
     ERR_clear_error();
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
     if (!pkey)
@@ -141,7 +141,7 @@ int GenerateRsaParameters(RSA_PARAMETERS* params) {
     return 0;
 }
 
-int GenerateRsaKeys(RSA_KEY_PAIR* generate) {
+int RsaGenerateKeys(RSA_KEY_PAIR* generate) {
     ERR_clear_error();
     RAND_poll();
 
@@ -201,7 +201,7 @@ int GenerateRsaKeys(RSA_KEY_PAIR* generate) {
     return 0;
 }
 
-int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
+int RsaExportParameters(EXPORT_RSA* params) {
     ERR_clear_error();
     RAND_poll();
 
@@ -317,7 +317,7 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
     return 0;
 }
 
-int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
+int RsaExportKeys(EXPORT_RSA* params) {
     ERR_clear_error();
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     if (!ctx)

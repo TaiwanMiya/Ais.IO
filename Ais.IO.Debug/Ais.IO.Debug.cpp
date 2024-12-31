@@ -38,7 +38,7 @@ struct RSA_KEY_PAIR {
     size_t PRIVATE_KEY_LENGTH;
 };
 
-struct EXPORT_RSA_PARAMTERS {
+struct EXPORT_RSA {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* N;
@@ -63,45 +63,20 @@ struct EXPORT_RSA_PARAMTERS {
     const size_t PRIVATE_KEY_LENGTH;
 };
 
-struct EXPORT_RSA_KEY {
-    size_t KEY_LENGTH;
-    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    unsigned char* N;
-    unsigned char* E;
-    unsigned char* D;
-    unsigned char* P;
-    unsigned char* Q;
-    unsigned char* DP;
-    unsigned char* DQ;
-    unsigned char* QI;
-    size_t N_LENGTH;
-    size_t E_LENGTH;
-    size_t D_LENGTH;
-    size_t P_LENGTH;
-    size_t Q_LENGTH;
-    size_t DP_LENGTH;
-    size_t DQ_LENGTH;
-    size_t QI_LENGTH;
-    unsigned char* PUBLIC_KEY;
-    unsigned char* PRIVATE_KEY;
-    size_t PUBLIC_KEY_LENGTH;
-    size_t PRIVATE_KEY_LENGTH;
-};
-
 #pragma region RsaIO
-typedef int (*GetRsaParametersLength)(RSA_PARAMETERS*);
-typedef int (*GetRsaKeyLength)(RSA_KEY_PAIR*);
-typedef int (*GenerateRsaParameters)(RSA_PARAMETERS*);
-typedef int (*GenerateRsaKeys)(RSA_KEY_PAIR*);
-typedef int (*ExportRsaParametersFromKeys)(EXPORT_RSA_PARAMTERS*);
-typedef int (*ExportRsaKeysFromParameters)(EXPORT_RSA_KEY*);
+typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
+typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
+typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
+typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
+typedef int (*RsaExportParameters)(EXPORT_RSA*);
+typedef int (*RsaExportKeys)(EXPORT_RSA*);
 
-GetRsaParametersLength GetRsaParametersLength_Func = (GetRsaParametersLength)GET_PROC_ADDRESS(Lib, "GetRsaParametersLength");
-GetRsaKeyLength GetRsaKeyLength_Func = (GetRsaKeyLength)GET_PROC_ADDRESS(Lib, "GetRsaKeyLength");
-GenerateRsaParameters GenerateRsaParameters_Func = (GenerateRsaParameters)GET_PROC_ADDRESS(Lib, "GenerateRsaParameters");
-GenerateRsaKeys GenerateRsaKeys_Func = (GenerateRsaKeys)GET_PROC_ADDRESS(Lib, "GenerateRsaKeys");
-ExportRsaParametersFromKeys ExportRsaParametersFromKeys_Func = (ExportRsaParametersFromKeys)GET_PROC_ADDRESS(Lib, "ExportRsaParametersFromKeys");
-ExportRsaKeysFromParameters ExportRsaKeysFromParameters_Func = (ExportRsaKeysFromParameters)GET_PROC_ADDRESS(Lib, "ExportRsaKeysFromParameters");
+RsaGetParametersLength RsaGetParametersLength_Func = (RsaGetParametersLength)GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
+RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
+RsaGenerateParameters RsaGenerateParameters_Func = (RsaGenerateParameters)GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
+RsaGenerateKeys RsaGenerateKeys_Func = (RsaGenerateKeys)GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
+RsaExportParameters RsaExportParameters_Func = (RsaExportParameters)GET_PROC_ADDRESS(Lib, "RsaExportParameters");
+RsaExportKeys RsaExportKeys_Func = (RsaExportKeys)GET_PROC_ADDRESS(Lib, "RsaExportKeys");
 #pragma endregion
 
 void Test_GetRsaParametersLength() {
@@ -125,7 +100,7 @@ void Test_GetRsaParametersLength() {
         NULL,
     };
 
-    GetRsaParametersLength_Func(&paramters);
+    RsaGetParametersLength_Func(&paramters);
     std::cout << "Modulus (n) Size:" << paramters.N_LENGTH << std::endl;
     std::cout << "Public Exponent (e) Size:" << paramters.E_LENGTH << std::endl;
     std::cout << "Private Exponent (d) Size:" << paramters.D_LENGTH << std::endl;
@@ -199,7 +174,7 @@ void Test_GetRsaKeyLength() {
         publicKey.size(),
         privateKey.size(),
     };
-    GetRsaKeyLength_Func(&length);
+    RsaGetKeyLength_Func(&length);
     
     std::cout << "Key Length (Bits):" << length.KEY_LENGTH << std::endl;
 }
@@ -225,7 +200,7 @@ void Test_GenerateRsaParameters() {
         0,
     };
 
-    GetRsaParametersLength_Func(&paramters);
+    RsaGetParametersLength_Func(&paramters);
 
     paramters.N = new unsigned char[paramters.N_LENGTH];
     paramters.E = new unsigned char[paramters.E_LENGTH];
@@ -236,7 +211,7 @@ void Test_GenerateRsaParameters() {
     paramters.DQ = new unsigned char[paramters.DQ_LENGTH];
     paramters.QI = new unsigned char[paramters.QI_LENGTH];
 
-    GenerateRsaParameters_Func(&paramters);
+    RsaGenerateParameters_Func(&paramters);
 
     std::vector<char> paramtersString;
     paramtersString.resize(paramters.N_LENGTH * 2 + 1);
@@ -295,7 +270,7 @@ void Test_RsaGenerate() {
             publicKey.size(),
             privateKey.size(),
         };
-        GenerateRsaKeys_Func(&keypair);
+        RsaGenerateKeys_Func(&keypair);
 
         publicKey.resize(keypair.PUBLIC_KEY_LENGTH);
         privateKey.resize(keypair.PRIVATE_KEY_LENGTH);
@@ -319,7 +294,7 @@ void Test_RsaGenerate() {
             publicKey.size(),
             privateKey.size(),
         };
-        GenerateRsaKeys_Func(&keypair);
+        RsaGenerateKeys_Func(&keypair);
 
         publicKey.resize(keypair.PUBLIC_KEY_LENGTH);
         privateKey.resize(keypair.PRIVATE_KEY_LENGTH);
@@ -399,7 +374,7 @@ void Test_ExportRsaParametersFromKeys() {
         privateKey.size(),
     };
 
-    GetRsaKeyLength_Func(&keyLength);
+    RsaGetKeyLength_Func(&keyLength);
 
     RSA_PARAMETERS paramLength = {
         keyLength.KEY_LENGTH,
@@ -421,9 +396,9 @@ void Test_ExportRsaParametersFromKeys() {
         NULL,
     };
 
-    GetRsaParametersLength_Func(&paramLength);
+    RsaGetParametersLength_Func(&paramLength);
 
-    EXPORT_RSA_PARAMTERS paramters = {
+    EXPORT_RSA paramters = {
         0,
         ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
         new unsigned char[paramLength.N_LENGTH],
@@ -448,7 +423,7 @@ void Test_ExportRsaParametersFromKeys() {
         privateKey.size(),
     };
 
-    ExportRsaParametersFromKeys_Func(&paramters);
+    RsaExportParameters_Func(&paramters);
 
     std::cout << "Key Length (Bits):" << paramters.KEY_LENGTH << std::endl;
 
@@ -534,7 +509,7 @@ void Test_ExportRsaKeyFromParameters() {
     publicKey.resize(keysize);
     privateKey.resize(keysize);
 
-    EXPORT_RSA_KEY paramters = {
+    EXPORT_RSA paramters = {
         0,
         //ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER,
         ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
@@ -559,7 +534,7 @@ void Test_ExportRsaKeyFromParameters() {
         publicKey.size(),
         privateKey.size(),
     };
-    ExportRsaKeysFromParameters_Func(&paramters);
+    RsaExportKeys_Func(&paramters);
 
     publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
     privateKey.resize(paramters.PRIVATE_KEY_LENGTH);

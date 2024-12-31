@@ -150,7 +150,7 @@ namespace Ais.IO.Csharp.Command
 
                 //RsaIO.ToParamtersDER();
 
-                RsaIO.ToKeysPEM();
+                //RsaIO.ToKeysPEM();
 
                 //RsaIO.ToKeysDER();
             }
