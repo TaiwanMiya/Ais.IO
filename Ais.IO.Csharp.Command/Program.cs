@@ -31,7 +31,7 @@ namespace Ais.IO.Csharp.Command
 
                 //StartHash(1);
 
-                StartRsa(10);
+                StartRsa(1);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");
@@ -138,13 +138,21 @@ namespace Ais.IO.Csharp.Command
         {
             for (int i = 0; i < range; i++)
             {
-                Console.WriteLine($"{i + 1}. Rsa...");
+                //Console.WriteLine($"{i + 1}. Rsa...");
 
-                RsaIO.GetParamters(2048);
+                //RsaIO.GetParamters(2048);
 
                 //RsaIO.GeneratePEM(2048);
 
                 //RsaIO.GenerateDER(2048);
+
+                //RsaIO.ToParamtersPEM();
+
+                //RsaIO.ToParamtersDER();
+
+                RsaIO.ToKeysPEM();
+
+                //RsaIO.ToKeysDER();
             }
         }
     }

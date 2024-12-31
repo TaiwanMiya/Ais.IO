@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -12,30 +14,13 @@ namespace Ais.IO.Csharp
 {
     public class Rsa : Asymmetric
     {
-        public RsaParamters GenerateParamters(ulong size)
+        public RsaParamters CreateEmptyParamters(ulong size)
         {
-            byte[] n = new byte[0];
-            byte[] e = new byte[0];
-            byte[] d = new byte[0];
-            byte[] p = new byte[0];
-            byte[] q = new byte[0];
-            byte[] dp = new byte[0];
-            byte[] dq = new byte[0];
-            byte[] qi = new byte[0];
-
-            GCHandle nHandle = GCHandle.Alloc(n, GCHandleType.Pinned);
-            GCHandle eHandle = GCHandle.Alloc(e, GCHandleType.Pinned);
-            GCHandle dHandle = GCHandle.Alloc(d, GCHandleType.Pinned);
-            GCHandle pHandle = GCHandle.Alloc(p, GCHandleType.Pinned);
-            GCHandle qHandle = GCHandle.Alloc(q, GCHandleType.Pinned);
-            GCHandle dpHandle = GCHandle.Alloc(dp, GCHandleType.Pinned);
-            GCHandle dqHandle = GCHandle.Alloc(dq, GCHandleType.Pinned);
-            GCHandle qiHandle = GCHandle.Alloc(qi, GCHandleType.Pinned);
             try
             {
                 RSA_PARAMETERS paramters = new RSA_PARAMETERS
                 {
-                    KEY_LENGTH = (ulong)size,
+                    KEY_LENGTH = size,
                     N = IntPtr.Zero,
                     E = IntPtr.Zero,
                     D = IntPtr.Zero,
@@ -53,50 +38,103 @@ namespace Ais.IO.Csharp
                     DQ_LENGTH = 0,
                     QI_LENGTH = 0,
                 };
-                RsaIOInterop.GetRsaParametersLength(ref paramters);
+                int result = RsaIOInterop.GetRsaParametersLength(ref paramters);
+                if (result == 0)
+                    return new RsaParamters()
+                    {
+                        N = new byte[paramters.N_LENGTH],
+                        E = new byte[paramters.E_LENGTH],
+                        D = new byte[paramters.D_LENGTH],
+                        P = new byte[paramters.P_LENGTH],
+                        Q = new byte[paramters.Q_LENGTH],
+                        DP = new byte[paramters.DP_LENGTH],
+                        DQ = new byte[paramters.DQ_LENGTH],
+                        QI = new byte[paramters.QI_LENGTH],
+                    };
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
+            }
+        }
 
-                n = new byte[paramters.N_LENGTH];
-                e = new byte[paramters.E_LENGTH];
-                d = new byte[paramters.D_LENGTH];
-                p = new byte[paramters.P_LENGTH];
-                q = new byte[paramters.Q_LENGTH];
-                dp = new byte[paramters.DP_LENGTH];
-                dq = new byte[paramters.DQ_LENGTH];
-                qi = new byte[paramters.QI_LENGTH];
+        public ulong GetKeyLength(ASYMMETRIC_KEY_FORMAT format, byte[] publicKey, byte[] privateKey)
+        {
+            GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
+            GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
 
-                nHandle = GCHandle.Alloc(n, GCHandleType.Pinned);
-                eHandle = GCHandle.Alloc(e, GCHandleType.Pinned);
-                dHandle = GCHandle.Alloc(d, GCHandleType.Pinned);
-                pHandle = GCHandle.Alloc(p, GCHandleType.Pinned);
-                qHandle = GCHandle.Alloc(q, GCHandleType.Pinned);
-                dpHandle = GCHandle.Alloc(dp, GCHandleType.Pinned);
-                dqHandle = GCHandle.Alloc(dq, GCHandleType.Pinned);
-                qiHandle = GCHandle.Alloc(qi, GCHandleType.Pinned);
+            try
+            {
+                RSA_KEY_PAIR keypair = new RSA_KEY_PAIR
+                {
+                    KEY_LENGTH = 0,
+                    KEY_FORMAT = format,
+                    PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
+                    PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
+                    PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                };
+                int result = RsaIOInterop.GetRsaKeyLength(ref keypair);
+                if (result != 0)
+                    throw new Exception("Error Get Key Length.");
+                return keypair.KEY_LENGTH;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (publicKeyHandle.IsAllocated) publicKeyHandle.Free();
+                if (privateKeyHandle.IsAllocated) privateKeyHandle.Free();
+            }
+        }
 
-                paramters.N = nHandle.AddrOfPinnedObject();
-                paramters.E = eHandle.AddrOfPinnedObject();
-                paramters.D = dHandle.AddrOfPinnedObject();
-                paramters.P = pHandle.AddrOfPinnedObject();
-                paramters.Q = qHandle.AddrOfPinnedObject();
-                paramters.DP = dpHandle.AddrOfPinnedObject();
-                paramters.DQ = dqHandle.AddrOfPinnedObject();
-                paramters.QI = qiHandle.AddrOfPinnedObject();
+        public RsaParamters GenerateParamters(ulong size)
+        {
+            RsaParamters output = this.CreateEmptyParamters(size);
+            if (output == null)
+                return output;
+
+            GCHandle nHandle = GCHandle.Alloc(output.N, GCHandleType.Pinned);
+            GCHandle eHandle = GCHandle.Alloc(output.E, GCHandleType.Pinned);
+            GCHandle dHandle = GCHandle.Alloc(output.D, GCHandleType.Pinned);
+            GCHandle pHandle = GCHandle.Alloc(output.P, GCHandleType.Pinned);
+            GCHandle qHandle = GCHandle.Alloc(output.Q, GCHandleType.Pinned);
+            GCHandle dpHandle = GCHandle.Alloc(output.DP, GCHandleType.Pinned);
+            GCHandle dqHandle = GCHandle.Alloc(output.DQ, GCHandleType.Pinned);
+            GCHandle qiHandle = GCHandle.Alloc(output.QI, GCHandleType.Pinned);
+            try
+            {
+                RSA_PARAMETERS paramters = new RSA_PARAMETERS
+                {
+                    KEY_LENGTH = size,
+                    N = nHandle.AddrOfPinnedObject(),
+                    E = eHandle.AddrOfPinnedObject(),
+                    D = dHandle.AddrOfPinnedObject(),
+                    P = pHandle.AddrOfPinnedObject(),
+                    Q = qHandle.AddrOfPinnedObject(),
+                    DP = dpHandle.AddrOfPinnedObject(),
+                    DQ = dqHandle.AddrOfPinnedObject(),
+                    QI = qiHandle.AddrOfPinnedObject(),
+                    N_LENGTH = (ulong)output.N.LongLength,
+                    E_LENGTH = (ulong)output.E.LongLength,
+                    D_LENGTH = (ulong)output.D.LongLength,
+                    P_LENGTH = (ulong)output.P.LongLength,
+                    Q_LENGTH = (ulong)output.Q.LongLength,
+                    DP_LENGTH = (ulong)output.DP.LongLength,
+                    DQ_LENGTH = (ulong)output.DQ.LongLength,
+                    QI_LENGTH = (ulong)output.QI.LongLength,
+                };
 
                 int result = RsaIOInterop.GenerateRsaParameters(ref paramters);
                 if (result != 0)
                     throw new Exception("Error Get Paramters.");
-
-                return new RsaParamters()
-                {
-                    N = n,
-                    E = e,
-                    D = d,
-                    P = p,
-                    Q = q,
-                    DP = dp,
-                    DQ = dq,
-                    QI = qi,
-                };
+                return output;
             }
             catch (Exception ex)
             {
@@ -114,110 +152,192 @@ namespace Ais.IO.Csharp
                 if (dqHandle.IsAllocated) dqHandle.Free();
                 if (qiHandle.IsAllocated) qiHandle.Free();
             }
-
-            //byte[] Modulus = new byte[size / 8];
-            //byte[] PublicExponent = new byte[3];
-            //byte[] PrivateExponent = new byte[size / 8];
-            //byte[] Prime1 = new byte[size / 16];
-            //byte[] Prime2 = new byte[size / 16];
-            //byte[] Exponent1 = new byte[size / 16];
-            //byte[] Exponent2 = new byte[size / 16];
-            //byte[] Coefficient = new byte[size / 16];
-
-            //GCHandle ModulusHandle = GCHandle.Alloc(Modulus, GCHandleType.Pinned);
-            //GCHandle PublicExponentHandle = GCHandle.Alloc(PublicExponent, GCHandleType.Pinned);
-            //GCHandle PrivateExponentHandle = GCHandle.Alloc(PrivateExponent, GCHandleType.Pinned);
-            //GCHandle Prime1Handle = GCHandle.Alloc(Prime1, GCHandleType.Pinned);
-            //GCHandle Prime2Handle = GCHandle.Alloc(Prime2, GCHandleType.Pinned);
-            //GCHandle Exponent1Handle = GCHandle.Alloc(Exponent1, GCHandleType.Pinned);
-            //GCHandle Exponent2Handle = GCHandle.Alloc(Exponent2, GCHandleType.Pinned);
-            //GCHandle CoefficientHandle = GCHandle.Alloc(Coefficient, GCHandleType.Pinned);
-
-            //try
-            //{
-            //    RSA_PARAMETERS paramters = new RSA_PARAMETERS
-            //    {
-            //        KEY_SIZE = (UIntPtr)size,
-            //        MODULUS = ModulusHandle.AddrOfPinnedObject(),
-            //        MODULUS_LENGTH = new UIntPtr((uint)size / 8),
-            //        PUBLIC_EXPONENT = PublicExponentHandle.AddrOfPinnedObject(),
-            //        PUBLIC_EXPONENT_LENGTH = new UIntPtr(3),
-            //        PRIVATE_EXPONENT = PrivateExponentHandle.AddrOfPinnedObject(),
-            //        PRIVATE_EXPONENT_LENGTH = new UIntPtr((uint)size / 8),
-            //        PRIME1 = Prime1Handle.AddrOfPinnedObject(),
-            //        PRIME1_LENGTH = new UIntPtr((uint)size / 16),
-            //        PRIME2 = Prime2Handle.AddrOfPinnedObject(),
-            //        PRIME2_LENGTH = new UIntPtr((uint)size / 16),
-            //        EXPONENT1 = Exponent1Handle.AddrOfPinnedObject(),
-            //        EXPONENT1_LENGTH = new UIntPtr((uint)size / 16),
-            //        EXPONENT2 = Exponent2Handle.AddrOfPinnedObject(),
-            //        EXPONENT2_LENGTH = new UIntPtr((uint)size / 16),
-            //        COEFFICIENT = CoefficientHandle.AddrOfPinnedObject(),
-            //        COEFFICIENT_LENGTH = new UIntPtr((uint)size / 16),
-            //    };
-            //    int result = RsaIOInterop.GenerateRsaParameters(ref paramters);
-            //    if (result != 0)
-            //        throw new Exception("Error Get Paramters.");
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine("Error: " + ex.Message);
-            //}
-            //finally
-            //{
-            //    if (ModulusHandle.IsAllocated) ModulusHandle.Free();
-            //    if (PublicExponentHandle.IsAllocated) PublicExponentHandle.Free();
-            //    if (PrivateExponentHandle.IsAllocated) PrivateExponentHandle.Free();
-            //    if (Prime1Handle.IsAllocated) Prime1Handle.Free();
-            //    if (Prime2Handle.IsAllocated) Prime2Handle.Free();
-            //    if (Exponent1Handle.IsAllocated) Exponent1Handle.Free();
-            //    if (Exponent2Handle.IsAllocated) Exponent2Handle.Free();
-            //    if (CoefficientHandle.IsAllocated) CoefficientHandle.Free();
-            //}
         }
 
-        public void Generate(int size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
+        public void Generate(ulong size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
         {
-            RSA_KEY_PAIR keypair = new RSA_KEY_PAIR
-            {
-                KEY_SIZE = (UIntPtr)size,
-                FORMAT = format,
-                PUBLIC_KEY = IntPtr.Zero,
-                PRIVATE_KEY = IntPtr.Zero,
-                PUBLIC_KEY_LENGTH = UIntPtr.Zero,
-                PRIVATE_KEY_LENGTH = UIntPtr.Zero,
-            };
-
-            // Get Key Length
-            int result = RsaIOInterop.RsaGenerate(ref keypair);
-            if (result != 0)
-            {
-                publicKey = new byte[0];
-                privateKey = new byte[0];
-                return;
-            }
-
-            publicKey = new byte[(int)keypair.PUBLIC_KEY_LENGTH];
-            privateKey = new byte[(int)keypair.PRIVATE_KEY_LENGTH];
+            publicKey = new byte[size];
+            privateKey = new byte[size];
 
             GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
             GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
 
             try
             {
-                // Generate Key
-                keypair.PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject();
-                keypair.PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject();
+                RSA_KEY_PAIR keypair = new RSA_KEY_PAIR
+                {
+                    KEY_LENGTH = size,
+                    KEY_FORMAT = format,
+                    PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
+                    PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
+                    PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                };
 
-                result = RsaIOInterop.RsaGenerate(ref keypair);
+                int result = RsaIOInterop.GenerateRsaKeys(ref keypair);
                 if (result != 0)
                 {
                     publicKey = new byte[0];
                     privateKey = new byte[0];
                 }
+                else
+                {
+                    publicKey = publicKey.Take((int)keypair.PUBLIC_KEY_LENGTH).ToArray();
+                    privateKey = privateKey.Take((int)keypair.PRIVATE_KEY_LENGTH).ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
             }
             finally
             {
+                if (publicKeyHandle.IsAllocated) publicKeyHandle.Free();
+                if (privateKeyHandle.IsAllocated) privateKeyHandle.Free();
+            }
+        }
+
+        public RsaParamters ToParamters(ASYMMETRIC_KEY_FORMAT format, byte[] publicKey, byte[] privateKey)
+        {
+            ulong size = this.GetKeyLength(format, publicKey, privateKey);
+            if (size == 0)
+                return null;
+            RsaParamters output = this.CreateEmptyParamters(size);
+            if (output == null)
+                return output;
+
+            GCHandle nHandle = GCHandle.Alloc(output.N, GCHandleType.Pinned);
+            GCHandle eHandle = GCHandle.Alloc(output.E, GCHandleType.Pinned);
+            GCHandle dHandle = GCHandle.Alloc(output.D, GCHandleType.Pinned);
+            GCHandle pHandle = GCHandle.Alloc(output.P, GCHandleType.Pinned);
+            GCHandle qHandle = GCHandle.Alloc(output.Q, GCHandleType.Pinned);
+            GCHandle dpHandle = GCHandle.Alloc(output.DP, GCHandleType.Pinned);
+            GCHandle dqHandle = GCHandle.Alloc(output.DQ, GCHandleType.Pinned);
+            GCHandle qiHandle = GCHandle.Alloc(output.QI, GCHandleType.Pinned);
+            GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
+            GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
+
+            try
+            {
+                EXPORT_RSA_PARAMTERS paramters = new EXPORT_RSA_PARAMTERS
+                {
+                    KEY_LENGTH = size,
+                    KEY_FORMAT = format,
+                    N = nHandle.AddrOfPinnedObject(),
+                    E = eHandle.AddrOfPinnedObject(),
+                    D = dHandle.AddrOfPinnedObject(),
+                    P = pHandle.AddrOfPinnedObject(),
+                    Q = qHandle.AddrOfPinnedObject(),
+                    DP = dpHandle.AddrOfPinnedObject(),
+                    DQ = dqHandle.AddrOfPinnedObject(),
+                    QI = qiHandle.AddrOfPinnedObject(),
+                    N_LENGTH = (ulong)output.N.LongLength,
+                    E_LENGTH = (ulong)output.E.LongLength,
+                    D_LENGTH = (ulong)output.D.LongLength,
+                    P_LENGTH = (ulong)output.P.LongLength,
+                    Q_LENGTH = (ulong)output.Q.LongLength,
+                    DP_LENGTH = (ulong)output.DP.LongLength,
+                    DQ_LENGTH = (ulong)output.DQ.LongLength,
+                    QI_LENGTH = (ulong)output.QI.LongLength,
+                    PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
+                    PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
+                    PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                };
+                int result = RsaIOInterop.ExportRsaParametersFromKeys(ref paramters);
+                if (result != 0)
+                    throw new Exception("Error To Rsa Key To Paramters.");
+                return output;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
+            }
+            finally
+            {
+                if (nHandle.IsAllocated) nHandle.Free();
+                if (eHandle.IsAllocated) eHandle.Free();
+                if (dHandle.IsAllocated) dHandle.Free();
+                if (pHandle.IsAllocated) pHandle.Free();
+                if (qHandle.IsAllocated) qHandle.Free();
+                if (dpHandle.IsAllocated) dpHandle.Free();
+                if (dqHandle.IsAllocated) dqHandle.Free();
+                if (qiHandle.IsAllocated) qiHandle.Free();
+                if (publicKeyHandle.IsAllocated) publicKeyHandle.Free();
+                if (privateKeyHandle.IsAllocated) privateKeyHandle.Free();
+            }
+        }
+
+        public void ToKeys(RsaParamters paramters, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
+        {
+            ulong size = (ulong)paramters.N.LongLength * 8;
+            publicKey = new byte[size];
+            privateKey = new byte[size];
+            GCHandle nHandle = GCHandle.Alloc(paramters.N, GCHandleType.Pinned);
+            GCHandle eHandle = GCHandle.Alloc(paramters.E, GCHandleType.Pinned);
+            GCHandle dHandle = GCHandle.Alloc(paramters.D, GCHandleType.Pinned);
+            GCHandle pHandle = GCHandle.Alloc(paramters.P, GCHandleType.Pinned);
+            GCHandle qHandle = GCHandle.Alloc(paramters.Q, GCHandleType.Pinned);
+            GCHandle dpHandle = GCHandle.Alloc(paramters.DP, GCHandleType.Pinned);
+            GCHandle dqHandle = GCHandle.Alloc(paramters.DQ, GCHandleType.Pinned);
+            GCHandle qiHandle = GCHandle.Alloc(paramters.QI, GCHandleType.Pinned);
+            GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
+            GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
+
+            try
+            {
+                EXPORT_RSA_KEY keypair = new EXPORT_RSA_KEY
+                {
+                    KEY_LENGTH = size,
+                    KEY_FORMAT = format,
+                    N = nHandle.AddrOfPinnedObject(),
+                    E = eHandle.AddrOfPinnedObject(),
+                    D = dHandle.AddrOfPinnedObject(),
+                    P = pHandle.AddrOfPinnedObject(),
+                    Q = qHandle.AddrOfPinnedObject(),
+                    DP = dpHandle.AddrOfPinnedObject(),
+                    DQ = dqHandle.AddrOfPinnedObject(),
+                    QI = qiHandle.AddrOfPinnedObject(),
+                    N_LENGTH = (ulong)paramters.N.LongLength,
+                    E_LENGTH = (ulong)paramters.E.LongLength,
+                    D_LENGTH = (ulong)paramters.D.LongLength,
+                    P_LENGTH = (ulong)paramters.P.LongLength,
+                    Q_LENGTH = (ulong)paramters.Q.LongLength,
+                    DP_LENGTH = (ulong)paramters.DP.LongLength,
+                    DQ_LENGTH = (ulong)paramters.DQ.LongLength,
+                    QI_LENGTH = (ulong)paramters.QI.LongLength,
+                    PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
+                    PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
+                    PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                };
+                int result = RsaIOInterop.ExportRsaKeysFromParameters(ref keypair);
+                if (result != 0)
+                {
+                    publicKey = new byte[0];
+                    privateKey = new byte[0];
+                }
+                else
+                {
+                    publicKey = publicKey.Take((int)keypair.PUBLIC_KEY_LENGTH).ToArray();
+                    privateKey = privateKey.Take((int)keypair.PRIVATE_KEY_LENGTH).ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            finally
+            {
+                if (nHandle.IsAllocated) nHandle.Free();
+                if (eHandle.IsAllocated) eHandle.Free();
+                if (dHandle.IsAllocated) dHandle.Free();
+                if (pHandle.IsAllocated) pHandle.Free();
+                if (qHandle.IsAllocated) qHandle.Free();
+                if (dpHandle.IsAllocated) dpHandle.Free();
+                if (dqHandle.IsAllocated) dqHandle.Free();
+                if (qiHandle.IsAllocated) qiHandle.Free();
                 if (publicKeyHandle.IsAllocated) publicKeyHandle.Free();
                 if (privateKeyHandle.IsAllocated) privateKeyHandle.Free();
             }

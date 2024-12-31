@@ -23,7 +23,7 @@ namespace Ais.IO.Csharp
         public BaseEncoding(EncodingType type)
             => this._type = type;
 
-        private byte[] GetOutput(byte[] input, EncodingType type)
+        private byte[] GetEncodeLength(byte[] input, EncodingType type)
         {
             switch (type)
             {
@@ -40,10 +40,27 @@ namespace Ais.IO.Csharp
             }
         }
 
+        private byte[] GetDecodeLength(byte[] input, EncodingType type)
+        {
+            switch (type)
+            {
+                case EncodingType.Base16:
+                    return new byte[input.Length / 2];
+                case EncodingType.Base32:
+                    return new byte[(input.Length / 8) * 5];
+                case EncodingType.Base64:
+                    return new byte[(input.Length / 4) * 3];
+                case EncodingType.Base85:
+                    return new byte[(input.Length / 5) * 4];
+                default:
+                    return new byte[0];
+            }
+        }
+
         public T Encode<T>(string content)
         {
             byte[] input = Encoding.UTF8.GetBytes(content);
-            byte[] output = this.GetOutput(input, this.Type);
+            byte[] output = this.GetEncodeLength(input, this.Type);
             switch (this.Type)
             {
                 case EncodingType.Base16:
@@ -75,7 +92,7 @@ namespace Ais.IO.Csharp
         public T Encode<T>(byte[] content)
         {
             byte[] input = content;
-            byte[] output = this.GetOutput(input, this.Type);
+            byte[] output = this.GetEncodeLength(input, this.Type);
             switch (this.Type)
             {
                 case EncodingType.Base16:
@@ -107,7 +124,7 @@ namespace Ais.IO.Csharp
         public T Decode<T>(string content)
         {
             byte[] input = Encoding.UTF8.GetBytes(content);
-            byte[] output = this.GetOutput(input, this.Type);
+            byte[] output = this.GetDecodeLength(input, this.Type);
             switch (this.Type)
             {
                 case EncodingType.Base16:
@@ -139,7 +156,7 @@ namespace Ais.IO.Csharp
         public T Decode<T>(byte[] content)
         {
             byte[] input = content;
-            byte[] output = this.GetOutput(input, this.Type);
+            byte[] output = this.GetDecodeLength(input, this.Type);
             switch (this.Type)
             {
                 case EncodingType.Base16:

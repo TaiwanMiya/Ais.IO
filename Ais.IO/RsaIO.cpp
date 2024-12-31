@@ -15,6 +15,43 @@ int GetRsaParametersLength(RSA_PARAMETERS* params) {
     return 0;
 }
 
+int GetRsaKeyLength(RSA_KEY_PAIR* params) {
+    ERR_clear_error();
+    RAND_poll();
+
+    BIO* pub_bio = BIO_new_mem_buf(params->PUBLIC_KEY, static_cast<int>(params->PUBLIC_KEY_LENGTH));
+    BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
+    if (!pub_bio || !priv_bio)
+        return handleErrors_asymmetric("Failed to create BIOs for key data.", NULL);
+
+    EVP_PKEY* pkey = nullptr;
+
+    switch (params->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(pub_bio, &pkey, NULL, NULL);
+        PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(pub_bio, &pkey);
+        d2i_PrivateKey_bio(priv_bio, &pkey);
+        break;
+    default:
+        return handleErrors_asymmetric("Invalid RSA key format.", pub_bio, priv_bio, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pkey);
+
+    BIO_free(pub_bio);
+    BIO_free(priv_bio);
+
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &params->KEY_LENGTH))
+        return handleErrors_asymmetric("Get Bits (bits) failed.", NULL, NULL, pkey);
+
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
 int GenerateRsaParameters(RSA_PARAMETERS* params) {
     ERR_clear_error();
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
@@ -123,9 +160,6 @@ int GenerateRsaKeys(RSA_KEY_PAIR* generate) {
     if (!pkey)
         return handleErrors_asymmetric("RSA key generate Pair failed.", ctx);
 
-    /*if (1 != EVP_PKEY_generate(ctx, &pkey))
-        return handleErrors_asymmetric("RSA key generate Pair failed.", ctx);*/
-
     EVP_PKEY_CTX_free(ctx);
 
     RAND_poll();
@@ -151,17 +185,8 @@ int GenerateRsaKeys(RSA_KEY_PAIR* generate) {
     size_t pub_len = BIO_pending(pub_bio);
     size_t priv_len = BIO_pending(priv_bio);
     if (generate->PUBLIC_KEY == nullptr || generate->PRIVATE_KEY == nullptr || generate->PUBLIC_KEY_LENGTH < pub_len || generate->PRIVATE_KEY_LENGTH < priv_len) {
-        generate->PUBLIC_KEY_LENGTH = pub_len;
-        generate->PRIVATE_KEY_LENGTH = priv_len;
-
-        /*BIO_free_all(pub_bio);
-        BIO_free_all(priv_bio);
-        EVP_PKEY_free(pkey);
-
-        return 0;*/
-
-        generate->PUBLIC_KEY = new unsigned char[generate->PUBLIC_KEY_LENGTH];
-        generate->PRIVATE_KEY = new unsigned char[generate->PRIVATE_KEY_LENGTH];
+        generate->PUBLIC_KEY = new unsigned char[pub_len];
+        generate->PRIVATE_KEY = new unsigned char[priv_len];
     }
 
     BIO_read(pub_bio, generate->PUBLIC_KEY, pub_len);
@@ -232,8 +257,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Bits (bits) failed.", NULL, NULL, pkey);
 
     if (param_n && OSSL_PARAM_get_BN(param_n, &n)) {
-        params->N_LENGTH = BN_num_bytes(n);
-        params->N = new unsigned char[params->N_LENGTH];
         BN_bn2bin(n, params->N);
         BN_free(n);
     }
@@ -241,8 +264,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Modulus (n) failed.", NULL);
 
     if (param_e && OSSL_PARAM_get_BN(param_e, &e)) {
-        params->E_LENGTH = BN_num_bytes(e);
-        params->E = new unsigned char[params->E_LENGTH];
         BN_bn2bin(e, params->E);
         BN_free(e);
     }
@@ -250,8 +271,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Public Exponent (e) failed.", NULL);
 
     if (param_d && OSSL_PARAM_get_BN(param_d, &d)) {
-        params->D_LENGTH = BN_num_bytes(d);
-        params->D = new unsigned char[params->D_LENGTH];
         BN_bn2bin(d, params->D);
         BN_free(d);
     }
@@ -259,8 +278,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Private Exponent (d) failed.", NULL);
 
     if (param_p && OSSL_PARAM_get_BN(param_p, &p)) {
-        params->P_LENGTH = BN_num_bytes(p);
-        params->P = new unsigned char[params->P_LENGTH];
         BN_bn2bin(p, params->P);
         BN_free(p);
     }
@@ -268,8 +285,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get First Prime Factor (p) failed.", NULL);
 
     if (param_q && OSSL_PARAM_get_BN(param_q, &q)) {
-        params->Q_LENGTH = BN_num_bytes(q);
-        params->Q = new unsigned char[params->Q_LENGTH];
         BN_bn2bin(q, params->Q);
         BN_free(q);
     }
@@ -277,8 +292,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Second Prime Factor (q) failed.", NULL);
 
     if (param_dp && OSSL_PARAM_get_BN(param_dp, &dp)) {
-        params->DP_LENGTH = BN_num_bytes(dp);
-        params->DP = new unsigned char[params->DP_LENGTH];
         BN_bn2bin(dp, params->DP);
         BN_free(dp);
     }
@@ -286,8 +299,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get First CRT Exponent (dp) failed.", NULL);
 
     if (param_dq && OSSL_PARAM_get_BN(param_dq, &dq)) {
-        params->DQ_LENGTH = BN_num_bytes(dq);
-        params->DQ = new unsigned char[params->DQ_LENGTH];
         BN_bn2bin(dq, params->DQ);
         BN_free(dq);
     }
@@ -295,8 +306,6 @@ int ExportRsaParametersFromKeys(EXPORT_RSA_PARAMTERS* params) {
         return handleErrors_asymmetric("Get Second CRT Exponent (dq) failed.", NULL);
 
     if (param_qi && OSSL_PARAM_get_BN(param_qi, &qi)) {
-        params->QI_LENGTH = BN_num_bytes(qi);
-        params->QI = new unsigned char[params->QI_LENGTH];
         BN_bn2bin(qi, params->QI);
         BN_free(qi);
     }
@@ -377,24 +386,28 @@ int ExportRsaKeysFromParameters(EXPORT_RSA_KEY* params) {
 
     switch (params->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        if (PEM_write_bio_PUBKEY(pub_bio, pkey) <= 0 || PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL) <= 0)
+        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey) || 1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
             return handleErrors_asymmetric("Failed to write keys in PEM format.", pub_bio, priv_bio, pkey);
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        if (i2d_PUBKEY_bio(pub_bio, pkey) <= 0 || i2d_PrivateKey_bio(priv_bio, pkey) <= 0)
+        if (1 != i2d_PUBKEY_bio(pub_bio, pkey) || 1 != i2d_PrivateKey_bio(priv_bio, pkey))
             return handleErrors_asymmetric("Failed to write keys in DER format.", pub_bio, priv_bio, pkey);
         break;
     default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
     }
 
-    params->PUBLIC_KEY_LENGTH = BIO_pending(pub_bio);
-    params->PRIVATE_KEY_LENGTH = BIO_pending(priv_bio);
+    size_t pub_len = BIO_pending(pub_bio);
+    size_t priv_len = BIO_pending(priv_bio);
+    if (params->PUBLIC_KEY == nullptr || params->PRIVATE_KEY == nullptr || params->PUBLIC_KEY_LENGTH < pub_len || params->PRIVATE_KEY_LENGTH < priv_len) {
+        params->PUBLIC_KEY = new unsigned char[pub_len];
+        params->PRIVATE_KEY = new unsigned char[priv_len];
+    }
 
-    params->PUBLIC_KEY = new unsigned char[params->PUBLIC_KEY_LENGTH];
-    params->PRIVATE_KEY = new unsigned char[params->PRIVATE_KEY_LENGTH];
+    BIO_read(pub_bio, params->PUBLIC_KEY, pub_len);
+    BIO_read(priv_bio, params->PRIVATE_KEY, priv_len);
 
-    BIO_read(pub_bio, params->PUBLIC_KEY, params->PUBLIC_KEY_LENGTH);
-    BIO_read(priv_bio, params->PRIVATE_KEY, params->PRIVATE_KEY_LENGTH);
+    params->PUBLIC_KEY_LENGTH = pub_len;
+    params->PRIVATE_KEY_LENGTH = priv_len;
 
     BIO_free_all(pub_bio);
     BIO_free_all(priv_bio);
