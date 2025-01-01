@@ -50,6 +50,11 @@ install_deps:
 	else \
 		echo "vim Already installed."; \
 	fi
+	@if ! command -v whiptail 2>&1; then \
+		sudo apt update && sudo apt install whiptail; \
+	else \
+		echo "whiptail Already installed."; \
+	fi
 
 
 compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
