@@ -95,7 +95,7 @@ enum DES_MODE : unsigned long long {
     DES_WRAP = 5,
 };
 
-enum HASH_TYPE : unsigned long long {
+enum HASH_TYPE {
     HASH_MD5 = 0,
     HASH_MD5_SHA1 = 1,
     HASH_SHA1 = 2,

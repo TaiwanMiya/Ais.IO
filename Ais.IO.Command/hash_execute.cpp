@@ -103,19 +103,19 @@ void hash_execute::HashStart(Hashes& hash) {
 	std::vector<unsigned char> output;
 	cryptography_libary::ValueEncode(hash.input_option, hash.Input, input);
 	cryptography_libary::ValueEncode(hash.salt_option, hash.Salt, salt);
-	size_t length = (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_128) || (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_256)
+	int length = (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_128) || (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_256)
 		? hash.Length 
 		: ((GetHashLength)HashFunctions.at("-hash-length"))(hash.Mode);
 	output.resize(length);
 	HASH_STRUCTURE hashes = {
-		.INPUT = input.data(),
-		.SALT = salt.data(),
-		.OUTPUT = output.data(),
-		.TYPE = hash.Mode,
-		.SEQUENCE = hash.Sequence,
-		.INPUT_LENGTH = input.size(),
-		.SALT_LENGTH = salt.size(),
-		.OUTPUT_LENGTH = output.size(),
+		input.data(),
+		salt.data(),
+		output.data(),
+		hash.Mode,
+		hash.Sequence,
+		input.size(),
+		salt.size(),
+		output.size(),
 	};
 	int result = ((Hash)HashFunctions.at("-hash"))(&hashes);
 	std::string algorithm = "HASH";

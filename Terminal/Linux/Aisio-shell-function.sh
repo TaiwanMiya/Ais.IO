@@ -36,6 +36,28 @@ Usage() {
 	echo "	-ofb (Des ofb Encrypt/Decrypt)"
 	echo "	-ecb (Des ecb Encrypt/Decrypt)"
 	echo "	-wrap (Des wrap Encrypt/Decrypt)"
+	echo ""
+	echo "Hash operations:"
+	echo "	-md5 (Hash Calculation)"
+	echo "	-md5-sha1 (Hash Calculation)"
+	echo "	-sha1 (Hash Calculation)"
+	echo "	-sha2-224 (Hash Calculation)"
+	echo "	-sha2-256 (Hash Calculation)"
+	echo "	-sha2-384 (Hash Calculation)"
+	echo "	-sha2-512 (Hash Calculation)"
+	echo "	-sha2-512-224 (Hash Calculation)"
+	echo "	-sha2-512-256 (Hash Calculation)"
+	echo "	-sha3-224 (Hash Calculation)"
+	echo "	-sha3-256 (Hash Calculation)"
+	echo "	-sha3-384 (Hash Calculation)"
+	echo "	-sha3-512 (Hash Calculation)"
+	echo "	-sha3-ke-128 (Hash Calculation)"
+	echo "	-sha3-ke-256 (Hash Calculation)"
+	echo "	-blake2s-256 (Hash Calculation)"
+	echo "	-blake2b-512 (Hash Calculation)"
+	echo "	-sm3 (Hash Calculation)"
+	echo "	-ripemd160 (Hash Calculation)"
+	echo ""
 	exit 1
 }
 
@@ -299,6 +321,6 @@ HASH_SM3() {
 } 
 
 HASH_RIPEMD160() {
-	./aisio -hash -sm3 -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
+	./aisio -hash -ripemd160 -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
 } 
 
