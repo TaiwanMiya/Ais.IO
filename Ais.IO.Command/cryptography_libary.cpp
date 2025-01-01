@@ -100,62 +100,7 @@ CRYPT_OPTIONS cryptography_libary::GetOption(int& i, char* argv[]) {
 	}
 }
 
-void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::string input, std::vector<unsigned char>& output) {
-	size_t length;
-	int resultCode;
-	switch (option) {
-	case CRYPT_OPTIONS::OPTION_TEXT:
-		output.clear();
-		output.assign(input.begin(), input.end());
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE16:
-		length = cryptography_libary::CalculateDecodeLength("--base16", input.size());
-		output.clear();
-		output.resize(length);
-		resultCode = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(input.c_str(), input.size(), output.data(), length);
-		if (resultCode > 0)
-			output.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE32:
-		length = cryptography_libary::CalculateDecodeLength("--base32", input.size());
-		output.clear();
-		output.resize(length);
-		resultCode = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(input.c_str(), input.size(), output.data(), length);
-		if (resultCode > 0)
-			output.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE64:
-		length = cryptography_libary::CalculateDecodeLength("--base64", input.size());
-		output.clear();
-		output.resize(length);
-		resultCode = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(input.c_str(), input.size(), output.data(), length);
-		if (resultCode > 0)
-			output.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_BASE85:
-		length = cryptography_libary::CalculateDecodeLength("--base85", input.size());
-		output.clear();
-		output.resize(length);
-		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(input.c_str(), input.size(), output.data(), length);
-		if (resultCode > 0)
-			output.resize(resultCode);
-		break;
-	case CRYPT_OPTIONS::OPTION_FILE:
-		std::ifstream file(input, std::ios::in | std::ios::binary | std::ios::ate);
-		size_t size = file.tellg();
-		file.seekg(0, std::ios::beg);
-		output.clear();
-		output.resize(size);
-		if (!file.read(reinterpret_cast<char*>(output.data()), size)) {
-			std::cerr << Error("Failed to read file: " + input) << std::endl;
-			output.clear();
-		}
-		file.close();
-		break;
-	}
-}
-
-void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::vector<unsigned char> input, std::string& output) {
+void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<unsigned char> input, std::string& output) {
 	size_t length;
 	int resultCode;
 	std::vector<char> result;
@@ -212,6 +157,61 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::vector<un
 	}
 }
 
+void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string input, std::vector<unsigned char>& output) {
+	size_t length;
+	int resultCode;
+	switch (option) {
+	case CRYPT_OPTIONS::OPTION_TEXT:
+		output.clear();
+		output.assign(input.begin(), input.end());
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE16:
+		length = cryptography_libary::CalculateDecodeLength("--base16", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE32:
+		length = cryptography_libary::CalculateDecodeLength("--base32", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE64:
+		length = cryptography_libary::CalculateDecodeLength("--base64", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE85:
+		length = cryptography_libary::CalculateDecodeLength("--base85", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_FILE:
+		std::ifstream file(input, std::ios::in | std::ios::binary | std::ios::ate);
+		size_t size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		output.clear();
+		output.resize(size);
+		if (!file.read(reinterpret_cast<char*>(output.data()), size)) {
+			std::cerr << Error("Failed to read file: " + input) << std::endl;
+			output.clear();
+		}
+		file.close();
+		break;
+	}
+}
+
 void cryptography_libary::ParseParameters(int argc, char* argv[], Rand& rand) {
 	for (int i = 0; i < argc; ++i) {
 		std::string arg = ToLower(argv[i]);
@@ -264,15 +264,15 @@ void cryptography_libary::RandStart(Rand& rand) {
 	case RAND_TYPE::RAND_GENERATE:
 		result.resize(std::stoull(rand.Value));
 		((Generate)SymmetryFunctions.at("-generate"))(result.data(), result.size());
-		ValueDecode(rand.output_option, result, result_str);
+		ValueEncode(rand.output_option, result, result_str);
 		std::cout << Hint("<Generate>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
 		break;
 	case RAND_TYPE::RAND_IMPORT:
-		ValueEncode(rand.rand_option, rand.Value, result);
+		ValueDecode(rand.rand_option, rand.Value, result);
 		outputResult.resize(result.size());
 		((Import)SymmetryFunctions.at("-import"))(result.data(), result.size(), outputResult.data(), outputResult.size());
-		ValueDecode(rand.output_option, result, result_str);
+		ValueEncode(rand.output_option, result, result_str);
 		std::cout << Hint("<Import>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
 		break;

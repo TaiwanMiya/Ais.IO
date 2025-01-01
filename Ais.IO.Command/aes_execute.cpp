@@ -157,7 +157,7 @@ void aes_execute::EndHandling(std::vector<unsigned char>& result, Aes& aes) {
 	std::string crypt = CryptDisplay[aes.Crypt];
 	std::string result_str = aes.Output;
 	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
-	cryptography_libary::ValueDecode(aes.output_option, result, result_str);
+	cryptography_libary::ValueEncode(aes.output_option, result, result_str);
 	std::cout << Ask(result_str) << std::endl;
 }
 
@@ -247,8 +247,8 @@ void aes_execute::CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	AES_CTR_ENCRYPT encryption = {
 		key.data(),
@@ -272,8 +272,8 @@ void aes_execute::CtrDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	AES_CTR_DECRYPT decryption = {
 			key.data(),
@@ -297,9 +297,9 @@ void aes_execute::CbcEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(aes.Padding ? plaintext.size() + 16: plaintext.size());
 	AES_CBC_ENCRYPT encryption = {
 		key.data(),
@@ -324,9 +324,9 @@ void aes_execute::CbcDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(aes.Padding ? ciphertext.size() + 16: ciphertext.size());
 	AES_CBC_DECRYPT decryption = {
 		key.data(),
@@ -351,9 +351,9 @@ void aes_execute::CfbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	AES_CFB_ENCRYPT encryption = {
 		key.data(),
@@ -378,9 +378,9 @@ void aes_execute::CfbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	AES_CFB_DECRYPT decryption = {
 		key.data(),
@@ -405,9 +405,9 @@ void aes_execute::OfbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	AES_OFB_ENCRYPT encryption = {
 		key.data(),
@@ -431,9 +431,9 @@ void aes_execute::OfbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.iv_option, aes.IV, iv);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	AES_OFB_DECRYPT decryption = {
 		key.data(),
@@ -456,8 +456,8 @@ void aes_execute::EcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(aes.Padding ? plaintext.size() + 16 : plaintext.size());
 	AES_ECB_ENCRYPT encryption = {
 		key.data(),
@@ -480,8 +480,8 @@ void aes_execute::EcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(aes.Padding ? ciphertext.size() + 16: ciphertext.size());
 	AES_ECB_DECRYPT decryption = {
 		key.data(),
@@ -507,11 +507,11 @@ void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
-	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_GCM_ENCRYPT encryption = {
 		key.data(),
@@ -532,7 +532,7 @@ void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		return;
 	}
 	std::string verify_tag = aes.Output + ".tag";
-	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
@@ -546,11 +546,11 @@ void aes_execute::GcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
     std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-    cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-    cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-    cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
-    cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+    cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+    cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+    cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
+    cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_GCM_DECRYPT decryption = {
 		key.data(),
@@ -581,11 +581,11 @@ void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
-	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_CCM_ENCRYPT encryption = {
 		key.data(),
@@ -606,7 +606,7 @@ void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		return;
 	}
 	std::string verify_tag = aes.Output + ".tag";
-	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
@@ -620,11 +620,11 @@ void aes_execute::CcmDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
-	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_CCM_DECRYPT decryption = {
 		key.data(),
@@ -654,10 +654,10 @@ void aes_execute::XtsEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> key2;
 	std::vector<unsigned char> tweak;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key1);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
-	cryptography_libary::ValueEncode(aes.key2_option, aes.Key2, key2);
-	cryptography_libary::ValueEncode(aes.tweak_option, aes.Tweak, tweak);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key1);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.key2_option, aes.Key2, key2);
+	cryptography_libary::ValueDecode(aes.tweak_option, aes.Tweak, tweak);
 	ciphertext.resize(plaintext.size());
 	AES_XTS_ENCRYPT encryption = {
 		key1.data(),
@@ -684,10 +684,10 @@ void aes_execute::XtsDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> key2;
 	std::vector<unsigned char> tweak;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key1);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
-	cryptography_libary::ValueEncode(aes.key2_option, aes.Key2, key2);
-	cryptography_libary::ValueEncode(aes.tweak_option, aes.Tweak, tweak);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key1);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.key2_option, aes.Key2, key2);
+	cryptography_libary::ValueDecode(aes.tweak_option, aes.Tweak, tweak);
 	plaintext.resize(ciphertext.size());
 	AES_XTS_DECRYPT decryption = {
 		key1.data(),
@@ -715,11 +715,11 @@ void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-	cryptography_libary::ValueEncode(aes.plaintext_option, aes.PlainText, plaintext);
-	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
+	cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	ciphertext.resize(plaintext.size());
 	AES_OCB_ENCRYPT encryption = {
 		key.data(),
@@ -740,7 +740,7 @@ void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 		return;
 	}
 	std::string verify_tag = aes.Output + ".tag";
-	cryptography_libary::ValueDecode(aes.output_option, tag, verify_tag);
+	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
 	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
@@ -754,11 +754,11 @@ void aes_execute::OcbDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> tag;
 	std::vector<unsigned char> aad;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.nonce_option, aes.Nonce, nonce);
-	cryptography_libary::ValueEncode(aes.ciphertext_option, aes.CipherText, ciphertext);
-	cryptography_libary::ValueEncode(aes.tag_option, aes.Tag, tag);
-	cryptography_libary::ValueEncode(aes.aad_option, aes.Aad, aad);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.nonce_option, aes.Nonce, nonce);
+	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(aes.tag_option, aes.Tag, tag);
+	cryptography_libary::ValueDecode(aes.aad_option, aes.Aad, aad);
 	plaintext.resize(ciphertext.size());
 	AES_OCB_DECRYPT decryption = {
 		key.data(),
@@ -786,8 +786,8 @@ void aes_execute::WrapEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> kek;
 	std::vector<unsigned char> wrap;
-	cryptography_libary::ValueEncode(aes.key_option, aes.Key, key);
-	cryptography_libary::ValueEncode(aes.kek_option, aes.Kek, kek);
+	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.kek_option, aes.Kek, kek);
 	wrap.resize(key.size() + 8);
 	AES_WRAP_ENCRYPT encryption = {
 		key.data(),
@@ -810,8 +810,8 @@ void aes_execute::WrapDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> wrap;
 	std::vector<unsigned char> kek;
 	std::vector<unsigned char> key;
-	cryptography_libary::ValueEncode(aes.wrap_option, aes.Wrap, wrap);
-	cryptography_libary::ValueEncode(aes.kek_option, aes.Kek, kek);
+	cryptography_libary::ValueDecode(aes.wrap_option, aes.Wrap, wrap);
+	cryptography_libary::ValueDecode(aes.kek_option, aes.Kek, kek);
 	key.resize(wrap.size() - 8);
 	AES_WRAP_DECRYPT decryption = {
 		wrap.data(),

@@ -101,8 +101,8 @@ void hash_execute::HashStart(Hashes& hash) {
 	std::vector<unsigned char> input;
 	std::vector<unsigned char> salt;
 	std::vector<unsigned char> output;
-	cryptography_libary::ValueEncode(hash.input_option, hash.Input, input);
-	cryptography_libary::ValueEncode(hash.salt_option, hash.Salt, salt);
+	cryptography_libary::ValueDecode(hash.input_option, hash.Input, input);
+	cryptography_libary::ValueDecode(hash.salt_option, hash.Salt, salt);
 	int length = (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_128) || (hash.Length != 0 && hash.Mode == HASH_TYPE::HASH_SHA3_KE_256)
 		? hash.Length 
 		: ((GetHashLength)HashFunctions.at("-hash-length"))(hash.Mode);
@@ -124,6 +124,6 @@ void hash_execute::HashStart(Hashes& hash) {
 	if (result < 0)
 		std::cerr << Error("HASH " + mode + " Encrypt Failed.") << std::endl;
 	std::cout << Hint("<" + algorithm + " " + mode + ">") << std::endl;
-	cryptography_libary::ValueDecode(hash.output_option, output, result_str);
+	cryptography_libary::ValueEncode(hash.output_option, output, result_str);
 	std::cout << Ask(result_str) << std::endl;
 }

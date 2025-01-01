@@ -120,7 +120,7 @@ void des_execute::EndHandling(std::vector<unsigned char>& result, Des& des) {
 	std::string crypt = CryptDisplay[des.Crypt];
 	std::string result_str = des.Output;
 	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
-	cryptography_libary::ValueDecode(des.output_option, result, result_str);
+	cryptography_libary::ValueEncode(des.output_option, result, result_str);
 	std::cout << Ask(result_str) << std::endl;
 }
 
@@ -180,9 +180,9 @@ void des_execute::CbcEncrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.plaintext_option, des.PlainText, plaintext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.plaintext_option, des.PlainText, plaintext);
 	ciphertext.resize(des.Padding ? plaintext.size() + 16 : plaintext.size());
 	DES_CBC_ENCRYPT encryption = {
 		key.data(),
@@ -207,9 +207,9 @@ void des_execute::CbcDecrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.ciphertext_option, des.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.ciphertext_option, des.CipherText, ciphertext);
 	plaintext.resize(des.Padding ? ciphertext.size() + 16 : ciphertext.size());
 	DES_CBC_DECRYPT decryption = {
 		key.data(),
@@ -234,9 +234,9 @@ void des_execute::CfbEncrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.plaintext_option, des.PlainText, plaintext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.plaintext_option, des.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	DES_CFB_ENCRYPT encryption = {
 		key.data(),
@@ -261,9 +261,9 @@ void des_execute::CfbDecrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.ciphertext_option, des.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.ciphertext_option, des.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	DES_CFB_DECRYPT decryption = {
 		key.data(),
@@ -288,9 +288,9 @@ void des_execute::OfbEncrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.plaintext_option, des.PlainText, plaintext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.plaintext_option, des.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	DES_OFB_ENCRYPT encryption = {
 		key.data(),
@@ -314,9 +314,9 @@ void des_execute::OfbDecrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.iv_option, des.IV, iv);
-	cryptography_libary::ValueEncode(des.ciphertext_option, des.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.iv_option, des.IV, iv);
+	cryptography_libary::ValueDecode(des.ciphertext_option, des.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	DES_OFB_DECRYPT decryption = {
 		key.data(),
@@ -339,8 +339,8 @@ void des_execute::EcbEncrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.plaintext_option, des.PlainText, plaintext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.plaintext_option, des.PlainText, plaintext);
 	ciphertext.resize(des.Padding ? plaintext.size() + 16 : plaintext.size());
 	DES_ECB_ENCRYPT encryption = {
 		key.data(),
@@ -363,8 +363,8 @@ void des_execute::EcbDecrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.ciphertext_option, des.CipherText, ciphertext);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.ciphertext_option, des.CipherText, ciphertext);
 	plaintext.resize(des.Padding ? ciphertext.size() + 16 : ciphertext.size());
 	DES_ECB_DECRYPT decryption = {
 		key.data(),
@@ -387,8 +387,8 @@ void des_execute::WrapEncrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> key;
 	std::vector<unsigned char> kek;
 	std::vector<unsigned char> wrap;
-	cryptography_libary::ValueEncode(des.key_option, des.Key, key);
-	cryptography_libary::ValueEncode(des.kek_option, des.Kek, kek);
+	cryptography_libary::ValueDecode(des.key_option, des.Key, key);
+	cryptography_libary::ValueDecode(des.kek_option, des.Kek, kek);
 	wrap.resize(key.size() + 16);
 	DES_WRAP_ENCRYPT encryption = {
 		key.data(),
@@ -411,8 +411,8 @@ void des_execute::WrapDecrypt(std::vector<unsigned char>& result, Des& des) {
 	std::vector<unsigned char> wrap;
 	std::vector<unsigned char> kek;
 	std::vector<unsigned char> key;
-	cryptography_libary::ValueEncode(des.wrap_option, des.Wrap, wrap);
-	cryptography_libary::ValueEncode(des.kek_option, des.Kek, kek);
+	cryptography_libary::ValueDecode(des.wrap_option, des.Wrap, wrap);
+	cryptography_libary::ValueDecode(des.kek_option, des.Kek, kek);
 	key.resize(wrap.size() - 16);
 	DES_WRAP_DECRYPT decryption = {
 		wrap.data(),
