@@ -57,6 +57,9 @@
     <ClCompile Include="usage_libary.cpp">
       <Filter>來源檔案\Libary</Filter>
     </ClCompile>
+    <ClCompile Include="rsa_execute.cpp">
+      <Filter>來源檔案\Execute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -88,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="usage_libary.h">
       <Filter>標頭檔\Libary</Filter>
+    </ClInclude>
+    <ClInclude Include="rsa_execute.h">
+      <Filter>標頭檔\Execute</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

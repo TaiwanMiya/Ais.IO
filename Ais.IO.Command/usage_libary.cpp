@@ -39,8 +39,20 @@ void usage_libary::ShowUsage() {
     std::cout << Hint("    5. Helper by Hash:") << std::endl;
     std::cout << Info("        --help -hash") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << Hint("    Show Colors:\n") << std::endl;
+    std::cout << Hint("    Show Colors:") << std::endl;
     std::cout << Info("        --colors") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    Generate Symmetry Key / Generate Random Bytes:") << std::endl;
+    std::cout << Info("        [-gen | --generate] <number> [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--way]:\n");
+    std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16]") << Warn("           -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32]") << Warn("           -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64]") << Warn("           -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85]") << Warn("           -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
     std::cout << "" << std::endl;
 }
 
@@ -165,10 +177,10 @@ void usage_libary::ShowAesUsage() {
 
     std::cout << Hint("    Supported [--way]:\n");
     std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16]") << Warn("           -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32]") << Warn("           -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64]") << Warn("           -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85]") << Warn("           -> Base85 data.") << std::endl;
     std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
     std::cout << "" << std::endl;
 }
@@ -201,10 +213,10 @@ void usage_libary::ShowDesUsage() {
 
     std::cout << Hint("    Supported [--way]:\n");
     std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16]") << Warn("           -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32]") << Warn("           -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64]") << Warn("           -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85]") << Warn("           -> Base85 data.") << std::endl;
     std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
     std::cout << "" << std::endl;
 }
@@ -285,10 +297,20 @@ void usage_libary::ShowHashUsage() {
 
     std::cout << Hint("    Supported [--way]:\n");
     std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                  -> Raw data.") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16] <content>") << Warn(" -> Base16 data.") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32] <content>") << Warn(" -> Base32 data.") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64] <content>") << Warn(" -> Base64 data.") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85] <content>") << Warn(" -> Base85 data.") << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16]") << Warn("           -> Base16 data.") << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32]") << Warn("           -> Base32 data.") << std::endl;
+    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64]") << Warn("           -> Base64 data.") << std::endl;
+    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85]") << Warn("           -> Base85 data.") << std::endl;
     std::cout << "        " << Mark("6") << ". " << Info("[-f | -file] <path>") << Warn("        -> Archival data.") << std::endl;
     std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowRsaUsage() {
+    std::cout << Mark("      :::::::::") << Error("      ::::::::") << Ask("          ::: ") << std::endl;
+    std::cout << Mark("     :+:    :+:") << Error("    :+:    :+:") << Ask("       :+: :+:") << std::endl;
+    std::cout << Mark("    +:+    +:+ ") << Error("   +:+        ") << Ask("     +:+   +:+") << std::endl;
+    std::cout << Mark("   +#++:++#:   ") << Error("  +#++:++#++  ") << Ask("   +#++:++#++:") << std::endl;
+    std::cout << Mark("  +#+    +#+   ") << Error("        +#+   ") << Ask("  +#+     +#+ ") << std::endl;
+    std::cout << Mark(" #+#    #+#    ") << Error("#+#    #+#    ") << Ask(" #+#     #+#  ") << std::endl;
+    std::cout << Mark("###    ###     ") << Error("########      ") << Ask("###     ###   ") << std::endl;
 }

@@ -2,6 +2,7 @@
 
 #include "main.h"
 class usage_libary {
+// Font Name: Alligator
 public:
 	static void ShowUsage();
 	static void ShowBinaryUsage();
@@ -9,5 +10,6 @@ public:
 	static void ShowAesUsage();
 	static void ShowDesUsage();
 	static void ShowHashUsage();
+	static void ShowRsaUsage();
 };
 

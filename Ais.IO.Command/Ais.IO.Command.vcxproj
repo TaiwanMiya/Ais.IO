@@ -161,6 +161,7 @@
     <ClCompile Include="hash_execute.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="output_colors.cpp" />
+    <ClCompile Include="rsa_execute.cpp" />
     <ClCompile Include="string_case.cpp" />
     <ClCompile Include="usage_libary.cpp" />
   </ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="hash_execute.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="output_colors.h" />
+    <ClInclude Include="rsa_execute.h" />
     <ClInclude Include="string_case.h" />
     <ClInclude Include="usage_libary.h" />
   </ItemGroup>

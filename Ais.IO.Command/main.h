@@ -22,6 +22,22 @@
 #include <filesystem>
 #include <functional>
 
+enum BINARYIO_TYPE : unsigned char {
+    TYPE_BOOLEAN = 1,
+    TYPE_BYTE = 2,
+    TYPE_SBYTE = 3,
+    TYPE_SHORT = 4,
+    TYPE_USHORT = 5,
+    TYPE_INT = 6,
+    TYPE_UINT = 7,
+    TYPE_LONG = 8,
+    TYPE_ULONG = 9,
+    TYPE_FLOAT = 10,
+    TYPE_DOUBLE = 11,
+    TYPE_BYTES = 12,
+    TYPE_STRING = 13,
+};
+
 enum CRYPT_OPTIONS : unsigned char {
     OPTION_TEXT = 0,
     OPTION_BASE16 = 1,
@@ -43,6 +59,17 @@ enum CRYPT_TYPE : unsigned char {
     CRYPTION_SIGNED = 3,
     CRYPTION_VERIFY = 4,
     CRYPTION_DERIVE = 5,
+};
+
+enum RSA_CRYPT_OPTIONS : unsigned char {
+    RSA_OPTION_DER_TEXT = 0,
+    RSA_OPTION_DER_BASE16 = 1,
+    RSA_OPTION_DER_BASE32 = 2,
+    RSA_OPTION_DER_BASE64 = 3,
+    RSA_OPTION_DER_BASE85 = 4,
+    RSA_OPTION_DER_FILE = 5,
+    RSA_OPTION_PEM_TEXT = 6,
+    RSA_OPTION_PEM_FILE = 7,
 };
 
 enum AES_MODE : unsigned long long {
@@ -68,21 +95,7 @@ enum DES_MODE : unsigned long long {
     DES_WRAP = 5,
 };
 
-enum SEGMENT_SIZE_OPTION {
-    SEGMENT_1_BIT = 1,
-    SEGMENT_8_BIT = 8,
-    SEGMENT_64_BIT = 64,
-    SEGMENT_128_BIT = 128,
-};
-
-enum SALT_SEQUENCE {
-    SALT_NULL = 0,
-    SALT_FIRST = 1 << 0,
-    SALT_LAST = 1 << 1,
-    SALT_MIDDLE = 1 << 2,
-};
-
-enum HASH_TYPE {
+enum HASH_TYPE : unsigned long long {
     HASH_MD5 = 0,
     HASH_MD5_SHA1 = 1,
     HASH_SHA1 = 2,
@@ -104,6 +117,32 @@ enum HASH_TYPE {
     HASH_RIPEMD160 = 18,
 };
 
+enum RSA_MODE : unsigned long long {
+    RSA_GENERATE_PARAMS = 0,
+    RSA_GENERATE_KEYS = 1,
+    RSA_EXPORT_PARAMS = 2,
+    RSA_EXPORT_KEYS = 3,
+};
+
+enum SEGMENT_SIZE_OPTION {
+    SEGMENT_1_BIT = 1,
+    SEGMENT_8_BIT = 8,
+    SEGMENT_64_BIT = 64,
+    SEGMENT_128_BIT = 128,
+};
+
+enum SALT_SEQUENCE {
+    SALT_NULL = 0,
+    SALT_FIRST = 1 << 0,
+    SALT_LAST = 1 << 1,
+    SALT_MIDDLE = 1 << 2,
+};
+
+enum ASYMMETRIC_KEY_FORMAT {
+    ASYMMETRIC_KEY_PEM = 0,
+    ASYMMETRIC_KEY_DER = 1,
+};
+
 struct Command {
     std::string type;
     std::string value;
@@ -123,7 +162,7 @@ struct Rand {
 
 struct Aes {
     AES_MODE Mode;
-    CRYPT_TYPE Crypt;
+    CRYPT_TYPE Crypt = CRYPT_TYPE::CRYPTION_NULL;
     std::string Key;
     std::string IV;
     std::string PlainText;
@@ -157,7 +196,7 @@ struct Aes {
 
 struct Des {
     DES_MODE Mode;
-    CRYPT_TYPE Crypt;
+    CRYPT_TYPE Crypt = CRYPT_TYPE::CRYPTION_NULL;
     std::string Key;
     std::string IV;
     std::string PlainText;
@@ -192,20 +231,28 @@ struct Hashes {
     SALT_SEQUENCE Sequence = SALT_SEQUENCE::SALT_NULL;
 };
 
-enum BINARYIO_TYPE : unsigned char {
-    TYPE_BOOLEAN = 1,
-    TYPE_BYTE = 2,
-    TYPE_SBYTE = 3,
-    TYPE_SHORT = 4,
-    TYPE_USHORT = 5,
-    TYPE_INT = 6,
-    TYPE_UINT = 7,
-    TYPE_LONG = 8,
-    TYPE_ULONG = 9,
-    TYPE_FLOAT = 10,
-    TYPE_DOUBLE = 11,
-    TYPE_BYTES = 12,
-    TYPE_STRING = 13,
+struct Rsa {
+    RSA_MODE Mode;
+    std::string N;
+    std::string E;
+    std::string D;
+    std::string P;
+    std::string Q;
+    std::string DP;
+    std::string DQ;
+    std::string QI;
+    std::string Params;
+    std::string PublicKey;
+    std::string PrivateKey;
+    std::string Output;
+    size_t KeyLength = 0;
+
+    CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
+    RSA_CRYPT_OPTIONS publickey_option = RSA_CRYPT_OPTIONS::RSA_OPTION_DER_TEXT;
+    RSA_CRYPT_OPTIONS privatekey_option = RSA_CRYPT_OPTIONS::RSA_OPTION_DER_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
+    ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
 };
 
 #pragma pack(push, 1)
@@ -539,6 +586,60 @@ struct HASH_STRUCTURE {
     size_t OUTPUT_LENGTH;
 };
 
+struct RSA_PARAMETERS {
+    const size_t KEY_LENGTH;
+    unsigned char* N;
+    unsigned char* E;
+    unsigned char* D;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* DP;
+    unsigned char* DQ;
+    unsigned char* QI;
+    size_t N_LENGTH;
+    size_t E_LENGTH;
+    size_t D_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t DP_LENGTH;
+    size_t DQ_LENGTH;
+    size_t QI_LENGTH;
+};
+
+struct RSA_KEY_PAIR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+};
+
+struct EXPORT_RSA {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* N;
+    unsigned char* E;
+    unsigned char* D;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* DP;
+    unsigned char* DQ;
+    unsigned char* QI;
+    size_t N_LENGTH;
+    size_t E_LENGTH;
+    size_t D_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t DP_LENGTH;
+    size_t DQ_LENGTH;
+    size_t QI_LENGTH;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -689,6 +790,14 @@ typedef int (*Hash)(HASH_STRUCTURE*);
 typedef int (*GetHashLength)(HASH_TYPE);
 #pragma endregion
 
+#pragma region RsaIO
+typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
+typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
+typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
+typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
+typedef int (*RsaExportParameters)(EXPORT_RSA*);
+typedef int (*RsaExportKeys)(EXPORT_RSA*);
+#pragma endregion
 
 extern std::unordered_map<std::string, void*> ReadFunctions;
 extern std::unordered_map<std::string, void*> WriteFunctions;
@@ -699,6 +808,7 @@ extern std::unordered_map<std::string, void*> SymmetryFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
 extern std::unordered_map<std::string, void*> DesFunctions;
 extern std::unordered_map<std::string, void*> HashFunctions;
+extern std::unordered_map<std::string, void*> RsaFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
 extern std::unordered_map<std::string, AES_MODE> AesMode;

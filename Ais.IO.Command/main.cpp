@@ -10,6 +10,7 @@
 #include "des_execute.h"
 #include "hash_execute.h"
 #include "usage_libary.h"
+#include "rsa_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -32,6 +33,7 @@ std::unordered_map<std::string, void*> SymmetryFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
 std::unordered_map<std::string, void*> DesFunctions;
 std::unordered_map<std::string, void*> HashFunctions;
+std::unordered_map<std::string, void*> RsaFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
     { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
@@ -133,75 +135,6 @@ std::unordered_map<HASH_TYPE, std::string> HashDisplay = {
     { HASH_TYPE::HASH_RIPEMD160, "RIPEMD160"},
 };
 
-void ShowUsage() {
-    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
-    std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
-    std::cout << Any("              A:::A               i::::i                       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
-    std::cout << Any("             A:::::A               iiii                        I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
-    std::cout << Any("            A:::::::A                                          II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
-    std::cout << Any("           A:::::::::A           iiiiiii     ssssssssss          I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
-    std::cout << Any("          A:::::A:::::A          i:::::i   ss::::::::::s         I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
-    std::cout << Any("         A:::::A A:::::A          i::::i ss:::::::::::::s        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
-    std::cout << Any("        A:::::A   A:::::A         i::::i s::::::ssss:::::s       I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
-    std::cout << Any("       A:::::A     A:::::A        i::::i  s:::::s  ssssss        I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 32) << std::endl;
-    std::cout << Any("      A:::::AAAAAAAAA:::::A       i::::i    s::::::s             I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 33) << std::endl;
-    std::cout << Any("     A:::::::::::::::::::::A      i::::i       s::::::s          I::::I  O:::::O     O:::::O", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
-    std::cout << Any("    A:::::AAAAAAAAAAAAA:::::A     i::::i ssssss   s:::::s        I::::I  O::::::O   O::::::O", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
-    std::cout << Any("   A:::::A             A:::::A   i::::::is:::::ssss::::::s     II::::::IIO:::::::OOO:::::::O", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
-    std::cout << Any("  A:::::A               A:::::A  i::::::is::::::::::::::s      I::::::::I OO:::::::::::::OO ", TERMINAL_STYLE::STYLE_FLASHING, 37) << std::endl;
-    std::cout << Any(" A:::::A                 A:::::A i::::::i s:::::::::::ss       I::::::::I   OO:::::::::OO   ", TERMINAL_STYLE::STYLE_FLASHING, 36) << std::endl;
-    std::cout << Any("AAAAAAA                   AAAAAAAiiiiiiii  sssssssssss         IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 35) << std::endl;
-    std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 34) << std::endl;
-
-    std::cout << Hint("Usage:\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Commands for IO operations:\n");
-    std::cout << Hint("    [-id | --indexes] <path>\n");
-    std::cout << Hint("    [-rl | --read-all] <path>\n");
-    std::cout << Hint("    [-r | --read] <path> [--type] ...\n");
-    std::cout << Hint("    [-w | --write] <path> [--type] <value> ...\n");
-    std::cout << Hint("    [-a | --append] <path> [--type] <value> ...\n");
-    std::cout << Hint("    [-i | --insert] <path> [--type] <value> <position> ...\n");
-    std::cout << Hint("    [-rm | --remove] <path> [--type] <position> <length> ...\n");
-    std::cout << Hint("    [-rs | --remove-index] <path> <index> ...\n");
-    std::cout << Hint("  Supported [--type]:\n");
-    std::cout << Hint("    -bool, -byte, -sbyte, -short, -ushort, -int, -uint, -long, -ulong, -float, -double, -bytes, -string\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Commands for Base encoding/decoding:\n");
-    std::cout << Hint("    [-b16 | --base16] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
-    std::cout << Hint("    [-b32 | --base32] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
-    std::cout << Hint("    [-b64 | --base64] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
-    std::cout << Hint("    [-b85 | --base85] [-e | -encode | -d -decode] [-in | -input <path>] [-out | -output <path>] <value>\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Commands for Aes Cryptography:\n");
-    std::cout << Hint("    [-aes | --aes] [--mode] [-e | -encrypt | -d | -decrypt] [-key | -iv | [-count | -counter] | [-pad | -padding] | [-seg | -segment] | -tag | -aad | -tweak | -key2 | -kek | -nonce | [-wk | -wrapkey]]\n");
-    std::cout << Hint("    [[-pt | -plain-text] | [-ct | -cipher-text]] [--pattern] [-out] [--pattern]\n");
-    std::cout << Hint("  Supported [--pattern]:\n");
-    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Commands for Des Cryptography:\n");
-    std::cout << Hint("    [-des | --des] [--mode] [-e | -encrypt | -d | -decrypt] [-key | -iv | [-pad | -padding] | [-seg | -segment] | -kek | [-wk | -wrapkey]]\n");
-    std::cout << Hint("    [[-pt | -plain-text] | [-ct | -cipher-text]] [--pattern] [-out] [--pattern]\n");
-    std::cout << Hint("  Supported [--pattern]:\n");
-    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Commands for Hash Calculation:\n");
-    std::cout << Hint("    [-hash | --hash] [--mode] [-in | -input] [--pattern] <value> | -salt [--pattern] <value> | [--sequence] | [-out] [--pattern]\n");
-    std::cout << Hint("  Supported [--mode]:\n");
-    std::cout << Hint("    -md5, -md5-sha1, -sha1, [-sha224 | -sha2-224], [-sha256 | -sha2-256], [-sha384 | -sha2-384], [-sha512 | -sha2-512],\n");
-    std::cout << Hint("    [-sha512-224 | -sha2-512-224], [-sha512-256 | -sha2-512-256], -sha3-224, -sha3-256, -sha3-384, -sha3-512,\n");
-    std::cout << Hint("    [-shake128, -sha3-ke-128], [-shake256, -sha3-ke-256], [-blake2s | -blake256 | -blake2s-256], [-blake2b | -blake512 | -blake2b-512],\n");
-    std::cout << Hint("    -sm3, -ripemd160\n");
-    std::cout << Hint("  Supported [--sequence]:\n");
-    std::cout << Hint("    [-fir | -first], [-las | -last] | [-mid | -middle]\n");
-    std::cout << Hint("  Supported [--pattern]:\n");
-    std::cout << Hint("    <text>, [-b16 | -base16] <text>, [-b32 | -base32] <text>, [-b64 | -base64] <text>, [-b85 | -base85] <text>, [-f | -file] <path>\n");
-    std::cout << "" << std::endl;
-    std::cout << Hint("  Additional commands:\n");
-    std::cout << Hint("    --colors\n");
-    std::cout << "" << std::endl;
-}
-
 bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, std::vector<Command>& commands) {
     if (argc < 3) {
         return false;
@@ -211,17 +144,17 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         "--help",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
         "--base16", "--base32", "--base64", "--base85",
-        "--generate", "--import", "--aes", "--des", "--hash"
+        "--generate", "--import", "--aes", "--des", "--hash", "--rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}
+        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-rsa", "--rsa"}
     };
 
     std::unordered_set<std::string> validHelper = {
-        "-binary", "-base", "-aes", "-des", "-hash"
+        "-binary", "-base", "-aes", "-des", "-hash", "-rsa"
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -271,6 +204,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 usage_libary::ShowDesUsage();
             if (helper == "-hash")
                 usage_libary::ShowHashUsage();
+            if (helper == "-rsa")
+                usage_libary::ShowRsaUsage();
             exit(0);
         }
         else {
@@ -563,6 +498,13 @@ void LoadFunctions() {
     HashFunctions["-hash"] = GET_PROC_ADDRESS(Lib, "Hash");
     HashFunctions["-hash-length"] = GET_PROC_ADDRESS(Lib, "GetHashLength");
 
+    RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
+    RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
+    RsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
+    RsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
+    RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
+    RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
+
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
 }
@@ -721,6 +663,11 @@ int main(int argc, char* argv[]) {
         Hashes hash;
         hash_execute::ParseParameters(argc, argv, hash);
         hash_execute::HashStart(hash);
+    }
+    else if (mode == "--rsa") {
+        Rsa rsa;
+        rsa_execute::ParseParameters(argc, argv, rsa);
+        rsa_execute::RsaStart(rsa);
     }
     else if (mode == "--generate" || mode == "--import") {
         Rand rand;
