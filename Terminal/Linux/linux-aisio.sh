@@ -221,6 +221,9 @@ for ((i=1; i<=iterations; i++)); do
 				-sha3-ke-128)
 					HASH_SHA3_KE_128
 					;;
+				-sha3-ke-256)
+					HASH_SHA3_KE_256
+					;;
 				-blake2s-256)
 					HASH_BLAKE2S_256
 					;;
