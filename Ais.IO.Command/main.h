@@ -61,17 +61,6 @@ enum CRYPT_TYPE : unsigned char {
     CRYPTION_DERIVE = 5,
 };
 
-enum RSA_CRYPT_OPTIONS : unsigned char {
-    RSA_OPTION_DER_TEXT = 0,
-    RSA_OPTION_DER_BASE16 = 1,
-    RSA_OPTION_DER_BASE32 = 2,
-    RSA_OPTION_DER_BASE64 = 3,
-    RSA_OPTION_DER_BASE85 = 4,
-    RSA_OPTION_DER_FILE = 5,
-    RSA_OPTION_PEM_TEXT = 6,
-    RSA_OPTION_PEM_FILE = 7,
-};
-
 enum AES_MODE : unsigned long long {
     AES_NULL = 0,
     AES_CTR = 1,
@@ -248,8 +237,8 @@ struct Rsa {
     size_t KeyLength = 0;
 
     CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
-    RSA_CRYPT_OPTIONS publickey_option = RSA_CRYPT_OPTIONS::RSA_OPTION_DER_TEXT;
-    RSA_CRYPT_OPTIONS privatekey_option = RSA_CRYPT_OPTIONS::RSA_OPTION_DER_TEXT;
+    CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;

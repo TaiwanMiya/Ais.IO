@@ -394,6 +394,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 }
 
 void LoadFunctions() {
+    ReadFunctions["-create"] = GET_PROC_ADDRESS(Lib, "CreateBinaryReader");
+    ReadFunctions["-destory"] = GET_PROC_ADDRESS(Lib, "DestroyBinaryReader");
     ReadFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "ReadBoolean");
     ReadFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "ReadByte");
     ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "ReadSByte");
@@ -412,6 +414,8 @@ void LoadFunctions() {
     ReadFunctions["-remove"] = GET_PROC_ADDRESS(Lib, "RemoveIndex");
     ReadFunctions["-indexes"] = GET_PROC_ADDRESS(Lib, "GetAllIndices");
 
+    WriteFunctions["-create"] = GET_PROC_ADDRESS(Lib, "CreateBinaryWriter");
+    WriteFunctions["-destory"] = GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter");
     WriteFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "WriteBoolean");
     WriteFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "WriteByte");
     WriteFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "WriteSByte");
@@ -426,6 +430,8 @@ void LoadFunctions() {
     WriteFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "WriteBytes");
     WriteFunctions["-string"] = GET_PROC_ADDRESS(Lib, "WriteString");
 
+    AppendFunctions["-create"] = GET_PROC_ADDRESS(Lib, "CreateBinaryAppender");
+    AppendFunctions["-destory"] = GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender");
     AppendFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "AppendBoolean");
     AppendFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "AppendByte");
     AppendFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "AppendSByte");
@@ -440,6 +446,8 @@ void LoadFunctions() {
     AppendFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "AppendBytes");
     AppendFunctions["-string"] = GET_PROC_ADDRESS(Lib, "AppendString");
 
+    InsertFunctions["-create"] = GET_PROC_ADDRESS(Lib, "CreateBinaryInserter");
+    InsertFunctions["-destory"] = GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter");
     InsertFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "InsertBoolean");
     InsertFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "InsertByte");
     InsertFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "InsertSByte");

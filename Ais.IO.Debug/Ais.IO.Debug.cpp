@@ -561,11 +561,11 @@ int main() {
 
     //Test_GetRsaKeyLength();
 
-    Test_GenerateRsaParameters();
+    //Test_GenerateRsaParameters();
 
     //Test_RsaGenerate();
 
-    //Test_ExportRsaParametersFromKeys();
+    Test_ExportRsaParametersFromKeys();
 
-    Test_ExportRsaKeyFromParameters();
+    //Test_ExportRsaKeyFromParameters();
 }
