@@ -58,6 +58,13 @@ Usage() {
 	echo "	-sm3 (Hash Calculation)"
 	echo "	-ripemd160 (Hash Calculation)"
 	echo ""
+	echo "Rsa operations:"
+	echo "	-generate -param (Generate Rsa Paramters)"
+	echo "	-generate -key -out -pem (Generate Rsa PEM Public Key / Private Key)"
+	echo "	-generate -key -out -der -b16 (Generate Rsa DER Public Key / Private Key)"
+	echo "	-export -param (Export Rsa Paramters)"
+	echo "	-export -key (Export Rsa Public Key / Private Key)"
+	echo ""
 	exit 1
 }
 
@@ -331,4 +338,25 @@ HASH_SM3() {
 HASH_RIPEMD160() {
 	./aisio -hash -ripemd160 -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
 } 
+
+RSA_Generate_Paramters() {
+	./aisio -rsa -generate -param 2048 -out "$BASE"
+}
+
+RSA_Generate_Keys_PEM() {
+	./aisio -rsa -generate -key 2048 -out -pem
+}
+
+RSA_Generate_Keys_DER() {
+	./aisio -rsa -generate -key 2048 -out -der "$BASE"
+}
+
+RSA_Export_Paramters() {
+	./aisio -rsa -export -param -pub -der "$BASE" "$RSA_DER_PUB" -priv -der "$BASE" "$RSA_DER_PRIV" -out "$BASE"
+}
+
+RSA_Export_Keys() {
+	./aisio -rsa -export -key -param "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -pem
+}
+
 
