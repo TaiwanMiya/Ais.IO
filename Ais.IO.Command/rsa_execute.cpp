@@ -409,14 +409,14 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		NULL,
 		NULL,
 		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	};
 	((RsaGetParametersLength)RsaFunctions.at("-param-length"))(&paramLength);
 	EXPORT_RSA paramters = {
