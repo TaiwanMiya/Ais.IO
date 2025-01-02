@@ -396,6 +396,9 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 void LoadFunctions() {
     ReadFunctions["-create"] = GET_PROC_ADDRESS(Lib, "CreateBinaryReader");
     ReadFunctions["-destory"] = GET_PROC_ADDRESS(Lib, "DestroyBinaryReader");
+    ReadFunctions["-position"] = GET_PROC_ADDRESS(Lib, "GetReaderPosition");
+    ReadFunctions["-length"] = GET_PROC_ADDRESS(Lib, "GetReaderLength");
+    ReadFunctions["-type"] = GET_PROC_ADDRESS(Lib, "ReadType");
     ReadFunctions["-bool"] = GET_PROC_ADDRESS(Lib, "ReadBoolean");
     ReadFunctions["-byte"] = GET_PROC_ADDRESS(Lib, "ReadByte");
     ReadFunctions["-sbyte"] = GET_PROC_ADDRESS(Lib, "ReadSByte");

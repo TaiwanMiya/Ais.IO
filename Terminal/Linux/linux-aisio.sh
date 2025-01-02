@@ -47,6 +47,10 @@ while [[ "$#" -gt 0 ]]; do
 			operation="$1"
 			shift
 			;;
+		-gen|-imp)
+			operation="$1"
+			shift
+			;;
 		-aes|-des|-hash)
 			operation="$1"
 			shift
@@ -119,6 +123,12 @@ for ((i=1; i<=iterations; i++)); do
 			;;
 		-b85) 
 			BASE_85
+			;;
+		-gen)
+			Generate
+			;;
+		-imp)
+			Import
 			;;
 		-aes)
 			case "$mode" in

@@ -137,7 +137,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-params"):
 		case rsa_execute::hash("-paramter"):
 		case rsa_execute::hash("-paramters"):
-			rsa.param_option = rsa_execute::GetOption(rsa, i, argv);
+			rsa.param_option = cryptography_libary::GetOption(i, argv);
 			if (rsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
 				rsa.Params = argv[i + 1];
 				i++;
@@ -260,6 +260,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_EXPORT_PARAMS:
 		ExportParamters(rsa);
+		break;
+	case RSA_MODE::RSA_EXPORT_KEYS:
+		ExportKeys(rsa);
 		break;
 	}
 }
@@ -495,7 +498,7 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
 	std::cout << Hint("<RSA Paramters Export>") << std::endl;
-	std::cout << Ask("Length:") << rsa.KeyLength << std::endl;
+	std::cout << Ask("Length:") << paramters.KEY_LENGTH << std::endl;
 	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
 	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
@@ -507,5 +510,105 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 }
 
 void rsa_execute::ExportKeys(Rsa& rsa) {
+	std::vector<unsigned char> n, e, d, p, q, dp, dq, qi;
+	if (rsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+		void* reader = ((CreateBinaryReader)ReadFunctions["-create"])(rsa.Params.c_str());
 
+		while (((GetReaderPosition)ReadFunctions["-position"])(reader) < ((GetReaderLength)ReadFunctions["-length"])(reader)) {
+			BINARYIO_TYPE type = ((ReadType)ReadFunctions["-type"])(reader);
+			if (type == BINARYIO_TYPE::TYPE_INT) {
+				int param_type = ((ReadInt)ReadFunctions.at("-int"))(reader);
+				uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+				switch (param_type)
+				{
+				case 0x01:
+					n.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, n.data(), n.size());
+					break;
+				case 0x02:
+					e.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, e.data(), e.size());
+					break;
+				case 0x04:
+					d.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, d.data(), d.size());
+					break;
+				case 0x08:
+					p.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, p.data(), p.size());
+					break;
+				case 0x10:
+					q.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, q.data(), q.size());
+					break;
+				case 0x20:
+					dp.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dp.data(), dp.size());
+					break;
+				case 0x40:
+					dq.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dq.data(), dq.size());
+					break;
+				case 0x80:
+					qi.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, qi.data(), qi.size());
+					break;
+				default:break;
+				}
+			}
+		}
+		((DestroyBinaryReader)ReadFunctions["-destory"])(reader);
+	}
+	else {
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.N, n);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.E, e);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.D, d);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.P, p);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.Q, q);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.DP, dp);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.DQ, dq);
+		cryptography_libary::ValueDecode(rsa.param_option, rsa.QI, qi);
+	}
+	
+	size_t keysize = n.size() * 8;
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	publicKey.resize(keysize);
+	privateKey.resize(keysize);
+
+	EXPORT_RSA paramters = {
+		0,
+		rsa.KeyFormat,
+		n.data(),
+		e.data(),
+		d.data(),
+		p.data(),
+		q.data(),
+		dp.data(),
+		dq.data(),
+		qi.data(),
+		n.size(),
+		e.size(),
+		d.size(),
+		p.size(),
+		q.size(),
+		dp.size(),
+		dq.size(),
+		qi.size(),
+		publicKey.data(),
+		privateKey.data(),
+		publicKey.size(),
+		privateKey.size(),
+	};
+	((RsaExportKeys)RsaFunctions.at("-key-export"))(&paramters);
+	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
+	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
+	std::cout << Hint("<RSA Keys Export>") << std::endl;
+	std::cout << Ask("Length:") << paramters.KEY_LENGTH << std::endl;
+	std::string publicKey_str = rsa.PublicKey;
+	std::string privateKey_str = rsa.PrivateKey;
+	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
+	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
+	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
 }

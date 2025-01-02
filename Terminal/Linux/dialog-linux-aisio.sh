@@ -63,41 +63,43 @@ CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 
 	"09" "Base 32 Encode/Decode" \
 	"10" "Base 64 Encode/Decode" \
 	"11" "Base 85 Encode/Decode" \
-	"12" "Aes ctr Encrypt/Decrypt" \
-	"13" "Aes cbc Encrypt/Decrypt" \
-	"14" "Aes cfb Encrypt/Decrypt" \
-	"15" "Aes ofb Encrypt/Decrypt" \
-	"16" "Aes ecb Encrypt/Decrypt" \
-	"17" "Aes gcm Encrypt/Decrypt" \
-	"18" "Aes ccm Encrypt/Decrypt" \
-	"19" "Aes xts Encrypt/Decrypt" \
-	"20" "Aes ocb Encrypt/Decrypt" \
-	"21" "Aes wrap Encrypt/Decrypt" \
-	"22" "Des cbc Encrypt/Decrypt" \
-	"23" "Des cfb Encrypt/Decrypt" \
-	"24" "Des ofb Encrypt/Decrypt" \
-	"25" "Des ecb Encrypt/Decrypt" \
-	"26" "Des wrap Encrypt/Decrypt" \
-	"27" "Hash MD5 Calculation"\
-	"28" "Hash MD5 SHA1 Calculation"\
-	"29" "Hash SHA1 Calculation"\
-	"30" "Hash SHA2 224 Calculation"\
-	"31" "Hash SHA2 256 Calculation"\
-	"32" "Hash SHA2 384 Calculation"\
-	"33" "Hash SHA2 512 Calculation"\
-	"34" "Hash SHA2 512 224 Calculation"\
-	"35" "Hash SHA2 512 256 Calculation"\
-	"36" "Hash SHA3 224 Calculation"\
-	"37" "Hash SHA3 256 Calculation"\
-	"38" "Hash SHA3 384 Calculation"\
-	"39" "Hash SHA3 512 Calculation"\
-	"40" "Hash SHA3 KE 128 Calculation"\
-	"41" "Hash SHA3 KE 256 Calculation"\
-	"42" "Hash BLAKE2S 256 Calculation"\
-	"43" "Hash BLAKE2B 512 Calculation"\
-	"44" "Hash SM3 Calculation"\
-	"45" "Hash RIPEMD160 Calculation"\
-        "46" "Exit" 3>&1 1>&2 2>&3)
+	"12" "Generate Random Key/Bytes" \
+	"13" "Import Key/Bytes" \
+	"14" "Aes ctr Encrypt/Decrypt" \
+	"15" "Aes cbc Encrypt/Decrypt" \
+	"16" "Aes cfb Encrypt/Decrypt" \
+	"17" "Aes ofb Encrypt/Decrypt" \
+	"18" "Aes ecb Encrypt/Decrypt" \
+	"19" "Aes gcm Encrypt/Decrypt" \
+	"20" "Aes ccm Encrypt/Decrypt" \
+	"21" "Aes xts Encrypt/Decrypt" \
+	"22" "Aes ocb Encrypt/Decrypt" \
+	"23" "Aes wrap Encrypt/Decrypt" \
+	"24" "Des cbc Encrypt/Decrypt" \
+	"25" "Des cfb Encrypt/Decrypt" \
+	"26" "Des ofb Encrypt/Decrypt" \
+	"27" "Des ecb Encrypt/Decrypt" \
+	"28" "Des wrap Encrypt/Decrypt" \
+	"29" "Hash MD5 Calculation"\
+	"30" "Hash MD5 SHA1 Calculation"\
+	"31" "Hash SHA1 Calculation"\
+	"32" "Hash SHA2 224 Calculation"\
+	"33" "Hash SHA2 256 Calculation"\
+	"34" "Hash SHA2 384 Calculation"\
+	"35" "Hash SHA2 512 Calculation"\
+	"36" "Hash SHA2 512 224 Calculation"\
+	"37" "Hash SHA2 512 256 Calculation"\
+	"38" "Hash SHA3 224 Calculation"\
+	"39" "Hash SHA3 256 Calculation"\
+	"40" "Hash SHA3 384 Calculation"\
+	"41" "Hash SHA3 512 Calculation"\
+	"42" "Hash SHA3 KE 128 Calculation"\
+	"43" "Hash SHA3 KE 256 Calculation"\
+	"44" "Hash BLAKE2S 256 Calculation"\
+	"45" "Hash BLAKE2B 512 Calculation"\
+	"46" "Hash SM3 Calculation"\
+	"47" "Hash RIPEMD160 Calculation"\
+        "48" "Exit" 3>&1 1>&2 2>&3)
 
 start_time=$(date +%s%N)
 for ((i=1; i<=iterations; i++)); do
@@ -137,108 +139,114 @@ for ((i=1; i<=iterations; i++)); do
 			BASE_85
 			;;
 		12)
-			AES_CTR
+			Generate
 			;;
 		13)
-			AES_CBC
+			Import
 			;;
 		14)
-			AES_CFB
+			AES_CTR
 			;;
 		15)
-			AES_OFB
+			AES_CBC
 			;;
 		16)
-			AES_ECB
+			AES_CFB
 			;;
 		17)
-			AES_GCM
+			AES_OFB
 			;;
 		18)
-			AES_CCM
+			AES_ECB
 			;;
 		19)
-			AES_XTS
+			AES_GCM
 			;;
 		20)
-			AES_OCB
+			AES_CCM
 			;;
 		21)
-			AES_WRAP
+			AES_XTS
 			;;
 		22)
-			DES_CBC
+			AES_OCB
 			;;
 		23)
-			DES_CFB
+			AES_WRAP
 			;;
 		24)
-			DES_OFB
+			DES_CBC
 			;;
 		25)
-			DES_ECB
+			DES_CFB
 			;;
 		26)
-			DES_WRAP
+			DES_OFB
 			;;
 		27)
-			HASH_MD5
+			DES_ECB
 			;;
 		28)
-			HASH_MD5_SHA1
+			DES_WRAP
 			;;
 		29)
-			HASH_SHA1
+			HASH_MD5
 			;;
 		30)
-			HASH_SHA2_224
+			HASH_MD5_SHA1
 			;;
 		31)
-			HASH_SHA2_256
+			HASH_SHA1
 			;;
 		32)
-			HASH_SHA2_384
+			HASH_SHA2_224
 			;;
 		33)
-			HASH_SHA2_512
+			HASH_SHA2_256
 			;;
 		34)
-			HASH_SHA2_512_224
+			HASH_SHA2_384
 			;;
 		35)
-			HASH_SHA2_512_256
+			HASH_SHA2_512
 			;;
 		36)
-			HASH_SHA3_224
+			HASH_SHA2_512_224
 			;;
 		37)
-			HASH_SHA3_256
+			HASH_SHA2_512_256
 			;;
 		38)
-			HASH_SHA3_384
+			HASH_SHA3_224
 			;;
 		39)
-			HASH_SHA3_512
+			HASH_SHA3_256
 			;;
 		40)
-			HASH_SHA3_KE_128
+			HASH_SHA3_384
 			;;
 		41)
-			HASH_SHA3_KE_256
+			HASH_SHA3_512
 			;;
 		42)
-			HASH_BLAKE2S_256
+			HASH_SHA3_KE_128
 			;;
 		43)
-			HASH_BLAKE2B_512
+			HASH_SHA3_KE_256
 			;;
 		44)
-			HASH_SM3
+			HASH_BLAKE2S_256
 			;;
 		45)
-			HASH_RIPEMD160
+			HASH_BLAKE2B_512
 			;;
 		46)
+			HASH_SM3
+			;;
+		47)
+			HASH_RIPEMD160
+			;;
+		48)
 			echo "Exit..."
 			exit 0
 			;;

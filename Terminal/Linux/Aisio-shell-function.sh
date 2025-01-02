@@ -128,6 +128,14 @@ BASE_85() {
 	fi
 }
 
+Generate() {
+	./aisio --generate 32 -out "$BASE"
+}
+
+Import() {
+	./aisio --import "$AES_KEY" -out "$BASE"
+}
+
 AES_CTR() {
 	if [[ $encoder == "-e" ]]; then
 		./aisio -aes -ctr -encrypt -key "$AES_KEY" -counter "$AES_COUNTER" -plain-text "This is AES CTR Encryption/Decryption." -out "$BASE"

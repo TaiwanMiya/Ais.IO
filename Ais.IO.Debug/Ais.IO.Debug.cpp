@@ -565,7 +565,7 @@ int main() {
 
     //Test_RsaGenerate();
 
-    Test_ExportRsaParametersFromKeys();
+    //Test_ExportRsaParametersFromKeys();
 
-    //Test_ExportRsaKeyFromParameters();
+    Test_ExportRsaKeyFromParameters();
 }
