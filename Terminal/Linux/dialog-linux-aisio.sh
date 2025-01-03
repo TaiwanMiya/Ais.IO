@@ -63,6 +63,7 @@ if ! [[ $iterations =~ ^[0-9]+$ ]]; then
     echo "Invalid option!"
     exit 1
 fi
+index_list=$(seq 0 $((iterations-1)) | tr '\n' ' ')
 
 CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 25 60 16 \
 	"01" "Binary IO Write" \
