@@ -348,7 +348,7 @@ void rsa_execute::GenerateParameters(Rsa& rsa) {
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
 	std::cout << Hint("<RSA Paramters Generate>") << std::endl;
-	std::cout << Ask("Length:") << rsa.KeyLength << std::endl;
+	std::cout << Mark("Length:\n") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
 	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
 	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
@@ -381,7 +381,7 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
 	std::cout << Hint("<RSA Keys Generate>") << std::endl;
-	std::cout << Ask("Length:") << rsa.KeyLength << std::endl;
+	std::cout << Mark("Length:\n") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
 	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
 	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
 }
@@ -498,7 +498,7 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
 	std::cout << Hint("<RSA Paramters Export>") << std::endl;
-	std::cout << Ask("Length:") << paramters.KEY_LENGTH << std::endl;
+	std::cout << Mark("Length:\n") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
 	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
@@ -604,7 +604,7 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
 	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
 	std::cout << Hint("<RSA Keys Export>") << std::endl;
-	std::cout << Ask("Length:") << paramters.KEY_LENGTH << std::endl;
+	std::cout << Mark("Length:\n") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 	std::string publicKey_str = rsa.PublicKey;
 	std::string privateKey_str = rsa.PrivateKey;
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
