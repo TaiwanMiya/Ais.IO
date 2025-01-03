@@ -101,12 +101,12 @@ BinaryRemove() {
 
 BinaryRemoveIndex() {
 	echo "Ais Binary IO Remove Index..."
-	./aisio --remove-index "$file" "$index_list"
+	./aisio --remove-index "$file" $index_list
 }
 
 BinaryReadIndex() {
 	echo "Ais Binary IO Read Index..."
-	./aisio --read-index "$file" "$index_list"
+	./aisio --read-index "$file" $index_list
 }
 
 BASE_16() {
