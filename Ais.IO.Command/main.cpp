@@ -142,13 +142,14 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validMode = {
         "--help",
-        "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index",
+        "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index", "--read-index",
         "--base16", "--base32", "--base64", "--base85",
         "--generate", "--import", "--aes", "--des", "--hash", "--rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
-        {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"},
+        { "-help", "--help"}, {"-h", "--help"},
+        {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"}, {"-ri", "--read-index"},
         {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
         {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-rsa", "--rsa"}
     };
@@ -317,7 +318,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             return a.position > b.position;
             });
     }
-    else if (mode == "--remove-index") {
+    else if (mode == "--read-index" || mode == "--remove-index") {
         if (argc < 3)
             return false;
         filePath = argv[2];
@@ -333,13 +334,24 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 return false;
             }
         }
-        std::sort(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
-            return std::stoull(a.value) > std::stoull(b.value);
-        });
-        auto last = std::unique(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
-            return a.value == b.value;
-        });
-        commands.erase(last, commands.end());
+        if (mode == "--read-index") {
+            std::sort(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+                return std::stoull(a.value) < std::stoull(b.value);
+                });
+            auto last = std::unique(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+                return a.value == b.value;
+                });
+            commands.erase(last, commands.end());
+        }
+        if (mode == "--remove-index") {
+            std::sort(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+                return std::stoull(a.value) > std::stoull(b.value);
+                });
+            auto last = std::unique(commands.begin(), commands.end(), [](const Command& a, const Command& b) {
+                return a.value == b.value;
+                });
+            commands.erase(last, commands.end());
+        }
     }
     else if (mode == "--read-all" || mode == "--indexes") {
         if (argc < 3)
@@ -632,6 +644,20 @@ int main(int argc, char* argv[]) {
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << message << std::endl;
         std::cout << Mark("Read All Action Completed!") << std::endl;
+    }
+    else if (mode == "--read-index") {
+        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+        void* index_reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+        if (!reader) {
+            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            UNLOAD_LIBRARY(Lib);
+            return 1;
+        }
+        std::string message = "";
+        binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message);
+        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+        std::cout << message << std::endl;
+        std::cout << Mark("Read Action Completed!") << std::endl;
     }
     else if (mode == "--indexes") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());

@@ -12,5 +12,6 @@ public:
     static void ExecuteInsert(void* inserter, const std::vector<Command>& commands);
     static void ExecuteRemove(void* remover, const std::string filePath, const std::vector<Command>& commands);
     static void ExecuteRemoveIndex(void* reader, void* remover, const std::string filePath, const std::vector<Command>& commands);
+    static void ExecuteReadIndex(void* reader, void* index_reader, const std::string filePath, const std::vector<Command>& commands, std::string& message);
 };
 

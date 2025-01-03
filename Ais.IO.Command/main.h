@@ -644,19 +644,19 @@ typedef void (*DestroyBinaryReader)(void*);
 typedef uint64_t(*GetReaderPosition)(void*);
 typedef uint64_t(*GetReaderLength)(void*);
 
-typedef bool (*ReadBoolean)(void*);
-typedef unsigned char (*ReadByte)(void*);
-typedef signed char (*ReadSByte)(void*);
-typedef short (*ReadShort)(void*);
-typedef unsigned short (*ReadUShort)(void*);
-typedef int (*ReadInt)(void*);
-typedef unsigned int (*ReadUInt)(void*);
-typedef long long (*ReadLong)(void*);
-typedef unsigned long long (*ReadULong)(void*);
-typedef float (*ReadFloat)(void*);
-typedef double (*ReadDouble)(void*);
-typedef void (*ReadBytes)(void*, unsigned char*, uint64_t);
-typedef void (*ReadString)(void*, char*, uint64_t);
+typedef bool (*ReadBoolean)(void*, int64_t);
+typedef unsigned char (*ReadByte)(void*, int64_t);
+typedef signed char (*ReadSByte)(void*, int64_t);
+typedef short (*ReadShort)(void*, int64_t);
+typedef unsigned short (*ReadUShort)(void*, int64_t);
+typedef int (*ReadInt)(void*, int64_t);
+typedef unsigned int (*ReadUInt)(void*, int64_t);
+typedef long long (*ReadLong)(void*, int64_t);
+typedef unsigned long long (*ReadULong)(void*, int64_t);
+typedef float (*ReadFloat)(void*, int64_t);
+typedef double (*ReadDouble)(void*, int64_t);
+typedef void (*ReadBytes)(void*, unsigned char*, uint64_t, int64_t);
+typedef void (*ReadString)(void*, char*, uint64_t, int64_t);
 #pragma endregion
 
 #pragma region BinaryWriterIO

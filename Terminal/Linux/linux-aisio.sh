@@ -54,7 +54,7 @@ fi
 
 while [[ "$#" -gt 0 ]]; do
 	case "$1" in
-		-w|-a|-i|-r|-id|-rm|-rs)
+		-w|-a|-i|-r|-id|-rm|-rs|-ri)
 			operation="$1"
 			shift
 			;;
@@ -141,6 +141,10 @@ for ((i=1; i<=iterations; i++)); do
 			;;
 		-rs)
 			BinaryRemoveIndex
+			break
+			;;
+		-ri)
+			BinaryReadIndex
 			break
 			;;
 		-b16) 

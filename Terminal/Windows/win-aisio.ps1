@@ -11,6 +11,7 @@ $operation = ""
 $indexList = ""
 $encoder = "-e"
 $mode=""
+$rsa_format="-pem"
 
 $startTime = [datetime]::UtcNow
 $parameter = $args.Clone()
@@ -18,49 +19,52 @@ $parameter = $args.Clone()
 while ($parameter.Count -gt 0) {
     switch ($parameter[0]) {
         # IO
-        '-w'    { $operation = '-w';    $parameter = $parameter[1..$parameter.Count]; break }
-        '-a'    { $operation = '-a';    $parameter = $parameter[1..$parameter.Count]; break }
-        '-i'    { $operation = '-i';    $parameter = $parameter[1..$parameter.Count]; break }
-        '-r'    { $operation = '-r';    $parameter = $parameter[1..$parameter.Count]; break }
-        '-id'   { $operation = '-id';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-rm'   { $operation = '-rm';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-rs'   { $operation = '-rs';   $parameter = $parameter[1..$parameter.Count]; break }
+        '-w'    { $operation = '-w';                $parameter = $parameter[1..$parameter.Count]; break }
+        '-a'    { $operation = '-a';                $parameter = $parameter[1..$parameter.Count]; break }
+        '-i'    { $operation = '-i';                $parameter = $parameter[1..$parameter.Count]; break }
+        '-r'    { $operation = '-r';                $parameter = $parameter[1..$parameter.Count]; break }
+        '-id'   { $operation = '-id';               $parameter = $parameter[1..$parameter.Count]; break }
+        '-rm'   { $operation = '-rm';               $parameter = $parameter[1..$parameter.Count]; break }
+        '-rs'   { $operation = '-rs';               $parameter = $parameter[1..$parameter.Count]; break }
+        '-ri'   { $operation = '-ri';               $parameter = $parameter[1..$parameter.Count]; break }
 
         # BASE
-        '-b16'  { $operation = '-b16';  $parameter = $parameter[1..$parameter.Count]; break }
-        '-b32'  { $operation = '-b32';  $parameter = $parameter[1..$parameter.Count]; break }
-        '-b64'  { $operation = '-b64';  $parameter = $parameter[1..$parameter.Count]; break }
-        '-b85'  { $operation = '-b85';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-b16'  { $operation = '-b16';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b32'  { $operation = '-b32';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b64'  { $operation = '-b64';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b85'  { $operation = '-b85';              $parameter = $parameter[1..$parameter.Count]; break }
 
         # RAND
-        '-gen'  { $operation = '-gen';  $parameter = $parameter[1..$parameter.Count]; break }
-        '-imp'  { $operation = '-imp';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-gen'  { if ($operation -eq '-rsa') { $mode = '-gen'; } else { $operation = '-gen'; }
+                                                    $parameter = $parameter[1..$parameter.Count]; break }
+        '-imp'  { $operation = '-imp';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-exp'  { $mode = '-exp';                   $parameter = $parameter[1..$parameter.Count]; break }
 
         # AES
-        '-aes'  { $operation = '-aes';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-aes'  { $operation = '-aes';              $parameter = $parameter[1..$parameter.Count]; break }
         
-        '-ctr'  { $mode = '-ctr';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-cbc'  { $mode = '-cbc';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-cfb'  { $mode = '-cfb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ofb'  { $mode = '-ofb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ecb'  { $mode = '-ecb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-gcm'  { $mode = '-gcm';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ccm'  { $mode = '-ccm';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-xts'  { $mode = '-xts';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ocb'  { $mode = '-ocb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-wrap' { $mode = '-wrap';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-ctr'  { $mode = '-ctr';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-cbc'  { $mode = '-cbc';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-cfb'  { $mode = '-cfb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ofb'  { $mode = '-ofb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ecb'  { $mode = '-ecb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-gcm'  { $mode = '-gcm';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ccm'  { $mode = '-ccm';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-xts'  { $mode = '-xts';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ocb'  { $mode = '-ocb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-wrap' { $mode = '-wrap';                  $parameter = $parameter[1..$parameter.Count]; break }
         
         # DES
-        '-des'  { $operation = '-des';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-des'  { $operation = '-des';              $parameter = $parameter[1..$parameter.Count]; break }
 
-        '-cbc'  { $mode = '-cbc';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-cfb'  { $mode = '-cfb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ofb'  { $mode = '-ofb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-ecb'  { $mode = '-ecb';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-wrap' { $mode = '-wrap';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-cbc'  { $mode = '-cbc';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-cfb'  { $mode = '-cfb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ofb'  { $mode = '-ofb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ecb'  { $mode = '-ecb';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-wrap' { $mode = '-wrap';                  $parameter = $parameter[1..$parameter.Count]; break }
 
         # HASH
-        '-hash' { $operation = '-hash';  $parameter = $parameter[1..$parameter.Count]; break }
+        '-hash' { $operation = '-hash';             $parameter = $parameter[1..$parameter.Count]; break }
         
         '-md5'          { $mode = '-md5';           $parameter = $parameter[1..$parameter.Count]; break }
         '-md5-sha1'     { $mode = '-md5-sha1';      $parameter = $parameter[1..$parameter.Count]; break }
@@ -94,9 +98,17 @@ while ($parameter.Count -gt 0) {
         '-sm3'          { $mode = '-sm3';           $parameter = $parameter[1..$parameter.Count]; break }
         '-ripemd160'    { $mode = '-ripemd160';     $parameter = $parameter[1..$parameter.Count]; break }
 
+        # RSA
+        '-rsa'  { $operation = '-rsa';              $parameter = $parameter[1..$parameter.Count]; break }
+
+        '-pem'          { $rsa_format = '-pem';     $parameter = $parameter[1..$parameter.Count]; break }
+        '-der'          { $rsa_format = '-der';     $parameter = $parameter[1..$parameter.Count]; break }
+        '-param'        { $rsa_format = '-param';   $parameter = $parameter[1..$parameter.Count]; break }
+        '-keys'         { $rsa_format = '-keys';    $parameter = $parameter[1..$parameter.Count]; break }
+
         # OTHER
-        '-e' { $encoder = '-e'; $parameter = $parameter[1..$parameter.Count]; break }
-        '-d' { $encoder = '-d'; $parameter = $parameter[1..$parameter.Count]; break }
+        '-e' { $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
+        '-d' { $encoder = '-d';                     $parameter = $parameter[1..$parameter.Count]; break }
         '-f' {
             if ($parameter.Count -gt 1) {
                 $file = $parameter[1]
@@ -133,7 +145,7 @@ if (-not $iterations -or $iterations -lt 1) {
 $indexList = (0..($iterations - 1)) -join " "
 
 for ($i = 1; $i -le $iterations; $i++) {
-    if ($operation -ne '-rs') { Write-Host "Iteration $i/$iterations" }
+    if ($operation -ne '-rs' -and $operation -ne '-ri') { Write-Host "Iteration $i/$iterations" }
     else { Write-Host "Iteration $i/1" }
     switch ($operation) {
         # IO
@@ -144,6 +156,7 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-id'   { BinaryIndexes }
         '-rm'   { BinaryRemove }
         '-rs'   { BinaryRemoveIndex }
+        '-ri'   { BinaryReadIndex }
 
         # BASE
         '-b16'  { BASE_16 }
@@ -208,10 +221,28 @@ for ($i = 1; $i -le $iterations; $i++) {
                 '-ripemd160'        { HASH_RIPEMD160 }
             }
         }
+
+        '-rsa' {
+            switch ($mode) {
+                '-gen' {
+                    switch ($rsa_format) {
+                        '-pem'      { RSA_Generate_Paramters }
+                        '-der'      { RSA_Generate_Keys_PEM }
+                        '-param'    { RSA_Generate_Keys_DER }
+                    }
+                }
+                '-exp' {
+                    switch ($rsa_format) {
+                        '-param'    { RSA_Export_Paramters }
+                        '-keys'     { RSA_Export_Keys }
+                    }
+                }
+            }
+        }
         default { Usage }
     }
     
-    if ($operation -eq '-rs') {
+    if ($operation -eq '-rs' -or $operation -eq '-ri') {
         break
     }
 }

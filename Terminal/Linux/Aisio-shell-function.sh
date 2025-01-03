@@ -11,6 +11,7 @@ Usage() {
 	echo "	-id (indexes)"
 	echo "	-rm (remove)"
 	echo "	-rs (remove-index)"
+	echo "	-ri (read-index)"
 	echo ""
 	echo "Base operations:"
 	echo "	-b16 (Base 16 Encode/Decode)"
@@ -101,6 +102,11 @@ BinaryRemove() {
 BinaryRemoveIndex() {
 	echo "Ais Binary IO Remove Index..."
 	./aisio --remove-index "$file" "$index_list"
+}
+
+BinaryReadIndex() {
+	echo "Ais Binary IO Read Index..."
+	./aisio --read-index "$file" "$index_list"
 }
 
 BASE_16() {

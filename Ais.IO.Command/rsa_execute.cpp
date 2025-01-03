@@ -517,41 +517,41 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 		while (((GetReaderPosition)ReadFunctions["-position"])(reader) < ((GetReaderLength)ReadFunctions["-length"])(reader)) {
 			BINARYIO_TYPE type = ((ReadType)ReadFunctions["-type"])(reader);
 			if (type == BINARYIO_TYPE::TYPE_INT) {
-				int param_type = ((ReadInt)ReadFunctions.at("-int"))(reader);
+				int param_type = ((ReadInt)ReadFunctions.at("-int"))(reader, -1);
 				uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
 				switch (param_type)
 				{
 				case 0x01:
 					n.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, n.data(), n.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, n.data(), n.size(), -1);
 					break;
 				case 0x02:
 					e.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, e.data(), e.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, e.data(), e.size(), -1);
 					break;
 				case 0x04:
 					d.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, d.data(), d.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, d.data(), d.size(), -1);
 					break;
 				case 0x08:
 					p.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, p.data(), p.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, p.data(), p.size(), -1);
 					break;
 				case 0x10:
 					q.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, q.data(), q.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, q.data(), q.size(), -1);
 					break;
 				case 0x20:
 					dp.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dp.data(), dp.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dp.data(), dp.size(), -1);
 					break;
 				case 0x40:
 					dq.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dq.data(), dq.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, dq.data(), dq.size(), -1);
 					break;
 				case 0x80:
 					qi.resize(length);
-					((ReadBytes)ReadFunctions.at("-bytes"))(reader, qi.data(), qi.size());
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, qi.data(), qi.size(), -1);
 					break;
 				default:break;
 				}

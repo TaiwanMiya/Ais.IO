@@ -35,7 +35,14 @@ public:
         return static_cast<uint64_t>(endPos);
     }
 
-    bool ReadBoolean() {
+    bool ReadBoolean(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_BOOLEAN)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -44,7 +51,14 @@ public:
         return value;
     }
 
-    unsigned char ReadByte() {
+    unsigned char ReadByte(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_BYTE)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -53,7 +67,14 @@ public:
         return value;
     }
 
-    signed char ReadSByte() {
+    signed char ReadSByte(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_SBYTE)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -62,7 +83,14 @@ public:
         return value;
     }
 
-    short ReadShort() {
+    short ReadShort(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_SHORT)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -71,7 +99,14 @@ public:
         return value;
     }
 
-    unsigned short ReadUShort() {
+    unsigned short ReadUShort(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_USHORT)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -80,7 +115,14 @@ public:
         return value;
     }
 
-    int ReadInt() {
+    int ReadInt(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_INT)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -89,7 +131,14 @@ public:
         return value;
     }
 
-    unsigned int ReadUInt() {
+    unsigned int ReadUInt(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_UINT)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -98,7 +147,14 @@ public:
         return value;
     }
 
-    long long ReadLong() {
+    long long ReadLong(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_LONG)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -107,7 +163,14 @@ public:
         return value;
     }
 
-    unsigned long long ReadULong() {
+    unsigned long long ReadULong(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_ULONG)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -116,7 +179,14 @@ public:
         return value;
     }
 
-    float ReadFloat() {
+    float ReadFloat(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_FLOAT)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -125,7 +195,14 @@ public:
         return value;
     }
 
-    double ReadDouble() {
+    double ReadDouble(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_DOUBLE)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -134,7 +211,14 @@ public:
         return value;
     }
 
-    void ReadBytes(unsigned char* buffer, uint64_t bufferSize) {
+    void ReadBytes(unsigned char* buffer, uint64_t bufferSize, int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_BYTES)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -145,7 +229,14 @@ public:
         InputStream.read(READ_CAST(buffer), length);
     }
 
-    std::string ReadString() {
+    std::string ReadString(int64_t position = -1) {
+        if (position >= 0) {
+            InputStream.seekg(position, std::ios::beg);
+            if (InputStream.fail()) {
+                std::cerr << "Tip: Failed to seek to the specified position." << std::endl;
+                throw std::runtime_error("Tip: Failed to seek to the specified position.");
+            }
+        }
         BINARYIO_TYPE type = ReadType();
         if (type != BINARYIO_TYPE::TYPE_STRING)
             std::cerr << "Tip: The types are inconsistent, the correct type is " << typeid(type).name() << std::endl;
@@ -195,60 +286,60 @@ uint64_t GetReaderLength(void* reader) {
     return static_cast<BinaryReader*>(reader)->GetLength();
 }
 
-bool ReadBoolean(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadBoolean();
+bool ReadBoolean(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadBoolean(position);
 }
 
-unsigned char ReadByte(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadByte();
+unsigned char ReadByte(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadByte(position);
 }
 
-signed char ReadSByte(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadSByte();
+signed char ReadSByte(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadSByte(position);
 }
 
-short ReadShort(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadShort();
+short ReadShort(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadShort(position);
 }
 
-unsigned short ReadUShort(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadUShort();
+unsigned short ReadUShort(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadUShort(position);
 }
 
-int ReadInt(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadInt();
+int ReadInt(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadInt(position);
 }
 
-unsigned int ReadUInt(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadUInt();
+unsigned int ReadUInt(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadUInt(position);
 }
 
-long long ReadLong(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadLong();
+long long ReadLong(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadLong(position);
 }
 
-unsigned long long ReadULong(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadULong();
+unsigned long long ReadULong(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadULong(position);
 }
 
-float ReadFloat(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadFloat();
+float ReadFloat(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadFloat(position);
 }
 
-double ReadDouble(void* reader) {
-    return static_cast<BinaryReader*>(reader)->ReadDouble();
+double ReadDouble(void* reader, int64_t position) {
+    return static_cast<BinaryReader*>(reader)->ReadDouble(position);
 }
 
-void ReadBytes(void* reader, unsigned char* buffer, uint64_t bufferSize) {
+void ReadBytes(void* reader, unsigned char* buffer, uint64_t bufferSize, int64_t position) {
     if (!buffer || bufferSize == 0)
         throw std::invalid_argument("Buffer is null or size is zero.");
-    static_cast<BinaryReader*>(reader)->ReadBytes(buffer, bufferSize);
+    static_cast<BinaryReader*>(reader)->ReadBytes(buffer, bufferSize, position);
 }
 
-void ReadString(void* reader, char* buffer, uint64_t bufferSize) {
+void ReadString(void* reader, char* buffer, uint64_t bufferSize, int64_t position) {
     if (!buffer || bufferSize == 0)
         throw std::invalid_argument("Buffer is null or size is zero.");
-    std::string result = static_cast<BinaryReader*>(reader)->ReadString();
+    std::string result = static_cast<BinaryReader*>(reader)->ReadString(position);
 #ifdef _WIN32
     strncpy_s(buffer, bufferSize, result.c_str(), _TRUNCATE);
 #else
