@@ -135,7 +135,7 @@ std::unordered_map<HASH_TYPE, std::string> HashDisplay = {
     { HASH_TYPE::HASH_RIPEMD160, "RIPEMD160"},
 };
 
-bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, std::vector<Command>& commands) {
+bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, CRYPT_OPTIONS& option, std::vector<Command>& commands) {
     if (argc < 3) {
         return false;
     }
@@ -156,6 +156,18 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validHelper = {
         "-binary", "-base", "-aes", "-des", "-hash", "-rsa"
+    };
+
+    std::unordered_map<std::string, std::string> abbreviationValidHelper = {
+        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-r", "-rsa"}
+    };
+
+    std::unordered_set<std::string> validBytesOptions = {
+        "-base16", "-base32", "-base64", "-base85"
+    };
+
+    std::unordered_map<std::string, std::string> abbreviationValidBytesOptions = {
+        {"-b16", "-base16"}, {"-b32", "-base32"}, {"-b64", "-base64"}, {"-b85", "-base85"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -193,6 +205,9 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     if (mode == "--help") {
         if (argc > 2) {
             std::string helper = ToLower(argv[2]);
+            if (abbreviationValidHelper.count(helper)) {
+                helper = abbreviationValidHelper[helper];
+            }
             if (!validHelper.count(helper))
                 usage_libary::ShowUsage();
             if (helper == "-binary")
@@ -218,10 +233,33 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     if (mode == "--read" || mode == "--write" || mode == "--append") {
         if (argc < 4)
             return false;
-        filePath = argv[2];
+        std::string byte_option = ToLower(argv[2]);
+        if (abbreviationValidBytesOptions.count(byte_option))
+            byte_option = abbreviationValidBytesOptions[byte_option];
+        if (byte_option == "-base16") {
+            option = CRYPT_OPTIONS::OPTION_BASE16;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base32") {
+            option = CRYPT_OPTIONS::OPTION_BASE32;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base64") {
+            option = CRYPT_OPTIONS::OPTION_BASE64;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base85") {
+            option = CRYPT_OPTIONS::OPTION_BASE85;
+            filePath = argv[3];
+        }
+        else {
+            option = CRYPT_OPTIONS::OPTION_TEXT;
+            filePath = argv[2];
+        }
 
         Command cmd;
-        for (int i = 3; i < argc; ++i) {
+        int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
+        for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
@@ -245,10 +283,33 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--insert") {
         if (argc < 5)
             return false;
-        filePath = argv[2];
+        std::string byte_option = ToLower(argv[2]);
+        if (abbreviationValidBytesOptions.count(byte_option))
+            byte_option = abbreviationValidBytesOptions[byte_option];
+        if (byte_option == "-base16") {
+            option = CRYPT_OPTIONS::OPTION_BASE16;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base32") {
+            option = CRYPT_OPTIONS::OPTION_BASE32;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base64") {
+            option = CRYPT_OPTIONS::OPTION_BASE64;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base85") {
+            option = CRYPT_OPTIONS::OPTION_BASE85;
+            filePath = argv[3];
+        }
+        else {
+            option = CRYPT_OPTIONS::OPTION_TEXT;
+            filePath = argv[2];
+        }
 
         Command cmd;
-        for (int i = 3; i < argc; ++i) {
+        int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
+        for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
@@ -257,7 +318,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 }
                 cmd.type = ToLower(arg);
             }
-            else if (IsULong(arg) && (i - 2) % 3 == 0) {
+            else if (IsULong(arg) && (i - (start - 1)) % 3 == 0) {
                 if (cmd.type.empty()) {
                     std::cerr << Error("Value without type: ") << Ask(arg) << "\n";
                     return false;
@@ -321,11 +382,101 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--read-index" || mode == "--remove-index") {
         if (argc < 3)
             return false;
-        filePath = argv[2];
+        std::string byte_option = ToLower(argv[2]);
+        if (abbreviationValidBytesOptions.count(byte_option))
+            byte_option = abbreviationValidBytesOptions[byte_option];
+        if (byte_option == "-base16") {
+            option = CRYPT_OPTIONS::OPTION_BASE16;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base32") {
+            option = CRYPT_OPTIONS::OPTION_BASE32;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base64") {
+            option = CRYPT_OPTIONS::OPTION_BASE64;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base85") {
+            option = CRYPT_OPTIONS::OPTION_BASE85;
+            filePath = argv[3];
+        }
+        else {
+            option = CRYPT_OPTIONS::OPTION_TEXT;
+            filePath = argv[2];
+        }
+
         Command cmd;
-        for (int i = 3; i < argc; ++i) {
+        int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
+        for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
-            if (IsULong(arg)) {
+            if (arg.find('~') != std::string::npos) {
+                size_t pos = arg.find('~');
+                std::string startStr = arg.substr(0, pos);
+                std::string endStr = arg.substr(pos + 1);
+
+                if (IsULong(startStr) && IsULong(endStr)) {
+                    unsigned long start = std::stoul(startStr);
+                    unsigned long end = std::stoul(endStr);
+
+                    if (start <= end) {
+                        for (unsigned long val = start; val <= end; ++val) {
+                            cmd.value = std::to_string(val);
+                            commands.push_back(cmd);
+                        }
+                    }
+                    else {
+                        std::cerr << Error("Invalid range: ") << Ask(arg) << "\n";
+                        return false;
+                    }
+                }
+                else {
+                    std::cerr << Error("Invalid range format: ") << Ask(arg) << "\n";
+                    return false;
+                }
+            }
+            else if (arg.find('*') != std::string::npos && arg.find('+') == std::string::npos) {
+                size_t pos = arg.find('*');
+                std::string baseStr = arg.substr(0, pos);
+                std::string countStr = arg.substr(pos + 1);
+
+                if (IsULong(baseStr) && IsULong(countStr)) {
+                    unsigned long base = std::stoul(baseStr);
+                    unsigned long count = std::stoul(countStr);
+                    for (unsigned long i = 1; i <= count; ++i) {
+                        cmd.value = std::to_string(base * i);
+                        commands.push_back(cmd);
+                    }
+                }
+                else {
+                    std::cerr << Error("Invalid sequence format: ") << Ask(arg) << "\n";
+                    return false;
+                }
+            }
+            else if (arg.find('+') != std::string::npos && arg.find('*') != std::string::npos) {
+                size_t plusPos = arg.find('+');
+                size_t starPos = arg.find('*');
+
+                std::string startStr = arg.substr(0, plusPos);
+                std::string stepStr = arg.substr(plusPos + 1, starPos - plusPos - 1);
+                std::string countStr = arg.substr(starPos + 1);
+
+                if (IsULong(startStr) && IsULong(stepStr) && IsULong(countStr)) {
+                    unsigned long start = std::stoul(startStr);
+                    unsigned long step = std::stoul(stepStr);
+                    unsigned long count = std::stoul(countStr);
+
+                    for (unsigned long i = 0; i < count; ++i) {
+                        cmd.value = std::to_string(start + i * step);
+                        commands.push_back(cmd);
+                    }
+                }
+                else {
+                    std::cerr << Error("Invalid sequence format: ") << Ask(arg) << "\n";
+                    return false;
+                }
+            }
+            else if (IsULong(arg)) {
                 cmd.value = arg;
                 commands.push_back(cmd);
             }
@@ -356,7 +507,29 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--read-all" || mode == "--indexes") {
         if (argc < 3)
             return false;
-        filePath = argv[2];
+        std::string byte_option = ToLower(argv[2]);
+        if (abbreviationValidBytesOptions.count(byte_option))
+            byte_option = abbreviationValidBytesOptions[byte_option];
+        if (byte_option == "-base16") {
+            option = CRYPT_OPTIONS::OPTION_BASE16;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base32") {
+            option = CRYPT_OPTIONS::OPTION_BASE32;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base64") {
+            option = CRYPT_OPTIONS::OPTION_BASE64;
+            filePath = argv[3];
+        }
+        else if (byte_option == "-base85") {
+            option = CRYPT_OPTIONS::OPTION_BASE85;
+            filePath = argv[3];
+        }
+        else {
+            option = CRYPT_OPTIONS::OPTION_TEXT;
+            filePath = argv[2];
+        }
     }
     else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
         if (argc < 4)
@@ -535,6 +708,7 @@ void LoadFunctions() {
 int main(int argc, char* argv[]) {
     std::string mode;
     std::string filePath;
+    CRYPT_OPTIONS binary_bytes_option = CRYPT_OPTIONS::OPTION_TEXT;
     std::vector<Command> commands;
 
 #if _WIN32
@@ -546,7 +720,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (!ParseArguments(argc, argv, mode, filePath, commands)) {
+    if (!ParseArguments(argc, argv, mode, filePath, binary_bytes_option, commands)) {
         usage_libary::ShowUsage();
         return 1;
     }
@@ -567,7 +741,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        binary_execute::ExecuteRead(reader, commands);
+        binary_execute::ExecuteRead(reader, commands, binary_bytes_option);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Read Action Completed!") << std::endl;
     }
@@ -578,7 +752,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        binary_execute::ExecuteWrite(writer, commands);
+        binary_execute::ExecuteWrite(writer, commands, binary_bytes_option);
         ((DestroyBinaryWriter)GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter"))(writer);
         std::cout << Mark("Write Action Completed!") << std::endl;
     }
@@ -589,7 +763,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        binary_execute::ExecuteAppend(appender, commands);
+        binary_execute::ExecuteAppend(appender, commands, binary_bytes_option);
         ((DestroyBinaryAppender)GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender"))(appender);
         std::cout << Mark("Append Action Completed!") << std::endl;
     }
@@ -600,7 +774,7 @@ int main(int argc, char* argv[]) {
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
-        binary_execute::ExecuteInsert(inserter, commands);
+        binary_execute::ExecuteInsert(inserter, commands, binary_bytes_option);
         ((DestroyBinaryInserter)GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter"))(inserter);
         std::cout << Mark("Insert Action Completed!") << std::endl;
     }
@@ -639,7 +813,7 @@ int main(int argc, char* argv[]) {
         std::string message = "";
         while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
             BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
-            binary_execute::ReadToType(reader, type, count, message);
+            binary_execute::ReadToType(reader, type, count, message, binary_bytes_option);
         }
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << message << std::endl;
@@ -654,7 +828,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         std::string message = "";
-        binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message);
+        binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message, binary_bytes_option);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << message << std::endl;
         std::cout << Mark("Read Action Completed!") << std::endl;

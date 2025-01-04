@@ -1,6 +1,6 @@
 #include "binary_execute.h"
 #include "output_colors.h"
-
+#include "cryptography_libary.h"
 
 std::string binary_execute::GetTypeName(BINARYIO_TYPE type) {
     switch (type) {
@@ -35,7 +35,7 @@ std::string binary_execute::GetTypeName(BINARYIO_TYPE type) {
     }
 }
 
-void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count, std::string& message) {
+void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& count, std::string& message, CRYPT_OPTIONS bytes_option) {
     switch (type) {
     case BINARYIO_TYPE::TYPE_BOOLEAN: {
         bool value = ((ReadBoolean)ReadFunctions.at("-bool"))(reader, -1);
@@ -101,8 +101,10 @@ void binary_execute::ReadToType(void* reader, BINARYIO_TYPE type, uint64_t& coun
     case BINARYIO_TYPE::TYPE_BYTES: {
         uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
         std::vector<unsigned char> buffer(length);
+        std::string result;
         ((ReadBytes)ReadFunctions.at("-bytes"))(reader, buffer.data(), length, -1);
-        message += Hint(std::to_string(count)) + ". " + Hint("Bytes: ") + Ask(std::string(buffer.begin(), buffer.end())) + "\n";
+        cryptography_libary::ValueEncode(bytes_option, buffer, result);
+        message += Hint(std::to_string(count)) + ". " + Hint("Bytes: ") + Ask(result) + "\n";
         break;
     }
     case BINARYIO_TYPE::TYPE_STRING: {
@@ -132,7 +134,7 @@ void binary_execute::GetIndexes(void* reader) {
     std::cout << message << std::endl;
 }
 
-void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& commands) {
+void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& commands, CRYPT_OPTIONS bytes_option) {
     uint64_t count = 0;
     std::string message = "";
     for (const auto& cmd : commands) {
@@ -195,8 +197,10 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
             else if (cmd.type == "-bytes") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
                 std::vector<unsigned char> buffer(length);
+                std::string result;
                 ((ReadBytes)ReadFunctions.at(cmd.type))(reader, buffer.data(), length, -1);
-                message += Hint(std::to_string(count)) + ". " + Hint("Bytes: ") + Ask(std::string(buffer.begin(), buffer.end())) + "\n";
+                cryptography_libary::ValueEncode(bytes_option, buffer, result);
+                message += Hint(std::to_string(count)) + ". " + Hint("Bytes: ") + Ask(result) + "\n";
             }
             else if (cmd.type == "-string") {
                 uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
@@ -230,7 +234,7 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
     std::cout << message << std::endl;
 }
 
-void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& commands) {
+void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& commands, CRYPT_OPTIONS bytes_option) {
     for (const auto& cmd : commands) {
         try {
             if (WriteFunctions.find(cmd.type) == WriteFunctions.end()) {
@@ -275,9 +279,9 @@ void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& comm
                 ((WriteString)WriteFunctions.at(cmd.type))(writer, cmd.value.c_str());
             }
             else if (cmd.type == "-bytes") {
-                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
-                uint64_t length = static_cast<uint64_t>(cmd.value.size());
-                ((WriteBytes)WriteFunctions.at(cmd.type))(writer, data, length);
+                std::vector<unsigned char> result;
+                cryptography_libary::ValueDecode(bytes_option, cmd.value, result);
+                ((WriteBytes)WriteFunctions.at(cmd.type))(writer, result.data(), result.size());
             }
         }
         catch (const std::runtime_error& e) {
@@ -302,7 +306,7 @@ void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& comm
     }
 }
 
-void binary_execute::ExecuteAppend(void* appender, const std::vector<Command>& commands) {
+void binary_execute::ExecuteAppend(void* appender, const std::vector<Command>& commands, CRYPT_OPTIONS bytes_option) {
     for (const auto& cmd : commands) {
         try {
             if (AppendFunctions.find(cmd.type) == AppendFunctions.end()) {
@@ -347,9 +351,9 @@ void binary_execute::ExecuteAppend(void* appender, const std::vector<Command>& c
                 ((AppendString)AppendFunctions.at(cmd.type))(appender, cmd.value.c_str());
             }
             else if (cmd.type == "-bytes") {
-                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
-                uint64_t length = static_cast<uint64_t>(cmd.value.size());
-                ((AppendBytes)AppendFunctions.at(cmd.type))(appender, data, length);
+                std::vector<unsigned char> result;
+                cryptography_libary::ValueDecode(bytes_option, cmd.value, result);
+                ((AppendBytes)AppendFunctions.at(cmd.type))(appender, result.data(), result.size());
             }
         }
         catch (const std::runtime_error& e) {
@@ -374,7 +378,7 @@ void binary_execute::ExecuteAppend(void* appender, const std::vector<Command>& c
     }
 }
 
-void binary_execute::ExecuteInsert(void* inserter, const std::vector<Command>& commands) {
+void binary_execute::ExecuteInsert(void* inserter, const std::vector<Command>& commands, CRYPT_OPTIONS bytes_option) {
     for (const auto& cmd : commands) {
         try {
             if (InsertFunctions.find(cmd.type) == InsertFunctions.end()) {
@@ -419,9 +423,9 @@ void binary_execute::ExecuteInsert(void* inserter, const std::vector<Command>& c
                 ((InsertString)InsertFunctions.at(cmd.type))(inserter, cmd.value.c_str(), cmd.position);
             }
             else if (cmd.type == "-bytes") {
-                const unsigned char* data = reinterpret_cast<const unsigned char*>(cmd.value.data());
-                uint64_t length = static_cast<uint64_t>(cmd.value.size());
-                ((InsertBytes)InsertFunctions.at(cmd.type))(inserter, data, length, cmd.position);
+                std::vector<unsigned char> result;
+                cryptography_libary::ValueDecode(bytes_option, cmd.value, result);
+                ((InsertBytes)InsertFunctions.at(cmd.type))(inserter, result.data(), result.size(), cmd.position);
             }
         }
         catch (const std::runtime_error& e) {
@@ -540,7 +544,7 @@ void binary_execute::ExecuteRemoveIndex(void* reader, void* remover, const std::
     free(indices);
 }
 
-void binary_execute::ExecuteReadIndex(void* reader, void* index_reader, const std::string filePath, const std::vector<Command>& commands, std::string& message) {
+void binary_execute::ExecuteReadIndex(void* reader, void* index_reader, const std::string filePath, const std::vector<Command>& commands, std::string& message, CRYPT_OPTIONS bytes_option) {
     uint64_t count = 0;
     uint64_t index_count = 0;
     BINARYIO_INDICES* indices = ((GetAllIndices)ReadFunctions.at("-indexes"))(index_reader, &index_count);
@@ -620,8 +624,10 @@ void binary_execute::ExecuteReadIndex(void* reader, void* index_reader, const st
             }
             case BINARYIO_TYPE::TYPE_BYTES: {
                 std::vector<unsigned char> bytes_buffer(length);
+                std::string result;
                 ((ReadBytes)ReadFunctions.at("-bytes"))(reader, bytes_buffer.data(), length, position);
-                message += Hint(std::to_string(count)) + ". " + Info("[" + std::to_string(indexCount) + "] ") + Hint("Bytes: ") + Ask(std::string(bytes_buffer.begin(), bytes_buffer.end())) + "\n";
+                cryptography_libary::ValueEncode(bytes_option, bytes_buffer, result);
+                message += Hint(std::to_string(count)) + ". " + Info("[" + std::to_string(indexCount) + "] ") + Hint("Bytes: ") + Ask(result) + "\n";
                 break;
             }
             case BINARYIO_TYPE::TYPE_STRING: {
