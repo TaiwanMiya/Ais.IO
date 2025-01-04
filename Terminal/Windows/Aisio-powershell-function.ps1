@@ -89,7 +89,7 @@ function BinaryRemoveIndex {
 
 function BinaryReadIndex {
     Write-Host "Ais Binary IO Read Indexes..."
-    $arguments = @("--read-index", $file, $BASE, $indexList)
+    $arguments = @("--read-index", $BASE, $file, $indexList)
     Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
 }
 
