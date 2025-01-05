@@ -1,6 +1,17 @@
 #include "pch.h"
 #include "AsymmetricIO.h"
 
+int PasswordCallback(char* buf, int size, int rwflag, void* userdata) {
+    const char* password = static_cast<const char*>(userdata);
+    int password_length = static_cast<int>(strlen(password));
+
+    if (password_length > size)
+        return 0;
+
+    memcpy(buf, password, password_length);
+    return password_length;
+}
+
 int handleErrors_asymmetric(std::string message, EVP_PKEY_CTX* ctx) {
     std::cerr << "ERROR: " << message << std::endl;
     if (ctx != NULL)

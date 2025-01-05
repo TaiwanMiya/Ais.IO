@@ -41,6 +41,56 @@ void EnableVirtualTerminalProcessing() {
 }
 #endif
 
+enum SYMMETRY_CRYPTER {
+    SYMMETRY_NULL = 0,
+    SYMMETRY_AES_CTR = 1,
+    SYMMETRY_AES_CBC = 2,
+    SYMMETRY_AES_CFB = 3,
+    SYMMETRY_AES_OFB = 4,
+    SYMMETRY_AES_ECB = 5,
+    SYMMETRY_AES_GCM = 6,
+    SYMMETRY_AES_CCM = 7,
+    SYMMETRY_AES_XTS = 8,
+    SYMMETRY_AES_OCB = 9,
+    SYMMETRY_AES_WRAP = 10,
+    SYMMETRY_DES_CBC = 11,
+    SYMMETRY_DES_CFB = 12,
+    SYMMETRY_DES_OFB = 13,
+    SYMMETRY_DES_ECB = 14,
+    SYMMETRY_DES_WRAP = 15,
+};
+
+enum SEGMENT_SIZE_OPTION {
+    SEGMENT_NULL = 0,
+    SEGMENT_1_BIT = 1,
+    SEGMENT_8_BIT = 8,
+    SEGMENT_64_BIT = 64,
+    SEGMENT_128_BIT = 128,
+};
+
+enum HASH_TYPE {
+    HASH_NULL           = 0,
+	HASH_MD5            = 1,
+    HASH_MD5_SHA1       = 2,
+    HASH_SHA1           = 3,
+    HASH_SHA2_224       = 4,
+    HASH_SHA2_256       = 5,
+    HASH_SHA2_384       = 6,
+    HASH_SHA2_512       = 7,
+    HASH_SHA2_512_224   = 8,
+    HASH_SHA2_512_256   = 9,
+    HASH_SHA3_224       = 10,
+    HASH_SHA3_256       = 11,
+    HASH_SHA3_384       = 12,
+    HASH_SHA3_512       = 13,
+    HASH_SHA3_KE_128    = 14,
+    HASH_SHA3_KE_256    = 15,
+    HASH_BLAKE2S_256    = 16,
+    HASH_BLAKE2B_512    = 17,
+    HASH_SM3            = 18,
+    HASH_RIPEMD160      = 19,
+};
+
 #pragma region EncoderIO
 typedef int (*Base16Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base16Decode)(const char*, const size_t, unsigned char*, const size_t);

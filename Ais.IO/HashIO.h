@@ -33,25 +33,26 @@ enum SALT_SEQUENCE {
 };
 
 enum HASH_TYPE {
-	HASH_MD5            = 0,
-    HASH_MD5_SHA1       = 1,
-    HASH_SHA1           = 2,
-    HASH_SHA2_224       = 3,
-    HASH_SHA2_256       = 4,
-    HASH_SHA2_384       = 5,
-    HASH_SHA2_512       = 6,
-    HASH_SHA2_512_224   = 7,
-    HASH_SHA2_512_256   = 8,
-    HASH_SHA3_224       = 9,
-    HASH_SHA3_256       = 10,
-    HASH_SHA3_384       = 11,
-    HASH_SHA3_512       = 12,
-    HASH_SHA3_KE_128    = 13,
-    HASH_SHA3_KE_256    = 14,
-    HASH_BLAKE2S_256    = 15,
-    HASH_BLAKE2B_512    = 16,
-    HASH_SM3            = 17,
-    HASH_RIPEMD160      = 18,
+    HASH_NULL           = 0,
+	HASH_MD5            = 1,
+    HASH_MD5_SHA1       = 2,
+    HASH_SHA1           = 3,
+    HASH_SHA2_224       = 4,
+    HASH_SHA2_256       = 5,
+    HASH_SHA2_384       = 6,
+    HASH_SHA2_512       = 7,
+    HASH_SHA2_512_224   = 8,
+    HASH_SHA2_512_256   = 9,
+    HASH_SHA3_224       = 10,
+    HASH_SHA3_256       = 11,
+    HASH_SHA3_384       = 12,
+    HASH_SHA3_512       = 13,
+    HASH_SHA3_KE_128    = 14,
+    HASH_SHA3_KE_256    = 15,
+    HASH_BLAKE2S_256    = 16,
+    HASH_BLAKE2B_512    = 17,
+    HASH_SM3            = 18,
+    HASH_RIPEMD160      = 19,
 };
 
 struct HASH_STRUCTURE {
@@ -65,5 +66,6 @@ struct HASH_STRUCTURE {
 	size_t OUTPUT_LENGTH;
 };
 
+const EVP_MD* GetHashCrypter(HASH_TYPE type);
 EXT HASHIO_API int Hash(HASH_STRUCTURE* hash);
 EXT HASHIO_API int GetHashLength(HASH_TYPE type);

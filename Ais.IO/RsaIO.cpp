@@ -26,28 +26,60 @@ int RsaGetKeyLength(RSA_KEY_PAIR* params) {
 
     EVP_PKEY* pkey = nullptr;
 
-    switch (params->KEY_FORMAT) {
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        PEM_read_bio_PUBKEY(pub_bio, &pkey, NULL, NULL);
-        PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+    switch (params->KEY_PKCS) {
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS8:
+        if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            PEM_read_bio_PUBKEY(pub_bio, &pkey, NULL, NULL);
+            if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+                PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+            else
+                PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        }
+        else if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            d2i_PUBKEY_bio(pub_bio, &pkey);
+            d2i_PrivateKey_bio(priv_bio, &pkey);
+        }
         break;
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        d2i_PUBKEY_bio(pub_bio, &pkey);
-        d2i_PrivateKey_bio(priv_bio, &pkey);
+
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS10: {
+        X509_REQ* req = nullptr;
+        if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            req = PEM_read_bio_X509_REQ(pub_bio, NULL, NULL, NULL);
+        }
+        else if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            req = d2i_X509_REQ_bio(pub_bio, NULL);
+        }
+        if (req) {
+            pkey = X509_REQ_get_pubkey(req);
+            X509_REQ_free(req);
+        }
         break;
-    default:
-        return handleErrors_asymmetric("Invalid RSA key format.", pub_bio, priv_bio, pkey);
+    }
+
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS12: {
+        if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+                PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+            else
+                PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        }
+        else if (params->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            PKCS12* p12 = d2i_PKCS12_bio(priv_bio, NULL);
+            PKCS12_parse(p12, params->PKCS12_PASSWORD, &pkey, NULL, NULL);
+        }
+        break;
+    }
+    default:return handleErrors_asymmetric("Invalid asymmetric key PKCS padding.", pub_bio, priv_bio, pkey);
     }
 
     if (!pkey)
         return handleErrors_asymmetric("Failed to parse public or private key.", pub_bio, priv_bio, pkey);
 
-    BIO_free(pub_bio);
-    BIO_free(priv_bio);
-
     if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &params->KEY_LENGTH))
         return handleErrors_asymmetric("Get Bits (bits) failed.", NULL, NULL, pkey);
 
+    BIO_free(pub_bio);
+    BIO_free(priv_bio);
     EVP_PKEY_free(pkey);
     return 0;
 }
@@ -162,24 +194,85 @@ int RsaGenerateKeys(RSA_KEY_PAIR* generate) {
 
     EVP_PKEY_CTX_free(ctx);
 
-    RAND_poll();
     BIO* pub_bio = BIO_new(BIO_s_mem());
     BIO* priv_bio = BIO_new(BIO_s_mem());
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
+    const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
 
-    switch (generate->KEY_FORMAT) {
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey))
-            return handleErrors_asymmetric("Unable to write public key in PEM format to memory.", pub_bio, priv_bio, pkey);
-        if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
-            return handleErrors_asymmetric("Unable to write private key in PEM format to memory.", pub_bio, priv_bio, pkey);
+    switch (generate->KEY_PKCS) {
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS8: {
+        if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            
+            if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey))
+                return handleErrors_asymmetric("Unable to write public key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+
+            if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0)
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+            else
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+        }
+        else if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            if (1 != i2d_PUBKEY_bio(pub_bio, pkey))
+                return handleErrors_asymmetric("Unable to write public key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
+            if (1 != i2d_PrivateKey_bio(priv_bio, pkey))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
+        }
         break;
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        if (1 != i2d_PUBKEY_bio(pub_bio, pkey))
-            return handleErrors_asymmetric("Unable to write public key in DER format to memory.", pub_bio, priv_bio, pkey);
-        if (1 != i2d_PrivateKey_bio(priv_bio, pkey))
-            return handleErrors_asymmetric("Unable to write private key in DER format to memory.", pub_bio, priv_bio, pkey);
+    }
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS10: {
+        X509_REQ* req = X509_REQ_new();
+        
+        if (!req || !X509_REQ_set_pubkey(req, pkey) || !X509_REQ_sign(req, pkey, md))
+            return handleErrors_asymmetric("Failed to create PKCS#10 CSR.", pub_bio, priv_bio, pkey);
+        if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            if (1 != PEM_write_bio_X509_REQ(pub_bio, req))
+                return handleErrors_asymmetric("Unable to write CSR PEM to memory.", pub_bio, priv_bio, pkey);
+            if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0)
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+            else
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write private key in PKCS#10 PEM.", pub_bio, priv_bio, pkey);
+        }
+        else if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            if (1 != i2d_X509_REQ_bio(pub_bio, req))
+                return handleErrors_asymmetric("Unable to write CSR DER to memory.", pub_bio, priv_bio, pkey);
+            if (1 != i2d_PrivateKey_bio(priv_bio, pkey))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#10 DER.", pub_bio, priv_bio, pkey);
+        }
+        X509_REQ_free(req);
         break;
-    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
+    }
+    case ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS12: {
+        X509* cert = X509_new();
+        if (!cert || !X509_set_pubkey(cert, pkey) || !X509_sign(cert, pkey, md))
+            return handleErrors_asymmetric("Failed to create X.509 certificate for PKCS#12.", pub_bio, priv_bio, pkey);
+        PKCS12* p12 = PKCS12_create(generate->PKCS12_PASSWORD, generate->PKCS12_NAME, pkey, cert, NULL, 0, 0, 0, 0, 0);
+        if (!p12)
+            return handleErrors_asymmetric("Unable to create PKCS#12 object.", pub_bio, priv_bio, pkey);
+        if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+            if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0)
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+            else
+                if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
+                    return handleErrors_asymmetric("Unable to write PEM format PKCS#12 PEM to memory.", pub_bio, priv_bio, pkey);
+            if (1 != PEM_write_bio_X509(pub_bio, cert))
+                return handleErrors_asymmetric("Unable to write X.509 PEM to memory.", pub_bio, priv_bio, pkey);
+        }
+        else if (generate->KEY_FORMAT == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER) {
+            if (1 != i2d_PKCS12_bio(priv_bio, p12))
+                return handleErrors_asymmetric("Unable to write PEM format PKCS#12 DER to memory.", pub_bio, priv_bio, pkey);
+            if (1 != i2d_X509_bio(pub_bio, cert))
+                return handleErrors_asymmetric("Unable to write X.509 DER to memory.", pub_bio, priv_bio, pkey);
+        }
+        X509_free(cert);
+        PKCS12_free(p12);
+        break;
+    }
+    default:return handleErrors_asymmetric("Invalid asymmetric key PKCS padding.", pub_bio, priv_bio, pkey);
     }
 
     size_t pub_len = BIO_pending(pub_bio);

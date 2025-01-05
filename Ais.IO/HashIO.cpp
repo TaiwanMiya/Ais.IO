@@ -1,37 +1,43 @@
 #include "pch.h"
 #include "HashIO.h"
 
+const EVP_MD* GetHashCrypter(HASH_TYPE type) {
+	const EVP_MD* md = NULL;
+	switch (type)
+	{
+	case HASH_TYPE::HASH_MD5: md = EVP_md5(); break;
+	case HASH_TYPE::HASH_MD5_SHA1: md = EVP_md5_sha1(); break;
+	case HASH_TYPE::HASH_SHA1: md = EVP_sha1(); break;
+	case HASH_TYPE::HASH_SHA2_224: md = EVP_sha224(); break;
+	case HASH_TYPE::HASH_SHA2_256: md = EVP_sha256(); break;
+	case HASH_TYPE::HASH_SHA2_384: md = EVP_sha384(); break;
+	case HASH_TYPE::HASH_SHA2_512: md = EVP_sha512(); break;
+	case HASH_TYPE::HASH_SHA2_512_224: md = EVP_sha512_224(); break;
+	case HASH_TYPE::HASH_SHA2_512_256: md = EVP_sha512_256(); break;
+	case HASH_TYPE::HASH_SHA3_224: md = EVP_sha3_224(); break;
+	case HASH_TYPE::HASH_SHA3_256: md = EVP_sha3_256(); break;
+	case HASH_TYPE::HASH_SHA3_384: md = EVP_sha3_384(); break;
+	case HASH_TYPE::HASH_SHA3_512: md = EVP_sha3_512(); break;
+	case HASH_TYPE::HASH_SHA3_KE_128: md = EVP_shake128(); break;
+	case HASH_TYPE::HASH_SHA3_KE_256: md = EVP_shake256(); break;
+	case HASH_TYPE::HASH_BLAKE2S_256: md = EVP_blake2s256(); break;
+	case HASH_TYPE::HASH_BLAKE2B_512: md = EVP_blake2b512(); break;
+	case HASH_TYPE::HASH_SM3: md = EVP_sm3(); break;
+	case HASH_TYPE::HASH_RIPEMD160: md = EVP_ripemd160(); break;
+	default: break;
+	}
+	return md;
+}
+
 int Hash(HASH_STRUCTURE* hash) {
 	ERR_clear_error();
 	EVP_MD_CTX* ctx = EVP_MD_CTX_new();
 	if (!ctx)
 		return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
-	const EVP_MD* md = nullptr;
-	switch (hash->TYPE) {
-	case HASH_TYPE::HASH_MD5:md = EVP_md5(); break;
-	case HASH_TYPE::HASH_MD5_SHA1:md = EVP_md5_sha1(); break;
-	case HASH_TYPE::HASH_SHA1:md = EVP_sha1(); break;
-	case HASH_TYPE::HASH_SHA2_224:md = EVP_sha224(); break;
-	case HASH_TYPE::HASH_SHA2_256:md = EVP_sha256(); break;
-	case HASH_TYPE::HASH_SHA2_384:md = EVP_sha384(); break;
-	case HASH_TYPE::HASH_SHA2_512:md = EVP_sha512(); break;
-	case HASH_TYPE::HASH_SHA2_512_224:md = EVP_sha512_224(); break;
-	case HASH_TYPE::HASH_SHA2_512_256:md = EVP_sha512_256(); break;
-	case HASH_TYPE::HASH_SHA3_224:md = EVP_sha3_224(); break;
-	case HASH_TYPE::HASH_SHA3_256:md = EVP_sha3_256(); break;
-	case HASH_TYPE::HASH_SHA3_384:md = EVP_sha3_384(); break;
-	case HASH_TYPE::HASH_SHA3_512:md = EVP_sha3_512(); break;
-	case HASH_TYPE::HASH_SHA3_KE_128:md = EVP_shake128(); break;
-	case HASH_TYPE::HASH_SHA3_KE_256:md = EVP_shake256(); break;
-	case HASH_TYPE::HASH_BLAKE2S_256:md = EVP_blake2s256(); break;
-	case HASH_TYPE::HASH_BLAKE2B_512:md = EVP_blake2b512(); break;
-	case HASH_TYPE::HASH_SM3:md = EVP_sm3(); break;
-	case HASH_TYPE::HASH_RIPEMD160:md = EVP_ripemd160(); break;
-	default:return handleErrors_symmetry("Invalid hash type, see \"HASH_OPTIONS\".", ctx);
-	}
+	const EVP_MD* md = GetHashCrypter(hash->TYPE);
 	if (!md)
-		return handleErrors_symmetry("Not supported by this OpenSSL build.", ctx);
+		return handleErrors_symmetry("Not supported by build.", ctx);
 
 	if (1 != EVP_DigestInit_ex(ctx, md, NULL))
 		return handleErrors_symmetry("Failed to initialize digest.", ctx);

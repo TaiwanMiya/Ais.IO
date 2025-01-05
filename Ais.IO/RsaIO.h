@@ -22,6 +22,8 @@
 #include <openssl/bn.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
+#include <openssl/pkcs12.h>
+#include <openssl/asn1.h>
 #include <cstring>
 #include <iostream>
 #include <random>
@@ -29,6 +31,8 @@
 #include <algorithm>
 #include <string>
 #include "AsymmetricIO.h"
+#include "SymmetryIO.h"
+#include "HashIO.h"
 
 struct RSA_PARAMETERS {
     const size_t KEY_LENGTH;
@@ -53,10 +57,19 @@ struct RSA_PARAMETERS {
 struct RSA_KEY_PAIR {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const ASYMMETRIC_KEY_PKCS KEY_PKCS;
     unsigned char* PUBLIC_KEY;
     unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+    const HASH_TYPE HASH_ALGORITHM;
+    const char* PKCS12_NAME;
+    const char* PKCS12_PASSWORD;
 };
 
 struct EXPORT_RSA {
