@@ -67,7 +67,7 @@ while [[ "$#" -gt 0 ]]; do
 			shift
 			;;
 		-gen)
-			if [ $rsa_format = "" ]; then
+			if [ -z  $rsa_format ]; then
 				operation="$1"
 			else
 				mode="$1"
