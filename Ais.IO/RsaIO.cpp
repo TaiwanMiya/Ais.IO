@@ -311,13 +311,13 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
     X509_NAME* name = X509_NAME_new();
 
     if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Country failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
     if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Organization failed.", cert_bio, NULL, pkey);
-    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Organization Unit failed.", cert_bio, NULL, pkey);
-    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Common Name failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
+    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
         X509_NAME_free(name);

@@ -74,6 +74,7 @@ struct RSA_KEY_PAIR {
 
 struct RSA_PKCS10_CERTIFICATE {
     size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* CERTIFICATE;
     size_t CERTIFICATE_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
