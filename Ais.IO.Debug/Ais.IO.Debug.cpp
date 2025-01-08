@@ -53,6 +53,18 @@ struct RSA_KEY_PAIR {
     const char* PKCS12_PASSWORD;
 };
 
+struct RSA_PKCS10_CERTIFICATE {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CERTIFICATE;
+    size_t CERTIFICATE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const unsigned char* COMMON_NAME;
+};
+
 struct EXPORT_RSA {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -87,6 +99,7 @@ typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
+typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CERTIFICATE*);
 typedef int (*RsaExportParameters)(EXPORT_RSA*);
 typedef int (*RsaExportKeys)(EXPORT_RSA*);
 
@@ -94,6 +107,7 @@ RsaGetParametersLength RsaGetParametersLength_Func = (RsaGetParametersLength)GET
 RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
 RsaGenerateParameters RsaGenerateParameters_Func = (RsaGenerateParameters)GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
 RsaGenerateKeys RsaGenerateKeys_Func = (RsaGenerateKeys)GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
+RsaGeneratePKCS10 RsaGeneratePKCS10_Func = (RsaGeneratePKCS10)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS10");
 RsaExportParameters RsaExportParameters_Func = (RsaExportParameters)GET_PROC_ADDRESS(Lib, "RsaExportParameters");
 RsaExportKeys RsaExportKeys_Func = (RsaExportKeys)GET_PROC_ADDRESS(Lib, "RsaExportKeys");
 #pragma endregion
@@ -372,6 +386,33 @@ void Test_RsaGenerate() {
         std::cout << privString << std::endl;
         std::cout << "" << std::endl;
     }
+}
+
+void Test_RsaGeneratePKCS10() {
+    std::string country = "TW";
+    std::string organizetion = "Ais";
+    std::string organizetion_unit = "Ais IO";
+    std::string common_name = "Ais";
+    size_t keysize = 2048;
+    std::vector<unsigned char> certificate;
+    certificate.resize(keysize * 2);
+    RSA_PKCS10_CERTIFICATE cert = {
+        keysize,
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        certificate.data(),
+        certificate.size(),
+        HASH_TYPE::HASH_SHA2_256,
+        reinterpret_cast<const unsigned char*>(country.c_str()),
+        reinterpret_cast<const unsigned char*>(organizetion.c_str()),
+        reinterpret_cast<const unsigned char*>(organizetion_unit.c_str()),
+        reinterpret_cast<const unsigned char*>(common_name.c_str())
+    };
+    RsaGeneratePKCS10_Func(&cert);
+
+    certificate.resize(cert.CERTIFICATE_LENGTH);
+
+    std::cout << "PEM - Size:" << cert.CERTIFICATE_LENGTH << std::endl;
+    std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
 }
 
 void Test_ExportRsaParametersFromKeys() {
@@ -660,7 +701,9 @@ int main() {
 
     //Test_RsaGenerate();
 
-    Test_ExportRsaParametersFromKeys();
+    Test_RsaGeneratePKCS10();
+
+    //Test_ExportRsaParametersFromKeys();
 
     //Test_ExportRsaKeyFromParameters();
 }

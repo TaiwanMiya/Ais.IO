@@ -301,7 +301,7 @@ int RsaGenerateKeys(RSA_KEY_PAIR* generate) {
 int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
     ERR_clear_error();
 
-    BIO* cert_bio = BIO_new_mem_buf(params->CERTIFICATE, static_cast<int>(params->CERTIFICATE_LENGTH));
+    BIO* cert_bio = BIO_new(BIO_s_mem());
 
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
     if (!pkey)
@@ -324,13 +324,38 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set subject name.", NULL);
     }
-    X509_NAME_free(name);
 
     const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
-    if (1 != X509_REQ_set_pubkey(req, pkey))
+    if (!X509_REQ_set_pubkey(req, pkey))
         return handleErrors_asymmetric("Failed to set public key.", NULL);
-    if (1 != X509_REQ_sign(req, pkey, md))
+    if (!X509_REQ_sign(req, pkey, md))
         return handleErrors_asymmetric("Failed to sign the request.", NULL);
+
+    switch (params->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_X509_REQ(cert_bio, req))
+            return handleErrors_asymmetric("Unable to write CSR PEM to memory.", cert_bio, NULL, pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_X509_REQ_bio(cert_bio, req))
+            return handleErrors_asymmetric("Unable to write CSR DER to memory.", cert_bio, NULL, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", cert_bio, NULL, pkey);
+    }
+
+    size_t cert_len = BIO_pending(cert_bio);
+    if (params->CERTIFICATE == nullptr || params->CERTIFICATE_LENGTH < cert_len) {
+        params->CERTIFICATE = new unsigned char[cert_len];
+    }
+
+    BIO_read(cert_bio, params->CERTIFICATE, cert_len);
+
+    params->CERTIFICATE_LENGTH = cert_len;
+
+    X509_REQ_free(req);
+    X509_NAME_free(name);
+    BIO_free_all(cert_bio);
+    EVP_PKEY_free(pkey);
     return 0;
 }
 
