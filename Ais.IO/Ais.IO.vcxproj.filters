@@ -39,9 +39,6 @@
     <ClInclude Include="BaseEncoderIO.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
-    <ClInclude Include="StructT.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
     <ClInclude Include="AesIO.h">
       <Filter>標頭檔\Cryptography</Filter>
     </ClInclude>
@@ -84,9 +81,6 @@
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="BaseEncoderIO.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
-    <ClCompile Include="StructT.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="AesIO.cpp">

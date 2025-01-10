@@ -229,7 +229,6 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RsaIO.h" />
-    <ClInclude Include="StructT.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AesIO.cpp" />
@@ -251,7 +250,6 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RsaIO.cpp" />
-    <ClCompile Include="StructT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ais.IO.rc" />

@@ -53,6 +53,28 @@ struct RSA_KEY_PAIR {
     const char* PKCS12_PASSWORD;
 };
 
+struct RSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_PKCS8_KEY {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
 struct RSA_PKCS10_CERTIFICATE {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -84,6 +106,7 @@ struct RSA_PKCS12_CERTIFICATE_KEY {
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
     const unsigned char* COMMON_NAME;
+    const unsigned long VALIDITY_DAYS;
 };
 
 struct EXPORT_RSA {
@@ -118,8 +141,10 @@ struct EXPORT_RSA {
 #pragma region RsaIO
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
+typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
+typedef int (*RsaGeneratePKCS8)(RSA_PKCS8_KEY*);
 typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CERTIFICATE*);
 typedef int (*RsaGeneratePKCS12)(RSA_PKCS12_CERTIFICATE_KEY*);
 typedef int (*RsaExportParameters)(EXPORT_RSA*);
@@ -127,8 +152,10 @@ typedef int (*RsaExportKeys)(EXPORT_RSA*);
 
 RsaGetParametersLength RsaGetParametersLength_Func = (RsaGetParametersLength)GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
 RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
+RsaCheckPublicKey RsaCheckPublicKey_Func = (RsaCheckPublicKey)GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
 RsaGenerateParameters RsaGenerateParameters_Func = (RsaGenerateParameters)GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
 RsaGenerateKeys RsaGenerateKeys_Func = (RsaGenerateKeys)GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
+RsaGeneratePKCS8 RsaGeneratePKCS8_Func = (RsaGeneratePKCS8)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS8");
 RsaGeneratePKCS10 RsaGeneratePKCS10_Func = (RsaGeneratePKCS10)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS10");
 RsaGeneratePKCS12 RsaGeneratePKCS12_Func = (RsaGeneratePKCS12)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS12");
 RsaExportParameters RsaExportParameters_Func = (RsaExportParameters)GET_PROC_ADDRESS(Lib, "RsaExportParameters");
@@ -254,6 +281,37 @@ void Test_GetRsaKeyLength() {
     RsaGetKeyLength_Func(&length);
     
     std::cout << "Key Length (Bits):" << length.KEY_LENGTH << std::endl;
+}
+
+void Test_RsaCheckPublicKey() {
+    std::string pemPublicKey =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkDJ9SkQuB/wfwZdYSWsE\n"
+        "TbYuW6aVluWnONbm6L0SP4EyKHSPd1hwX3LzJinTtu+R3mwS01SwtYx9CPQVaNiP\n"
+        "MV3DysxIx26IVrk5DGFlNHChF6+9S8BNNSue+liQos1rzBwwjByFizBffW1UF9hN\n"
+        "0QtOc8R1beCKxkpj4yxqQDsAxVK7/khUR1eRkGqAVU458tytbkobm0tYlMRTf+K7\n"
+        "e3zC2IPBL8FtwPpuS/+UTZoRkiZWs3Zs9Mb3/5K/nmmVZompiZlaFfzjQh2FthJ0\n"
+        "69qFwZn58CBo2bRmkqY70vqJSO1BBq3oD1nfUJVGoFJ5ppL/YwRgb/DMUSj/GGKd\n"
+        "FQIDAQAB\n"
+        "-----END PUBLIC KEY-----\n"
+        "";
+    std::vector<unsigned char> publicKey;
+    publicKey.resize(pemPublicKey.size());
+    publicKey.assign(pemPublicKey.begin(), pemPublicKey.end());
+
+    RSA_CHECK_PUBLIC_KEY pub = {
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        publicKey.data(),
+        publicKey.size()
+    };
+
+    RsaCheckPublicKey_Func(&pub);
+
+    std::cout << "Key Length (Bits):" << pub.KEY_LENGTH << std::endl;
+    if (pub.IS_KEY_OK)
+        std::cout << "Key Check Success." << std::endl;
+    else
+        std::cout << "Key Check Falture.:" << pub.IS_KEY_OK << std::endl;
 }
 
 void Test_GenerateRsaParameters() {
@@ -411,7 +469,55 @@ void Test_RsaGenerate() {
     }
 }
 
+void Test_RsaGeneratePKCS8() {
+    ASYMMETRIC_KEY_FORMAT format = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    std::string pemPassowrd = "7331323239616263646232";
+    std::vector<unsigned char> pemPass;
+    pemPass.resize(pemPassowrd.size() / 2);
+    Base16Decode_Func(pemPassowrd.c_str(), pemPassowrd.size(), pemPass.data(), pemPass.size());
+    size_t keysize = 2048;
+    std::vector<unsigned char> publicKey;
+    std::vector<unsigned char> privateKey;
+    publicKey.resize(keysize * 2);
+    privateKey.resize(keysize * 2);
+
+    RSA_PKCS8_KEY key = {
+        keysize,
+        format,
+        publicKey.data(),
+        privateKey.data(),
+        publicKey.size(),
+        privateKey.size(),
+        pemPass.data(),
+        pemPass.size(),
+        SYMMETRY_CRYPTER::SYMMETRY_AES_CBC,
+        256,
+        SEGMENT_SIZE_OPTION::SEGMENT_NULL
+    };
+    RsaGeneratePKCS8_Func(&key);
+
+    publicKey.resize(key.PUBLIC_KEY_LENGTH);
+    privateKey.resize(key.PRIVATE_KEY_LENGTH);
+
+    if (format == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+        std::cout << "PEM - [Size:" << key.PUBLIC_KEY_LENGTH << ", " << key.PRIVATE_KEY_LENGTH << "]" << std::endl;
+        std::cout << reinterpret_cast<char*>(publicKey.data()) << std::endl;
+        std::cout << reinterpret_cast<char*>(privateKey.data()) << std::endl;
+    }
+    else {
+        std::cout << "DER - [Size:" << key.PUBLIC_KEY_LENGTH << ", " << key.PRIVATE_KEY_LENGTH << "]" << std::endl;
+        char* pubString = new char[key.PUBLIC_KEY_LENGTH * 2 + 1] {};
+        char* privString = new char[key.PRIVATE_KEY_LENGTH * 2 + 1] {};
+        Base16Encode_Func(publicKey.data(), publicKey.size(), pubString, key.PUBLIC_KEY_LENGTH * 2 + 1);
+        Base16Encode_Func(privateKey.data(), privateKey.size(), privString, key.PRIVATE_KEY_LENGTH * 2 + 1);
+        std::cout << pubString << std::endl;
+        std::cout << privString << std::endl;
+        std::cout << "" << std::endl;
+    }
+}
+
 void Test_RsaGeneratePKCS10() {
+    ASYMMETRIC_KEY_FORMAT format = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
     std::string country = "TW";
     std::string organizetion = "Ais";
     std::string organizetion_unit = "Ais IO";
@@ -421,7 +527,7 @@ void Test_RsaGeneratePKCS10() {
     certificate.resize(keysize * 2);
     RSA_PKCS10_CERTIFICATE cert = {
         keysize,
-        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        format,
         certificate.data(),
         certificate.size(),
         HASH_TYPE::HASH_SHA2_256,
@@ -434,11 +540,21 @@ void Test_RsaGeneratePKCS10() {
 
     certificate.resize(cert.CERTIFICATE_LENGTH);
 
-    std::cout << "PEM - Size:" << cert.CERTIFICATE_LENGTH << std::endl;
-    std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
+    if (format == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+        std::cout << "PEM - [Size:" << cert.CERTIFICATE_LENGTH << "]" << std::endl;
+        std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
+    }
+    else {
+        std::cout << "DER - [Size:" << cert.CERTIFICATE_LENGTH << "]" << std::endl;
+        char* certString = new char[cert.CERTIFICATE_LENGTH * 2 + 1] {};
+        Base16Encode_Func(certificate.data(), certificate.size(), certString, cert.CERTIFICATE_LENGTH * 2 + 1);
+        std::cout << certString << std::endl;
+        std::cout << "" << std::endl;
+    }
 }
 
 void Test_RsaGeneratePKCS12() {
+    ASYMMETRIC_KEY_FORMAT format = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
     std::string country = "TW";
     std::string organizetion = "Ais";
     std::string organizetion_unit = "Ais IO";
@@ -458,7 +574,7 @@ void Test_RsaGeneratePKCS12() {
     privateKey.resize(keysize * 2);
     RSA_PKCS12_CERTIFICATE_KEY cert_key = {
         keysize,
-        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        format,
         certificate.data(),
         privateKey.data(),
         certificate.size(),
@@ -474,7 +590,8 @@ void Test_RsaGeneratePKCS12() {
         reinterpret_cast<const unsigned char*>(country.c_str()),
         reinterpret_cast<const unsigned char*>(organizetion.c_str()),
         reinterpret_cast<const unsigned char*>(organizetion_unit.c_str()),
-        reinterpret_cast<const unsigned char*>(common_name.c_str())
+        reinterpret_cast<const unsigned char*>(common_name.c_str()),
+        365 * 4
     };
 
     RsaGeneratePKCS12_Func(&cert_key);
@@ -482,9 +599,21 @@ void Test_RsaGeneratePKCS12() {
     certificate.resize(cert_key.CERTIFICATE_LENGTH);
     privateKey.resize(cert_key.PRIVATE_KEY_LENGTH);
 
-    std::cout << "PEM - Size:" << cert_key.KEY_LENGTH << std::endl;
-    std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
-    std::cout << reinterpret_cast<char*>(privateKey.data()) << std::endl;
+    if (format == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
+        std::cout << "PEM - [Size:" << cert_key.CERTIFICATE_LENGTH << ", " << cert_key.PRIVATE_KEY_LENGTH << "]" << std::endl;
+        std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
+        std::cout << reinterpret_cast<char*>(privateKey.data()) << std::endl;
+    }
+    else {
+        std::cout << "DER - [Size:" << cert_key.CERTIFICATE_LENGTH << ", " << cert_key.PRIVATE_KEY_LENGTH << "]" << std::endl;
+        char* certString = new char[cert_key.CERTIFICATE_LENGTH * 2 + 1] {};
+        char* privString = new char[cert_key.PRIVATE_KEY_LENGTH * 2 + 1] {};
+        Base16Encode_Func(certificate.data(), certificate.size(), certString, cert_key.CERTIFICATE_LENGTH * 2 + 1);
+        Base16Encode_Func(privateKey.data(), privateKey.size(), privString, cert_key.PRIVATE_KEY_LENGTH * 2 + 1);
+        std::cout << certString << std::endl;
+        std::cout << privString << std::endl;
+        std::cout << "" << std::endl;
+    }
 }
 
 void Test_ExportRsaParametersFromKeys() {
@@ -769,11 +898,15 @@ int main() {
 
     //Test_GetRsaKeyLength();
 
+    Test_RsaCheckPublicKey();
+
     //Test_GenerateRsaParameters();
 
     //Test_RsaGenerate();
 
-    Test_RsaGeneratePKCS10();
+    //Test_RsaGeneratePKCS8();
+
+    //Test_RsaGeneratePKCS10();
 
     //Test_RsaGeneratePKCS12();
 

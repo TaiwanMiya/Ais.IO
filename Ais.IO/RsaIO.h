@@ -72,6 +72,20 @@ struct RSA_KEY_PAIR {
     const char* PKCS12_PASSWORD;
 };
 
+struct RSA_PKCS8_KEY {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
 struct RSA_PKCS10_CERTIFICATE {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -103,6 +117,15 @@ struct RSA_PKCS12_CERTIFICATE_KEY {
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
     const unsigned char* COMMON_NAME;
+    const unsigned long VALIDITY_DAYS;
+};
+
+struct RSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
 };
 
 struct EXPORT_RSA {
@@ -136,8 +159,10 @@ struct EXPORT_RSA {
 
 EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
+EXT RSAIO_API int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check);
 EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGenerateKeys(RSA_KEY_PAIR* generate);
+EXT RSAIO_API int RsaGeneratePKCS8(RSA_PKCS8_KEY* generate);
 EXT RSAIO_API int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* generate);
 EXT RSAIO_API int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* generate);
 EXT RSAIO_API int RsaExportParameters(EXPORT_RSA* params);

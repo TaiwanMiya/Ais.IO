@@ -84,6 +84,37 @@ int RsaGetKeyLength(RSA_KEY_PAIR* params) {
     return 0;
 }
 
+int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check) {
+    ERR_clear_error();
+    EVP_PKEY* pkey = nullptr;
+    BIO* pub_bio = BIO_new_mem_buf(check->PUBLIC_KEY, static_cast<int>(check->PUBLIC_KEY_LENGTH));
+
+    switch (check->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(pub_bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(pub_bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, NULL, pkey);
+    }
+    
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public key.", pub_bio, NULL, pkey);
+
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
+        return handleErrors_asymmetric("Get Bits (bits) failed.", pub_bio, NULL, pkey);
+    
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", pub_bio, NULL, pkey);
+    check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
+
+    BIO_free(pub_bio);
+    EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
 int RsaGenerateParameters(RSA_PARAMETERS* params) {
     ERR_clear_error();
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
@@ -298,25 +329,78 @@ int RsaGenerateKeys(RSA_KEY_PAIR* generate) {
     return 0;
 }
 
-int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
+int RsaGeneratePKCS8(RSA_PKCS8_KEY* generate) {
+    ERR_clear_error();
+
+    BIO* pub_bio = BIO_new(BIO_s_mem());
+    BIO* priv_bio = BIO_new(BIO_s_mem());
+
+    EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
+    if (!pkey)
+        return handleErrors_asymmetric("RSA PKCS#8 key generate failed.", NULL);
+
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
+
+    switch (generate->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey))
+            return handleErrors_asymmetric("Unable to write public key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+        if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0) {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+        }
+        else {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
+        }
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_PUBKEY_bio(pub_bio, pkey))
+            return handleErrors_asymmetric("Unable to write public key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
+        if (1 != i2d_PrivateKey_bio(priv_bio, pkey))
+            return handleErrors_asymmetric("Unable to write private key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
+    }
+
+    size_t pub_len = BIO_pending(pub_bio);
+    size_t priv_len = BIO_pending(priv_bio);
+    if (generate->PUBLIC_KEY == nullptr || generate->PRIVATE_KEY == nullptr || generate->PUBLIC_KEY_LENGTH < pub_len || generate->PRIVATE_KEY_LENGTH < priv_len) {
+        generate->PUBLIC_KEY = new unsigned char[pub_len];
+        generate->PRIVATE_KEY = new unsigned char[priv_len];
+    }
+
+    BIO_read(pub_bio, generate->PUBLIC_KEY, pub_len);
+    BIO_read(priv_bio, generate->PRIVATE_KEY, priv_len);
+
+    generate->PUBLIC_KEY_LENGTH = pub_len;
+    generate->PRIVATE_KEY_LENGTH = priv_len;
+
+    BIO_free_all(pub_bio);
+    BIO_free_all(priv_bio);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
+int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());
 
-    EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
+    EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
     if (!pkey)
         return handleErrors_asymmetric("RSA PKCS#10 certificate generate failed.", NULL);
 
     X509_REQ* req = X509_REQ_new();
     X509_NAME* name = X509_NAME_new();
 
-    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0))
+    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
-    if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0))
+    if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
-    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
-    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0))
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
@@ -325,13 +409,13 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
         return handleErrors_asymmetric("Failed to set subject name.", NULL);
     }
 
-    const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
+    const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
     if (!X509_REQ_set_pubkey(req, pkey))
         return handleErrors_asymmetric("Failed to set public key.", NULL);
     if (!X509_REQ_sign(req, pkey, md))
         return handleErrors_asymmetric("Failed to sign the request.", NULL);
 
-    switch (params->KEY_FORMAT) {
+    switch (generate->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
         if (1 != PEM_write_bio_X509_REQ(cert_bio, req))
             return handleErrors_asymmetric("Unable to write CSR PEM to memory.", cert_bio, NULL, pkey);
@@ -344,13 +428,13 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
     }
 
     size_t cert_len = BIO_pending(cert_bio);
-    if (params->CERTIFICATE == nullptr || params->CERTIFICATE_LENGTH < cert_len) {
-        params->CERTIFICATE = new unsigned char[cert_len];
+    if (generate->CERTIFICATE == nullptr || generate->CERTIFICATE_LENGTH < cert_len) {
+        generate->CERTIFICATE = new unsigned char[cert_len];
     }
 
-    BIO_read(cert_bio, params->CERTIFICATE, cert_len);
+    BIO_read(cert_bio, generate->CERTIFICATE, cert_len);
 
-    params->CERTIFICATE_LENGTH = cert_len;
+    generate->CERTIFICATE_LENGTH = cert_len;
 
     X509_REQ_free(req);
     X509_NAME_free(name);
@@ -359,13 +443,13 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
     return 0;
 }
 
-int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* params) {
+int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());
     BIO* priv_bio = BIO_new(BIO_s_mem());
 
-    EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
+    EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
     if (!pkey)
         return handleErrors_asymmetric("RSA PKCS#12 certificate and key generate failed.", NULL);
 
@@ -377,22 +461,23 @@ int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* params) {
     ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
 
     // 設置有效期
+    unsigned long validity_days = generate->VALIDITY_DAYS > 0 ? generate->VALIDITY_DAYS : 365;
     X509_gmtime_adj(X509_get_notBefore(x509), 0);
-    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L); // 有效期1年
+    X509_gmtime_adj(X509_get_notAfter(x509), 60 * 60 * 24 * validity_days);
 
     // 設置主題信息
     X509_NAME* name = X509_get_subject_name(x509);
-    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0))
+    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
-    if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0))
+    if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
-    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
-    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0))
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
 
-    const EVP_CIPHER* cipher = GetSymmetryCrypter(params->PEM_CIPHER, params->PEM_CIPHER_SIZE, params->PEM_CIPHER_SEGMENT);
-    const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
+    const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
     if (!X509_set_issuer_name(x509, name))
         return handleErrors_asymmetric("Failed to set issuer name.", NULL);
     if (!X509_set_pubkey(x509, pkey))
@@ -400,18 +485,18 @@ int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* params) {
     if (!X509_sign(x509, pkey, md))
         return handleErrors_asymmetric("Failed to sign the certificate.", NULL);
 
-    PKCS12* p12 = PKCS12_create(params->PKCS12_PASSWORD, params->PKCS12_NAME, pkey, x509, NULL, 0, 0, 0, 0, 0);
+    PKCS12* p12 = PKCS12_create(generate->PKCS12_PASSWORD, generate->PKCS12_NAME, pkey, x509, NULL, 0, 0, 0, 0, 0);
     if (!p12)
         return handleErrors_asymmetric("Unable to create PKCS#12 object.", cert_bio, priv_bio, pkey);
 
-    switch (params->KEY_FORMAT) {
+    switch (generate->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        if (cipher == NULL || params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0) {
+        if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0) {
             if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
                 return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", cert_bio, priv_bio, pkey);
         }
         else {
-            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, params->PEM_PASSWORD, params->PEM_PASSWORD_LENGTH, NULL, NULL))
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
                 return handleErrors_asymmetric("Unable to write PEM format PKCS#12 PEM to memory.", cert_bio, priv_bio, pkey);
         }
         if (1 != PEM_write_bio_X509(cert_bio, x509))
@@ -428,16 +513,16 @@ int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* params) {
 
     size_t cert_len = BIO_pending(cert_bio);
     size_t priv_len = BIO_pending(priv_bio);
-    if (params->CERTIFICATE == nullptr || params->PRIVATE_KEY == nullptr || params->CERTIFICATE_LENGTH < cert_len || params->PRIVATE_KEY_LENGTH < priv_len) {
-        params->CERTIFICATE = new unsigned char[cert_len];
-        params->PRIVATE_KEY = new unsigned char[priv_len];
+    if (generate->CERTIFICATE == nullptr || generate->PRIVATE_KEY == nullptr || generate->CERTIFICATE_LENGTH < cert_len || generate->PRIVATE_KEY_LENGTH < priv_len) {
+        generate->CERTIFICATE = new unsigned char[cert_len];
+        generate->PRIVATE_KEY = new unsigned char[priv_len];
     }
 
-    BIO_read(cert_bio, params->CERTIFICATE, cert_len);
-    BIO_read(priv_bio, params->PRIVATE_KEY, priv_len);
+    BIO_read(cert_bio, generate->CERTIFICATE, cert_len);
+    BIO_read(priv_bio, generate->PRIVATE_KEY, priv_len);
 
-    params->CERTIFICATE_LENGTH = cert_len;
-    params->PRIVATE_KEY_LENGTH = priv_len;
+    generate->CERTIFICATE_LENGTH = cert_len;
+    generate->PRIVATE_KEY_LENGTH = priv_len;
 
     X509_free(x509);
     PKCS12_free(p12);
