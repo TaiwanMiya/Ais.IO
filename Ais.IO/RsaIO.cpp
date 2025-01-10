@@ -305,7 +305,7 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
 
     EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
     if (!pkey)
-        return handleErrors_asymmetric("RSA certificate generate Pair failed.", NULL);
+        return handleErrors_asymmetric("RSA PKCS#10 certificate generate failed.", NULL);
 
     X509_REQ* req = X509_REQ_new();
     X509_NAME* name = X509_NAME_new();
@@ -361,7 +361,89 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* params) {
 
 int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* params) {
     ERR_clear_error();
-    BIO* cert_bio = BIO_new_mem_buf(params->CERTIFICATE, static_cast<int>(params->CERTIFICATE_LENGTH));
+
+    BIO* cert_bio = BIO_new(BIO_s_mem());
+    BIO* priv_bio = BIO_new(BIO_s_mem());
+
+    EVP_PKEY* pkey = EVP_RSA_gen(params->KEY_LENGTH);
+    if (!pkey)
+        return handleErrors_asymmetric("RSA PKCS#12 certificate and key generate failed.", NULL);
+
+    X509* x509 = X509_new();
+    if (!x509)
+        return handleErrors_asymmetric("Failed to create X.509 certificate.", NULL, NULL, pkey);
+    
+    // 設置憑證序列號
+    ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
+
+    // 設置有效期
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L); // 有效期1年
+
+    // 設置主題信息
+    X509_NAME* name = X509_get_subject_name(x509);
+    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
+    if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
+    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
+
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(params->PEM_CIPHER, params->PEM_CIPHER_SIZE, params->PEM_CIPHER_SEGMENT);
+    const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
+    if (!X509_set_issuer_name(x509, name))
+        return handleErrors_asymmetric("Failed to set issuer name.", NULL);
+    if (!X509_set_pubkey(x509, pkey))
+        return handleErrors_asymmetric("Failed to set public key.", NULL);
+    if (!X509_sign(x509, pkey, md))
+        return handleErrors_asymmetric("Failed to sign the certificate.", NULL);
+
+    PKCS12* p12 = PKCS12_create(params->PKCS12_PASSWORD, params->PKCS12_NAME, pkey, x509, NULL, 0, 0, 0, 0, 0);
+    if (!p12)
+        return handleErrors_asymmetric("Unable to create PKCS#12 object.", cert_bio, priv_bio, pkey);
+
+    switch (params->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (cipher == NULL || params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0) {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", cert_bio, priv_bio, pkey);
+        }
+        else {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, params->PEM_PASSWORD, params->PEM_PASSWORD_LENGTH, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write PEM format PKCS#12 PEM to memory.", cert_bio, priv_bio, pkey);
+        }
+        if (1 != PEM_write_bio_X509(cert_bio, x509))
+            return handleErrors_asymmetric("Unable to write X.509 PEM to memory.", cert_bio, priv_bio, pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_PKCS12_bio(priv_bio, p12))
+            return handleErrors_asymmetric("Unable to write PEM format PKCS#12 DER to memory.", cert_bio, priv_bio, pkey);
+        if (1 != i2d_X509_bio(cert_bio, x509))
+            return handleErrors_asymmetric("Unable to write X.509 DER to memory.", cert_bio, priv_bio, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", cert_bio, NULL, pkey);
+    }
+
+    size_t cert_len = BIO_pending(cert_bio);
+    size_t priv_len = BIO_pending(priv_bio);
+    if (params->CERTIFICATE == nullptr || params->PRIVATE_KEY == nullptr || params->CERTIFICATE_LENGTH < cert_len || params->PRIVATE_KEY_LENGTH < priv_len) {
+        params->CERTIFICATE = new unsigned char[cert_len];
+        params->PRIVATE_KEY = new unsigned char[priv_len];
+    }
+
+    BIO_read(cert_bio, params->CERTIFICATE, cert_len);
+    BIO_read(priv_bio, params->PRIVATE_KEY, priv_len);
+
+    params->CERTIFICATE_LENGTH = cert_len;
+    params->PRIVATE_KEY_LENGTH = priv_len;
+
+    X509_free(x509);
+    PKCS12_free(p12);
+    BIO_free_all(cert_bio);
+    BIO_free_all(priv_bio);
+    EVP_PKEY_free(pkey);
     return 0;
 }
 

@@ -86,9 +86,23 @@ struct RSA_PKCS10_CERTIFICATE {
 
 struct RSA_PKCS12_CERTIFICATE_KEY {
     size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* CERTIFICATE;
+    unsigned char* PRIVATE_KEY;
     size_t CERTIFICATE_LENGTH;
-
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+    const HASH_TYPE HASH_ALGORITHM;
+    const char* PKCS12_NAME;
+    const char* PKCS12_PASSWORD;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const unsigned char* COMMON_NAME;
 };
 
 struct EXPORT_RSA {

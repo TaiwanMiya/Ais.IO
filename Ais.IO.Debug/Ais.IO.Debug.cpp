@@ -65,6 +65,27 @@ struct RSA_PKCS10_CERTIFICATE {
     const unsigned char* COMMON_NAME;
 };
 
+struct RSA_PKCS12_CERTIFICATE_KEY {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CERTIFICATE;
+    unsigned char* PRIVATE_KEY;
+    size_t CERTIFICATE_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+    const HASH_TYPE HASH_ALGORITHM;
+    const char* PKCS12_NAME;
+    const char* PKCS12_PASSWORD;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const unsigned char* COMMON_NAME;
+};
+
 struct EXPORT_RSA {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -100,6 +121,7 @@ typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
 typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CERTIFICATE*);
+typedef int (*RsaGeneratePKCS12)(RSA_PKCS12_CERTIFICATE_KEY*);
 typedef int (*RsaExportParameters)(EXPORT_RSA*);
 typedef int (*RsaExportKeys)(EXPORT_RSA*);
 
@@ -108,6 +130,7 @@ RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "R
 RsaGenerateParameters RsaGenerateParameters_Func = (RsaGenerateParameters)GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
 RsaGenerateKeys RsaGenerateKeys_Func = (RsaGenerateKeys)GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
 RsaGeneratePKCS10 RsaGeneratePKCS10_Func = (RsaGeneratePKCS10)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS10");
+RsaGeneratePKCS12 RsaGeneratePKCS12_Func = (RsaGeneratePKCS12)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS12");
 RsaExportParameters RsaExportParameters_Func = (RsaExportParameters)GET_PROC_ADDRESS(Lib, "RsaExportParameters");
 RsaExportKeys RsaExportKeys_Func = (RsaExportKeys)GET_PROC_ADDRESS(Lib, "RsaExportKeys");
 #pragma endregion
@@ -415,6 +438,55 @@ void Test_RsaGeneratePKCS10() {
     std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
 }
 
+void Test_RsaGeneratePKCS12() {
+    std::string country = "TW";
+    std::string organizetion = "Ais";
+    std::string organizetion_unit = "Ais IO";
+    std::string common_name = "Ais";
+    std::string pemPassowrd = "7331323239616263646232";
+    std::string p12Name = "Ais IO Debug";
+    std::string p12Password = "debug-123456";
+    size_t keysize = 2048;
+    std::vector<unsigned char> certificate;
+    std::vector<unsigned char> privateKey;
+    std::vector<unsigned char> pemPass;
+
+    pemPass.resize(pemPassowrd.size() / 2);
+    Base16Decode_Func(pemPassowrd.c_str(), pemPassowrd.size(), pemPass.data(), pemPass.size());
+    
+    certificate.resize(keysize * 2);
+    privateKey.resize(keysize * 2);
+    RSA_PKCS12_CERTIFICATE_KEY cert_key = {
+        keysize,
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        certificate.data(),
+        privateKey.data(),
+        certificate.size(),
+        privateKey.size(),
+        pemPass.data(),
+        pemPass.size(),
+        SYMMETRY_CRYPTER::SYMMETRY_AES_CBC,
+        256,
+        SEGMENT_SIZE_OPTION::SEGMENT_NULL,
+        HASH_TYPE::HASH_SHA2_256,
+        p12Name.c_str(),
+        p12Password.c_str(),
+        reinterpret_cast<const unsigned char*>(country.c_str()),
+        reinterpret_cast<const unsigned char*>(organizetion.c_str()),
+        reinterpret_cast<const unsigned char*>(organizetion_unit.c_str()),
+        reinterpret_cast<const unsigned char*>(common_name.c_str())
+    };
+
+    RsaGeneratePKCS12_Func(&cert_key);
+
+    certificate.resize(cert_key.CERTIFICATE_LENGTH);
+    privateKey.resize(cert_key.PRIVATE_KEY_LENGTH);
+
+    std::cout << "PEM - Size:" << cert_key.KEY_LENGTH << std::endl;
+    std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
+    std::cout << reinterpret_cast<char*>(privateKey.data()) << std::endl;
+}
+
 void Test_ExportRsaParametersFromKeys() {
     std::string pemPassowrd = "7331323239616263646232";
     std::string derPublicKey = "308202453082012D020100300030820122300D06092A864886F70D01010105000382010F003082010A0282010100C4CC17980B075D932C3A844E09B57CA2FFA9D90ABE3741557433E53EE63C84C210DDD7E4D137E5A93A5A15E24D6AAA3637F9F941823B9624BDC2F7524B3024D853457A93DE7345D76D57E631CDD93FC11AADFAC73878C588B3ADE281427F60324729B409DB520B20A93B8CA8DF88E1E239D656A5255EEEA175CE92F15E0B32F9E735117A583434570704EEE236CE88E6593D7216F87BC9B841424AE493D93B3609B3F534999B42E5D65C953C3EDBBCCE5ACC869A64A2001EE0DBE5B8030DBB533EFF3FA6D85D021BC744FFC4D1E5D951CCFAAD47F4014202B801A92D7B19653758631CE91B27DA16A10D9040B46436A0BDE3E02F66F08251A08D68240D8AD1590203010001A000300D06092A864886F70D01010B050003820101004F069B25D76CB0B13D62A7A3E0FA2036EDA8F49D72A492D0CAE95383FB7534D4FBC6856A9331ADD9FF1A15008BF10B3B358EF27ADF0CE53B5E0735700B81CBB54BAF6DED92935A5AE08A8BE5A8AF02DA7E4866C14E9548560B957878B94DD0A7CDEC0ACC17DE906D871D0C6392DD3E501BCA999714814C8440810C698D2D850C36A042F8E9E1D5FCC3B8F4B66B93732C4AD4EE6B99E67A8D2D7AA89BEB9CFC9DA0CCA18EB67BE594CB27EFEBB65CBE9DAECA2540C6B1664D46A4D900B8E98746EC0D2C0CE437D0564F380E773D743F124956F56CA0816E7CCB6CBE3CC33A0A4D868EA7F979519C39571823BB55F8B9731AEC89AFCF50A1E723443E41FC65B8EA";
@@ -702,6 +774,8 @@ int main() {
     //Test_RsaGenerate();
 
     Test_RsaGeneratePKCS10();
+
+    //Test_RsaGeneratePKCS12();
 
     //Test_ExportRsaParametersFromKeys();
 
