@@ -61,6 +61,38 @@ struct RSA_CHECK_PUBLIC_KEY {
     size_t KEY_LENGTH;
 };
 
+struct RSA_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_CHECK_CSR {
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    const unsigned char* CSR;
+    size_t CSR_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_CHECK_CERTIFICATE {
+    const ASYMMETRIC_KEY_FORMAT CERTIFICATE_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    const unsigned char* CERTIFICATE;
+    const unsigned char* PRIVATE_KEY;
+    size_t CERTIFICATE_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    const char* PKCS12_PASSWORD;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
 struct RSA_PKCS8_KEY {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -75,11 +107,11 @@ struct RSA_PKCS8_KEY {
     const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
 };
 
-struct RSA_PKCS10_CERTIFICATE {
+struct RSA_PKCS10_CSR {
     size_t KEY_LENGTH;
-    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    unsigned char* CERTIFICATE;
-    size_t CERTIFICATE_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    unsigned char* CSR;
+    size_t CSR_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
     const unsigned char* COUNTRY;
     const unsigned char* ORGANIZETION;
@@ -142,10 +174,13 @@ struct EXPORT_RSA {
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
 typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
+typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
+typedef int (*RsaCheckCSR)(RSA_CHECK_CSR*);
+typedef int (*RsaCheckCertificate)(RSA_CHECK_CERTIFICATE*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
 typedef int (*RsaGeneratePKCS8)(RSA_PKCS8_KEY*);
-typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CERTIFICATE*);
+typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CSR*);
 typedef int (*RsaGeneratePKCS12)(RSA_PKCS12_CERTIFICATE_KEY*);
 typedef int (*RsaExportParameters)(EXPORT_RSA*);
 typedef int (*RsaExportKeys)(EXPORT_RSA*);
@@ -153,6 +188,9 @@ typedef int (*RsaExportKeys)(EXPORT_RSA*);
 RsaGetParametersLength RsaGetParametersLength_Func = (RsaGetParametersLength)GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
 RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
 RsaCheckPublicKey RsaCheckPublicKey_Func = (RsaCheckPublicKey)GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
+RsaCheckPrivateKey RsaCheckPrivateKey_Func = (RsaCheckPrivateKey)GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
+RsaCheckCSR RsaCheckCSR_Func = (RsaCheckCSR)GET_PROC_ADDRESS(Lib, "RsaCheckCSR");
+RsaCheckCertificate RsaCheckCertificate_Func = (RsaCheckCertificate)GET_PROC_ADDRESS(Lib, "RsaCheckCertificate");
 RsaGenerateParameters RsaGenerateParameters_Func = (RsaGenerateParameters)GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
 RsaGenerateKeys RsaGenerateKeys_Func = (RsaGenerateKeys)GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
 RsaGeneratePKCS8 RsaGeneratePKCS8_Func = (RsaGeneratePKCS8)GET_PROC_ADDRESS(Lib, "RsaGeneratePKCS8");
@@ -311,7 +349,193 @@ void Test_RsaCheckPublicKey() {
     if (pub.IS_KEY_OK)
         std::cout << "Key Check Success." << std::endl;
     else
-        std::cout << "Key Check Falture.:" << pub.IS_KEY_OK << std::endl;
+        std::cout << "Key Check Falture." << std::endl;
+}
+
+void Test_RsaCheckPrivateKey() {
+    std::string pemPassowrd = "7331323239616263646232";
+    std::string pemPrivateKey =
+        "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
+        "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\n"
+        "-----END ENCRYPTED PRIVATE KEY-----\n"
+        "";
+    
+    std::vector<unsigned char> pemPass;
+    pemPass.resize(pemPassowrd.size() / 2);
+    Base16Decode_Func(pemPassowrd.c_str(), pemPassowrd.size(), pemPass.data(), pemPass.size());
+    pemPass.push_back('\0');
+
+    std::vector<unsigned char> privateKey;
+    privateKey.resize(pemPrivateKey.size());
+    privateKey.assign(pemPrivateKey.begin(), pemPrivateKey.end());
+
+    RSA_CHECK_PRIVATE_KEY priv = {
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        privateKey.data(),
+        privateKey.size(),
+        pemPass.data(),
+        pemPass.size(),
+    };
+
+    RsaCheckPrivateKey_Func(&priv);
+    std::cout << "Key Length (Bits):" << priv.KEY_LENGTH << std::endl;
+    if (priv.IS_KEY_OK)
+        std::cout << "Key Check Success." << std::endl;
+    else
+        std::cout << "Key Check Falture." << std::endl;
+}
+
+void Test_RsaCheckCSR() {
+    std::string pemCsr =
+        "-----BEGIN CERTIFICATE REQUEST-----\n"
+        "MIICfzCCAWcCAQAwOjELMAkGA1UEBhMCVFcxDDAKBgNVBAoMA0FpczEPMA0GA1UE\n"
+        "CwwGQWlzIElPMQwwCgYDVQQDDANBaXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\n"
+        "ggEKAoIBAQDCwIQpjbsDY99VK6onJ6N2hYyuF1XXv20ekqSBInOXylKMenX+D+jb\n"
+        "jo61UrGLJsyD9KjyPXrV+5pviDrL1kNg2uwH1zeYYEX8IkN2WEUidG1Fz4YhIlAs\n"
+        "rPScces5gUKLXh0xo4rCcZ6NjCbyWEJycrq5L1oA38S/U+L793FwUPyGeyI/u9b0\n"
+        "s1XRXB3vIkqqgsrTD5EOsL632cVL1cVC/7pHg3iKC2UPJ0IZ2sc+w/bMHtCkwuhC\n"
+        "AhMnYXYP8NvCUpvrU6UI3Rbe7NAPrhyJ8KimJ5kZGiq84jlL9g0Jd4dxOTPAuuzu\n"
+        "2vo9bXeJvGi+XP9l7uZtoJnRXFCNmfubAgMBAAGgADANBgkqhkiG9w0BAQsFAAOC\n"
+        "AQEAOh5K7sCs2DVoy2kv0inFTbn3uhz6aoJud+ebyAuC5ftojTjATQEp1hdPXYgr\n"
+        "NZ9tYWMMn/V76flo8YlPqhjnXI2UhSEEPTw3EWpeb9ideTsG7wX9GL1NjpbbEkdW\n"
+        "ENlNtaa+vKZ+NEDtse3u8DV0N4b5f141RIeynf2lkKWpHkBBHPxmy9Ny9eP9flbk\n"
+        "JRroWaL6SZlbu1aZR9hb8qnMfKQCz/30nyPCQFVI6xHeTlNw2AaZCvF8lVK7ILya\n"
+        "tyxpDPeyBelmveCdShvo4yeuIT5c4AcM/5vTb8SeJDgwM+IJoHPvNCWPk96SpjCc\n"
+        "JcC+GHHTBINiI7AV2dKzJxKTfA==\n"
+        "-----END CERTIFICATE REQUEST-----\n"
+        "";
+
+    std::vector<unsigned char> csr;
+    csr.resize(pemCsr.size());
+    csr.assign(pemCsr.begin(), pemCsr.end());
+
+    RSA_CHECK_CSR certificate = {
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        csr.data(),
+        csr.size(),
+    };
+
+    RsaCheckCSR_Func(&certificate);
+    std::cout << "Key Length (Bits):" << certificate.KEY_LENGTH << std::endl;
+    if (certificate.IS_KEY_OK)
+        std::cout << "Key Check Success." << std::endl;
+    else
+        std::cout << "Key Check Falture." << std::endl;
+}
+
+void Test_RsaCheckCertificate() {
+    std::string pemPassowrd = "7331323239616263646232";
+    std::string p12Password = "debug-123456";
+    std::string pemCertificate =
+        "-----BEGIN CERTIFICATE-----\n"
+        "MIIC6DCCAdACAQEwDQYJKoZIhvcNAQELBQAwOjELMAkGA1UEBhMCVFcxDDAKBgNV\n"
+        "BAoMA0FpczEPMA0GA1UECwwGQWlzIElPMQwwCgYDVQQDDANBaXMwHhcNMjUwMTEx\n"
+        "MDY1NzI0WhcNMjkwMTEwMDY1NzI0WjA6MQswCQYDVQQGEwJUVzEMMAoGA1UECgwD\n"
+        "QWlzMQ8wDQYDVQQLDAZBaXMgSU8xDDAKBgNVBAMMA0FpczCCASIwDQYJKoZIhvcN\n"
+        "AQEBBQADggEPADCCAQoCggEBAMN/YzHsBH6qN4lus8lkf34qwNCe084zvZtacg4M\n"
+        "5eLMS2zSSH7Eac73sXc2AuAefRD1wPp7wou2ab0rWd2SeigQIxUHWLhnUUPayjWZ\n"
+        "3G8+65EARZ1IjHIgtI4ksj4gj+itmSGi3kxvOpEXGpg2iK0FwQ7E6gxbVGVtBGCa\n"
+        "U213wJrVsOqzCMyHMNiPHoE49HMW2AcW6x8l6qdunlknX3NxTCQ/N+DdOKB9JeZE\n"
+        "GQTHp/84Jl91d2x1Tr/tpBWV52ZGlIKPpZfNkCSxgZgHddmeFbG6lrvmXVg4wZTj\n"
+        "hXRjRhSEeuW4Esib8qzt+UVjezpS7RIdagk3hg0b0JN9uZcCAwEAATANBgkqhkiG\n"
+        "9w0BAQsFAAOCAQEAZj00hReyVWYELyPgtIl0XCCucwZ3hyvWvovR0fxyrR+PjLYv\n"
+        "s5B3qYLLdijkn3bReov/Xz02u/J32o2xuzF+6W6eEn9WX4ZQD+KtOwDzzjA+M5KN\n"
+        "KJySyJUHyuvhv8LbWusdYxz68NesKr35g0nFDoFrrpEtC2FIrjHXzUADs+u3XKkw\n"
+        "WZpx8kWpicjXWIjJXgeZKjoXuPoLeRFOJ3ShEQZQttUXSScDcvM23wC05Ou3cs0i\n"
+        "ksLRfq4Nv6N9A93/rDqqnlXAJo8/Fd0JbSCE+bvV/XRiV4OyPooXXCvIjSMq1UuT\n"
+        "PTo6Y05wFZJYKPbgmHPMQWVnY4UflhNQ8RiJBw==\n"
+        "-----END CERTIFICATE-----\n"
+        "";
+    std::string pemPrivateKey =
+        "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
+        "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\n"
+        "-----END ENCRYPTED PRIVATE KEY-----\n"
+        "";
+
+    std::vector<unsigned char> pemPass;
+    pemPass.resize(pemPassowrd.size() / 2);
+    Base16Decode_Func(pemPassowrd.c_str(), pemPassowrd.size(), pemPass.data(), pemPass.size());
+    pemPass.push_back('\0');
+
+    std::vector<unsigned char> certificate;
+    std::vector<unsigned char> privateKey;
+    certificate.resize(pemCertificate.size());
+    certificate.assign(pemCertificate.begin(), pemCertificate.end());
+    privateKey.resize(pemPrivateKey.size());
+    privateKey.assign(pemPrivateKey.begin(), pemPrivateKey.end());
+
+    RSA_CHECK_CERTIFICATE cert = {
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+        certificate.data(),
+        privateKey.data(),
+        certificate.size(),
+        privateKey.size(),
+        pemPass.data(),
+        pemPass.size(),
+        p12Password.c_str()
+    };
+
+    RsaCheckCertificate_Func(&cert);
+    std::cout << "Key Length (Bits):" << cert.KEY_LENGTH << std::endl;
+    if (cert.IS_KEY_OK)
+        std::cout << "Key Check Success." << std::endl;
+    else
+        std::cout << "Key Check Falture." << std::endl;
 }
 
 void Test_GenerateRsaParameters() {
@@ -525,7 +749,7 @@ void Test_RsaGeneratePKCS10() {
     size_t keysize = 2048;
     std::vector<unsigned char> certificate;
     certificate.resize(keysize * 2);
-    RSA_PKCS10_CERTIFICATE cert = {
+    RSA_PKCS10_CSR cert = {
         keysize,
         format,
         certificate.data(),
@@ -538,16 +762,16 @@ void Test_RsaGeneratePKCS10() {
     };
     RsaGeneratePKCS10_Func(&cert);
 
-    certificate.resize(cert.CERTIFICATE_LENGTH);
+    certificate.resize(cert.CSR_LENGTH);
 
     if (format == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM) {
-        std::cout << "PEM - [Size:" << cert.CERTIFICATE_LENGTH << "]" << std::endl;
+        std::cout << "PEM - [Size:" << cert.CSR_LENGTH << "]" << std::endl;
         std::cout << reinterpret_cast<char*>(certificate.data()) << std::endl;
     }
     else {
-        std::cout << "DER - [Size:" << cert.CERTIFICATE_LENGTH << "]" << std::endl;
-        char* certString = new char[cert.CERTIFICATE_LENGTH * 2 + 1] {};
-        Base16Encode_Func(certificate.data(), certificate.size(), certString, cert.CERTIFICATE_LENGTH * 2 + 1);
+        std::cout << "DER - [Size:" << cert.CSR_LENGTH << "]" << std::endl;
+        char* certString = new char[cert.CSR_LENGTH * 2 + 1] {};
+        Base16Encode_Func(certificate.data(), certificate.size(), certString, cert.CSR_LENGTH * 2 + 1);
         std::cout << certString << std::endl;
         std::cout << "" << std::endl;
     }
@@ -898,7 +1122,13 @@ int main() {
 
     //Test_GetRsaKeyLength();
 
-    Test_RsaCheckPublicKey();
+    //Test_RsaCheckPublicKey();
+
+    //Test_RsaCheckPrivateKey();
+    
+    //Test_RsaCheckCSR();
+
+    Test_RsaCheckCertificate();
 
     //Test_GenerateRsaParameters();
 

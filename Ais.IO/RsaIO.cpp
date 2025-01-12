@@ -87,31 +87,142 @@ int RsaGetKeyLength(RSA_KEY_PAIR* params) {
 int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check) {
     ERR_clear_error();
     EVP_PKEY* pkey = nullptr;
-    BIO* pub_bio = BIO_new_mem_buf(check->PUBLIC_KEY, static_cast<int>(check->PUBLIC_KEY_LENGTH));
+    BIO* bio = BIO_new_mem_buf(check->PUBLIC_KEY, static_cast<int>(check->PUBLIC_KEY_LENGTH));
 
     switch (check->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        PEM_read_bio_PUBKEY(pub_bio, &pkey, NULL, NULL);
+        PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL);
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        d2i_PUBKEY_bio(pub_bio, &pkey);
+        d2i_PUBKEY_bio(bio, &pkey);
         break;
-    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, NULL, pkey);
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
     }
     
     if (!pkey)
-        return handleErrors_asymmetric("Failed to parse public key.", pub_bio, NULL, pkey);
+        return handleErrors_asymmetric("Failed to parse public key.", bio, NULL, pkey);
 
     if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
-        return handleErrors_asymmetric("Get Bits (bits) failed.", pub_bio, NULL, pkey);
+        return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);
     
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
     if (!ctx)
-        return handleErrors_asymmetric("Failed to create PKEY context.", pub_bio, NULL, pkey);
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
     check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
 
-    BIO_free(pub_bio);
+    BIO_free(bio);
     EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
+int RsaCheckPrivateKey(RSA_CHECK_PRIVATE_KEY* check) {
+    ERR_clear_error();
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(check->PRIVATE_KEY, static_cast<int>(check->PRIVATE_KEY_LENGTH));
+
+    switch (check->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (check->PEM_PASSWORD == NULL || check->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(check->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public key.", bio, NULL, pkey);
+
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
+        return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
+    check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
+
+    BIO_free(bio);
+    EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
+int RsaCheckCSR(RSA_CHECK_CSR* check) {
+    ERR_clear_error();
+    X509_REQ* req = nullptr;
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(check->CSR, static_cast<int>(check->CSR_LENGTH));
+
+    switch (check->CSR_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_X509_REQ(bio, &req, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_X509_REQ_bio(bio, &req);
+        break;
+    }
+    if (!req)
+        return handleErrors_asymmetric("Failed to get PKEY by CSR.", bio, NULL, pkey);
+
+    pkey = X509_REQ_get_pubkey(req);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public or private key.", bio, NULL, pkey);
+
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
+        return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
+    check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
+
+    BIO_free(bio);
+    EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
+int RsaCheckCertificate(RSA_CHECK_CERTIFICATE* check) {
+    ERR_clear_error();
+    X509* cert = nullptr;
+    EVP_PKEY* pkey = nullptr;
+    BIO* cert_bio = BIO_new_mem_buf(check->CERTIFICATE, static_cast<int>(check->CERTIFICATE_LENGTH));
+    BIO* priv_bio = BIO_new_mem_buf(check->PRIVATE_KEY, static_cast<int>(check->PRIVATE_KEY_LENGTH));
+
+    switch (check->PRIVATE_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM: {
+        if (check->PEM_PASSWORD == NULL || check->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(check->PEM_PASSWORD)));
+        break;
+    }
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER: {
+        PKCS12* p12 = d2i_PKCS12_bio(priv_bio, NULL);
+        PKCS12_parse(p12, check->PKCS12_PASSWORD, &pkey, NULL, NULL);
+        break;
+    }
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", cert_bio, priv_bio, pkey);
+    }
+
+    switch (check->CERTIFICATE_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_X509(cert_bio, &cert, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_X509_bio(cert_bio, &cert);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric cert format.", cert_bio, priv_bio, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public or private key.", cert_bio, priv_bio, pkey);
+
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
+        return handleErrors_asymmetric("Get Bits (bits) failed.", cert_bio, priv_bio, pkey);
+
+    check->IS_KEY_OK = X509_check_private_key(cert, pkey) > 0;
     return 0;
 }
 
@@ -382,7 +493,7 @@ int RsaGeneratePKCS8(RSA_PKCS8_KEY* generate) {
     return 0;
 }
 
-int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* generate) {
+int RsaGeneratePKCS10(RSA_PKCS10_CSR* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());
@@ -415,7 +526,7 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* generate) {
     if (!X509_REQ_sign(req, pkey, md))
         return handleErrors_asymmetric("Failed to sign the request.", NULL);
 
-    switch (generate->KEY_FORMAT) {
+    switch (generate->CSR_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
         if (1 != PEM_write_bio_X509_REQ(cert_bio, req))
             return handleErrors_asymmetric("Unable to write CSR PEM to memory.", cert_bio, NULL, pkey);
@@ -428,13 +539,13 @@ int RsaGeneratePKCS10(RSA_PKCS10_CERTIFICATE* generate) {
     }
 
     size_t cert_len = BIO_pending(cert_bio);
-    if (generate->CERTIFICATE == nullptr || generate->CERTIFICATE_LENGTH < cert_len) {
-        generate->CERTIFICATE = new unsigned char[cert_len];
+    if (generate->CSR == nullptr || generate->CSR_LENGTH < cert_len) {
+        generate->CSR = new unsigned char[cert_len];
     }
 
-    BIO_read(cert_bio, generate->CERTIFICATE, cert_len);
+    BIO_read(cert_bio, generate->CSR, cert_len);
 
-    generate->CERTIFICATE_LENGTH = cert_len;
+    generate->CSR_LENGTH = cert_len;
 
     X509_REQ_free(req);
     X509_NAME_free(name);
