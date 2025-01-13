@@ -5,6 +5,8 @@
 #include <cstring>
 #include <stdint.h>
 #include <cmath>
+#include <algorithm>
+#include <string>
 
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS
@@ -19,6 +21,9 @@
 #define EXT extern "C"
 #endif
 
+static const char Base10_Chars[] =
+"0123456789";
+
 static const char Base16_Chars[] =
 "0123456789ABCDEF";
 
@@ -27,6 +32,9 @@ static const char Base32_Chars[] =
 
 static const char Base58_Chars[] =
 "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+static const char Base62_Chars[] =
+"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 static const char Base64_Chars[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -38,6 +46,12 @@ static const char Base85_Chars[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 "abcdefghijklmnopqrstuvwxyz"
 "!#$%&()*+-;<=>?@^_`{|}~";
+
+static const char Base91_Chars[] =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"abcdefghijklmnopqrstuvwxyz"
+"0123456789"
+"!#$%&()*+,./:;<=>?@[]^_`{|}~\"";
 
 // Base16 解碼表
 static const int Base16_Lookup[256] = {
@@ -183,15 +197,44 @@ static const int Base85_Lookup[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, // 248-255 非法字符
 };
 
+static const int Base91_Lookup[256] = {
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 62, 90, 63, 64, 65, 66, -1, 67, 68, 69, 70, 71, -1, 72, 73,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 74, 75, 76, 77, 78, 79,
+    80,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 81, -1, 82, 83, 84,
+    85, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 86, 87, 88, 89, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
 // 取得長度
+EXT ENCODERIO_API constexpr size_t Base10Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base16Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base32Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base64Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base85Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base58Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base62Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base64Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base85Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base91Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base128Length(const size_t inputSize, bool isEncode);
+
+/* Base10 錯誤碼含義：
+
+-1: 輸入或輸出指針為空。
+-2: 輸出緩衝區不足。
+-3: 輸入長度不合法，解碼時必須是特定長度。
+-4: 非法字符出現在解碼過程中（不是 Base10 有效字符）。*/
+EXT ENCODERIO_API int Base10Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
+EXT ENCODERIO_API int Base10Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
 
 /* Base16 錯誤碼含義：
 
@@ -215,10 +258,19 @@ EXT ENCODERIO_API int Base32Decode(const char* input, const size_t inputSize, un
 
 -1: 輸入或輸出指針為空。
 -2: 輸出緩衝區不足。
--3: 輸入數據長度不合法，Base58 解碼要求長度是 8 的倍數。
+-3: 輸入數據長度不合法，Base58 解碼要求長度是 n 的倍數。
 -4: 非法字符出現在解碼過程中（不是 Base58 有效字符）。*/
 EXT ENCODERIO_API int Base58Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
 EXT ENCODERIO_API int Base58Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
+
+/* Base62 錯誤碼含義：
+
+-1: 輸入或輸出指針為空。
+-2: 輸出緩衝區不足。
+-3: 輸入數據長度不合法，Base62 解碼要求長度是 n 的倍數。
+-4: 非法字符出現在解碼過程中（不是 Base62 有效字符）。*/
+EXT ENCODERIO_API int Base62Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
+EXT ENCODERIO_API int Base62Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
 
 /* Base64 錯誤碼含義：
 
@@ -230,7 +282,7 @@ EXT ENCODERIO_API int Base58Decode(const char* input, const size_t inputSize, un
 EXT ENCODERIO_API int Base64Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
 EXT ENCODERIO_API int Base64Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
 
-/* Base64 錯誤碼含義：
+/* Base85 錯誤碼含義：
 
 -1: 輸入或輸出指針為空。
 -2: 輸出緩衝區不足，無法存儲結果。
@@ -239,3 +291,13 @@ EXT ENCODERIO_API int Base64Decode(const char* input, const size_t inputSize, un
 */
 EXT ENCODERIO_API int Base85Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
 EXT ENCODERIO_API int Base85Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
+
+/* Base91 錯誤碼含義：
+
+-1: 輸入或輸出指針為空。
+-2: 輸出緩衝區不足，無法存儲結果。
+-3: 輸入數據長度不合法，Base91 解碼要求長度是 n 的倍數。
+-4: 非法字符出現在解碼過程中（不是 Base91 有效字符）。
+*/
+EXT ENCODERIO_API int Base91Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
+EXT ENCODERIO_API int Base91Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);

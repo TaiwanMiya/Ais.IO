@@ -13,11 +13,20 @@ namespace Ais.IO.Csharp
 
         #region EncoderIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base10Length(long inputSize, bool isEncode);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base16Length(long inputSize, bool isEncode);
         
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base32Length(long inputSize, bool isEncode);
-        
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base58Length(long inputSize, bool isEncode);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base62Length(long inputSize, bool isEncode);
+
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base64Length(long inputSize, bool isEncode);
         
@@ -25,16 +34,16 @@ namespace Ais.IO.Csharp
         public static extern long Base85Length(long inputSize, bool isEncode);
         
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long Base58Length(long inputSize, bool isEncode);
-        
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long Base62Length(long inputSize, bool isEncode);
-        
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base91Length(long inputSize, bool isEncode);
         
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base128Length(long inputSize, bool isEncode);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base10Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base10Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Base16Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
@@ -55,6 +64,12 @@ namespace Ais.IO.Csharp
         public static extern int Base58Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base62Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base62Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Base64Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -65,6 +80,12 @@ namespace Ais.IO.Csharp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Base85Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base91Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base91Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
         #endregion
     }
 }
