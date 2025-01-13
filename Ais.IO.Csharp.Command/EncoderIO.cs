@@ -12,7 +12,7 @@ namespace Ais.IO.Csharp.Command
         public static void BaseEncode(out string outputB10, out string outputB16, out string outputB32, out string outputB58, out string outputB62, out string outputB64, out string outputB85, out string outputB91)
         {
             BaseEncoding encoder = new BaseEncoding();
-            outputB10 = encoder.Encode(Encoding.UTF8.GetBytes("ABCD"), EncodingType.Base10);
+            outputB10 = encoder.Encode(Encoding.UTF8.GetBytes("This is 測試，來自 Ais.IO DLL、SO 模組，而這次我打多點字，來確定加密成功 (By Base10 - Encode && Decode)"), EncodingType.Base10);
             outputB16 = encoder.Encode(Encoding.UTF8.GetBytes("This is 測試，來自 Ais.IO DLL、SO 模組，而這次我打多點字，來確定加密成功 (By Base16 - Encode && Decode)"), EncodingType.Base16);
             outputB32 = encoder.Encode(Encoding.UTF8.GetBytes("This is 測試，來自 Ais.IO DLL、SO 模組，而這次我打多點字，來確定加密成功 (By Base32 - Encode && Decode)"), EncodingType.Base32);
             outputB58 = encoder.Encode(Encoding.UTF8.GetBytes("This is 測試，來自 Ais.IO DLL、SO 模組，而這次我打多點字，來確定加密成功 (By Base58 - Encode && Decode)"), EncodingType.Base58);
