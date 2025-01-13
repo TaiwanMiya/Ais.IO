@@ -49,7 +49,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] keyResult = aes.Import(key);
                 byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.CtrDecrypt(cipherText, keyResult, counter);
 
@@ -70,7 +70,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.CbcEncrypt(plainText, keyResult, ivResult, pkcs7Padding);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.CbcDecrypt(cipherText, keyResult, ivResult, pkcs7Padding);
 
@@ -91,7 +91,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.CfbEncrypt(plainText, keyResult, ivResult, segmentSize);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.CfbDecrypt(cipherText, keyResult, ivResult, segmentSize);
 
@@ -112,7 +112,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = aes.Import(iv);
                 byte[] cipherText = aes.OfbEncrypt(plainText, keyResult, ivResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.OfbDecrypt(cipherText, keyResult, ivResult);
 
@@ -132,7 +132,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] keyResult = aes.Import(key);
                 byte[] cipherText = aes.EcbEncrypt(plainText, keyResult, pkcs7Padding);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.EcbDecrypt(cipherText, keyResult, pkcs7Padding);
 
@@ -154,7 +154,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.GcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.GcmDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
@@ -176,7 +176,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.CcmEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.CcmDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
@@ -198,7 +198,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] tweakResult = Encoding.UTF8.GetBytes(tweak);
                 byte[] cipherText = aes.XtsEncrypt(plainText, key1Result, key2Result, tweakResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.XtsDecrypt(cipherText, key1Result, key2Result, tweakResult);
 
@@ -221,7 +221,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] aadResult = aes.Import(aad);
                 byte[] cipherText = aes.OcbEncrypt(plainText, keyResult, nonceResult, tagResult, aadResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = aes.OcbDecrypt(cipherText, keyResult, nonceResult, tagResult, aadResult);
 
@@ -240,7 +240,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] wrapkeyResult = aes.Import(wrapkey);
                 byte[] wrappedKey = aes.WrapEncrypt(keyResult, wrapkeyResult);
 
-                Console.WriteLine(encoder.Encode<string>(wrappedKey));
+                Console.WriteLine(encoder.Encode(wrappedKey));
 
                 byte[] decryptedText = aes.WrapDecrypt(wrappedKey, wrapkeyResult);
 

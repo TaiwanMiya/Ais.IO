@@ -8,6 +8,38 @@ static int HexCharToValue(char c) {
     return -1; // 非法字符返回 -1
 }
 
+constexpr size_t Base16Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? inputSize * 2 + 1: inputSize / 2;
+}
+
+constexpr size_t Base32Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? ((inputSize + 4) / 5) * 8 + 1 : (inputSize / 8) * 5;
+}
+
+constexpr size_t Base64Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? ((inputSize + 2) / 3) * 4 + 1 : (inputSize / 4) * 3;
+}
+
+constexpr size_t Base85Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? ((inputSize + 3) / 4) * 5 + 1 : (inputSize / 5) * 4;
+}
+
+constexpr size_t Base58Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(58.0)) + 1 : std::floor(inputSize * std::log2(58.0) / 8);
+}
+
+constexpr size_t Base62Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(62.0)) + 1 : std::floor(inputSize * std::log2(62.0) / 8);
+}
+
+constexpr size_t Base91Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(91.0)) + 1 : std::floor(inputSize * std::log2(91.0) / 8);
+}
+
+constexpr size_t Base128Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(128.0)) + 1 : std::floor(inputSize * std::log2(128.0) / 8);
+}
+
 int Base16Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
@@ -129,6 +161,106 @@ int Base32Decode(const char* input, const size_t inputSize, unsigned char* outpu
     }
 
     return j; // 返回解碼後的字節數
+}
+
+int Base58Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+
+    // 將字節數據視為大整數
+    uint64_t num = 0;
+    for (size_t i = 0; i < inputSize; ++i)
+        num = (num << 8) | input[i];
+
+    // 计算输出所需的大小
+    size_t requiredSize = 0;
+    uint64_t temp = num;
+    while (temp > 0) {
+        temp /= 58;
+        ++requiredSize;
+    }
+
+    // 處理前導 0 字節
+    for (size_t i = 0; i < inputSize && input[i] == 0; ++i) {
+        ++requiredSize;
+    }
+
+    // 檢查緩衝區大小是否足夠
+    if (outputSize < requiredSize + 1)
+        return -2;
+
+    // 編碼過程
+    size_t index = 0;
+    while (num > 0) {
+        int remainder = num % 58;
+        output[index++] = Base58_Chars[remainder];
+        num /= 58;
+    }
+
+    // 添加前導 '0' 編碼為 '1'
+    for (size_t i = 0; i < inputSize && input[i] == 0; ++i) {
+        output[index++] = Base58_Chars[0];
+    }
+
+    // 反轉結果
+    std::reverse(output, output + index);
+
+    // 添加字串終止符
+    output[index] = '\0';
+
+    return static_cast<int>(index); // 返回編碼後的長度
+}
+
+int Base58Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
+    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+
+    // 將 Base58 字符轉換為數值表
+    int Base58Lookup[256];
+    std::fill(std::begin(Base58Lookup), std::end(Base58Lookup), -1);
+
+    // 建立查找表
+    for (size_t i = 0; i < 58; ++i) {
+        Base58Lookup[static_cast<unsigned char>(Base58_Chars[i])] = i;
+    }
+
+    // 將 Base58 字符串解碼為大整數
+    uint64_t num = 0;
+    for (size_t i = 0; i < inputSize; ++i) {
+        char c = input[i];
+        if (Base58Lookup[static_cast<unsigned char>(c)] == -1)
+            return -4; // 非法字符
+
+        num = num * 58 + Base58Lookup[static_cast<unsigned char>(c)];
+    }
+
+    // 計算需要的輸出長度
+    size_t requiredSize = 0;
+    uint64_t temp = num;
+    while (temp > 0) {
+        temp >>= 8;
+        ++requiredSize;
+    }
+
+    // 加上前導 0 的數量
+    for (size_t i = 0; i < inputSize && input[i] == '1'; ++i) {
+        ++requiredSize;
+    }
+
+    if (outputSize < requiredSize)
+        return -2; // 輸出緩衝區不足
+
+    // 還原數據到輸出緩衝區
+    size_t index = requiredSize;
+    while (num > 0) {
+        output[--index] = static_cast<unsigned char>(num & 0xFF);
+        num >>= 8;
+    }
+
+    // 處理前導 0
+    for (size_t i = 0; i < inputSize && input[i] == '1'; ++i) {
+        output[--index] = 0;
+    }
+
+    return static_cast<int>(requiredSize); // 返回實際寫入的字節數
 }
 
 int Base64Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {

@@ -23,7 +23,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] result = hash.Do(inputContent, inputSalt, type, seq, length);
 
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
-                Console.WriteLine(encoder.Encode<string>(result));
+                Console.WriteLine(encoder.Encode(result));
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }

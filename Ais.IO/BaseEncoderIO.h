@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <stdint.h>
+#include <cmath>
 
 /* Dll Export Define */
 #ifndef BINARYIO_EXPORTS
@@ -23,6 +24,9 @@ static const char Base16_Chars[] =
 
 static const char Base32_Chars[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+static const char Base58_Chars[] =
+"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static const char Base64_Chars[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -179,6 +183,16 @@ static const int Base85_Lookup[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, // 248-255 非法字符
 };
 
+// 取得長度
+EXT ENCODERIO_API constexpr size_t Base16Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base32Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base64Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base85Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base58Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base62Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base91Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API constexpr size_t Base128Length(const size_t inputSize, bool isEncode);
+
 /* Base16 錯誤碼含義：
 
 -1: 輸入或輸出指針為空。
@@ -196,6 +210,15 @@ EXT ENCODERIO_API int Base16Decode(const char* input, const size_t inputSize, un
 -4: 非法字符出現在解碼過程中（不是 Base32 有效字符）。*/
 EXT ENCODERIO_API int Base32Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
 EXT ENCODERIO_API int Base32Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
+
+/* Base58 錯誤碼含義：
+
+-1: 輸入或輸出指針為空。
+-2: 輸出緩衝區不足。
+-3: 輸入數據長度不合法，Base58 解碼要求長度是 8 的倍數。
+-4: 非法字符出現在解碼過程中（不是 Base58 有效字符）。*/
+EXT ENCODERIO_API int Base58Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize);
+EXT ENCODERIO_API int Base58Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize);
 
 /* Base64 錯誤碼含義：
 

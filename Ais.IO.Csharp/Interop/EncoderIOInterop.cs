@@ -13,28 +13,58 @@ namespace Ais.IO.Csharp
 
         #region EncoderIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base16Encode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern long Base16Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base32Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base64Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base85Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base58Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base62Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base91Length(long inputSize, bool isEncode);
+        
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern long Base128Length(long inputSize, bool isEncode);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base16Decode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base16Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base32Encode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base16Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base32Decode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base32Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base64Encode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base32Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base64Decode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base58Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base85Encode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base58Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Base85Decode(byte[] input, long inputSize, byte[] output, long outputSize);
+        public static extern int Base64Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base64Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base85Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Base85Decode(StringBuilder input, long inputSize, byte[] output, long outputSize);
         #endregion
     }
 }

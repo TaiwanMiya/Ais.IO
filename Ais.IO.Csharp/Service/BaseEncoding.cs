@@ -11,6 +11,7 @@ namespace Ais.IO.Csharp
         None,
         Base16,
         Base32,
+        Base58,
         Base64,
         Base85,
     }
@@ -20,169 +21,109 @@ namespace Ais.IO.Csharp
         private EncodingType _type;
         public EncodingType Type => _type;
 
+        public BaseEncoding()
+            => this._type = EncodingType.None;
+
         public BaseEncoding(EncodingType type)
             => this._type = type;
 
-        private byte[] GetEncodeLength(byte[] input, EncodingType type)
+        public long GetEncodeLength(long inputLength, EncodingType type)
         {
             switch (type)
             {
                 case EncodingType.Base16:
-                    return new byte[input.Length * 2 + 1];
+                    return EncoderIOInterop.Base16Length(inputLength, true);
                 case EncodingType.Base32:
-                    return new byte[((input.Length + 4) / 5) * 8 + 1];
+                    return EncoderIOInterop.Base32Length(inputLength, true);
+                case EncodingType.Base58:
+                    return EncoderIOInterop.Base58Length(inputLength, true);
                 case EncodingType.Base64:
-                    return new byte[((input.Length + 2) / 3) * 4 + 1];
+                    return EncoderIOInterop.Base64Length(inputLength, true);
                 case EncodingType.Base85:
-                    return new byte[((input.Length + 3) / 4) * 5 + 1];
+                    return EncoderIOInterop.Base85Length(inputLength, true);
                 default:
-                    return new byte[0];
+                    return 0;
             }
         }
 
-        private byte[] GetDecodeLength(byte[] input, EncodingType type)
+        public long GetDecodeLength(long inputLength, EncodingType type)
         {
             switch (type)
             {
                 case EncodingType.Base16:
-                    return new byte[input.Length / 2];
+                    return EncoderIOInterop.Base16Length(inputLength, false);
                 case EncodingType.Base32:
-                    return new byte[(input.Length / 8) * 5];
+                    return EncoderIOInterop.Base32Length(inputLength, false);
+                case EncodingType.Base58:
+                    return EncoderIOInterop.Base58Length(inputLength, false);
                 case EncodingType.Base64:
-                    return new byte[(input.Length / 4) * 3];
+                    return EncoderIOInterop.Base64Length(inputLength, false);
                 case EncodingType.Base85:
-                    return new byte[(input.Length / 5) * 4];
+                    return EncoderIOInterop.Base85Length(inputLength, false);
                 default:
-                    return new byte[0];
+                    return 0;
             }
         }
 
-        public T Encode<T>(string content)
+        public string Encode(byte[] content, EncodingType type = EncodingType.None)
         {
-            byte[] input = Encoding.UTF8.GetBytes(content);
-            byte[] output = this.GetEncodeLength(input, this.Type);
-            switch (this.Type)
-            {
-                case EncodingType.Base16:
-                    EncoderIOInterop.Base16Encode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base32:
-                    EncoderIOInterop.Base32Encode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base64:
-                    EncoderIOInterop.Base64Encode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base85:
-                    EncoderIOInterop.Base85Encode(input, input.LongLength, output, output.LongLength);
-                    break;
-            }
-            if (typeof(T) == typeof(string))
-            {
-                if (output.Length == 0)
-                    return (T)(object)string.Empty;
-                else
-                    return (T)(object)Encoding.UTF8.GetString(output);
-            }
-            else if (typeof(T) == typeof(byte[]))
-                return (T)(object)output;
-            else
-                return default;
-        }
-
-        public T Encode<T>(byte[] content)
-        {
+            if (type == EncodingType.None && this.Type != EncodingType.None)
+                type = this.Type;
+            else if (type == EncodingType.None && this.Type == EncodingType.None)
+                throw new ArgumentException("EncodingType is none.");
             byte[] input = content;
-            byte[] output = this.GetEncodeLength(input, this.Type);
-            switch (this.Type)
+            StringBuilder output = new StringBuilder();
+            long outputLength = this.GetEncodeLength(input.LongLength, type);
+            output.Length = (int)outputLength;
+            switch (type)
             {
                 case EncodingType.Base16:
-                    EncoderIOInterop.Base16Encode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base16Encode(input, input.LongLength, output, outputLength);
                     break;
                 case EncodingType.Base32:
-                    EncoderIOInterop.Base32Encode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base32Encode(input, input.LongLength, output, outputLength);
+                    break;
+                case EncodingType.Base58:
+                    EncoderIOInterop.Base58Encode(input, input.LongLength, output, outputLength);
                     break;
                 case EncodingType.Base64:
-                    EncoderIOInterop.Base64Encode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base64Encode(input, input.LongLength, output, outputLength);
                     break;
                 case EncodingType.Base85:
-                    EncoderIOInterop.Base85Encode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base85Encode(input, input.LongLength, output, outputLength);
                     break;
             }
-            if (typeof(T) == typeof(string))
-            {
-                if (output.Length == 0)
-                    return (T)(object)string.Empty;
-                else
-                    return (T)(object)Encoding.UTF8.GetString(output);
-            }
-            else if (typeof(T) == typeof(byte[]))
-                return (T)(object)output;
-            else
-                return default;
+            return output.Length == 0 ? string.Empty : output.ToString();
         }
 
-        public T Decode<T>(string content)
+        public byte[] Decode(string content, EncodingType type = EncodingType.None)
         {
-            byte[] input = Encoding.UTF8.GetBytes(content);
-            byte[] output = this.GetDecodeLength(input, this.Type);
-            switch (this.Type)
+            if (type == EncodingType.None && this.Type != EncodingType.None)
+                type = this.Type;
+            else if (type == EncodingType.None && this.Type == EncodingType.None)
+                throw new ArgumentException("EncodingType is none.");
+            StringBuilder input = new StringBuilder(content);
+            long outputLength = this.GetDecodeLength(content.LongCount(), type);
+            byte[] output = new byte[outputLength];
+            switch (type)
             {
                 case EncodingType.Base16:
-                    EncoderIOInterop.Base16Decode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base16Decode(input, content.LongCount(), output, outputLength);
                     break;
                 case EncodingType.Base32:
-                    EncoderIOInterop.Base32Decode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base32Decode(input, content.LongCount(), output, outputLength);
+                    break;
+                case EncodingType.Base58:
+                    EncoderIOInterop.Base58Decode(input, content.LongCount(), output, outputLength);
                     break;
                 case EncodingType.Base64:
-                    EncoderIOInterop.Base64Decode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base64Decode(input, content.LongCount(), output, outputLength);
                     break;
                 case EncodingType.Base85:
-                    EncoderIOInterop.Base85Decode(input, input.LongLength, output, output.LongLength);
+                    EncoderIOInterop.Base85Decode(input, content.LongCount(), output, outputLength);
                     break;
             }
-            if (typeof(T) == typeof(string))
-            {
-                if (output.Length == 0)
-                    return (T)(object)string.Empty;
-                else
-                    return (T)(object)Encoding.UTF8.GetString(output);
-            }
-            else if (typeof(T) == typeof(byte[]))
-                return (T)(object)output;
-            else
-                return default;
-        }
-
-        public T Decode<T>(byte[] content)
-        {
-            byte[] input = content;
-            byte[] output = this.GetDecodeLength(input, this.Type);
-            switch (this.Type)
-            {
-                case EncodingType.Base16:
-                    EncoderIOInterop.Base16Decode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base32:
-                    EncoderIOInterop.Base32Decode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base64:
-                    EncoderIOInterop.Base64Decode(input, input.LongLength, output, output.LongLength);
-                    break;
-                case EncodingType.Base85:
-                    EncoderIOInterop.Base85Decode(input, input.LongLength, output, output.LongLength);
-                    break;
-            }
-            if (typeof(T) == typeof(string))
-            {
-                if (output.Length == 0)
-                    return (T)(object)string.Empty;
-                else
-                    return (T)(object)Encoding.UTF8.GetString(output);
-            }
-            else if (typeof(T) == typeof(byte[]))
-                return (T)(object)output;
-            else
-                return default;
+            return output.Length == 0 ? new byte[0] : output;
         }
     }
 }

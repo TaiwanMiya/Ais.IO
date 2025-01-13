@@ -20,8 +20,8 @@ namespace Ais.IO.Csharp.Command
                 //BinaryIO.InsertRelease();
                 //BinaryIO.GetIndex();
                 //BinaryIO.ReadRelease();
-                //EncoderIO.BaseEncode(out byte[] b16, out byte[] b32, out byte[] b64, out byte[] b85);
-                //EncoderIO.BaseDecode(b16, b32, b64, b85);
+                EncoderIO.BaseEncode(out string b16, out string b32, out string b58, out string b64, out string b85);
+                EncoderIO.BaseDecode(b16, b32, b58, b64, b85);
 
                 //AesIO.Generate();
 
@@ -31,7 +31,7 @@ namespace Ais.IO.Csharp.Command
 
                 //StartHash(1);
 
-                StartRsa(1);
+                //StartRsa(1);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");

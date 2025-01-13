@@ -20,7 +20,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = des.Import(iv);
                 byte[] cipherText = des.CbcEncrypt(plainText, keyResult, ivResult, pkcs5Padding);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = des.CbcDecrypt(cipherText, keyResult, ivResult, pkcs5Padding);
 
@@ -41,7 +41,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = des.Import(iv);
                 byte[] cipherText = des.CfbEncrypt(plainText, keyResult, ivResult, segmentSize);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = des.CfbDecrypt(cipherText, keyResult, ivResult, segmentSize);
 
@@ -62,7 +62,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] ivResult = des.Import(iv);
                 byte[] cipherText = des.OfbEncrypt(plainText, keyResult, ivResult);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = des.OfbDecrypt(cipherText, keyResult, ivResult);
 
@@ -82,7 +82,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] keyResult = des.Import(key);
                 byte[] cipherText = des.EcbEncrypt(plainText, keyResult, pkcs5Padding);
 
-                Console.WriteLine(encoder.Encode<string>(cipherText));
+                Console.WriteLine(encoder.Encode(cipherText));
 
                 plainText = des.EcbDecrypt(cipherText, keyResult, pkcs5Padding);
 
@@ -101,7 +101,7 @@ namespace Ais.IO.Csharp.Command
                 byte[] wrapkeyResult = des.Import(wrapkey);
                 byte[] wrappedKey = des.WrapEncrypt(keyResult, wrapkeyResult);
 
-                Console.WriteLine(encoder.Encode<string>(wrappedKey));
+                Console.WriteLine(encoder.Encode(wrappedKey));
 
                 byte[] decryptedText = des.WrapDecrypt(wrappedKey, wrapkeyResult);
 
