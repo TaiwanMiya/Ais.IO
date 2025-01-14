@@ -47,35 +47,35 @@ static int HexCharToValue(char c) {
     return -1; // 非法字符返回 -1
 }
 
-constexpr size_t Base10Length(const size_t inputSize, bool isEncode) {
+size_t Base10Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil(inputSize * std::log10(256.0)) + 1 : std::ceil(inputSize * std::log10(10.0) / std::log10(256.0));
 }
 
-constexpr size_t Base16Length(const size_t inputSize, bool isEncode) {
+size_t Base16Length(const size_t inputSize, bool isEncode) {
     return isEncode ? inputSize * 2 + 1: inputSize / 2;
 }
 
-constexpr size_t Base32Length(const size_t inputSize, bool isEncode) {
+size_t Base32Length(const size_t inputSize, bool isEncode) {
     return isEncode ? ((inputSize + 4) / 5) * 8 + 1 : (inputSize / 8) * 5;
 }
 
-constexpr size_t Base64Length(const size_t inputSize, bool isEncode) {
+size_t Base64Length(const size_t inputSize, bool isEncode) {
     return isEncode ? ((inputSize + 2) / 3) * 4 + 1 : (inputSize / 4) * 3;
 }
 
-constexpr size_t Base85Length(const size_t inputSize, bool isEncode) {
+size_t Base85Length(const size_t inputSize, bool isEncode) {
     return isEncode ? ((inputSize + 3) / 4) * 5 + 1 : (inputSize / 5) * 4;
 }
 
-constexpr size_t Base58Length(const size_t inputSize, bool isEncode) {
+size_t Base58Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(58.0)) + 1 : std::floor(inputSize * std::log2(58.0) / 8);
 }
 
-constexpr size_t Base62Length(const size_t inputSize, bool isEncode) {
+size_t Base62Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(62.0)) + 1 : std::floor(inputSize * std::log2(62.0) / 8);
 }
 
-constexpr size_t Base91Length(const size_t inputSize, bool isEncode) {
+size_t Base91Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(91.0)) + 1 : std::floor(inputSize * std::log2(91.0) / 8);
 }
 

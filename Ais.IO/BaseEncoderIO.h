@@ -217,14 +217,14 @@ static const int Base91_Lookup[256] = {
 };
 
 // 取得長度
-EXT ENCODERIO_API constexpr size_t Base10Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base16Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base32Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base58Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base62Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base64Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base85Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base91Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base10Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base16Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base32Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base58Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base62Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base64Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base85Length(const size_t inputSize, bool isEncode);
+EXT ENCODERIO_API size_t Base91Length(const size_t inputSize, bool isEncode);
 
 /* Base10 錯誤碼含義：
 
