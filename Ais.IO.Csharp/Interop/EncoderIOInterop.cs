@@ -35,9 +35,6 @@ namespace Ais.IO.Csharp
         
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern long Base91Length(long inputSize, bool isEncode);
-        
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long Base128Length(long inputSize, bool isEncode);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Base10Encode(byte[] input, long inputSize, StringBuilder output, long outputSize);

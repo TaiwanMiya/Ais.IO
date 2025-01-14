@@ -225,7 +225,6 @@ EXT ENCODERIO_API constexpr size_t Base62Length(const size_t inputSize, bool isE
 EXT ENCODERIO_API constexpr size_t Base64Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base85Length(const size_t inputSize, bool isEncode);
 EXT ENCODERIO_API constexpr size_t Base91Length(const size_t inputSize, bool isEncode);
-EXT ENCODERIO_API constexpr size_t Base128Length(const size_t inputSize, bool isEncode);
 
 /* Base10 錯誤碼含義：
 

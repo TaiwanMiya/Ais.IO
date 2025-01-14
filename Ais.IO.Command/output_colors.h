@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <iostream>
+#include <fcntl.h>
 
 #if _WIN32
 void EnableVirtualTerminalProcessing();
@@ -19,6 +20,7 @@ enum TERMINAL_STYLE {
 	STYLE_BRIGHT = 9, // 劃線
 };
 
+bool CheckRedirects();
 void ListColorTable();
 std::string Hide(std::string str);
 std::string Error(std::string str);

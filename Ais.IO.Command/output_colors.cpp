@@ -1,4 +1,4 @@
-#include "output_colors.h"
+﻿#include "output_colors.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -17,7 +17,24 @@ void EnableVirtualTerminalProcessing() {
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
 }
+#else
+#include <fcntl.h>
+#include <unistd.h>
 #endif
+
+bool CheckRedirects() {
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE)
+        return true;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+        return true;
+    return false;
+#else
+    return !isatty(fileno(stdout));
+#endif
+}
 
 void ListColorTable() {
     std::cout << "Shows 8 style colors:" << std::endl;
@@ -38,41 +55,71 @@ void ListColorTable() {
 }
 
 std::string Hide(const std::string str) {
-    return "\033[1;30m" + str + "\033[0m"; // Black
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;30m" + str + "\033[0m"; // Black
 }
 
 std::string Error(const std::string str) {
-    return "\033[1;31m" + str + "\033[0m"; // Red
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;31m" + str + "\033[0m"; // Red
 }
 
 std::string Hint(const std::string str) {
-    return "\033[1;32m" + str + "\033[0m"; // Green
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;32m" + str + "\033[0m"; // Green
 }
 
 std::string Warn(const std::string str) {
-    return "\033[1;33m" + str + "\033[0m"; // Yellow
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;33m" + str + "\033[0m"; // Yellow
 }
 
 std::string Ask(const std::string str) {
-    return "\033[1;34m" + str + "\033[0m"; // Blue
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;34m" + str + "\033[0m"; // Blue
 }
 
 std::string Mark(const std::string str) {
-    return "\033[1;35m" + str + "\033[0m"; // Purple
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;35m" + str + "\033[0m"; // Purple
 }
 
 std::string Info(const std::string str) {
-    return "\033[1;36m" + str + "\033[0m"; // Cyan
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;36m" + str + "\033[0m"; // Cyan
 }
 
 std::string Common(const std::string str) {
-    return "\033[1;37m" + str + "\033[0m"; // White
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[1;37m" + str + "\033[0m"; // White
 }
 
 std::string Any(const std::string str, int colorInt) {
-    return "\033[38;5;" + std::to_string(colorInt) + "m" + str + "\033[0m";
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[38;5;" + std::to_string(colorInt) + "m" + str + "\033[0m";
 }
 
 std::string Any(const std::string str, TERMINAL_STYLE style, int colorInt) {
-    return "\033[" + std::to_string(style) + ";" + std::to_string(colorInt) + "m" + str + "\033[0m";
+    if (CheckRedirects())
+        return str;
+    else
+        return "\033[" + std::to_string(style) + ";" + std::to_string(colorInt) + "m" + str + "\033[0m";
 }

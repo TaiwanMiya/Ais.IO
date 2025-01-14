@@ -79,10 +79,6 @@ constexpr size_t Base91Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(91.0)) + 1 : std::floor(inputSize * std::log2(91.0) / 8);
 }
 
-constexpr size_t Base128Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(128.0)) + 1 : std::floor(inputSize * std::log2(128.0) / 8);
-}
-
 int Base10Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
@@ -652,8 +648,15 @@ int Base91Encode(const unsigned char* input, const size_t inputSize, char* outpu
                 bits -= 14;
             }
             if ((encoded / 91) < 91) {
-                output[outputIndex++] = Base91_Chars[encoded % 91];
-                output[outputIndex++] = Base91_Chars[encoded / 91];
+                int mod91 = encoded % 91;
+                int div91 = encoded / 91;
+
+                if (mod91 < 91 && div91 < 91) {
+                    output[outputIndex++] = Base91_Chars[mod91];
+                    output[outputIndex++] = Base91_Chars[div91];
+                }
+                else
+                    return -4; // 無效的數據，防止越界
             }
             else
                 return -4; // 無效的數據，防止越界

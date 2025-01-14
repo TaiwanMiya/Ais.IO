@@ -135,6 +135,34 @@ std::unordered_map<HASH_TYPE, std::string> HashDisplay = {
     { HASH_TYPE::HASH_RIPEMD160, "RIPEMD160"},
 };
 
+void PutBaseOptions(char* argv[], std::unordered_map<std::string, std::string> abbreviationValidBytesOptions, std::string& filePath, CRYPT_OPTIONS& option) {
+    std::string byte_option = ToLower(argv[2]);
+    if (abbreviationValidBytesOptions.count(byte_option))
+        byte_option = abbreviationValidBytesOptions[byte_option];
+    if      (byte_option == "-base10")
+        option = CRYPT_OPTIONS::OPTION_BASE10;
+    else if (byte_option == "-base16")
+        option = CRYPT_OPTIONS::OPTION_BASE16;
+    else if (byte_option == "-base32")
+        option = CRYPT_OPTIONS::OPTION_BASE32;
+    else if (byte_option == "-base58")
+        option = CRYPT_OPTIONS::OPTION_BASE58;
+    else if (byte_option == "-base62")
+        option = CRYPT_OPTIONS::OPTION_BASE62;
+    else if (byte_option == "-base64")
+        option = CRYPT_OPTIONS::OPTION_BASE64;
+    else if (byte_option == "-base85")
+        option = CRYPT_OPTIONS::OPTION_BASE85;
+    else if (byte_option == "-base91")
+        option = CRYPT_OPTIONS::OPTION_BASE91;
+    else {
+        option = CRYPT_OPTIONS::OPTION_TEXT;
+        filePath = argv[2];
+        return;
+    }
+    filePath = argv[3];
+}
+
 bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& filePath, CRYPT_OPTIONS& option, std::vector<Command>& commands) {
     if (argc < 3) {
         return false;
@@ -143,15 +171,15 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     std::unordered_set<std::string> validMode = {
         "--help",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index", "--read-index",
-        "--base16", "--base32", "--base64", "--base85",
-        "--generate", "--import", "--aes", "--des", "--hash", "--rsa"
+        "--base10", "--base16", "--base32", "--base58", "--base62", "--base64", "--base85", "--base91",
+        "--generate", "--convert", "--aes", "--des", "--hash", "--rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         { "-help", "--help"}, {"-h", "--help"},
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"}, {"-ri", "--read-index"},
-        {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b64", "--base64"}, {"-b85", "--base85"},
-        {"-gen", "--generate"}, {"-imp", "--import"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-rsa", "--rsa"}
+        {"-b10", "--base10"}, {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b58", "--base58"}, {"-b62", "--base62"}, {"-b64", "--base64"}, {"-b85", "--base85"}, {"-b91", "--base91"},
+        {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-rsa", "--rsa"}
     };
 
     std::unordered_set<std::string> validHelper = {
@@ -163,11 +191,11 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     };
 
     std::unordered_set<std::string> validBytesOptions = {
-        "-base16", "-base32", "-base64", "-base85"
+        "-base10", "-base16", "-base32", "-base58", "-base62", "-base64", "-base85", "-base91"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidBytesOptions = {
-        {"-b16", "-base16"}, {"-b32", "-base32"}, {"-b64", "-base64"}, {"-b85", "-base85"}
+        {"-b10", "-base10"}, {"-b16", "-base16"}, {"-b32", "-base32"}, {"-b58", "-base58"}, {"-b62", "-base62"}, {"-b64", "-base64"}, {"-b85", "-base85"}, {"-b91", "-base91"}
     };
 
     std::unordered_set<std::string> validOptions = {
@@ -233,29 +261,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     if (mode == "--read" || mode == "--write" || mode == "--append") {
         if (argc < 4)
             return false;
-        std::string byte_option = ToLower(argv[2]);
-        if (abbreviationValidBytesOptions.count(byte_option))
-            byte_option = abbreviationValidBytesOptions[byte_option];
-        if (byte_option == "-base16") {
-            option = CRYPT_OPTIONS::OPTION_BASE16;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base32") {
-            option = CRYPT_OPTIONS::OPTION_BASE32;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base64") {
-            option = CRYPT_OPTIONS::OPTION_BASE64;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base85") {
-            option = CRYPT_OPTIONS::OPTION_BASE85;
-            filePath = argv[3];
-        }
-        else {
-            option = CRYPT_OPTIONS::OPTION_TEXT;
-            filePath = argv[2];
-        }
+        PutBaseOptions(argv, abbreviationValidBytesOptions, filePath, option);
 
         Command cmd;
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
@@ -283,29 +289,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--insert") {
         if (argc < 5)
             return false;
-        std::string byte_option = ToLower(argv[2]);
-        if (abbreviationValidBytesOptions.count(byte_option))
-            byte_option = abbreviationValidBytesOptions[byte_option];
-        if (byte_option == "-base16") {
-            option = CRYPT_OPTIONS::OPTION_BASE16;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base32") {
-            option = CRYPT_OPTIONS::OPTION_BASE32;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base64") {
-            option = CRYPT_OPTIONS::OPTION_BASE64;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base85") {
-            option = CRYPT_OPTIONS::OPTION_BASE85;
-            filePath = argv[3];
-        }
-        else {
-            option = CRYPT_OPTIONS::OPTION_TEXT;
-            filePath = argv[2];
-        }
+        PutBaseOptions(argv, abbreviationValidBytesOptions, filePath, option);
 
         Command cmd;
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
@@ -382,29 +366,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--read-index" || mode == "--remove-index") {
         if (argc < 3)
             return false;
-        std::string byte_option = ToLower(argv[2]);
-        if (abbreviationValidBytesOptions.count(byte_option))
-            byte_option = abbreviationValidBytesOptions[byte_option];
-        if (byte_option == "-base16") {
-            option = CRYPT_OPTIONS::OPTION_BASE16;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base32") {
-            option = CRYPT_OPTIONS::OPTION_BASE32;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base64") {
-            option = CRYPT_OPTIONS::OPTION_BASE64;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base85") {
-            option = CRYPT_OPTIONS::OPTION_BASE85;
-            filePath = argv[3];
-        }
-        else {
-            option = CRYPT_OPTIONS::OPTION_TEXT;
-            filePath = argv[2];
-        }
+        PutBaseOptions(argv, abbreviationValidBytesOptions, filePath, option);
 
         Command cmd;
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
@@ -507,31 +469,10 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     else if (mode == "--read-all" || mode == "--indexes") {
         if (argc < 3)
             return false;
-        std::string byte_option = ToLower(argv[2]);
-        if (abbreviationValidBytesOptions.count(byte_option))
-            byte_option = abbreviationValidBytesOptions[byte_option];
-        if (byte_option == "-base16") {
-            option = CRYPT_OPTIONS::OPTION_BASE16;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base32") {
-            option = CRYPT_OPTIONS::OPTION_BASE32;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base64") {
-            option = CRYPT_OPTIONS::OPTION_BASE64;
-            filePath = argv[3];
-        }
-        else if (byte_option == "-base85") {
-            option = CRYPT_OPTIONS::OPTION_BASE85;
-            filePath = argv[3];
-        }
-        else {
-            option = CRYPT_OPTIONS::OPTION_TEXT;
-            filePath = argv[2];
-        }
+        PutBaseOptions(argv, abbreviationValidBytesOptions, filePath, option);
     }
-    else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
+    else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
+             mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
         if (argc < 4)
             return false;
         std::string operation = ToLower(argv[2]);
@@ -650,14 +591,30 @@ void LoadFunctions() {
     InsertFunctions["-bytes"] = GET_PROC_ADDRESS(Lib, "InsertBytes");
     InsertFunctions["-string"] = GET_PROC_ADDRESS(Lib, "InsertString");
 
+    EncodeFunctions["-base10-length"] = GET_PROC_ADDRESS(Lib, "Base10Length");
+    EncodeFunctions["-base16-length"] = GET_PROC_ADDRESS(Lib, "Base16Length");
+    EncodeFunctions["-base32-length"] = GET_PROC_ADDRESS(Lib, "Base32Length");
+    EncodeFunctions["-base58-length"] = GET_PROC_ADDRESS(Lib, "Base58Length");
+    EncodeFunctions["-base62-length"] = GET_PROC_ADDRESS(Lib, "Base62Length");
+    EncodeFunctions["-base64-length"] = GET_PROC_ADDRESS(Lib, "Base64Length");
+    EncodeFunctions["-base85-length"] = GET_PROC_ADDRESS(Lib, "Base85Length");
+    EncodeFunctions["-base91-length"] = GET_PROC_ADDRESS(Lib, "Base91Length");
+    EncodeFunctions["-base10-encode"] = GET_PROC_ADDRESS(Lib, "Base10Encode");
+    EncodeFunctions["-base10-decode"] = GET_PROC_ADDRESS(Lib, "Base10Decode");
     EncodeFunctions["-base16-encode"] = GET_PROC_ADDRESS(Lib, "Base16Encode");
     EncodeFunctions["-base16-decode"] = GET_PROC_ADDRESS(Lib, "Base16Decode");
     EncodeFunctions["-base32-encode"] = GET_PROC_ADDRESS(Lib, "Base32Encode");
     EncodeFunctions["-base32-decode"] = GET_PROC_ADDRESS(Lib, "Base32Decode");
+    EncodeFunctions["-base58-encode"] = GET_PROC_ADDRESS(Lib, "Base58Encode");
+    EncodeFunctions["-base58-decode"] = GET_PROC_ADDRESS(Lib, "Base58Decode");
+    EncodeFunctions["-base62-encode"] = GET_PROC_ADDRESS(Lib, "Base62Encode");
+    EncodeFunctions["-base62-decode"] = GET_PROC_ADDRESS(Lib, "Base62Decode");
     EncodeFunctions["-base64-encode"] = GET_PROC_ADDRESS(Lib, "Base64Encode");
     EncodeFunctions["-base64-decode"] = GET_PROC_ADDRESS(Lib, "Base64Decode");
     EncodeFunctions["-base85-encode"] = GET_PROC_ADDRESS(Lib, "Base85Encode");
     EncodeFunctions["-base85-decode"] = GET_PROC_ADDRESS(Lib, "Base85Decode");
+    EncodeFunctions["-base91-encode"] = GET_PROC_ADDRESS(Lib, "Base91Encode");
+    EncodeFunctions["-base91-decode"] = GET_PROC_ADDRESS(Lib, "Base91Decode");
 
     AesFunctions["-ctr-encrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrEncrypt");
     AesFunctions["-ctr-decrypt"] = GET_PROC_ADDRESS(Lib, "AesCtrDecrypt");
@@ -702,7 +659,7 @@ void LoadFunctions() {
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
 
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
-    SymmetryFunctions["-import"] = GET_PROC_ADDRESS(Lib, "Import");
+    SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");
 }
 
 int main(int argc, char* argv[]) {
@@ -714,6 +671,8 @@ int main(int argc, char* argv[]) {
 #if _WIN32
     EnableVirtualTerminalProcessing();
 #endif
+
+
 
     if (argc == 2 && std::string(argv[1]) == "--colors") {
         ListColorTable();
@@ -844,7 +803,8 @@ int main(int argc, char* argv[]) {
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         std::cout << Mark("Indexes Action Completed!") << std::endl;
     }
-    else if (mode == "--base16" || mode == "--base32" || mode == "--base64" || mode == "--base85") {
+    else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
+             mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
         Command cmd = commands[0];
         std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
         if (commands.empty()) {
@@ -880,7 +840,7 @@ int main(int argc, char* argv[]) {
         rsa_execute::ParseParameters(argc, argv, rsa);
         rsa_execute::RsaStart(rsa);
     }
-    else if (mode == "--generate" || mode == "--import") {
+    else if (mode == "--generate" || mode == "--convert") {
         Rand rand;
         cryptography_libary::ParseParameters(argc, argv, rand);
         cryptography_libary::RandStart(rand);

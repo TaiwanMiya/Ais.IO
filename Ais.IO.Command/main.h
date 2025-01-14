@@ -40,11 +40,15 @@ enum BINARYIO_TYPE : unsigned char {
 
 enum CRYPT_OPTIONS : unsigned char {
     OPTION_TEXT = 0,
-    OPTION_BASE16 = 1,
-    OPTION_BASE32 = 2,
-    OPTION_BASE64 = 3,
-    OPTION_BASE85 = 4,
-    OPTION_FILE = 5,
+    OPTION_BASE10 = 1,
+    OPTION_BASE16 = 2,
+    OPTION_BASE32 = 3,
+    OPTION_BASE58 = 4,
+    OPTION_BASE62 = 5,
+    OPTION_BASE64 = 6,
+    OPTION_BASE85 = 7,
+    OPTION_BASE91 = 8,
+    OPTION_FILE = 9,
 };
 
 enum RAND_TYPE : unsigned char {
@@ -112,6 +116,25 @@ enum RSA_MODE : unsigned long long {
     RSA_GENERATE_KEYS = 1,
     RSA_EXPORT_PARAMS = 2,
     RSA_EXPORT_KEYS = 3,
+};
+
+enum SYMMETRY_CRYPTER {
+    SYMMETRY_NULL = 0,
+    SYMMETRY_AES_CTR = 1,
+    SYMMETRY_AES_CBC = 2,
+    SYMMETRY_AES_CFB = 3,
+    SYMMETRY_AES_OFB = 4,
+    SYMMETRY_AES_ECB = 5,
+    SYMMETRY_AES_GCM = 6,
+    SYMMETRY_AES_CCM = 7,
+    SYMMETRY_AES_XTS = 8,
+    SYMMETRY_AES_OCB = 9,
+    SYMMETRY_AES_WRAP = 10,
+    SYMMETRY_DES_CBC = 11,
+    SYMMETRY_DES_CFB = 12,
+    SYMMETRY_DES_OFB = 13,
+    SYMMETRY_DES_ECB = 14,
+    SYMMETRY_DES_WRAP = 15,
 };
 
 enum SEGMENT_SIZE_OPTION {
@@ -235,15 +258,20 @@ struct Rsa {
     std::string Params;
     std::string PublicKey;
     std::string PrivateKey;
+    std::string Password;
     std::string Output;
     size_t KeyLength = 0;
 
     CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
+    int AlgorithmSize = 256;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
 };
 
 #pragma pack(push, 1)
@@ -602,8 +630,13 @@ struct RSA_KEY_PAIR {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* PUBLIC_KEY;
     unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
 };
 
 struct EXPORT_RSA {
@@ -627,8 +660,10 @@ struct EXPORT_RSA {
     size_t QI_LENGTH;
     unsigned char* PUBLIC_KEY;
     unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
 };
 
 // Define function pointer types for all APIs
@@ -724,15 +759,32 @@ typedef void (*InsertBytes)(void*, const unsigned char*, uint64_t, uint64_t);
 typedef void (*InsertString)(void*, const char*, uint64_t);
 #pragma endregion
 
-#pragma region EncoderIO
+#pragma region BaseEncoderIO
+typedef size_t (*Base10Length)(const size_t, bool);
+typedef size_t (*Base16Length)(const size_t, bool);
+typedef size_t (*Base32Length)(const size_t, bool);
+typedef size_t (*Base58Length)(const size_t, bool);
+typedef size_t (*Base62Length)(const size_t, bool);
+typedef size_t (*Base64Length)(const size_t, bool);
+typedef size_t (*Base85Length)(const size_t, bool);
+typedef size_t (*Base91Length)(const size_t, bool);
+
+typedef int (*Base10Encode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base10Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base16Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base16Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base32Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base32Decode)(const char*, const size_t, unsigned char*, const size_t);
+typedef int (*Base58Encode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base58Decode)(const char*, const size_t, unsigned char*, const size_t);
+typedef int (*Base62Encode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base62Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base64Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base64Decode)(const char*, const size_t, unsigned char*, const size_t);
 typedef int (*Base85Encode)(const unsigned char*, const size_t, char*, const size_t);
 typedef int (*Base85Decode)(const char*, const size_t, unsigned char*, const size_t);
+typedef int (*Base91Encode)(const unsigned char*, const size_t, char*, const size_t);
+typedef int (*Base91Decode)(const char*, const size_t, unsigned char*, const size_t);
 #pragma endregion
 
 #pragma region SymmetryIO

@@ -57,7 +57,6 @@ struct RSA_PARAMETERS {
 struct RSA_KEY_PAIR {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    const ASYMMETRIC_KEY_PKCS KEY_PKCS;
     unsigned char* PUBLIC_KEY;
     unsigned char* PRIVATE_KEY;
     const unsigned char* PEM_PASSWORD;
@@ -67,9 +66,6 @@ struct RSA_KEY_PAIR {
     const SYMMETRY_CRYPTER PEM_CIPHER;
     const int PEM_CIPHER_SIZE;
     const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
-    const HASH_TYPE HASH_ALGORITHM;
-    const char* PKCS12_NAME;
-    const char* PKCS12_PASSWORD;
 };
 
 struct RSA_PKCS8_KEY {
@@ -163,7 +159,6 @@ struct RSA_CHECK_CERTIFICATE {
 struct EXPORT_RSA {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    const ASYMMETRIC_KEY_PKCS KEY_PKCS;
     unsigned char* N;
     unsigned char* E;
     unsigned char* D;
@@ -186,7 +181,6 @@ struct EXPORT_RSA {
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
-    const char* PKCS12_PASSWORD;
 };
 
 EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);

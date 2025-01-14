@@ -54,12 +54,12 @@ Store your binary content, which can be used as sensitive data, identification n
 |-----------------------|---------------|---------------|---------------|-----------------------------------------------------------|--------------------------------------------------------------------------
 | Boolean               | `-bool`       | 1             | 1             | `false` or `true`                                         | Used for binary states or flags.
 | Unsigned Byte         | `-byte`       | 8             | 1             | `0` to `255`                                              | Stores small positive integers or raw byte data.
-| Signed Byte           | `-sbyte`      | 8             | 1             | -`128` to `127`                                           | Stores small signed integers, often for encoded data.
-| Signed Short Integer  | `-short`      | 16            | 2             | -`32768` to `32767`                                       | Common for small-range numeric data, such as sensor readings.
+| Signed Byte           | `-sbyte`      | 8             | 1             | `-128` to `127`                                           | Stores small signed integers, often for encoded data.
+| Signed Short Integer  | `-short`      | 16            | 2             | `-32768` to `32767`                                       | Common for small-range numeric data, such as sensor readings.
 | Unsigned Short Integer| `-ushort`     | 16            | 2             | `0` to `65535`                                            | Stores unsigned integers like IDs or counts.
-| Signed Integer        | `-int`        | 32            | 4             | -`2147483648` to `2147483647`                             | Used for standard numeric values, e.g., calculations or offsets.
+| Signed Integer        | `-int`        | 32            | 4             | `-2147483648` to `2147483647`                             | Used for standard numeric values, e.g., calculations or offsets.
 | Unsigned Integer      | `-uint`       | 32            | 4             | `0` to `4294967295`                                       | Suitable for unsigned counters, memory sizes, or large IDs.
-| Signed Long Integer   | `-long`       | 64            | 8             | -`9223372036854775808` to `9223372036854775807`           | Handles very large or small signed numbers, e.g., timestamps or high-precision counters.
+| Signed Long Integer   | `-long`       | 64            | 8             | `-9223372036854775808` to `9223372036854775807`           | Handles very large or small signed numbers, e.g., timestamps or high-precision counters.
 | Unsigned Long Integer | `-ulong`      | 64            | 8             | `0` to `18446744073709551615`                             | Stores extremely large positive numbers, e.g., file sizes or cryptographic data.
 | Single Floating Point | `-float`      | 32            | 4             | `~-3.402823e38` to `~3.402823e38`                         | Used for decimal values where precision is less critical, such as graphics or physics.
 | Double Floating Point | `-double`     | 64            | 8             | `~-1.7976931348623157e308` to `~1.7976931348623157e308`   | Used for precise decimal numbers, like scientific calculations or financial data.

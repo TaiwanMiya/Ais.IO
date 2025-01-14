@@ -11,5 +11,7 @@ public:
 	static void ShowDesUsage();
 	static void ShowHashUsage();
 	static void ShowRsaUsage();
+private:
+	static void ShowWayUsage();
 };
 

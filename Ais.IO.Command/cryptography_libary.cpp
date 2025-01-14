@@ -17,59 +17,59 @@ size_t cryptography_libary::set_hash(const char* str) {
 }
 
 size_t cryptography_libary::CalculateEncodeLength(const std::string& mode, size_t length) {
-    if (mode == "--base16")
-        return length * 2 + 1;
-    else if (mode == "--base32")
-        return ((length + 4) / 5) * 8 + 1;
-    else if (mode == "--base64")
-        return ((length + 2) / 3) * 4 + 1;
-    else if (mode == "--base85")
-        return ((length + 3) / 4) * 5 + 1;
-    else
-        return 0;
+	switch (set_hash(mode.c_str())) {
+	case hash("--base10"):return ((Base10Length)EncodeFunctions.at("-base10-length"))(length, true);
+	case hash("--base16"):return ((Base16Length)EncodeFunctions.at("-base16-length"))(length, true);
+	case hash("--base32"):return ((Base32Length)EncodeFunctions.at("-base32-length"))(length, true);
+	case hash("--base58"):return ((Base58Length)EncodeFunctions.at("-base58-length"))(length, true);
+	case hash("--base62"):return ((Base62Length)EncodeFunctions.at("-base62-length"))(length, true);
+	case hash("--base64"):return ((Base64Length)EncodeFunctions.at("-base64-length"))(length, true);
+	case hash("--base85"):return ((Base85Length)EncodeFunctions.at("-base85-length"))(length, true);
+	case hash("--base91"):return ((Base91Length)EncodeFunctions.at("-base91-length"))(length, true);
+	default:return 0;
+	}
 }
 
 size_t cryptography_libary::CalculateDecodeLength(const std::string& mode, size_t length) {
-    if (mode == "--base16")
-        return length / 2;
-    else if (mode == "--base32")
-        return (length / 8) * 5;
-    else if (mode == "--base64")
-        return (length / 4) * 3;
-    else if (mode == "--base85")
-        return (length / 5) * 4;
-    else
-        return 0;
+	switch (set_hash(mode.c_str())) {
+	case hash("--base10"):return ((Base10Length)EncodeFunctions.at("-base10-length"))(length, false);
+	case hash("--base16"):return ((Base16Length)EncodeFunctions.at("-base16-length"))(length, false);
+	case hash("--base32"):return ((Base32Length)EncodeFunctions.at("-base32-length"))(length, false);
+	case hash("--base58"):return ((Base58Length)EncodeFunctions.at("-base58-length"))(length, false);
+	case hash("--base62"):return ((Base62Length)EncodeFunctions.at("-base62-length"))(length, false);
+	case hash("--base64"):return ((Base64Length)EncodeFunctions.at("-base64-length"))(length, false);
+	case hash("--base85"):return ((Base85Length)EncodeFunctions.at("-base85-length"))(length, false);
+	case hash("--base91"):return ((Base91Length)EncodeFunctions.at("-base91-length"))(length, false);
+	default:return 0;
+	}
 }
 
 size_t cryptography_libary::CalculateEncodeLength(const CRYPT_OPTIONS mode, size_t length) {
-    switch (mode) {
-    case CRYPT_OPTIONS::OPTION_BASE16:
-        return length * 2 + 1;
-    case CRYPT_OPTIONS::OPTION_BASE32:
-        return ((length + 4) / 5) * 8 + 1;
-    case CRYPT_OPTIONS::OPTION_BASE64:
-        return ((length + 2) / 3) * 4 + 1;
-    case CRYPT_OPTIONS::OPTION_BASE85:
-        return ((length + 3) / 4) * 5 + 1;
-    default:
-        return 0;
-    }
+	switch (mode) {
+	case CRYPT_OPTIONS::OPTION_BASE10:return ((Base10Length)EncodeFunctions.at("-base10-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE16:return ((Base16Length)EncodeFunctions.at("-base16-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE32:return ((Base32Length)EncodeFunctions.at("-base32-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE58:return ((Base58Length)EncodeFunctions.at("-base58-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE62:return ((Base62Length)EncodeFunctions.at("-base62-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE64:return ((Base64Length)EncodeFunctions.at("-base64-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE85:return ((Base85Length)EncodeFunctions.at("-base85-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE91:return ((Base91Length)EncodeFunctions.at("-base91-length"))(length, false);
+	default:return 0;
+	}
 }
 
 size_t cryptography_libary::CalculateDecodeLength(const CRYPT_OPTIONS mode, size_t length) {
-    switch (mode) {
-    case CRYPT_OPTIONS::OPTION_BASE16:
-        return length / 2;
-    case CRYPT_OPTIONS::OPTION_BASE32:
-        return (length / 8) * 5;
-    case CRYPT_OPTIONS::OPTION_BASE64:
-        return (length / 4) * 3;
-    case CRYPT_OPTIONS::OPTION_BASE85:
-        return (length / 5) * 4;
-    default:
-        return 0;
-    }
+	switch (mode) {
+	case CRYPT_OPTIONS::OPTION_BASE10:return ((Base10Length)EncodeFunctions.at("-base10-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE16:return ((Base16Length)EncodeFunctions.at("-base16-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE32:return ((Base32Length)EncodeFunctions.at("-base32-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE58:return ((Base58Length)EncodeFunctions.at("-base58-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE62:return ((Base62Length)EncodeFunctions.at("-base62-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE64:return ((Base64Length)EncodeFunctions.at("-base64-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE85:return ((Base85Length)EncodeFunctions.at("-base85-length"))(length, false);
+	case CRYPT_OPTIONS::OPTION_BASE91:return ((Base91Length)EncodeFunctions.at("-base91-length"))(length, false);
+	default:return 0;
+	}
 }
 
 CRYPT_OPTIONS cryptography_libary::GetOption(int& i, char* argv[]) {
@@ -79,6 +79,10 @@ CRYPT_OPTIONS cryptography_libary::GetOption(int& i, char* argv[]) {
 	case hash("-f"):
 		i++;
 		return CRYPT_OPTIONS::OPTION_FILE;
+	case hash("-base10"):
+	case hash("-b10"):
+		i++;
+		return CRYPT_OPTIONS::OPTION_BASE10;
 	case hash("-base16"):
 	case hash("-b16"):
 		i++;
@@ -87,6 +91,14 @@ CRYPT_OPTIONS cryptography_libary::GetOption(int& i, char* argv[]) {
 	case hash("-b32"):
 		i++;
 		return CRYPT_OPTIONS::OPTION_BASE32;
+	case hash("-base58"):
+	case hash("-b58"):
+		i++;
+		return CRYPT_OPTIONS::OPTION_BASE58;
+	case hash("-base62"):
+	case hash("-b62"):
+		i++;
+		return CRYPT_OPTIONS::OPTION_BASE62;
 	case hash("-base64"):
 	case hash("-b64"):
 		i++;
@@ -95,6 +107,10 @@ CRYPT_OPTIONS cryptography_libary::GetOption(int& i, char* argv[]) {
 	case hash("-b85"):
 		i++;
 		return CRYPT_OPTIONS::OPTION_BASE85;
+	case hash("-base91"):
+	case hash("-b91"):
+		i++;
+		return CRYPT_OPTIONS::OPTION_BASE91;
 	default:
 		return CRYPT_OPTIONS::OPTION_TEXT;
 	}
@@ -111,6 +127,15 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		output.resize(input.size());
 		output.assign(input.begin(), input.end());
 		break;
+	case CRYPT_OPTIONS::OPTION_BASE10:
+		length = cryptography_libary::CalculateEncodeLength("--base10", input.size());
+		result.resize(length);
+		resultCode = ((Base10Encode)EncodeFunctions.at("-base10-encode"))(input.data(), input.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
+		input.clear();
+		output.assign(result.begin(), result.end());
+		break;
 	case CRYPT_OPTIONS::OPTION_BASE16:
 		length = cryptography_libary::CalculateEncodeLength("--base16", input.size());
 		result.resize(length);
@@ -124,6 +149,24 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		length = cryptography_libary::CalculateEncodeLength("--base32", input.size());
 		result.resize(length);
 		resultCode = ((Base32Encode)EncodeFunctions.at("-base32-encode"))(input.data(), input.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
+		input.clear();
+		output.assign(result.begin(), result.end());
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE58:
+		length = cryptography_libary::CalculateEncodeLength("--base58", input.size());
+		result.resize(length);
+		resultCode = ((Base58Encode)EncodeFunctions.at("-base58-encode"))(input.data(), input.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
+		input.clear();
+		output.assign(result.begin(), result.end());
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE62:
+		length = cryptography_libary::CalculateEncodeLength("--base62", input.size());
+		result.resize(length);
+		resultCode = ((Base62Encode)EncodeFunctions.at("-base62-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
 		input.clear();
@@ -147,6 +190,15 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
+	case CRYPT_OPTIONS::OPTION_BASE91:
+		length = cryptography_libary::CalculateEncodeLength("--base91", input.size());
+		result.resize(length);
+		resultCode = ((Base91Encode)EncodeFunctions.at("-base91-encode"))(input.data(), input.size(), result.data(), length);
+		if (resultCode > 0)
+			result.resize(resultCode);
+		input.clear();
+		output.assign(result.begin(), result.end());
+		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
 		std::ofstream file(output, std::ios::out | std::ios::binary);
 		file.write(reinterpret_cast<const char*>(input.data()), input.size());
@@ -165,6 +217,14 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		output.clear();
 		output.assign(input.begin(), input.end());
 		break;
+	case CRYPT_OPTIONS::OPTION_BASE10:
+		length = cryptography_libary::CalculateDecodeLength("--base10", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base10Decode)EncodeFunctions.at("-base10-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
 	case CRYPT_OPTIONS::OPTION_BASE16:
 		length = cryptography_libary::CalculateDecodeLength("--base16", input.size());
 		output.clear();
@@ -181,6 +241,22 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		if (resultCode > 0)
 			output.resize(resultCode);
 		break;
+	case CRYPT_OPTIONS::OPTION_BASE58:
+		length = cryptography_libary::CalculateDecodeLength("--base58", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base58Decode)EncodeFunctions.at("-base58-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE62:
+		length = cryptography_libary::CalculateDecodeLength("--base62", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base62Decode)EncodeFunctions.at("-base62-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
 	case CRYPT_OPTIONS::OPTION_BASE64:
 		length = cryptography_libary::CalculateDecodeLength("--base64", input.size());
 		output.clear();
@@ -194,6 +270,14 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		output.clear();
 		output.resize(length);
 		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(input.c_str(), input.size(), output.data(), length);
+		if (resultCode > 0)
+			output.resize(resultCode);
+		break;
+	case CRYPT_OPTIONS::OPTION_BASE91:
+		length = cryptography_libary::CalculateDecodeLength("--base91", input.size());
+		output.clear();
+		output.resize(length);
+		resultCode = ((Base91Decode)EncodeFunctions.at("-base91-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
 		break;
@@ -232,14 +316,10 @@ void cryptography_libary::ParseParameters(int argc, char* argv[], Rand& rand) {
 			}
 			i++;
 			break;
-		case hash("--import"):
-		case hash("-imp"):
+		case hash("--convert"):
+		case hash("-conv"):
 			rand.Type = RAND_TYPE::RAND_IMPORT;
 			rand.rand_option = GetOption(i, argv);
-			if (rand.rand_option == CRYPT_OPTIONS::OPTION_FILE) {
-				rand.Output = argv[i + 1];
-				i++;
-			}
 			rand.Value = argv[i + 1];
 			break;
 		case hash("-output"):
@@ -271,9 +351,9 @@ void cryptography_libary::RandStart(Rand& rand) {
 	case RAND_TYPE::RAND_IMPORT:
 		ValueDecode(rand.rand_option, rand.Value, result);
 		outputResult.resize(result.size());
-		((Import)SymmetryFunctions.at("-import"))(result.data(), result.size(), outputResult.data(), outputResult.size());
+		((Import)SymmetryFunctions.at("-convert"))(result.data(), result.size(), outputResult.data(), outputResult.size());
 		ValueEncode(rand.output_option, result, result_str);
-		std::cout << Hint("<Import>") << std::endl;
+		std::cout << Hint("<Convert>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
 		break;
 	}

@@ -36,22 +36,39 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
 
     const unsigned char* inputData = buffer.data() ? buffer.data() : reinterpret_cast<const unsigned char*>(cmd.value.c_str());
 
+    if (encodeType == "-base10-encode")
+        resultCode = ((Base10Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
     if (encodeType == "-base16-encode")
         resultCode = ((Base16Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
     if (encodeType == "-base32-encode")
         resultCode = ((Base32Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
+    if (encodeType == "-base58-encode")
+        resultCode = ((Base58Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
+    if (encodeType == "-base62-encode")
+        resultCode = ((Base62Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
     if (encodeType == "-base64-encode")
         resultCode = ((Base64Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
     if (encodeType == "-base85-encode")
         resultCode = ((Base85Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
+    if (encodeType == "-base91-encode")
+        resultCode = ((Base91Encode)EncodeFunctions.at(encodeType))(inputData, inputLength, reinterpret_cast<char*>(outputBuffer.data()), outputLength);
+
+    if (encodeType == "-base10-decode")
+        resultCode = ((Base10Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
     if (encodeType == "-base16-decode")
         resultCode = ((Base16Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
     if (encodeType == "-base32-decode")
         resultCode = ((Base32Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
+    if (encodeType == "-base58-decode")
+        resultCode = ((Base58Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
+    if (encodeType == "-base62-decode")
+        resultCode = ((Base62Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
     if (encodeType == "-base64-decode")
         resultCode = ((Base64Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
     if (encodeType == "-base85-decode")
         resultCode = ((Base85Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
+    if (encodeType == "-base91-decode")
+        resultCode = ((Base91Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
 
     if (resultCode < 0)
         std::cerr << Error("Encoding/Decoding failed for ") << Ask(mode) << Error(" with code: ") << Ask(std::to_string(resultCode)) << "\n";
