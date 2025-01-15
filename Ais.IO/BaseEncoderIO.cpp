@@ -2,41 +2,42 @@
 #include "BaseEncoderIO.h"
 
 // 字符串乘法：模擬大整數乘法
-std::string BigIntMultiply(const std::string& num1, int num2) {
-    std::string result;
+std::vector<unsigned char> BigIntMultiply(const std::vector<unsigned char>& num1, int num2) {
+    std::vector<unsigned char> result;
     int carry = 0;
 
-    for (auto it = num1.rbegin(); it != num1.rend(); ++it) {
-        int prod = (*it - '0') * num2 + carry;
-        result.push_back((prod % 10) + '0');
-        carry = prod / 10;
+    for (int i = num1.size() - 1; i >= 0; --i) {
+        int prod = (num1[i] - 48) * num2 + carry;
+        result.push_back((prod % 10) + 48);  // 存儲乘積的低 8 位
+        carry = prod / 10;  // 進位
     }
 
     while (carry > 0) {
-        result.push_back((carry % 10) + '0');
+        result.push_back((carry % 10) + 48);
         carry /= 10;
     }
 
-    std::reverse(result.begin(), result.end());
+    std::reverse(result.begin(), result.end());  // 恢復正序
     return result;
 }
 
 // 字符串加法：模擬大整數加法
-std::string BigIntAdd(const std::string& num1, int num2) {
-    std::string result = num1;
+std::vector<unsigned char> BigIntAdd(const std::vector<unsigned char>& num1, int num2) {
+    std::vector<unsigned char> result = num1;
     int carry = num2;
 
-    for (auto it = result.rbegin(); it != result.rend() && carry > 0; ++it) {
-        int sum = (*it - '0') + carry;
-        *it = (sum % 10) + '0';
-        carry = sum / 10;
+    for (int i = result.size() - 1; i >= 0 && carry > 0; --i) {
+        int sum = (result[i] - 48) + carry;
+        result[i] = (sum % 10) + 48;  // 存儲加法的結果
+        carry = sum / 10;  // 進位
     }
 
     while (carry > 0) {
-        result.insert(result.begin(), (carry % 10) + '0');
+        result.push_back((carry % 10) + 48);  // 在末尾插入進位
+        std::reverse(result.begin(), result.end());  // 最後反轉容器
         carry /= 10;
     }
-
+    
     return result;
 }
 
@@ -83,7 +84,7 @@ int Base10Encode(const unsigned char* input, const size_t inputSize, char* outpu
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
     // 將字節數組轉為一個大整數（儲存在字符串中）
-    std::string bigInt = "0";
+    std::vector<unsigned char> bigInt = {48};
     for (size_t i = 0; i < inputSize; ++i) {
         bigInt = BigIntMultiply(bigInt, 256);              // 左移 8 位
         bigInt = BigIntAdd(bigInt, static_cast<int>(input[i])); // 加上當前字節

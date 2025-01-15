@@ -40,14 +40,14 @@ Store your binary content, which can be used as sensitive data, identification n
 13. String
 
 ### Binary Mode Introduction
-| Mode      | Instruction                               | Use 
-|-----------|-------------------------------------------|--------------------------------------------------------------------------
-| Read      | `-r` `--read` `-rl` `--read-all`          | Read binary files, optional read all, read specific index, information.
-| Write     | `-w` `--write`                            | Write content to a binary file. This action will force overwrite the original file.
-| Append    | `-a` `--append`                           | Append content to the end of the binary file.
-| Insert    | `-i` `--insert`                           | Insert content into a binary file, you can choose to insert the index, or insert the information.
-| Remove    | `-rm` `--remove` `-rs` `--remove-index`   | Remove the contents of a binary file. You can choose to remove the index or remove the information.
-| Indexes   | `-id` `--indexes`                         | Displays the index list of binary files, which can be used for reading, inserting, and removing.
+| Mode      | Instruction                                            | Use 
+|-----------|--------------------------------------------------------|--------------------------------------------------------------------------
+| Read      | `-r` `--read` `-rl` `--read-all` `-ri` `--read-index`  | Read binary files, optional read all, read specific index, information etc...
+| Write     | `-w` `--write`                                         | Write content to a binary file. This action will force overwrite the original file.
+| Append    | `-a` `--append`                                        | Append content to the end of the binary file.
+| Insert    | `-i` `--insert`                                        | Insert content into a binary file, you can choose to insert the index, or insert the information.
+| Remove    | `-rm` `--remove` `-rs` `--remove-index`                | Remove the contents of a binary file. You can choose to remove the index or remove the information.
+| Indexes   | `-id` `--indexes`                                      | Displays the index list of binary files, which can be used for reading, inserting, and removing.
 
 ### Binary Type Introduction
 | Type Name             | Instruction   | Size (Bits)   | Size (Bytes)  | Data Range                                                | Use 
@@ -79,30 +79,34 @@ Store your binary content, which can be used as sensitive data, identification n
 ```sh
 # Example Binary File Instructions
 file="test.bin"
-
-# Binary Read All
-./aisio --read-all "$file"
+BASE="-base16"
 
 # Binary Indexes
 ./aisio --indexes "$file"
 
 # Binary Read
-./aisio --read "$file" -bool -byte -sbyte -short -ushort -int -uint -long -ulong -float -double -bytes -string
+./aisio --read "$BASE" "$file" -bool -byte -sbyte -short -ushort -int -uint -long -ulong -float -double -bytes -string
+
+# Binary Read Index
+./aisio --read-index "$BASE" "$file" 0 2 4 5~12 13*5 65+7*3
+
+# Binary Read All
+./aisio --read-all "$BASE" "$file"
 
 # Binary Write
-./aisio --write "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "This is Ais.IO Function Byte Array." -string "This is Ais.IO Function String."
+./aisio --write "$BASE" "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
 
 # Binary Append
-./aisio --append "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "This is Ais.IO Function Byte Array." -string "This is Ais.IO Function String."
+./aisio --append "$BASE" "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
 
 # Binary Insert
-./aisio --insert "$file" -bool true 0 -byte 255 0 -sbyte -128 0 -short 32767 0 -ushort 65535 0 -int 2147483647 0 -uint 4294967295 0 -long 9223372036854775807 0 -ulong 18446744073709551615 0 -float 3.1415927 0 -double 3.141592653589793 0 -bytes "This is Ais.IO Function Byte Array." 0 -string "This is Ais.IO Function String." 0
+./aisio --insert "$BASE" "$file" -bool true 0 -byte 255 0 -sbyte -128 0 -short 32767 0 -ushort 65535 0 -int 2147483647 0 -uint 4294967295 0 -long 9223372036854775807 0 -ulong 18446744073709551615 0 -float 3.1415927 0 -double 3.141592653589793 0 -bytes "0123456789ABCDEF0123456789ABCDEF" 0 -string "This is Ais.IO Function String." 0
 
 # Binary Remove
 ./aisio --remove "$file" -bool 0 1 -byte 2 1 -sbyte 4 2 -string 6 32
 
 # Binary Remove Index
-./aisio --remove-index "$file" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50
+./aisio --remove-index "$file" 0 2 4 5~12 13*5 65+7*3
 ```
 
 ---
@@ -111,18 +115,26 @@ file="test.bin"
 Base text encoding involves converting binary data into textual representations.
 
 ### Support Mode
-1. Base16 Encode/Decode
-2. Base32 Encode/Decode
-3. Base64 Encode/Decode
-4. Base85 Encode/Decode
+1. Base10 Encode/Decode
+2. Base16 Encode/Decode
+3. Base32 Encode/Decode
+4. Base58 Encode/Decode
+5. Base62 Encode/Decode
+6. Base64 Encode/Decode
+7. Base85 Encode/Decode
+8. Base91 Encode/Decode
 
 ### Base Text Encoding Introduction
 | Function  | Instruction       | Encode Length Formula     | Decode Length Formula | Use 
 |-----------|-------------------|---------------------------|-----------------------|-----------------------------------------------------------------------------
-| Base16    | `-b16` `--base16` | `n * 2 + 1`               | `n / 2`               | Encodes data as hexadecimal text, often used for debugging or checksums.
-| Base32    | `-b32` `--base32` | `((n + 4) / 5) * 8 + 1`   | `(n / 8) * 5`         | Encodes data in a 32-character alphabet, commonly used in QR codes or URLs.
-| Base64    | `-b64` `--base64` | `((n + 2) / 3) * 4 + 1`   | `(n / 4) * 3`         | Encodes binary data into ASCII text, widely used in data transmission, especially in emails and APIs.
-| Base85    | `-b85` `--base85` | `((n + 3) / 4) * 5 + 1`   | `(n / 5) * 4`         | Encodes binary data efficiently into text, offering better compression compared to Base64.
+| Base10    | `-b10` `--base10` | `n * 2.56 + 1`            | `m / 2.56`            | This encoding is commonly used for BigInt (arbitrary-precision integers).
+| Base16    | `-b16` `--base16` | `n * 2 + 1`               | `m / 2`               | Encodes data as hexadecimal text, often used for debugging or checksums.
+| Base32    | `-b32` `--base32` | `((n + 4) / 5) * 8 + 1`   | `(m / 8) * 5`         | Encodes data in a 32-character alphabet, commonly used in QR codes or URLs.
+| Base58    | `-b58` `--base58` | `n * 8 / 5.8 + 1`         | `m * 5.8 / 8`         | Base58 encoding is used primarily in Bitcoin, URL shorteners, file storage systems and other cryptocurrencies.
+| Base62    | `-b62` `--base62` | `n * 8 / 6.2 + 1`         | `m * 6.2 / 8`         | Base62 encoding is often used for URLs, unique identifiers, and short links.
+| Base64    | `-b64` `--base64` | `((n + 2) / 3) * 4 + 1`   | `(m / 4) * 3`         | Encodes binary data into ASCII text, widely used in data transmission, especially in emails and APIs.
+| Base85    | `-b85` `--base85` | `((n + 3) / 4) * 5 + 1`   | `(m / 5) * 4`         | Encodes binary data efficiently into text, offering better compression compared to Base64.
+| Base91    | `-b91` `--base91` | `n * 8 / 9.1 + 1`         | `m * 9.1 / 8`         | Base91 is often used in binary-to-text encoding applications where maximizing space savings is crucial.
 
 ### Formula Explanation
 
@@ -153,6 +165,12 @@ Base text encoding involves converting binary data into textual representations.
 
 #### *Base example shell*
 ```sh
+# Base10 Encode
+./aisio --base10 -encode "This is Base10 Encode/Decode."
+
+# Base10 Decode
+./aisio --base10 -decode "2275631377870141336533466315340532913972637215315185916509608405656878"
+
 # Base16 Encode
 ./aisio --base16 -encode "This is Base16 Encode/Decode."
 
@@ -165,6 +183,18 @@ Base text encoding involves converting binary data into textual representations.
 # Base32 Decode
 ./aisio --base32 -decode "KRUGS4ZANFZSAQTBONSTGMRAIVXGG33EMUXUIZLDN5SGKLQ="
 
+# Base58 Encode
+./aisio --base58 -encode "This is Base58 Encode/Decode."
+
+# Base58 Decode
+./aisio --base58 -decode "4qFPnPkVdmicitJgEZS1kVZHMXD55q1CmJ6MssHP"
+
+# Base62 Encode
+./aisio --base62 -encode "This is Base62 Encode/Decode."
+
+# Base62 Decode
+./aisio --base62 -decode "HcyJuDO7FzrCwYNWtbLv0nkZbFlzeZg5gRAMIYQ"
+
 # Base64 Encode
 ./aisio --base64 -encode "This is Base64 Encode/Decode."
 
@@ -176,6 +206,12 @@ Base text encoding involves converting binary data into textual representations.
 
 # Base85 Decode
 ./aisio --base85 -decode 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
+
+# Base91 Encode
+./aisio --base91 -encode "This is Base91 Encode/Decode."
+
+# Base91 Decode
+./aisio --base91 -decode 'nX,<:WRT$F,ue9QUz"y+|irMn<{vJT1T20DC'
 ```
 ---
 
@@ -501,3 +537,7 @@ BASE="-base16"
 ```
 
 ---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
