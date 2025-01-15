@@ -58,7 +58,7 @@ while [[ "$#" -gt 0 ]]; do
 			operation="$1"
 			shift
 			;;
-		-b16|-b32|-b64|-b85)
+		-b10|-b16|-b32|-b58|-b62|-b64|-b85|-b91)
 			operation="$1"
 			shift
 			;;
@@ -147,18 +147,30 @@ for ((i=1; i<=iterations; i++)); do
 			BinaryReadIndex
 			break
 			;;
+		-b10) 
+			BASE_10
+			;;	
 		-b16) 
 			BASE_16
 			;;
 		-b32) 
 			BASE_32
 			;;
+		-b58) 
+			BASE_58
+			;;
+		-b62) 
+			BASE_62
+			;;		
 		-b64) 
 			BASE_64
 			;;
 		-b85) 
 			BASE_85
 			;;
+		-b91) 
+			BASE_91
+			;;	
 		-gen)
 			Generate
 			;;

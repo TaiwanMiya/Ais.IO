@@ -109,6 +109,14 @@ BinaryReadIndex() {
 	./aisio --read-index "$BASE" "$file" $index_list
 }
 
+BASE_10() {
+	if [[ $encoder == '-e' ]]; then
+		./aisio --base10 -encode "This is Base10 Encode/Decode."
+	else
+		./aisio --base10 -decode "2275631377870141336533466315340532913972637215315185916509608405656878"
+	fi
+}
+
 BASE_16() {
 	if [[ $encoder == '-e' ]]; then
 		./aisio --base16 -encode "This is Base16 Encode/Decode."
@@ -125,6 +133,22 @@ BASE_32() {
 	fi
 }
 
+BASE_58() {
+	if [[ $encoder == '-e' ]]; then
+		./aisio --base58 -encode "This is Base58 Encode/Decode."
+	else
+		./aisio --base58 -decode "4qFPnPkVdmicitJgEZS1kVZHMXD55q1CmJ6MssHP"
+	fi
+}
+
+BASE_62() {
+	if [[ $encoder == '-e' ]]; then
+		./aisio --base62 -encode "This is Base62 Encode/Decode."
+	else
+		./aisio --base62 -decode "HcyJuDO7FzrCwYNWtbLv0nkZbFlzeZg5gRAMIYQ"
+	fi
+}
+
 BASE_64() {
 	if [[ $encoder == '-e' ]]; then
 		./aisio --base64 -encode "This is Base64 Encode/Decode."
@@ -138,6 +162,14 @@ BASE_85() {
 		./aisio --base85 -encode "This is Base85 Encode/Decode."
 	else
 		./aisio --base85 -decode 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
+	fi
+}
+
+BASE_91() {
+	if [[ $encoder == '-e' ]]; then
+		./aisio --base91 -encode "This is Base91 Encode/Decode."
+	else
+		./aisio --base91 -decode 'nX,<:WRT$F,ue9QUz\"y+|irMn<{vJT1T20DC'
 	fi
 }
 

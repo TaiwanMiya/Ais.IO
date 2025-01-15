@@ -74,52 +74,56 @@ CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 
 	"06" "Binary IO Remove" \
 	"07" "Binary IO Remove Index" \
 	"08" "Binary IO Read Index" \
-	"09" "Base 16 Encode/Decode" \
-	"10" "Base 32 Encode/Decode" \
-	"11" "Base 64 Encode/Decode" \
-	"12" "Base 85 Encode/Decode" \
-	"13" "Generate Random Key/Bytes" \
-	"14" "Import Key/Bytes" \
-	"15" "Aes ctr Encrypt/Decrypt" \
-	"16" "Aes cbc Encrypt/Decrypt" \
-	"17" "Aes cfb Encrypt/Decrypt" \
-	"18" "Aes ofb Encrypt/Decrypt" \
-	"19" "Aes ecb Encrypt/Decrypt" \
-	"20" "Aes gcm Encrypt/Decrypt" \
-	"21" "Aes ccm Encrypt/Decrypt" \
-	"22" "Aes xts Encrypt/Decrypt" \
-	"23" "Aes ocb Encrypt/Decrypt" \
-	"24" "Aes wrap Encrypt/Decrypt" \
-	"25" "Des cbc Encrypt/Decrypt" \
-	"26" "Des cfb Encrypt/Decrypt" \
-	"27" "Des ofb Encrypt/Decrypt" \
-	"28" "Des ecb Encrypt/Decrypt" \
-	"29" "Des wrap Encrypt/Decrypt" \
-	"30" "Hash MD5 Calculation"\
-	"31" "Hash MD5 SHA1 Calculation"\
-	"32" "Hash SHA1 Calculation"\
-	"33" "Hash SHA2 224 Calculation"\
-	"34" "Hash SHA2 256 Calculation"\
-	"35" "Hash SHA2 384 Calculation"\
-	"36" "Hash SHA2 512 Calculation"\
-	"37" "Hash SHA2 512 224 Calculation"\
-	"38" "Hash SHA2 512 256 Calculation"\
-	"39" "Hash SHA3 224 Calculation"\
-	"40" "Hash SHA3 256 Calculation"\
-	"41" "Hash SHA3 384 Calculation"\
-	"42" "Hash SHA3 512 Calculation"\
-	"43" "Hash SHA3 KE 128 Calculation"\
-	"44" "Hash SHA3 KE 256 Calculation"\
-	"45" "Hash BLAKE2S 256 Calculation"\
-	"46" "Hash BLAKE2B 512 Calculation"\
-	"47" "Hash SM3 Calculation"\
-	"48" "Hash RIPEMD160 Calculation"\
-	"49" "Rsa Generate Paramters" \
-	"50" "Rsa Generate PEM Keys" \
-	"51" "Rsa Generate DER Keys" \
-	"52" "Rsa Export Paramters" \
-	"53" "Rsa Export Keys" \
-        "54" "Exit" 3>&1 1>&2 2>&3)
+	"09" "Base 10 Encode/Decode" \
+	"10" "Base 16 Encode/Decode" \
+	"11" "Base 32 Encode/Decode" \
+	"12" "Base 58 Encode/Decode" \
+	"13" "Base 62 Encode/Decode" \
+	"14" "Base 64 Encode/Decode" \
+	"15" "Base 85 Encode/Decode" \
+	"16" "Base 91 Encode/Decode" \
+	"17" "Generate Random Key/Bytes" \
+	"18" "Import Key/Bytes" \
+	"19" "Aes ctr Encrypt/Decrypt" \
+	"20" "Aes cbc Encrypt/Decrypt" \
+	"21" "Aes cfb Encrypt/Decrypt" \
+	"22" "Aes ofb Encrypt/Decrypt" \
+	"23" "Aes ecb Encrypt/Decrypt" \
+	"24" "Aes gcm Encrypt/Decrypt" \
+	"25" "Aes ccm Encrypt/Decrypt" \
+	"26" "Aes xts Encrypt/Decrypt" \
+	"27" "Aes ocb Encrypt/Decrypt" \
+	"28" "Aes wrap Encrypt/Decrypt" \
+	"29" "Des cbc Encrypt/Decrypt" \
+	"30" "Des cfb Encrypt/Decrypt" \
+	"31" "Des ofb Encrypt/Decrypt" \
+	"32" "Des ecb Encrypt/Decrypt" \
+	"33" "Des wrap Encrypt/Decrypt" \
+	"34" "Hash MD5 Calculation"\
+	"35" "Hash MD5 SHA1 Calculation"\
+	"36" "Hash SHA1 Calculation"\
+	"37" "Hash SHA2 224 Calculation"\
+	"38" "Hash SHA2 256 Calculation"\
+	"39" "Hash SHA2 384 Calculation"\
+	"40" "Hash SHA2 512 Calculation"\
+	"41" "Hash SHA2 512 224 Calculation"\
+	"42" "Hash SHA2 512 256 Calculation"\
+	"43" "Hash SHA3 224 Calculation"\
+	"44" "Hash SHA3 256 Calculation"\
+	"45" "Hash SHA3 384 Calculation"\
+	"46" "Hash SHA3 512 Calculation"\
+	"47" "Hash SHA3 KE 128 Calculation"\
+	"48" "Hash SHA3 KE 256 Calculation"\
+	"49" "Hash BLAKE2S 256 Calculation"\
+	"50" "Hash BLAKE2B 512 Calculation"\
+	"51" "Hash SM3 Calculation"\
+	"52" "Hash RIPEMD160 Calculation"\
+	"53" "Rsa Generate Paramters" \
+	"54" "Rsa Generate PEM Keys" \
+	"55" "Rsa Generate DER Keys" \
+	"56" "Rsa Export Paramters" \
+	"57" "Rsa Export Keys" \
+	"58" "Exit" 3>&1 1>&2 2>&3)
 
 start_time=$(date +%s%N)
 for ((i=1; i<=iterations; i++)); do
@@ -152,141 +156,153 @@ for ((i=1; i<=iterations; i++)); do
 			break
 			;;
 		09)
-			BASE_16
+			BASE_10
 			;;
 		10)
-			BASE_32
+			BASE_16
 			;;
 		11)
-			BASE_64
+			BASE_32
 			;;
 		12)
-			BASE_85
+			BASE_58
 			;;
 		13)
-			Generate
-			;;
+			BASE_62
+			;;	
 		14)
-			Import
+			BASE_64
 			;;
 		15)
-			AES_CTR
+			BASE_85
 			;;
 		16)
-			AES_CBC
-			;;
+			BASE_91
+			;;	
 		17)
-			AES_CFB
+			Generate
 			;;
 		18)
-			AES_OFB
+			Import
 			;;
 		19)
-			AES_ECB
+			AES_CTR
 			;;
 		20)
-			AES_GCM
+			AES_CBC
 			;;
 		21)
-			AES_CCM
+			AES_CFB
 			;;
 		22)
-			AES_XTS
+			AES_OFB
 			;;
 		23)
-			AES_OCB
+			AES_ECB
 			;;
 		24)
-			AES_WRAP
+			AES_GCM
 			;;
 		25)
-			DES_CBC
+			AES_CCM
 			;;
 		26)
-			DES_CFB
+			AES_XTS
 			;;
 		27)
-			DES_OFB
+			AES_OCB
 			;;
 		28)
-			DES_ECB
+			AES_WRAP
 			;;
 		29)
-			DES_WRAP
+			DES_CBC
 			;;
 		30)
-			HASH_MD5
+			DES_CFB
 			;;
 		31)
-			HASH_MD5_SHA1
+			DES_OFB
 			;;
 		32)
-			HASH_SHA1
+			DES_ECB
 			;;
 		33)
-			HASH_SHA2_224
+			DES_WRAP
 			;;
 		34)
-			HASH_SHA2_256
+			HASH_MD5
 			;;
 		35)
-			HASH_SHA2_384
+			HASH_MD5_SHA1
 			;;
 		36)
-			HASH_SHA2_512
+			HASH_SHA1
 			;;
 		37)
-			HASH_SHA2_512_224
+			HASH_SHA2_224
 			;;
 		38)
-			HASH_SHA2_512_256
+			HASH_SHA2_256
 			;;
 		39)
-			HASH_SHA3_224
+			HASH_SHA2_384
 			;;
 		40)
-			HASH_SHA3_256
+			HASH_SHA2_512
 			;;
 		41)
-			HASH_SHA3_384
+			HASH_SHA2_512_224
 			;;
 		42)
-			HASH_SHA3_512
+			HASH_SHA2_512_256
 			;;
 		43)
-			HASH_SHA3_KE_128
+			HASH_SHA3_224
 			;;
 		44)
-			HASH_SHA3_KE_256
+			HASH_SHA3_256
 			;;
 		45)
-			HASH_BLAKE2S_256
+			HASH_SHA3_384
 			;;
 		46)
-			HASH_BLAKE2B_512
+			HASH_SHA3_512
 			;;
 		47)
-			HASH_SM3
+			HASH_SHA3_KE_128
 			;;
 		48)
-			HASH_RIPEMD160
+			HASH_SHA3_KE_256
 			;;
 		49)
-			RSA_Generate_Paramters
+			HASH_BLAKE2S_256
 			;;
 		50)
-			RSA_Generate_Keys_PEM
+			HASH_BLAKE2B_512
 			;;
 		51)
-			RSA_Generate_Keys_DER
+			HASH_SM3
 			;;
 		52)
-			RSA_Export_Paramters
+			HASH_RIPEMD160
 			;;
 		53)
-			RSA_Export_Keys
+			RSA_Generate_Paramters
 			;;
 		54)
+			RSA_Generate_Keys_PEM
+			;;
+		55)
+			RSA_Generate_Keys_DER
+			;;
+		56)
+			RSA_Export_Paramters
+			;;
+		57)
+			RSA_Export_Keys
+			;;
+		58)
 			echo "Exit..."
 			exit 0
 			;;
