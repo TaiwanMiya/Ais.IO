@@ -1,46 +1,6 @@
 ﻿#include "pch.h"
 #include "BaseEncoderIO.h"
 
-// 字符串乘法：模擬大整數乘法
-std::vector<unsigned char> BigIntMultiply(const std::vector<unsigned char>& num1, int num2) {
-    std::vector<unsigned char> result;
-    int carry = 0;
-
-    for (int i = num1.size() - 1; i >= 0; --i) {
-        int prod = (num1[i] - 48) * num2 + carry;
-        result.push_back((prod % 10) + 48);  // 存儲乘積的低 8 位
-        carry = prod / 10;  // 進位
-    }
-
-    while (carry > 0) {
-        result.push_back((carry % 10) + 48);
-        carry /= 10;
-    }
-
-    std::reverse(result.begin(), result.end());  // 恢復正序
-    return result;
-}
-
-// 字符串加法：模擬大整數加法
-std::vector<unsigned char> BigIntAdd(const std::vector<unsigned char>& num1, int num2) {
-    std::vector<unsigned char> result = num1;
-    int carry = num2;
-
-    for (int i = result.size() - 1; i >= 0 && carry > 0; --i) {
-        int sum = (result[i] - 48) + carry;
-        result[i] = (sum % 10) + 48;  // 存儲加法的結果
-        carry = sum / 10;  // 進位
-    }
-
-    while (carry > 0) {
-        result.push_back((carry % 10) + 48);  // 在末尾插入進位
-        std::reverse(result.begin(), result.end());  // 最後反轉容器
-        carry /= 10;
-    }
-    
-    return result;
-}
-
 static int HexCharToValue(char c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
@@ -49,7 +9,7 @@ static int HexCharToValue(char c) {
 }
 
 size_t Base10Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil(inputSize * std::log10(256.0)) + 1 : std::ceil(inputSize * std::log10(10.0) / std::log10(256.0));
+    return isEncode ? std::ceil(inputSize * std::log10(256)) + 1 : std::ceil(inputSize * std::log10(10) / std::log10(256.0));
 }
 
 size_t Base16Length(const size_t inputSize, bool isEncode) {
@@ -69,76 +29,95 @@ size_t Base85Length(const size_t inputSize, bool isEncode) {
 }
 
 size_t Base58Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(58.0)) + 1 : std::floor(inputSize * std::log2(58.0) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(58)) + 1 : std::floor(inputSize * std::log2(58) / 8);
 }
 
 size_t Base62Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(62.0)) + 1 : std::floor(inputSize * std::log2(62.0) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(62)) + 1 : std::floor(inputSize * std::log2(62) / 8);
 }
 
 size_t Base91Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(91.0)) + 1 : std::floor(inputSize * std::log2(91.0) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(91)) + 1 : std::floor(inputSize * std::log2(91) / 8);
 }
 
 int Base10Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
-    // 將字節數組轉為一個大整數（儲存在字符串中）
-    std::vector<unsigned char> bigInt = {48};
+    // 預估結果最大長度，避免重複內存分配
+    size_t maxResultSize = static_cast<size_t>(std::ceil(inputSize * std::log10(256))) + 1;
+    if (outputSize < maxResultSize) return -2; // 確認輸出緩衝區大小
+
+    // 初始化大整數，初始值為 0
+    std::vector<unsigned char> bigInt(1, '0');
+
+    // 將輸入轉換為大整數 (Base256 轉 Base10)
     for (size_t i = 0; i < inputSize; ++i) {
-        bigInt = BigIntMultiply(bigInt, 256);              // 左移 8 位
-        bigInt = BigIntAdd(bigInt, static_cast<int>(input[i])); // 加上當前字節
+        int carry = static_cast<int>(input[i]); // 當前位的進位值
+        // 大整數的每一位進行更新 (模擬乘法與加法)
+        for (int j = bigInt.size() - 1; j >= 0; --j) {
+            int value = (bigInt[j] - '0') * 256 + carry; // 將每位放大
+            bigInt[j] = (value % 10) + '0';              // 更新當前位
+            carry = value / 10;                         // 更新進位
+        }
+        // 處理剩餘的進位
+        while (carry > 0) {
+            bigInt.insert(bigInt.begin(), (carry % 10) + '0');
+            carry /= 10;
+        }
     }
 
-    // 結果複製到輸出
-    if (bigInt.size() >= outputSize)
-        return -2; // 確認輸出緩衝區大小
+    // 去掉前導零
+    std::vector<unsigned char>::iterator firstNonZero = std::find_if(bigInt.begin(), bigInt.end(), [](unsigned char c) { return c != '0'; });
+    if (firstNonZero == bigInt.end()) {
+        // 全為零，結果應該是 "0"
+        output[0] = '0';
+        output[1] = '\0';
+        return 1;
+    }
 
-    std::copy(bigInt.begin(), bigInt.end(), output);
-    output[bigInt.size()] = '\0';
-
-    return static_cast<int>(bigInt.size()); // 返回十進制字符串
+    // 複製結果到輸出緩衝區
+    size_t resultSize = std::distance(firstNonZero, bigInt.end());
+    if (resultSize >= outputSize) return -2; // 確認輸出緩衝區大小足夠
+    std::copy(firstNonZero, bigInt.end(), output);
+    output[resultSize] = '\0'; // 添加結束符
+    return static_cast<int>(resultSize); // 返回結果大小
 }
 
 int Base10Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
     if (!input || !output) return -1; // 防禦性檢查，避免空指針
 
-    // 檢查輸入是否為合法的十進位字串
-    std::string bigInt(input, inputSize);
-    if (!std::all_of(bigInt.begin(), bigInt.end(), ::isdigit)) {
+    // 確認輸入是否為有效的十進制字符串
+    if (!std::all_of(input, input + inputSize, ::isdigit)) {
         return -4; // 非法字符
     }
 
+    // 初始化結果數據結構，預估最大輸出長度
+    std::vector<unsigned char> bigInt(input, input + inputSize);
+
+    // 反向將大整數 (Base10) 轉換為 Base256
     std::vector<unsigned char> result;
-
-    // 解碼邏輯：按位除法提取字節
-    while (!bigInt.empty() && bigInt != "0") {
-        std::string newBigInt;
-        int remainder = 0;
-
-        for (char c : bigInt) {
-            int current = remainder * 10 + (c - '0');
-            newBigInt += (current / 256) + '0'; // 新的高位數值
-            remainder = current % 256;         // 目前位元組的值
+    while (!bigInt.empty() && !(bigInt.size() == 1 && bigInt[0] == '0')) {
+        int carry = 0;
+        for (size_t i = 0; i < bigInt.size(); ++i) {
+            int value = carry * 10 + (bigInt[i] - '0');
+            bigInt[i] = static_cast<unsigned char>((value / 256) + '0'); // 更新高位
+            carry = value % 256;                                       // 保留餘數作為低位
         }
 
-        // 提取低位元組
-        result.push_back(static_cast<unsigned char>(remainder));
+        // 提取最低有效字節並添加到結果
+        result.push_back(static_cast<unsigned char>(carry));
 
-        // 移除前導零
-        size_t firstNonZero = newBigInt.find_first_not_of('0');
-        if (firstNonZero != std::string::npos)
-            bigInt = newBigInt.substr(firstNonZero);
-        else
-            bigInt.clear(); // 如果沒有非零字符，清空字串
+        // 去掉前導零
+        while (!bigInt.empty() && bigInt[0] == '0') {
+            bigInt.erase(bigInt.begin());
+        }
     }
 
-    // 確認輸出緩衝區大小是否足夠
-    if (result.size() > outputSize)
-        return -2; // 輸出緩衝區不足
+    // 確認輸出緩衝區是否足夠
+    if (result.size() > outputSize) return -2;
 
-    // 將結果複製到輸出緩衝區
-    std::reverse(result.begin(), result.end()); // 恢復位元組順序
+    // 反轉結果以恢復正確順序
+    std::reverse(result.begin(), result.end());
     std::copy(result.begin(), result.end(), output);
 
     return static_cast<int>(result.size()); // 返回解碼後的字節數
@@ -268,205 +247,197 @@ int Base32Decode(const char* input, const size_t inputSize, unsigned char* outpu
 }
 
 int Base58Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+    if (!input || !output) return -1;
 
-    // 將字節數據視為大整數
-    uint64_t num = 0;
-    for (size_t i = 0; i < inputSize; ++i)
-        num = (num << 8) | input[i];
+    // 預估最大輸出大小
+    size_t maxResultSize = static_cast<size_t>(std::ceil((inputSize * 8) / std::log2(58.0))) + 1;
+    if (outputSize < maxResultSize) return -3;
 
-    // 計算輸出所需的大小
-    size_t requiredSize = static_cast<size_t>(std::ceil((inputSize * 8) / std::log2(58.0))) + 1;
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
+    // 初始化固定大小的緩衝區
+    const size_t bufferSize = inputSize * 2;
+    unsigned char* buffer = new unsigned char[bufferSize];
+    size_t bufferLen = 0;
 
-    // 初始化結果緩衝區
-    std::vector<unsigned char> temp(input, input + inputSize);
-    std::vector<char> result;
+    // 初始化數據
+    for (size_t i = 0; i < inputSize; ++i) {
+        unsigned int carry = input[i];
+        for (size_t j = 0; j < bufferLen; ++j) {
+            carry += buffer[j] << 8; // 高位左移並加上進位
+            buffer[j] = carry % 58; // 更新當前位
+            carry /= 58;            // 更新進位
+        }
 
-    // 處理前導零字節
+        // 添加新的進位
+        while (carry > 0) {
+            buffer[bufferLen++] = carry % 58;
+            carry /= 58;
+        }
+    }
+
+    // 添加前導零
     size_t zeroCount = 0;
-    while (zeroCount < temp.size() && temp[zeroCount] == 0) {
-        result.push_back(Base58_Chars[0]);
-        ++zeroCount;
+    for (size_t i = 0; i < inputSize && input[i] == 0; ++i) {
+        output[zeroCount++] = Base58_Chars[0];
     }
 
-    // 編碼數據
-    while (!temp.empty()) {
-        uint32_t carry = 0;
-        for (size_t i = 0; i < temp.size(); ++i) {
-            carry = (carry << 8) + temp[i];
-            temp[i] = static_cast<unsigned char>(carry / 58);
-            carry %= 58;
-        }
-
-        result.push_back(Base58_Chars[carry]);
-        while (!temp.empty() && temp[0] == 0) {
-            temp.erase(temp.begin());
-        }
+    // 轉換結果
+    for (size_t i = 0; i < bufferLen; ++i) {
+        output[zeroCount + i] = Base58_Chars[buffer[bufferLen - 1 - i]];
     }
 
-    // 反轉結果並複製到輸出
-    std::reverse(result.begin(), result.end());
-    if (result.size() >= outputSize)
-        return -2; // 確認輸出緩衝區大小
-    std::copy(result.begin(), result.end(), output);
-    output[result.size()] = '\0';
-
-    return static_cast<int>(result.size());
+    // 添加結束符
+    output[zeroCount + bufferLen] = '\0';
+    return static_cast<int>(zeroCount + bufferLen);
 }
 
 int Base58Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+    if (!input || !output) return -1; // 防禦性檢查
 
-    // 計算輸出所需的大小
-    size_t requiredSize = static_cast<size_t>(std::floor(inputSize * std::log2(58.0) / 8));
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
-
-    // 建立 Base58 字符的查找表
+    // 建立 Base58 字符查找表
     int Base58Lookup[256];
     std::fill(std::begin(Base58Lookup), std::end(Base58Lookup), -1);
     for (size_t i = 0; i < 58; ++i) {
         Base58Lookup[static_cast<unsigned char>(Base58_Chars[i])] = i;
     }
 
-    // 檢查輸入字元是否合法
-    for (size_t i = 0; i < inputSize; ++i) {
-        if (Base58Lookup[static_cast<unsigned char>(input[i])] == -1)
-            return -4; // 非法字符
-    }
+    // 初始化解碼緩衝區
+    const size_t bufferSize = inputSize * 2;
+    unsigned long long* buffer = new unsigned long long[bufferSize];
+    size_t bufferLen = 0;
 
     // 解碼過程
-    std::vector<unsigned char> temp;
     for (size_t i = 0; i < inputSize; ++i) {
-        uint32_t carry = Base58Lookup[static_cast<unsigned char>(input[i])];
-        for (size_t j = 0; j < temp.size(); ++j) {
-            carry += temp[j] * 58;
-            temp[j] = static_cast<unsigned char>(carry & 0xFF);
+        int value = Base58Lookup[static_cast<unsigned char>(input[i])];
+        if (value == -1) return -4; // 非法字符
+
+        uint64_t carry = value;
+        for (size_t j = 0; j < bufferLen; ++j) {
+            carry += buffer[j] * 58;
+            buffer[j] = carry & 0xFF;
             carry >>= 8;
         }
+
+        // 添加新的進位
         while (carry > 0) {
-            temp.push_back(static_cast<unsigned char>(carry & 0xFF));
+            buffer[bufferLen++] = carry & 0xFF;
             carry >>= 8;
         }
     }
 
-    // 處理前導零字元
+    // 處理前導零
     size_t zeroCount = 0;
-    while (zeroCount < inputSize && input[zeroCount] == Base58_Chars[0]) {
-        temp.push_back(0);
-        ++zeroCount;
+    for (size_t i = 0; i < inputSize && input[i] == Base58_Chars[0]; ++i) {
+        zeroCount++;
     }
 
-    // 反轉數據並複製到輸出
-    std::reverse(temp.begin(), temp.end());
-    if (temp.size() > outputSize)
-        return -2; // 輸出緩衝區不足
-    std::copy(temp.begin(), temp.end(), output);
+    // 確認輸出緩衝區大小
+    size_t resultSize = zeroCount + bufferLen;
+    if (resultSize > outputSize) return -2;
 
-    return static_cast<int>(temp.size());
+    // 將結果複製到輸出緩衝區
+    std::fill(output, output + zeroCount, 0);
+    for (size_t i = 0; i < bufferLen; ++i) {
+        output[zeroCount + i] = static_cast<unsigned char>(buffer[bufferLen - 1 - i]);
+    }
+
+    return static_cast<int>(resultSize);
 }
 
 int Base62Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+    if (!input || !output) return -1;
 
-    // 將字節數據視為大整數
-    uint64_t num = 0;
-    for (size_t i = 0; i < inputSize; ++i)
-        num = (num << 8) | input[i];
+    // 預估最大輸出大小
+    size_t maxResultSize = static_cast<size_t>(std::ceil((inputSize * 8) / std::log2(62.0))) + 1;
+    if (outputSize < maxResultSize) return -3;
 
-    // 計算輸出所需的大小
-    size_t requiredSize = static_cast<size_t>(std::ceil((inputSize * 8) / std::log2(62.0))) + 1;
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
+    // 初始化固定大小的緩衝區
+    const size_t bufferSize = inputSize * 2;
+    uint8_t* buffer = new uint8_t[bufferSize];
+    size_t bufferLen = 0;
 
-    // 初始化結果緩衝區
-    std::vector<unsigned char> temp(input, input + inputSize);
-    std::vector<char> result;
+    // 初始化數據
+    for (size_t i = 0; i < inputSize; ++i) {
+        unsigned int carry = input[i];
+        for (size_t j = 0; j < bufferLen; ++j) {
+            carry += buffer[j] << 8; // 高位左移並加上進位
+            buffer[j] = carry % 62; // 更新當前位
+            carry /= 62;            // 更新進位
+        }
 
-    // 處理前導零字節
+        // 添加新的進位
+        while (carry > 0) {
+            buffer[bufferLen++] = carry % 62;
+            carry /= 62;
+        }
+    }
+
+    // 添加前導零
     size_t zeroCount = 0;
-    while (zeroCount < temp.size() && temp[zeroCount] == 0) {
-        result.push_back(Base62_Chars[0]);
-        ++zeroCount;
+    for (size_t i = 0; i < inputSize && input[i] == 0; ++i) {
+        output[zeroCount++] = Base62_Chars[0];
     }
 
-    // 編碼數據
-    while (!temp.empty()) {
-        uint32_t carry = 0;
-        for (size_t i = 0; i < temp.size(); ++i) {
-            carry = (carry << 8) + temp[i];
-            temp[i] = static_cast<unsigned char>(carry / 62);
-            carry %= 62;
-        }
-
-        result.push_back(Base62_Chars[carry]);
-        while (!temp.empty() && temp[0] == 0) {
-            temp.erase(temp.begin());
-        }
+    // 轉換結果
+    for (size_t i = 0; i < bufferLen; ++i) {
+        output[zeroCount + i] = Base62_Chars[buffer[bufferLen - 1 - i]];
     }
 
-    // 反轉結果並複製到輸出
-    std::reverse(result.begin(), result.end());
-    if (result.size() >= outputSize)
-        return -2; // 確認輸出緩衝區大小
-    std::copy(result.begin(), result.end(), output);
-    output[result.size()] = '\0';
-
-    return static_cast<int>(result.size());
+    // 添加結束符
+    output[zeroCount + bufferLen] = '\0';
+    return static_cast<int>(zeroCount + bufferLen);
 }
 
 int Base62Decode(const char* input, const size_t inputSize, unsigned char* output, const size_t outputSize) {
-    if (!input || !output) return -1; // 防禦性編程，檢查指針是否為空
+    if (!input || !output) return -1; // 防禦性檢查
 
-    // 計算輸出所需的大小
-    size_t requiredSize = static_cast<size_t>(std::floor(inputSize * std::log2(62.0) / 8));
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
-
-    // 建立 Base62 字符的查找表
+    // 建立 Base62 字符查找表
     int Base62Lookup[256];
     std::fill(std::begin(Base62Lookup), std::end(Base62Lookup), -1);
     for (size_t i = 0; i < 62; ++i) {
         Base62Lookup[static_cast<unsigned char>(Base62_Chars[i])] = i;
     }
 
-    // 檢查輸入字元是否合法
-    for (size_t i = 0; i < inputSize; ++i) {
-        if (Base62Lookup[static_cast<unsigned char>(input[i])] == -1)
-            return -4; // 非法字符
-    }
+    // 初始化解碼緩衝區
+    const size_t bufferSize = inputSize * 2;
+    unsigned long long* buffer = new unsigned long long[bufferSize];
+    size_t bufferLen = 0;
 
     // 解碼過程
-    std::vector<unsigned char> temp;
     for (size_t i = 0; i < inputSize; ++i) {
-        uint32_t carry = Base62Lookup[static_cast<unsigned char>(input[i])];
-        for (size_t j = 0; j < temp.size(); ++j) {
-            carry += temp[j] * 62;
-            temp[j] = static_cast<unsigned char>(carry & 0xFF);
+        int value = Base62Lookup[static_cast<unsigned char>(input[i])];
+        if (value == -1) return -4; // 非法字符
+
+        uint64_t carry = value;
+        for (size_t j = 0; j < bufferLen; ++j) {
+            carry += buffer[j] * 62;
+            buffer[j] = carry & 0xFF;
             carry >>= 8;
         }
+
+        // 添加新的進位
         while (carry > 0) {
-            temp.push_back(static_cast<unsigned char>(carry & 0xFF));
+            buffer[bufferLen++] = carry & 0xFF;
             carry >>= 8;
         }
     }
 
-    // 處理前導零字元
+    // 處理前導零
     size_t zeroCount = 0;
-    while (zeroCount < inputSize && input[zeroCount] == Base62_Chars[0]) {
-        temp.push_back(0);
-        ++zeroCount;
+    for (size_t i = 0; i < inputSize && input[i] == Base62_Chars[0]; ++i) {
+        zeroCount++;
     }
 
-    // 反轉數據並複製到輸出
-    std::reverse(temp.begin(), temp.end());
-    if (temp.size() > outputSize)
-        return -2; // 輸出緩衝區不足
-    std::copy(temp.begin(), temp.end(), output);
+    // 確認輸出緩衝區大小
+    size_t resultSize = zeroCount + bufferLen;
+    if (resultSize > outputSize) return -2;
 
-    return static_cast<int>(temp.size());
+    // 將結果複製到輸出緩衝區
+    std::fill(output, output + zeroCount, 0);
+    for (size_t i = 0; i < bufferLen; ++i) {
+        output[zeroCount + i] = static_cast<unsigned char>(buffer[bufferLen - 1 - i]);
+    }
+
+    return static_cast<int>(resultSize);
 }
 
 int Base64Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {

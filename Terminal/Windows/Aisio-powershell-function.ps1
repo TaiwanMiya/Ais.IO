@@ -93,6 +93,17 @@ function BinaryReadIndex {
     Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
 }
 
+function BASE_10 {
+    if ($encoder -eq '-e') {
+        Write-Host "Ais Base 10 Encode..."
+        .\aisio "--base10" "-encode" "This is Base10 Encode/Decode."
+    }
+    else {
+        Write-Host "Ais Base 10 Decode..."
+        .\aisio "--base10" "-decode" "2275631377870141336533466315340532913972637215315185916509608405656878"
+    }
+}
+
 function BASE_16 {
     if ($encoder -eq '-e') {
         Write-Host "Ais Base 16 Encode..."
@@ -103,6 +114,7 @@ function BASE_16 {
         .\aisio "--base16" "-decode" "546869732069732042617365313620456E636F64652F4465636F64652E"
     }
 }
+
 function BASE_32 {
     if ($encoder -eq '-e') {
         Write-Host "Ais Base 32 Encode..."
@@ -113,6 +125,29 @@ function BASE_32 {
         .\aisio "--base32" "-decode" "KRUGS4ZANFZSAQTBONSTGMRAAES_IVXGG33EMUXUIZLDN5SGKLQ="
     }
 }
+
+function BASE_58 {
+    if ($encoder -eq '-e') {
+        Write-Host "Ais Base 58 Encode..."
+        .\aisio "--base58" "-encode" "This is Base58 Encode/Decode."
+    }
+    else {
+        Write-Host "Ais Base 58 Decode..."
+        .\aisio "--base58" "-decode" "4qFPnPkVdmicitJgEZS1kVZHMXD55q1CmJ6MssHP"
+    }
+}
+
+function BASE_62 {
+    if ($encoder -eq '-e') {
+        Write-Host "Ais Base 62 Encode..."
+        .\aisio "--base62" "-encode" "This is Base62 Encode/Decode."
+    }
+    else {
+        Write-Host "Ais Base 62 Decode..."
+        .\aisio "--base62" "-decode" "HcyJuDO7FzrCwYNWtbLv0nkZbFlzeZg5gRAMIYQ"
+    }
+}
+
 function BASE_64 {
     if ($encoder -eq '-e') {
         Write-Host "Ais Base 64 Encode..."
@@ -123,6 +158,7 @@ function BASE_64 {
         .\aisio "--base64" "-decode" "VGhpcyBpcyBCYXNlNjQgRW5jb2RlL0RlY29kZS4="
     }
 }
+
 function BASE_85 {
     if ($encoder -eq '-e') {
         Write-Host "Ais Base 85 Encode..."
@@ -131,6 +167,17 @@ function BASE_85 {
     else {
         Write-Host "Ais Base 85 Decode..."
         .\aisio "--base85" "-decode" 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
+    }
+}
+
+function BASE_91 {
+    if ($encoder -eq '-e') {
+        Write-Host "Ais Base 91 Encode..."
+        .\aisio "--base91" "-encode" "This is Base91 Encode/Decode."
+    }
+    else {
+        Write-Host "Ais Base 91 Decode..."
+        .\aisio "--base91" "-decode" 'nX,<:WRT$F,ue9QUz\"y+|irMn<{vJT1T20DC'
     }
 }
 

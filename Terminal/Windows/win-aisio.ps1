@@ -29,10 +29,14 @@ while ($parameter.Count -gt 0) {
         '-ri'   { $operation = '-ri';               $parameter = $parameter[1..$parameter.Count]; break }
 
         # BASE
+        '-b10'  { $operation = '-b10';              $parameter = $parameter[1..$parameter.Count]; break }
         '-b16'  { $operation = '-b16';              $parameter = $parameter[1..$parameter.Count]; break }
         '-b32'  { $operation = '-b32';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b58'  { $operation = '-b58';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b62'  { $operation = '-b62';              $parameter = $parameter[1..$parameter.Count]; break }
         '-b64'  { $operation = '-b64';              $parameter = $parameter[1..$parameter.Count]; break }
         '-b85'  { $operation = '-b85';              $parameter = $parameter[1..$parameter.Count]; break }
+        '-b91'  { $operation = '-b91';              $parameter = $parameter[1..$parameter.Count]; break }
 
         # RAND
         '-gen'  { if ($operation -eq '-rsa') { $mode = '-gen'; } else { $operation = '-gen'; }
@@ -159,10 +163,14 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-ri'   { BinaryReadIndex }
 
         # BASE
+        '-b10'  { BASE_10 }
         '-b16'  { BASE_16 }
         '-b32'  { BASE_32 }
+        '-b58'  { BASE_58 }
+        '-b62'  { BASE_62 }
         '-b64'  { BASE_64 }
         '-b85'  { BASE_85 }
+        '-b91'  { BASE_91 }
 
         # RAND
         '-gen'  { Generate }
