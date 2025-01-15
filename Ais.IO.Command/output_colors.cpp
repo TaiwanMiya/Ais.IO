@@ -36,6 +36,35 @@ bool CheckRedirects() {
 #endif
 }
 
+void MoveCursorUp(int lines) {
+    std::cout << "\033[" << lines << "A"; // 移動游標向上若干行
+}
+
+void MoveCursorDown(int lines) {
+    std::cout << "\033[" << lines << "B"; // 移動游標向下若干行
+}
+
+void ClearLine() {
+    std::cout << "\033[2K"; // 清除當前行
+}
+
+void ShowProgressBar(int progress, int total, int width, char strip, bool show_current) {
+    float percentage = static_cast<float>(progress) / total;
+    int pos = width * percentage;
+
+    std::cout << "[";
+    for (int i = 0; i < width; ++i) {
+        if (i < pos)
+            std::cout << strip;
+        else if (show_current && i == pos)
+            std::cout << ">";
+        else
+            std::cout << " ";
+    }
+    std::cout << "] " << int(percentage * 100.0) << " %\r";
+    std::cout.flush();
+}
+
 void ListColorTable() {
     std::cout << "Shows 8 style colors:" << std::endl;
 

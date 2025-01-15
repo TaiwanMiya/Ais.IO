@@ -679,6 +679,26 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (argc >= 2 && std::string(argv[1]) == "--bar") {
+        const int total = 100;
+        int width = argc > 2 && IsULong(argv[2]) ? std::stoi(argv[2]) : 100;
+        char strip = argc > 3 ? argv[3][0] : '=';
+        bool show_current = argc > 4 && std::string(argv[4]) == "true" ? true: false;
+
+        std::cout << "Start Progress Bar Running...\n" << std::endl;
+        for (int i = 0; i <= total; ++i) {
+            MoveCursorUp(1);
+            ClearLine();
+            std::cout << "Test:" << i << std::endl;
+            MoveCursorDown(1);
+            ShowProgressBar(i, total, width, strip, show_current);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+
+        std::cout << std::endl;
+        return 0;
+    }
+
     if (!ParseArguments(argc, argv, mode, filePath, binary_bytes_option, commands)) {
         usage_libary::ShowUsage();
         return 1;

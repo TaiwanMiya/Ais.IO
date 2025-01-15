@@ -21,6 +21,10 @@ enum TERMINAL_STYLE {
 };
 
 bool CheckRedirects();
+void MoveCursorUp(int lines);
+void MoveCursorDown(int lines);
+void ClearLine();
+void ShowProgressBar(int progress, int total, int width = 50, char strip = '=', bool show_current = true);
 void ListColorTable();
 std::string Hide(std::string str);
 std::string Error(std::string str);
