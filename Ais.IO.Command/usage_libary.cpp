@@ -126,11 +126,11 @@ void usage_libary::ShowBinaryUsage() {
     std::cout << "" << std::endl;
 
     std::cout << Hint("    Supported [--way]:\n");
-    std::cout << "        " << Mark("1") << ". " << Info("<content>") << Warn("                       -> The <-bytes> data Read/Write/Append/Insert by Row data.") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-b16 | -base16]") << Warn("                -> The <-bytes> data Read/Write/Append/Insert by Base16 data.") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-b32 | -base32]") << Warn("                -> The <-bytes> data Read/Write/Append/Insert by Base32 data.") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("[-b64 | -base64]") << Warn("                -> The <-bytes> data Read/Write/Append/Insert by Base64 data.") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("[-b85 | -base85]") << Warn("                -> The <-bytes> data Read/Write/Append/Insert by Base85 data.") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("<content>") << Warn("                      -> The <-bytes> data Read/Write/Append/Insert by Row data.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-b16 | -base16]") << Warn("               -> The <-bytes> data Read/Write/Append/Insert by Base16 data.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-b32 | -base32]") << Warn("               -> The <-bytes> data Read/Write/Append/Insert by Base32 data.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-b64 | -base64]") << Warn("               -> The <-bytes> data Read/Write/Append/Insert by Base64 data.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-b85 | -base85]") << Warn("               -> The <-bytes> data Read/Write/Append/Insert by Base85 data.") << std::endl;
     std::cout << "" << std::endl;
 
     std::cout << Hint("    Supported <--index>:\n");
@@ -321,9 +321,9 @@ void usage_libary::ShowHashUsage() {
     std::cout << "" << std::endl;
 
     std::cout << Hint("    Supported [--salt-pos]:\n");
-    std::cout << "        " << Mark("1") << ". " << Info("[-fir | -first]") << Warn("            -> Add Salt (First, can be added)") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-mid | -middle]") << Warn("           -> Add Salt (Middle, can be added)") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-las | -last]") << Warn("             -> Add Salt (Last, can be added)") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("[-fir | -first]") << Warn("           -> Add Salt (First, can be added)") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-mid | -middle]") << Warn("          -> Add Salt (Middle, can be added)") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-las | -last]") << Warn("            -> Add Salt (Last, can be added)") << std::endl;
     std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
@@ -351,28 +351,68 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "    " << Mark(" 4") << ". " << Hint("RSA Export Public Key & Private Key from Paramters:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-exp | -export] [-key | -keys] [-param | -params | -paramter | -paramters] [--way] [--paramters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("RSA Confirms Whether the Public Key is Valid:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("RSA Confirms Whether the Private Key is Valid:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("RSA Encryption:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-en | -encrypt] [-pub | -public | -public-key] [--keys-way] [-pt | -plain-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("RSA Decryption:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-de | -decrypt] [-priv | -private | -private-key] [--keys-way] [-ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("RSA Signed Data:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("RSA Verify Data:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
 
     std::cout << Hint("    Supported [--keys-way]:\n");
-    std::cout << "        " << Mark("1") << ". " << Info("-pem") << Warn("                       -> PEM Raw data.") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("-pem [-f | -file] <path>]") << Warn("  -> PEM Archival data.") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("-der") << Warn("                       -> DER Raw data.") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("-der [-b16 | -base16]") << Warn("      -> DER Base16 data.") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("-der [-b32 | -base32]") << Warn("      -> DER Base32 data.") << std::endl;
-    std::cout << "        " << Mark("6") << ". " << Info("-der [-b64 | -base64]") << Warn("      -> DER Base64 data.") << std::endl;
-    std::cout << "        " << Mark("7") << ". " << Info("-der [-b85 | -base85]") << Warn("      -> DER Base85 data.") << std::endl;
-    std::cout << "        " << Mark("8") << ". " << Info("-der [-f | -file] <path>") << Warn("   -> DER Archival data.") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("-pem") << Warn("                                     -> PEM Raw data.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-pem [-f | -file] <path>]") << Warn("                -> PEM Archival data.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-der") << Warn("                                     -> DER Raw data.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-der [-b16 | -base16]") << Warn("                    -> DER Base16 data.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("-der [-b32 | -base32]") << Warn("                    -> DER Base32 data.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("-der [-b64 | -base64]") << Warn("                    -> DER Base64 data.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("-der [-b85 | -base85]") << Warn("                    -> DER Base85 data.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("-der [-f | -file] <path>") << Warn("                 -> DER Archival data.") << std::endl;
     std::cout << "" << std::endl;
 
     std::cout << Hint("    Supported [--paramters-list]:\n");
-    std::cout << "        " << Mark("1") << ". " << Info("[-n | -modulus]") << Warn("                           -> Modulus data by [--way].") << std::endl;
-    std::cout << "        " << Mark("2") << ". " << Info("[-e | -public-exponent]") << Warn("                   -> Public Exponent data by [--way].") << std::endl;
-    std::cout << "        " << Mark("3") << ". " << Info("[-d | -private-exponent]") << Warn("                  -> Private Exponent data by [--way].") << std::endl;
-    std::cout << "        " << Mark("4") << ". " << Info("[-p | -prime1 | -first-prime-factor]") << Warn("      -> First Prime Factor data by [--way].") << std::endl;
-    std::cout << "        " << Mark("5") << ". " << Info("[-q | -prime2 | -second-prime-factor]") << Warn("     -> Second Prime Factor data by [--way].") << std::endl;
-    std::cout << "        " << Mark("6") << ". " << Info("[-dp | -exponent1 | -first-crt-exponent]") << Warn("  -> First CRT Exponent data by [--way].") << std::endl;
-    std::cout << "        " << Mark("7") << ". " << Info("[-dq | -exponent2 | -second-crt-exponent]") << Warn(" -> Second CRT Exponent data by [--way].") << std::endl;
-    std::cout << "        " << Mark("8") << ". " << Info("[-qi | -coefficient | -crt-coefficient]") << Warn("   -> CRT Coefficient data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("[-n | -modulus]") << Warn("                          -> Modulus data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-e | -public-exponent]") << Warn("                  -> Public Exponent data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-d | -private-exponent]") << Warn("                 -> Private Exponent data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-p | -prime1 | -first-prime-factor]") << Warn("     -> First Prime Factor data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-q | -prime2 | -second-prime-factor]") << Warn("    -> Second Prime Factor data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("[-dp | -exponent1 | -first-crt-exponent]") << Warn(" -> First CRT Exponent data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("[-dq | -exponent2 | -second-crt-exponent]") << Warn("-> Second CRT Exponent data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("[-qi | -coefficient | -crt-coefficient]") << Warn("  -> CRT Coefficient data by [--way].") << std::endl;
     std::cout << "" << std::endl;
+
+    std::cout << Hint("    Supported [--hash-type]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-md5") << Warn("                                     -> Hash MD5 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-md5-sha1") << Warn("                                -> Hash MD5-SHA1 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-sha1") << Warn("                                    -> Hash SHA1 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-sha224 | -sha2-224]") << Warn("                    -> Hash SHA2-224 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-sha256 | -sha2-256]") << Warn("                    -> Hash SHA2-256 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("[-sha384 | -sha2-384]") << Warn("                    -> Hash SHA2-384 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("[-sha512 | -sha2-512]") << Warn("                    -> Hash SHA2-512 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("[-sha512-224 | -sha2-512-224]") << Warn("            -> Hash SHA2-512-224 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 9") << ". " << Info("[-sha512-256 | -sha2-512-256]") << Warn("            -> Hash SHA2-512-256 Signature.") << std::endl;
+    std::cout << "        " << Mark("10") << ". " << Info("-sha3-224") << Warn("                                -> Hash SHA3-224 Signature.") << std::endl;
+    std::cout << "        " << Mark("11") << ". " << Info("-sha3-256") << Warn("                                -> Hash SHA3-256 Signature.") << std::endl;
+    std::cout << "        " << Mark("12") << ". " << Info("-sha3-384") << Warn("                                -> Hash SHA3-384 Signature.") << std::endl;
+    std::cout << "        " << Mark("13") << ". " << Info("-sha3-512") << Warn("                                -> Hash SHA3-512 Signature.") << std::endl;
+    std::cout << "        " << Mark("14") << ". " << Info("[-shake128 | -sha3-ke-128]") << Warn("               -> Hash SHA3-KE-128 Signature.") << std::endl;
+    std::cout << "        " << Mark("15") << ". " << Info("[-shake256 | -sha3-ke-256]") << Warn("               -> Hash SHA3-KE-256 Signature.") << std::endl;
+    std::cout << "        " << Mark("16") << ". " << Info("[-blake2s | -blake256 | -blake2s-256") << Warn("     -> Hash BLAKE2S-256 Signature.") << std::endl;
+    std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512") << Warn("     -> Hash BLAKE2B-512 Signature.") << std::endl;
+    std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Signature.") << std::endl;
+    std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Signature.") << std::endl;
+
 }

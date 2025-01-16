@@ -187,7 +187,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidHelper = {
-        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-r", "-rsa"}
+        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-h", "-hash"},  {"-r", "-rsa"}
     };
 
     std::unordered_set<std::string> validBytesOptions = {
@@ -661,6 +661,8 @@ void LoadFunctions() {
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
     RsaFunctions["-encrypt"] = GET_PROC_ADDRESS(Lib, "RsaEncryption");
     RsaFunctions["-decrypt"] = GET_PROC_ADDRESS(Lib, "RsaDecryption");
+    RsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "RsaSigned");
+    RsaFunctions["-verify"] = GET_PROC_ADDRESS(Lib, "RsaVerify");
 
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");

@@ -428,12 +428,18 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-en"):
 		case rsa_execute::hash("-encrypt"):
 			rsa.Mode = RSA_MODE::RSA_ENCRPTION;
-			i++;
 			break;
 		case rsa_execute::hash("-de"):
 		case rsa_execute::hash("-decrypt"):
 			rsa.Mode = RSA_MODE::RSA_DECRPTION;
-			i++;
+			break;
+		case rsa_execute::hash("-sign"):
+		case rsa_execute::hash("-signed"):
+			rsa.Mode = RSA_MODE::RSA_SIGNATURE;
+			break;
+		case rsa_execute::hash("-ver"):
+		case rsa_execute::hash("-verify"):
+			rsa.Mode = RSA_MODE::RSA_VERIFICATION;
 			break;
 		case rsa_execute::hash("-pub"):
 		case rsa_execute::hash("-public"):
@@ -455,6 +461,20 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			rsa.Password = argv[i + 1];
 			i++;
 			break;
+		case rsa_execute::hash("-sg"):
+		case rsa_execute::hash("-signature"):
+			rsa.signature_option = cryptography_libary::GetOption(i, argv);
+			rsa.Signature = argv[i + 1];
+			i++;
+			break;
+		case rsa_execute::hash("-hash"): {
+			std::string hashmode = ToLower(argv[i + 1]);
+			if (HashMode.find(hashmode) != HashMode.end()) {
+				rsa.Hash = HashMode[hashmode];
+				i++;
+			}
+			break;
+		}
 		case rsa_execute::hash("-alg"):
 		case rsa_execute::hash("-algorithm"):
 			rsa_execute::ParseAlgorithm(i, argv, rsa);
@@ -530,16 +550,22 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			rsa.QI = argv[i + 1];
 			i++;
 			break;
-		case hash("-pt"):
-		case hash("-plain-text"):
+		case rsa_execute::hash("-pt"):
+		case rsa_execute::hash("-plain-text"):
 			rsa.plaintext_option = cryptography_libary::GetOption(i, argv);
 			rsa.PlainText = argv[i + 1];
 			i++;
 			break;
-		case hash("-ct"):
-		case hash("-cipher-text"):
+		case rsa_execute::hash("-ct"):
+		case rsa_execute::hash("-cipher-text"):
 			rsa.ciphertext_option = cryptography_libary::GetOption(i, argv);
 			rsa.CipherText = argv[i + 1];
+			i++;
+			break;
+		case rsa_execute::hash("-dat"):
+		case rsa_execute::hash("-data"):
+			rsa.data_option = cryptography_libary::GetOption(i, argv);
+			rsa.Data = argv[i + 1];
 			i++;
 			break;
 		case rsa_execute::hash("-out"):
@@ -613,6 +639,12 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_DECRPTION:
 		Decrypt(rsa);
+		break;
+	case RSA_MODE::RSA_SIGNATURE:
+		Signed(rsa);
+			break;
+	case RSA_MODE::RSA_VERIFICATION:
+		Verify(rsa);
 		break;
 	}
 }
@@ -1030,7 +1062,20 @@ void rsa_execute::Encrypt(Rsa& rsa) {
 	std::vector<unsigned char> ciphertext;
 	cryptography_libary::ValueDecode(rsa.publickey_option, rsa.PublicKey, publicKey);
 	cryptography_libary::ValueDecode(rsa.plaintext_option, rsa.PlainText, plaintext);
-	ciphertext.resize(publicKey.size() * plaintext.size());
+
+	RSA_CHECK_PUBLIC_KEY pub = {
+		rsa.KeyFormat,
+		publicKey.data(),
+		publicKey.size()
+	};
+	((RsaCheckPublicKey)RsaFunctions.at("-pub-check"))(&pub);
+	if (pub.IS_KEY_OK)
+		ciphertext.resize(pub.KEY_LENGTH);
+	else {
+		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Error("Rsa get public key failed.") << std::endl;
+	}
+
 	RSA_ENCRYPT encrypt = {
 		rsa.KeyFormat,
 		publicKey.data(),
@@ -1040,11 +1085,16 @@ void rsa_execute::Encrypt(Rsa& rsa) {
 		plaintext.size()
 	};
 	int result_size = ((RsaEncryption)RsaFunctions.at("-encrypt"))(&encrypt);
-	if (result_size > -1)
+	if (result_size != -1) {
 		ciphertext.resize(result_size);
-	std::cout << Hint("<RSA Encrypt>") << std::endl;
-	cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
-	std::cout << Ask(rsa.Output) << std::endl;
+		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
+		std::cout << Ask(rsa.Output) << std::endl;
+	}
+	else {
+		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Error("Rsa encryption failed.") << std::endl;
+	}
 }
 
 void rsa_execute::Decrypt(Rsa& rsa) {
@@ -1055,7 +1105,22 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
 	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
 	cryptography_libary::ValueDecode(rsa.ciphertext_option, rsa.CipherText, ciphertext);
-	plaintext.resize(privateKey.size() * ciphertext.size());
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+	if (priv.IS_KEY_OK)
+		plaintext.resize(priv.KEY_LENGTH);
+	else {
+		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Error("Rsa get private key failed.") << std::endl;
+	}
+
 	RSA_DECRYPT decrypt = {
 		rsa.KeyFormat,
 		privateKey.data(),
@@ -1067,9 +1132,91 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 		ciphertext.size()
 	};
 	int result_size = ((RsaDecryption)RsaFunctions.at("-decrypt"))(&decrypt);
-	if (result_size > -1)
+	if (result_size != -1) {
 		plaintext.resize(result_size);
-	std::cout << Hint("<RSA Decrypt>") << std::endl;
-	cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
-	std::cout << Ask(rsa.Output) << std::endl;
+		std::cout << Hint("<RSA Decrypt>") << std::endl;
+		cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
+		std::cout << Ask(rsa.Output) << std::endl;
+	}
+	else {
+		std::cout << Hint("<RSA Decrypt>") << std::endl;
+		std::cout << Error("Rsa decryption failed.") << std::endl;
+	}
+}
+
+void rsa_execute::Signed(Rsa& rsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	cryptography_libary::ValueDecode(rsa.data_option, rsa.Data, data);
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+	if (priv.IS_KEY_OK)
+		signature.resize(priv.KEY_LENGTH);
+	else {
+		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Error("Rsa get private key failed.") << std::endl;
+	}
+
+	RSA_SIGNED sign = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		data.data(),
+		signature.data(),
+		privateKey.size(),
+		pemPass.size(),
+		data.size(),
+		rsa.Hash
+	};
+	int result_size = ((RsaSigned)RsaFunctions.at("-signed"))(&sign);
+	if (result_size != -1) {
+		signature.resize(result_size);
+		std::cout << Hint("<RSA Signed>") << std::endl;
+		cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
+		std::cout << Ask(rsa.Output) << std::endl;
+	}
+	else {
+		std::cout << Hint("<RSA Signed>") << std::endl;
+		std::cout << Error("Rsa sign failed.") << std::endl;
+	}
+}
+
+void rsa_execute::Verify(Rsa& rsa) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(rsa.publickey_option, rsa.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(rsa.data_option, rsa.Data, data);
+	cryptography_libary::ValueDecode(rsa.signature_option, rsa.Signature, signature);
+
+	RSA_VERIFY verify = {
+		rsa.KeyFormat,
+		publicKey.data(),
+		data.data(),
+		signature.data(),
+		publicKey.size(),
+		data.size(),
+		signature.size(),
+		rsa.Hash
+	};
+	((RsaVerify)RsaFunctions.at("-verify"))(&verify);
+	if (verify.IS_VALID) {
+		std::cout << Hint("<RSA Signed>") << std::endl;
+		std::cout << Ask("Verification Success!") << std::endl;
+	}
+	else {
+		std::cout << Hint("<RSA Signed>") << std::endl;
+		std::cout << Error("Verification Failure!") << std::endl;
+	}
 }

@@ -203,6 +203,30 @@ struct RSA_DECRYPT {
     size_t CIPHER_TEXT_LENGTH;
 };
 
+struct RSA_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct RSA_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
 EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
 EXT RSAIO_API int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check);
@@ -218,3 +242,5 @@ EXT RSAIO_API int RsaExportParameters(RSA_EXPORT* params);
 EXT RSAIO_API int RsaExportKeys(RSA_EXPORT* params);
 EXT RSAIO_API int RsaEncryption(RSA_ENCRYPT* encrypt);
 EXT RSAIO_API int RsaDecryption(RSA_DECRYPT* decrypt);
+EXT RSAIO_API int RsaSigned(RSA_SIGNED* sign);
+EXT RSAIO_API int RsaVerify(RSA_VERIFY* verify);

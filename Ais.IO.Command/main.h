@@ -120,6 +120,8 @@ enum RSA_MODE : unsigned long long {
     RSA_CHECK_PRIVATE = 5,
     RSA_ENCRPTION = 6,
     RSA_DECRPTION = 7,
+    RSA_SIGNATURE = 8,
+    RSA_VERIFICATION = 9,
 };
 
 enum SYMMETRY_CRYPTER {
@@ -265,6 +267,8 @@ struct Rsa {
     std::string Password;
     std::string PlainText;
     std::string CipherText;
+    std::string Data;
+    std::string Signature;
     std::string Output;
     size_t KeyLength = 0;
 
@@ -274,12 +278,15 @@ struct Rsa {
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS data_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS signature_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
     SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
     int AlgorithmSize = 256;
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
+    HASH_TYPE Hash = HASH_TYPE::HASH_SHA2_256;
 };
 
 #pragma pack(push, 1)
@@ -712,6 +719,30 @@ struct RSA_DECRYPT {
     size_t CIPHER_TEXT_LENGTH;
 };
 
+struct RSA_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct RSA_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -890,6 +921,8 @@ typedef int (*RsaExportParameters)(RSA_EXPORT*);
 typedef int (*RsaExportKeys)(RSA_EXPORT*);
 typedef int (*RsaEncryption)(RSA_ENCRYPT*);
 typedef int (*RsaDecryption)(RSA_DECRYPT*);
+typedef int (*RsaSigned)(RSA_SIGNED*);
+typedef int (*RsaVerify)(RSA_VERIFY*);
 #pragma endregion
 
 extern std::unordered_map<std::string, void*> ReadFunctions;
