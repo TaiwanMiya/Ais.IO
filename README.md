@@ -10,6 +10,7 @@ The repository contains binary file operations, Base encoding, and the use of en
 3. [AES Cryptography](#AES-Cryptography)
 4. [DES Cryptography](#DES-Cryptography)
 5. [HASH Calculation](#HASH-Calculation)
+6. [Ais IO License](#License)
 
 ---
 
@@ -136,6 +137,27 @@ Base text encoding involves converting binary data into textual representations.
 | Base85    | `-b85` `--base85` | `((n + 3) / 4) * 5 + 1`   | `(m / 5) * 4`         | Encodes binary data efficiently into text, offering better compression compared to Base64.
 | Base91    | `-b91` `--base91` | `n * 8 / 9.1 + 1`         | `m * 9.1 / 8`         | Base91 is often used in binary-to-text encoding applications where maximizing space savings is crucial.
 
+### Base Encoder Ranking
+| Encoding | Safety (15%) | Complexity (10%) | Widely (20%) | Recognizability (20%) | Usability (15%) | Speed (20%) | Score (1~10) |
+|----------|--------------|------------------|--------------|-----------------------|-----------------|-------------|--------------|
+| Base16   | 6            | 5                | 10           | 10                    | 10              | 9           | *`8.3`*      |
+| Base64   | 7            | 6                | 10           | 6                     | 9               | 9           | *`7.6`*      |
+| Base32   | 7            | 6                | 7            | 6                     | 8               | 9           | *`6.8`*      |
+| Base62   | 8            | 7                | 8            | 7                     | 8               | 4           | *`6.7`*      |
+| Base58   | 8            | 7                | 7            | 7                     | 8               | 4           | *`6.5`*      |
+| Base91   | 8            | 7                | 5            | 6                     | 6               | 9           | *`6.4`*      |
+| Base85   | 7            | 6                | 4            | 6                     | 6               | 9           | *`5.9`*      |
+| Base10   | 5            | 4                | 3            | 5                     | 5               | 2           | *`3.8`*      |
+
+### *Base Encoder Scoring formula*
+ - Total score = (Security × 15%) + (Complexity × 10%) + (Broadness × 20%) + (Recognizability x 20%) + (Usability x 15%) + (Speed x 20%)
+ - Security : Evaluated based on resistance to attacks, integrity protection and uniqueness requirements.
+ - Complexity : Consider the difficulty, efficiency, and user-friendliness of implementation.
+ - Extensiveness : Based on current technical standards and actual application frequency.
+ - Recognizability : The score is based on whether the encoded result is easy for humans to recognize.
+ - Usability : Consider ease of user operation and ubiquity of tool support.
+ - Speed : Consider the speed of encoding and decoding, including internal logic issues.
+
 ### Formula Explanation
 
 1. **Encode Length Formula**:
@@ -211,7 +233,7 @@ Base text encoding involves converting binary data into textual representations.
 ./aisio --base91 -encode "This is Base91 Encode/Decode."
 
 # Base91 Decode
-./aisio --base91 -decode 'nX,<:WRT$F,ue9QUz"y+|irMn<{vJT1T20DC'
+./aisio --base91 -decode 'nX,<:WRT$F,ue9QUz\"y+|irMn<{vJT1T20DC'
 ```
 ---
 
@@ -247,16 +269,16 @@ AES (Advanced Encryption Standard) supports multiple encryption modes for secure
 ### Aes Ranking
 | Mode  | Safety (40%)  | Complex (30%) | Widely (30%)  | Score (1~10)  | Reason
 |-------|---------------|---------------|---------------|---------------|-------------------------------------------------
-| GCM   | 10            | 8             | 10            | 9.4           | Efficient, secure, and widely used in modern encrypted transmission protocols (such as TLS, IPSec).
-| OCB   | 10            | 7             | 6             | 8.0           | It has extremely high security and excellent performance, but its application scope is limited due to patent restrictions.
-| CCM   | 9             | 7             | 7             | 7.9           | Provides integrity protection and is suitable for embedded and low-power devices, but is slightly less efficient than GCM.
-| XTS   | 8             | 6             | 8             | 7.6           | The best choice for storage encryption, designed to solve the problem of disk and sector duplication, and widely used in disk encryption systems.
-| WRAP  | 9             | 6             | 7             | 7.7           | A mode dedicated to key protection, with high security but narrow application scope.
-| CTR   | 8             | 9             | 9             | 8.5           | Efficient and easy to implement, suitable for stream data encryption, but lacks integrity protection.
-| CBC   | 7             | 7             | 8             | 7.5           | Traditional mode, suitable for old systems, but vulnerable to padding attacks.
-| CFB   | 6             | 8             | 6             | 6.9           | Suitable for streaming data encryption, but gradually replaced by more efficient modes.
-| OFB   | 6             | 8             | 5             | 6.5           | Similar to CTR, but lacks built-in integrity protection and has limited applications.
-| ECB   | 3             | 10            | 2             | 5.2           | Simple and efficient, but extremely unsafe, not recommended.
+| GCM   | 10            | 8             | 10            | *`9.4`*       | Efficient, secure, and widely used in modern encrypted transmission protocols (such as TLS, IPSec).
+| CTR   | 8             | 9             | 9             | *`8.5`*       | Efficient and easy to implement, suitable for stream data encryption, but lacks integrity protection.
+| OCB   | 10            | 7             | 6             | *`8.0`*       | It has extremely high security and excellent performance, but its application scope is limited due to patent restrictions.
+| CCM   | 9             | 7             | 7             | *`7.9`*       | Provides integrity protection and is suitable for embedded and low-power devices, but is slightly less efficient than GCM.
+| WRAP  | 9             | 6             | 7             | *`7.7`*       | A mode dedicated to key protection, with high security but narrow application scope.
+| XTS   | 8             | 6             | 8             | *`7.6`*       | The best choice for storage encryption, designed to solve the problem of disk and sector duplication, and widely used in disk encryption systems.
+| CBC   | 7             | 7             | 8             | *`7.5`*       | Traditional mode, suitable for old systems, but vulnerable to padding attacks.
+| CFB   | 6             | 8             | 6             | *`6.9`*       | Suitable for streaming data encryption, but gradually replaced by more efficient modes.
+| OFB   | 6             | 8             | 5             | *`6.5`*       | Similar to CTR, but lacks built-in integrity protection and has limited applications.
+| ECB   | 3             | 10            | 2             | *`5.2`*       | Simple and efficient, but extremely unsafe, not recommended.
 
 ### *Aes Scoring formula*
  - Total score = (Security × 40%) + (Complexity × 30%) + (Broadness × 30%)
@@ -349,11 +371,11 @@ DES (Data Encryption Standard) is used for secure communication in legacy system
 ### Ranking
 | Mode  | Safety (40%)  | Complex (30%) | Widely (30%)  | Score (1~10)  | Reason
 |-------|---------------|---------------|---------------|---------------|----------------------------------------------------------------
-| WRAP  | 6             | 6             | 5             | 5.7           | Dedicated to key management, it has high security, but its application scope is narrow and its 3DES encryption performance is low.
-| CBC   | 5             | 6             | 6             | 5.6           | A common pattern in legacy systems, suitable for block encryption, but security is limited by IV management and the risk of padding attacks.
-| CFB   | 4             | 6             | 4             | 4.6           | Stream encryption mode is suitable for old instant messaging. It has insufficient security and relatively poor performance, and its application is gradually decreasing.
-| OFB   | 4             | 6             | 3             | 4.3           | Similar to CFB, but with a simpler mode, narrower application, and no integrity protection.
-| ECB   | 2             | 8             | 2             | 3.4           | Simple and efficient, but extremely insecure, it is only suitable for special scenarios without sensitive data (such as data alignment testing).
+| WRAP  | 6             | 6             | 5             | *`5.7`*       | Dedicated to key management, it has high security, but its application scope is narrow and its 3DES encryption performance is low.
+| CBC   | 5             | 6             | 6             | *`5.6`*       | A common pattern in legacy systems, suitable for block encryption, but security is limited by IV management and the risk of padding attacks.
+| CFB   | 4             | 6             | 4             | *`4.6`*       | Stream encryption mode is suitable for old instant messaging. It has insufficient security and relatively poor performance, and its application is gradually decreasing.
+| OFB   | 4             | 6             | 3             | *`4.3`*       | Similar to CFB, but with a simpler mode, narrower application, and no integrity protection.
+| ECB   | 2             | 8             | 2             | *`3.4`*       | Simple and efficient, but extremely insecure, it is only suitable for special scenarios without sensitive data (such as data alignment testing).
 
 ### *Des Scoring formula*
  - Total score = (Security × 40%) + (Complexity × 30%) + (Broadness × 30%)
@@ -419,6 +441,15 @@ Hash functions provide data integrity by generating fixed-length digests.
 18. SM3
 19. RIPEMD160
 
+### Salt Addition Method
+- `-salt`: Add salt content in hash calculation.
+- `-fir`: Add salt at the beginning (front) of the input data.
+- `-mid`: Add salt at the middle (center) of the input data.
+- `-las`: Add salt at the end (tail) of the input data.
+
+### Sha3-KE
+SHA3-KE (SHA3 with Keyed-Hash): This variant supports arbitrary-length hash outputs. You can specify the length of the hash output with the `-len` flag. The supported lengths are typically 128-bit and 256-bit, but they can be configured to any length required for specific cryptographic tasks.
+
 ### Hash Calculation Introduction
 | Hash Type     | Introduction      | Variable Introduction                 | Use
 |---------------|-------------------|---------------------------------------|------------------------------------------------------------
@@ -445,32 +476,31 @@ Hash functions provide data integrity by generating fixed-length digests.
 ### Ranking
 | Hash Type         | Safety (40%)  | Complex (30%) | Widely (30%)  | Score (1~10)  | Reason
 |-------------------|---------------|---------------|---------------|---------------|-------------------------------------------------------------------------
-| SHA3-256          | 10            | 8             | 9             | 9.1           | It has high security, strong anti-collision ability, and gradually increases in popularity, making it suitable for cryptographic applications and scenarios with high security requirements.
-| SHA2-256          | 9             | 8             | 10            | 9.0           | Industry standard, widely used, strong anti-attack capability, suitable for most application scenarios.
-| BLAKE2B-512       | 9             | 9             | 8             | 8.9           | Efficient and safe, supports configurable length output, suitable for performance-sensitive applications, and second only to the SHA series in popularity.
-| SHA3-512          | 10            | 7             | 7             | 8.7           | Provides the highest security, but is not as widely used as SHA2.
-| SHA2-512          | 9             | 8             | 8             | 8.7           | It is suitable for scenarios with high security requirements, such as digital signatures and blockchain, but its computational efficiency is slightly lower.
-| SHA3-384          | 10            | 7             | 6             | 8.5           | High security, suitable for scenarios that require higher security, but its application popularity is limited.
-| SHA2-384          | 9             | 7             | 7             | 8.2           | Suitable for applications with medium to high security requirements. It has a higher computational cost and is less popular than SHA2-256.
-| SHA3-224          | 9             | 8             | 6             | 8.0           | It is suitable for scenarios that require lightweight and high security, and has great potential for future applications.
-| SHA2-224          | 8             | 8             | 7             | 7.9           | The choice for lightweight security requirements, suitable for embedded applications.
-| BLAKE2S-256       | 8             | 9             | 6             | 7.9           | It is efficient and lightweight, suitable for scenarios with limited resources, such as IoT devices, but its application popularity is slightly lower.
-| SM3               | 8             | 7             | 7             | 7.8           | It is suitable for Chinese cryptographic standard scenarios. Its collision resistance and security are not as good as SHA3, but it has advantages in specific applications.
-| RIPEMD160         | 7             | 8             | 7             | 7.5           | Used in specific scenarios such as Bitcoin address generation, with limited security and popularity and moderate performance.
-| SHA3-KE-256       | 9             | 8             | 5             | 7.5           | Variable output length, suitable for flexible scenarios, high security, but relatively low popularity.
-| SHA3-KE-128       | 8             | 8             | 5             | 7.3           | Variable output length, suitable for flexible scenarios, but less secure and popular than SHA3-KE-256.
-| SHA2-512-256      | 9             | 7             | 6             | 7.3           | A truncated version of SHA-512, suitable for scenarios that require a fixed output length and medium to high security.
-| SHA2-512-224      | 8             | 7             | 6             | 7.1           | A truncated version of SHA-512 that has similar applications to SHA2-224, but is less commonly used in real-world applications.
-| SHA1              | 5             | 8             | 6             | 6.2           | It is considered unsafe but still has legacy applications in old systems suitable for low security requirements.
-| MD5-SHA1          | 5             | 9             | 5             | 6.0           | Related to legacy applications in TLS 1.2, but not as secure.
-| MD5               | 3             | 9             | 6             | 5.4           | Fast but completely insecure, only suitable for non-security verification scenarios.
+| SHA3-256          | 10            | 8             | 9             | *`9.1`*       | It has high security, strong anti-collision ability, and gradually increases in popularity, making it suitable for cryptographic applications and scenarios with high security requirements.
+| SHA2-256          | 9             | 8             | 10            | *`9.0`*       | Industry standard, widely used, strong anti-attack capability, suitable for most application scenarios.
+| BLAKE2B-512       | 9             | 9             | 8             | *`8.9`*       | Efficient and safe, supports configurable length output, suitable for performance-sensitive applications, and second only to the SHA series in popularity.
+| SHA3-512          | 10            | 7             | 7             | *`8.7`*       | Provides the highest security, but is not as widely used as SHA2.
+| SHA2-512          | 9             | 8             | 8             | *`8.7`*       | It is suitable for scenarios with high security requirements, such as digital signatures and blockchain, but its computational efficiency is slightly lower.
+| SHA3-384          | 10            | 7             | 6             | *`8.5`*       | High security, suitable for scenarios that require higher security, but its application popularity is limited.
+| SHA2-384          | 9             | 7             | 7             | *`8.2`*       | Suitable for applications with medium to high security requirements. It has a higher computational cost and is less popular than SHA2-256.
+| SHA3-224          | 9             | 8             | 6             | *`8.0`*       | It is suitable for scenarios that require lightweight and high security, and has great potential for future applications.
+| SHA2-224          | 8             | 8             | 7             | *`7.9`*       | The choice for lightweight security requirements, suitable for embedded applications.
+| BLAKE2S-256       | 8             | 9             | 6             | *`7.9`*       | It is efficient and lightweight, suitable for scenarios with limited resources, such as IoT devices, but its application popularity is slightly lower.
+| SM3               | 8             | 7             | 7             | *`7.8`*       | It is suitable for Chinese cryptographic standard scenarios. Its collision resistance and security are not as good as SHA3, but it has advantages in specific applications.
+| RIPEMD160         | 7             | 8             | 7             | *`7.5`*       | Used in specific scenarios such as Bitcoin address generation, with limited security and popularity and moderate performance.
+| SHA3-KE-256       | 9             | 8             | 5             | *`7.5`*       | Variable output length, suitable for flexible scenarios, high security, but relatively low popularity.
+| SHA3-KE-128       | 8             | 8             | 5             | *`7.3`*       | Variable output length, suitable for flexible scenarios, but less secure and popular than SHA3-KE-256.
+| SHA2-512-256      | 9             | 7             | 6             | *`7.3`*       | A truncated version of SHA-512, suitable for scenarios that require a fixed output length and medium to high security.
+| SHA2-512-224      | 8             | 7             | 6             | *`7.1`*       | A truncated version of SHA-512 that has similar applications to SHA2-224, but is less commonly used in real-world applications.
+| SHA1              | 5             | 8             | 6             | *`6.2`*       | It is considered unsafe but still has legacy applications in old systems suitable for low security requirements.
+| MD5-SHA1          | 5             | 9             | 5             | *`6.0`*       | Related to legacy applications in TLS 1.2, but not as secure.
+| MD5               | 3             | 9             | 6             | *`5.4`*       | Fast but completely insecure, only suitable for non-security verification scenarios.
 
 ### *Scoring formula*
  - Total score = (Security × 40%) + (Complexity × 30%) + (Broadness × 30%)
  - Security : Evaluated based on resistance to attacks, integrity protection and uniqueness requirements.
  - Complexity : Consider the difficulty, efficiency, and user-friendliness of implementation.
  - Extensiveness : Based on current technical standards and actual application frequency.
-
 
 ### *Hash Instruction Usage*
 

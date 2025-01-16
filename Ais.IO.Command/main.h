@@ -116,6 +116,10 @@ enum RSA_MODE : unsigned long long {
     RSA_GENERATE_KEYS = 1,
     RSA_EXPORT_PARAMS = 2,
     RSA_EXPORT_KEYS = 3,
+    RSA_CHECK_PUBLIC = 4,
+    RSA_CHECK_PRIVATE = 5,
+    RSA_ENCRPTION = 6,
+    RSA_DECRPTION = 7,
 };
 
 enum SYMMETRY_CRYPTER {
@@ -259,6 +263,8 @@ struct Rsa {
     std::string PublicKey;
     std::string PrivateKey;
     std::string Password;
+    std::string PlainText;
+    std::string CipherText;
     std::string Output;
     size_t KeyLength = 0;
 
@@ -266,6 +272,8 @@ struct Rsa {
     CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
@@ -639,7 +647,25 @@ struct RSA_KEY_PAIR {
     const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
 };
 
-struct EXPORT_RSA {
+struct RSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_EXPORT {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* N;
@@ -664,6 +690,26 @@ struct EXPORT_RSA {
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
+};
+
+struct RSA_ENCRYPT {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct RSA_DECRYPT {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
 };
 
 // Define function pointer types for all APIs
@@ -836,10 +882,14 @@ typedef int (*GetHashLength)(HASH_TYPE);
 #pragma region RsaIO
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
+typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
+typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
-typedef int (*RsaExportParameters)(EXPORT_RSA*);
-typedef int (*RsaExportKeys)(EXPORT_RSA*);
+typedef int (*RsaExportParameters)(RSA_EXPORT*);
+typedef int (*RsaExportKeys)(RSA_EXPORT*);
+typedef int (*RsaEncryption)(RSA_ENCRYPT*);
+typedef int (*RsaDecryption)(RSA_DECRYPT*);
 #pragma endregion
 
 extern std::unordered_map<std::string, void*> ReadFunctions;

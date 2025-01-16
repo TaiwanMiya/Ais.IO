@@ -32,12 +32,17 @@ namespace Ais.IO.Csharp
     [StructLayout(LayoutKind.Sequential)]
     public struct RSA_KEY_PAIR
     {
-        public ulong KEY_LENGTH;                    // 金鑰長度
-        public ASYMMETRIC_KEY_FORMAT KEY_FORMAT;    // 金鑰格式
-        public IntPtr PUBLIC_KEY;                   // 指向公鑰數據
-        public IntPtr PRIVATE_KEY;                  // 指向私鑰數據
-        public ulong PUBLIC_KEY_LENGTH;             // 公鑰長度
-        public ulong PRIVATE_KEY_LENGTH;            // 私鑰長度
+        public ulong KEY_LENGTH;                        // 金鑰長度
+        public ASYMMETRIC_KEY_FORMAT KEY_FORMAT;        // 金鑰格式
+        public IntPtr PUBLIC_KEY;                       // 指向公鑰數據
+        public IntPtr PRIVATE_KEY;                      // 指向私鑰數據
+        public IntPtr PEM_PASSWORD;                     // 指向PEM密碼
+        public ulong PUBLIC_KEY_LENGTH;                 // 公鑰長度
+        public ulong PRIVATE_KEY_LENGTH;                // 私鑰長度
+        public ulong PEM_PASSWORD_LENGTH;               // PEM密碼長度
+        public SYMMETRY_CRYPTER PEM_CIPHER;             // PEM密碼使用的演算法
+        public int PEM_CIPHER_SIZE;                     // PEM密碼的演算法長度
+        public SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;  // PEM密碼如果是CFB使用的段大小
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -63,7 +68,9 @@ namespace Ais.IO.Csharp
         public ulong QI_LENGTH;                     // 模逆 (CRT Coefficient) 長度
         public IntPtr PUBLIC_KEY;                   // 指向公鑰數據
         public IntPtr PRIVATE_KEY;                  // 指向私鑰數據
+        public IntPtr PEM_PASSWORD;                 // 指向PEM密碼
         public ulong PUBLIC_KEY_LENGTH;             // 公鑰長度
         public ulong PRIVATE_KEY_LENGTH;            // 私鑰長度
+        public ulong PEM_PASSWORD_LENGTH;           // PEM密碼長度
     };
 }

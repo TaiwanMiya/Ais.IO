@@ -358,8 +358,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		switch (set_hash(arg.c_str())) {
 		case rsa_execute::hash("-gen"):
 		case rsa_execute::hash("-generate"):
-			switch (set_hash(ToLower(argv[i + 1]).c_str()))
-			{
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
 			case rsa_execute::hash("-key"):
 			case rsa_execute::hash("-keys"):
 				rsa.Mode = RSA_MODE::RSA_GENERATE_KEYS;
@@ -386,8 +385,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			break;
 		case rsa_execute::hash("-exp"):
 		case rsa_execute::hash("-export"):
-			switch (set_hash(ToLower(argv[i + 1]).c_str()))
-			{
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
 			case rsa_execute::hash("-key"):
 			case rsa_execute::hash("-keys"):
 				rsa.Mode = RSA_MODE::RSA_EXPORT_KEYS;
@@ -403,6 +401,39 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			default:
 				continue;
 			}
+			break;
+		case rsa_execute::hash("-chk"):
+		case rsa_execute::hash("-check"):
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
+			case rsa_execute::hash("-pub"):
+			case rsa_execute::hash("-public"):
+			case rsa_execute::hash("-public-key"):
+				rsa.Mode = RSA_MODE::RSA_CHECK_PUBLIC;
+				i++;
+				rsa.publickey_option = rsa_execute::GetOption(rsa, i, argv);
+				rsa.PublicKey = argv[i + 1];
+				i++;
+				break;
+			case rsa_execute::hash("-priv"):
+			case rsa_execute::hash("-private"):
+			case rsa_execute::hash("-private-key"):
+				rsa.Mode = RSA_MODE::RSA_CHECK_PRIVATE;
+				i++;
+				rsa.privatekey_option = rsa_execute::GetOption(rsa, i, argv);
+				rsa.PrivateKey = argv[i + 1];
+				i++;
+				break;
+			}
+			break;
+		case rsa_execute::hash("-en"):
+		case rsa_execute::hash("-encrypt"):
+			rsa.Mode = RSA_MODE::RSA_ENCRPTION;
+			i++;
+			break;
+		case rsa_execute::hash("-de"):
+		case rsa_execute::hash("-decrypt"):
+			rsa.Mode = RSA_MODE::RSA_DECRPTION;
+			i++;
 			break;
 		case rsa_execute::hash("-pub"):
 		case rsa_execute::hash("-public"):
@@ -499,6 +530,18 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			rsa.QI = argv[i + 1];
 			i++;
 			break;
+		case hash("-pt"):
+		case hash("-plain-text"):
+			rsa.plaintext_option = cryptography_libary::GetOption(i, argv);
+			rsa.PlainText = argv[i + 1];
+			i++;
+			break;
+		case hash("-ct"):
+		case hash("-cipher-text"):
+			rsa.ciphertext_option = cryptography_libary::GetOption(i, argv);
+			rsa.CipherText = argv[i + 1];
+			i++;
+			break;
 		case rsa_execute::hash("-out"):
 		case rsa_execute::hash("-output"):
 			if (rsa.Mode == RSA_MODE::RSA_GENERATE_KEYS || rsa.Mode == RSA_MODE::RSA_EXPORT_KEYS) {
@@ -558,6 +601,18 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_EXPORT_KEYS:
 		ExportKeys(rsa);
+		break;
+	case RSA_MODE::RSA_CHECK_PUBLIC:
+		CheckPublicKey(rsa);
+		break;
+	case RSA_MODE::RSA_CHECK_PRIVATE:
+		CheckPrivateKey(rsa);
+		break;
+	case RSA_MODE::RSA_ENCRPTION:
+		Encrypt(rsa);
+		break;
+	case RSA_MODE::RSA_DECRPTION:
+		Decrypt(rsa);
 		break;
 	}
 }
@@ -643,7 +698,7 @@ void rsa_execute::GenerateParameters(Rsa& rsa) {
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
 	std::cout << Hint("<RSA Paramters Generate>") << std::endl;
-	std::cout << Mark("Length:\n") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
 	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
 	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
@@ -685,7 +740,7 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
 	std::cout << Hint("<RSA Keys Generate>") << std::endl;
-	std::cout << Mark("Length:\n") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
 	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
 	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
 }
@@ -734,7 +789,7 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		0,
 	};
 	((RsaGetParametersLength)RsaFunctions.at("-param-length"))(&paramLength);
-	EXPORT_RSA paramters = {
+	RSA_EXPORT paramters = {
 		0,
 		rsa.KeyFormat,
 		new unsigned char[paramLength.N_LENGTH],
@@ -812,7 +867,7 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
 	std::cout << Hint("<RSA Paramters Export>") << std::endl;
-	std::cout << Mark("Length:\n") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
 	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
@@ -892,7 +947,7 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	privateKey.resize(keysize);
 	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, password);
 
-	EXPORT_RSA paramters = {
+	RSA_EXPORT paramters = {
 		0,
 		rsa.KeyFormat,
 		n.data(),
@@ -922,11 +977,99 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
 	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
 	std::cout << Hint("<RSA Keys Export>") << std::endl;
-	std::cout << Mark("Length:\n") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 	std::string publicKey_str = rsa.PublicKey;
 	std::string privateKey_str = rsa.PrivateKey;
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
 	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
 	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
+}
+
+void rsa_execute::CheckPublicKey(Rsa& rsa) {
+	std::vector<unsigned char> publicKey;
+	cryptography_libary::ValueDecode(rsa.publickey_option, rsa.PublicKey, publicKey);
+	RSA_CHECK_PUBLIC_KEY pub = {
+		rsa.KeyFormat,
+		publicKey.data(),
+		publicKey.size()
+	};
+	((RsaCheckPublicKey)RsaFunctions.at("-pub-check"))(&pub);
+	std::cout << Hint("<RSA Public Key Check>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
+	if (pub.IS_KEY_OK)
+		std::cout << Hint("Rsa Public Key Check Success.") << std::endl;
+	else
+		std::cout << Error("Rsa Public Key Check Falture.") << std::endl;
+}
+
+void rsa_execute::CheckPrivateKey(Rsa& rsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+	std::cout << Hint("<RSA Private Key Check>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	if (priv.IS_KEY_OK)
+		std::cout << Hint("Rsa Private Key Check Success.") << std::endl;
+	else
+		std::cout << Error("Rsa Private Key Check Falture.") << std::endl;
+}
+
+void rsa_execute::Encrypt(Rsa& rsa) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> plaintext;
+	std::vector<unsigned char> ciphertext;
+	cryptography_libary::ValueDecode(rsa.publickey_option, rsa.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(rsa.plaintext_option, rsa.PlainText, plaintext);
+	ciphertext.resize(publicKey.size() * plaintext.size());
+	RSA_ENCRYPT encrypt = {
+		rsa.KeyFormat,
+		publicKey.data(),
+		plaintext.data(),
+		ciphertext.data(),
+		publicKey.size(),
+		plaintext.size()
+	};
+	int result_size = ((RsaEncryption)RsaFunctions.at("-encrypt"))(&encrypt);
+	if (result_size > -1)
+		ciphertext.resize(result_size);
+	std::cout << Hint("<RSA Encrypt>") << std::endl;
+	cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
+	std::cout << Ask(rsa.Output) << std::endl;
+}
+
+void rsa_execute::Decrypt(Rsa& rsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> ciphertext;
+	std::vector<unsigned char> plaintext;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	cryptography_libary::ValueDecode(rsa.ciphertext_option, rsa.CipherText, ciphertext);
+	plaintext.resize(privateKey.size() * ciphertext.size());
+	RSA_DECRYPT decrypt = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		ciphertext.data(),
+		plaintext.data(),
+		privateKey.size(),
+		pemPass.size(),
+		ciphertext.size()
+	};
+	int result_size = ((RsaDecryption)RsaFunctions.at("-decrypt"))(&decrypt);
+	if (result_size > -1)
+		plaintext.resize(result_size);
+	std::cout << Hint("<RSA Decrypt>") << std::endl;
+	cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
+	std::cout << Ask(rsa.Output) << std::endl;
 }

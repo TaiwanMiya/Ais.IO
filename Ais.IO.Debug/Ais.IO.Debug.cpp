@@ -141,7 +141,7 @@ struct RSA_PKCS12_CERTIFICATE_KEY {
     const unsigned long VALIDITY_DAYS;
 };
 
-struct EXPORT_RSA {
+struct RSA_EXPORT {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const ASYMMETRIC_KEY_PKCS KEY_PKCS;
@@ -182,8 +182,8 @@ typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
 typedef int (*RsaGeneratePKCS8)(RSA_PKCS8_KEY*);
 typedef int (*RsaGeneratePKCS10)(RSA_PKCS10_CSR*);
 typedef int (*RsaGeneratePKCS12)(RSA_PKCS12_CERTIFICATE_KEY*);
-typedef int (*RsaExportParameters)(EXPORT_RSA*);
-typedef int (*RsaExportKeys)(EXPORT_RSA*);
+typedef int (*RsaExportParameters)(RSA_EXPORT*);
+typedef int (*RsaExportKeys)(RSA_EXPORT*);
 
 RsaGetParametersLength RsaGetParametersLength_Func = (RsaGetParametersLength)GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
 RsaGetKeyLength RsaGetKeyLength_Func = (RsaGetKeyLength)GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
@@ -946,7 +946,7 @@ void Test_ExportRsaParametersFromKeys() {
 
     RsaGetParametersLength_Func(&paramLength);
 
-    EXPORT_RSA paramters = {
+    RSA_EXPORT paramters = {
         0,
         ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER,
         ASYMMETRIC_KEY_PKCS::ASYMMETRIC_KEY_PKCS10,
@@ -1067,7 +1067,7 @@ void Test_ExportRsaKeyFromParameters() {
     publicKey.resize(keysize);
     privateKey.resize(keysize);
 
-    EXPORT_RSA paramters = {
+    RSA_EXPORT paramters = {
         0,
         //ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER,
         ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,

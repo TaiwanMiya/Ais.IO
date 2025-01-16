@@ -556,7 +556,7 @@ int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* generate) {
     return 0;
 }
 
-int RsaExportParameters(EXPORT_RSA* params) {
+int RsaExportParameters(RSA_EXPORT* params) {
     ERR_clear_error();
     RAND_poll();
 
@@ -697,7 +697,7 @@ int RsaExportParameters(EXPORT_RSA* params) {
     return 0;
 }
 
-int RsaExportKeys(EXPORT_RSA* params) {
+int RsaExportKeys(RSA_EXPORT* params) {
     ERR_clear_error();
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     if (!ctx)
@@ -792,6 +792,78 @@ int RsaExportKeys(EXPORT_RSA* params) {
     BIO_free_all(pub_bio);
     BIO_free_all(priv_bio);
     EVP_PKEY_free(pkey);
-
     return 0;
+}
+
+int RsaEncryption(RSA_ENCRYPT* encrypt) {
+    ERR_clear_error();
+    
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(encrypt->PUBLIC_KEY, static_cast<int>(encrypt->PUBLIC_KEY_LENGTH));
+
+    switch (encrypt->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid public key format.", bio, NULL, pkey);
+    }
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create encryption context.", bio, NULL, pkey);
+
+    if (1 != EVP_PKEY_encrypt_init(ctx))
+        return handleErrors_asymmetric("Failed to initialize encryption.", ctx, bio, NULL, pkey, NULL);
+
+    size_t outlen = 0;
+    if (1 != EVP_PKEY_encrypt(ctx, NULL, &outlen, encrypt->PLAIN_TEXT, encrypt->PLAIN_TEXT_LENGTH))
+        return handleErrors_asymmetric("Failed to determine encrypted output length.", ctx, bio, NULL, pkey, NULL);
+
+    if (1 != EVP_PKEY_encrypt(ctx, encrypt->CIPHER_TEXT, &outlen, encrypt->PLAIN_TEXT, encrypt->PLAIN_TEXT_LENGTH))
+        return handleErrors_asymmetric("Encryption failed.", ctx, bio, NULL, pkey, NULL);
+
+    BIO_free_all(bio);
+    EVP_PKEY_CTX_free(ctx);
+    return static_cast<int>(outlen);
+}
+
+int RsaDecryption(RSA_DECRYPT* decrypt) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(decrypt->PRIVATE_KEY, static_cast<int>(decrypt->PRIVATE_KEY_LENGTH));
+
+    switch (decrypt->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (decrypt->PEM_PASSWORD == NULL || decrypt->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(decrypt->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid private key format.", bio, NULL, pkey);
+    }
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create decryption context.", bio, NULL, pkey);
+
+    if (1 != EVP_PKEY_decrypt_init(ctx))
+        return handleErrors_asymmetric("Failed to initialize decryption.", ctx, bio, NULL, pkey, NULL);
+
+    size_t outlen = 0;
+    if (1 != EVP_PKEY_decrypt(ctx, NULL, &outlen, decrypt->CIPHER_TEXT, decrypt->CIPHER_TEXT_LENGTH))
+        return handleErrors_asymmetric("Failed to determine decrypted output length.", ctx, bio, NULL, pkey, NULL);
+
+    if (1 != EVP_PKEY_decrypt(ctx, decrypt->PLAIN_TEXT, &outlen, decrypt->CIPHER_TEXT, decrypt->CIPHER_TEXT_LENGTH))
+        return handleErrors_asymmetric("decryption failed.", ctx, bio, NULL, pkey, NULL);
+
+    BIO_free_all(bio);
+    EVP_PKEY_CTX_free(ctx);
+    return static_cast<int>(outlen);
 }

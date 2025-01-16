@@ -653,10 +653,14 @@ void LoadFunctions() {
 
     RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
+    RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
+    RsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
     RsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
     RsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
     RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
+    RsaFunctions["-encrypt"] = GET_PROC_ADDRESS(Lib, "RsaEncryption");
+    RsaFunctions["-decrypt"] = GET_PROC_ADDRESS(Lib, "RsaDecryption");
 
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");
@@ -690,7 +694,6 @@ int main(int argc, char* argv[]) {
             MoveCursorUp(1);
             ClearLine();
             std::cout << "Test:" << i << std::endl;
-            MoveCursorDown(1);
             ShowProgressBar(i, total, width, strip, show_current);
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }

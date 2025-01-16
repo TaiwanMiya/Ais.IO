@@ -61,10 +61,11 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public ulong GetKeyLength(ASYMMETRIC_KEY_FORMAT format, byte[] publicKey, byte[] privateKey)
+        public ulong GetKeyLength(ASYMMETRIC_KEY_FORMAT format, byte[] publicKey, byte[] privateKey, byte[] pemPassword = null, SYMMETRY_CRYPTER crypter = SYMMETRY_CRYPTER.SYMMETRY_AES_CBC, int cryptsize = 256, SEGMENT_SIZE_OPTION segment = SEGMENT_SIZE_OPTION.SEGMENT_128_BIT)
         {
             GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
             GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
+            GCHandle pemPasswordHandle = GCHandle.Alloc(pemPassword, GCHandleType.Pinned);
 
             try
             {
@@ -74,8 +75,13 @@ namespace Ais.IO.Csharp
                     KEY_FORMAT = format,
                     PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
                     PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PEM_PASSWORD = pemPasswordHandle.AddrOfPinnedObject(),
                     PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                    PEM_PASSWORD_LENGTH = pemPassword == null ? 0 : (ulong)pemPassword.LongLength,
+                    PEM_CIPHER = crypter,
+                    PEM_CIPHER_SIZE = cryptsize,
+                    PEM_CIPHER_SEGMENT = segment,
                 };
                 int result = RsaIOInterop.RsaGetKeyLength(ref keypair);
                 if (result != 0)
@@ -154,13 +160,14 @@ namespace Ais.IO.Csharp
             }
         }
 
-        public void GenerateKeys(ulong size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey)
+        public void GenerateKeys(ulong size, ASYMMETRIC_KEY_FORMAT format, ref byte[] publicKey, ref byte[] privateKey, byte[] pemPassword = null, SYMMETRY_CRYPTER crypter = SYMMETRY_CRYPTER.SYMMETRY_AES_CBC, int cryptsize = 256, SEGMENT_SIZE_OPTION segment = SEGMENT_SIZE_OPTION.SEGMENT_128_BIT)
         {
             publicKey = new byte[size];
             privateKey = new byte[size];
 
             GCHandle publicKeyHandle = GCHandle.Alloc(publicKey, GCHandleType.Pinned);
             GCHandle privateKeyHandle = GCHandle.Alloc(privateKey, GCHandleType.Pinned);
+            GCHandle pemPasswordHandle = GCHandle.Alloc(pemPassword, GCHandleType.Pinned);
 
             try
             {
@@ -170,8 +177,13 @@ namespace Ais.IO.Csharp
                     KEY_FORMAT = format,
                     PUBLIC_KEY = publicKeyHandle.AddrOfPinnedObject(),
                     PRIVATE_KEY = privateKeyHandle.AddrOfPinnedObject(),
+                    PEM_PASSWORD = pemPasswordHandle.AddrOfPinnedObject(),
                     PUBLIC_KEY_LENGTH = (ulong)publicKey.LongLength,
                     PRIVATE_KEY_LENGTH = (ulong)privateKey.LongLength,
+                    PEM_PASSWORD_LENGTH = pemPassword == null ? 0 : (ulong)pemPassword.LongLength,
+                    PEM_CIPHER = crypter,
+                    PEM_CIPHER_SIZE = cryptsize,
+                    PEM_CIPHER_SEGMENT = segment,
                 };
 
                 int result = RsaIOInterop.RsaGenerateKeys(ref keypair);
