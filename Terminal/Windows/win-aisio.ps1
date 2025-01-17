@@ -109,10 +109,18 @@ while ($parameter.Count -gt 0) {
         '-der'          { $rsa_format = '-der';     $parameter = $parameter[1..$parameter.Count]; break }
         '-param'        { $rsa_format = '-param';   $parameter = $parameter[1..$parameter.Count]; break }
         '-keys'         { $rsa_format = '-keys';    $parameter = $parameter[1..$parameter.Count]; break }
+        '-chk'          { $mode = '-chk';           $parameter = $parameter[1..$parameter.Count]; break }
 
         # OTHER
-        '-e' { $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
-        '-d' { $encoder = '-d';                     $parameter = $parameter[1..$parameter.Count]; break }
+        # '-e' { $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
+        '-e' { if ($operation -eq '-rsa') { $mode = '-crypt'; }
+               $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
+        '-d' { if ($operation -eq '-rsa') { $mode = '-crypt'; }
+               $encoder = '-d';                     $parameter = $parameter[1..$parameter.Count]; break }
+        '-s' { if ($operation -eq '-rsa') { $mode = '-digital'; }
+               $encoder = '-s';                     $parameter = $parameter[1..$parameter.Count]; break }
+        '-v' { if ($operation -eq '-rsa') { $mode = '-digital'; }
+               $encoder = '-v';                     $parameter = $parameter[1..$parameter.Count]; break }
         '-f' {
             if ($parameter.Count -gt 1) {
                 $file = $parameter[1]
@@ -243,6 +251,24 @@ for ($i = 1; $i -le $iterations; $i++) {
                     switch ($rsa_format) {
                         '-param'    { RSA_Export_Paramters }
                         '-keys'     { RSA_Export_Keys }
+                    }
+                }
+                '-chk' {
+                    switch ($rsa_format) {
+                        '-pem'      { RSA_Check_Keys_PEM }
+                        '-der'      { RSA_Check_Keys_DER }
+                    }
+                }
+                '-crypt' {
+                    switch ($rsa_format) {
+                        '-pem'      { RSA_Cryption_PEM }
+                        '-der'      { RSA_Cryption_DER }
+                    }
+                }
+                '-digital' {
+                    switch ($rsa_format) {
+                        '-pem'      {}
+                        '-der'      {}
                     }
                 }
             }

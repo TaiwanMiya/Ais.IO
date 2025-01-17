@@ -3,8 +3,8 @@
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -shared -fPIC -std=c++17
-LIB_PATHS := $(shell find /usr -name "libcrypto.so" -o -name "libssl.so" | xargs -n 1 dirname | sort -u)
-LDFLAGS += $(addprefix -L, $(LIB_PATHS))
+LIB_PATHS := Ais.IO/so/libcrypto.so Ais.IO/so/libssl.so
+LDFLAGS += -L$(LIB_PATHS)
 LIBS += -lcrypto -lssl
 
 # Detect platform

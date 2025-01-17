@@ -1,2 +1,2 @@
-Ais.IO/include/* linguist-documentation=true
-Ais.IO.Debug/include/* linguist-documentation=true
+Ais.IO/include/openssl/* linguist-documentation=true
+Ais.IO.Debug/include/openssl/* linguist-documentation=true
