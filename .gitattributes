@@ -1,4 +1,2 @@
-Ais.IO/include/*cpp linguist-vendored
-Ais.IO/include/*h linguist-vendored
-Ais.IO.Debug/include/*cpp linguist-vendored
-Ais.IO.Debug/include/*h linguist-vendored
+Ais.IO/include/* linguist-documentation=true
+Ais.IO.Debug/include/* linguist-documentation=true

@@ -10,7 +10,7 @@ The repository contains binary file operations, Base encoding, and the use of en
 3. [AES Cryptography](#AES-Cryptography)
 4. [DES Cryptography](#DES-Cryptography)
 5. [HASH Calculation](#HASH-Calculation)
-6. [Rsa Cryptography](#RSA-Cryptography)
+6. [RSA Cryptography](#RSA-Cryptography)
 7. [Ais IO License](#License)
 
 ---
@@ -616,10 +616,10 @@ Private Key: Used to decrypt data or create digital signatures.
    - `<password>` is only used when you need to operate the PEM private key. You can also leave it blank, which means that the key is not encrypted with the PEM password.
    - `<plain-text>` is your plain text, it can be any data.
    - `<cipher-text>` is your cipher text, which is your encrypted data.
-   - Read the [`[--keys-way]`](#explanation-of---keys-way)
-   - Read the [`[--way]`](#explanation-of---way)
-   - Read the [`[--paramters-list]`](#explanation-of---paramters-list)
-   - Read the [`[--hash-type]`](#explanation-of---hash-type)
+   - Read the [*`[--keys-way]`*](#explanation-of---keys-way)
+   - Read the [*`[--way]`*](#explanation-of---way)
+   - Read the [*`[--paramters-list]`*](#explanation-of---paramters-list)
+   - Read the [*`[--hash-type]`*](#explanation-of---hash-type)
 
 ### *Rsa Instruction Usage*
 
@@ -813,14 +813,14 @@ echo "$RESULT"
    01. `-pem`                               -> PEM Raw data.
    02. `-pem -f <path>` `-pem -file <path>` -> PEM Archival data.
    03. `-der`                               -> DER Raw data.
-   04. `-der -b10` `-der -base10`           -> Base10 data.
-   05. `-der -b16` `-der -base16`           -> Base16 data.
-   06. `-der -b32` `-der -base32`           -> Base32 data.
-   07. `-der -b58` `-der -base58`           -> Base58 data.
-   08. `-der -b62` `-der -base62`           -> Base62 data.
-   09. `-der -b64` `-der -base64`           -> Base64 data.
-   10. `-der -b85` `-der -base85`           -> Base85 data.
-   11. `-der -b91` `-der -base91`           -> Base91 data.
+   04. `-der -b10` `-der -base10`           -> DER Base10 data.
+   05. `-der -b16` `-der -base16`           -> DER Base16 data.
+   06. `-der -b32` `-der -base32`           -> DER Base32 data.
+   07. `-der -b58` `-der -base58`           -> DER Base58 data.
+   08. `-der -b62` `-der -base62`           -> DER Base62 data.
+   09. `-der -b64` `-der -base64`           -> DER Base64 data.
+   10. `-der -b85` `-der -base85`           -> DER Base85 data.
+   11. `-der -b91` `-der -base91`           -> DER Base91 data.
    12. `-der -f <path>` `-der -file <path>` -> DER Archival data.
 
 ### *Explanation of `[--way]`*
