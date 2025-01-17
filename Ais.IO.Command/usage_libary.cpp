@@ -395,24 +395,24 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "" << std::endl;
 
     std::cout << Hint("    Supported [--hash-type]:\n");
-    std::cout << "        " << Mark(" 1") << ". " << Info("-md5") << Warn("                                     -> Hash MD5 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 2") << ". " << Info("-md5-sha1") << Warn("                                -> Hash MD5-SHA1 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 3") << ". " << Info("-sha1") << Warn("                                    -> Hash SHA1 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 4") << ". " << Info("[-sha224 | -sha2-224]") << Warn("                    -> Hash SHA2-224 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 5") << ". " << Info("[-sha256 | -sha2-256]") << Warn("                    -> Hash SHA2-256 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 6") << ". " << Info("[-sha384 | -sha2-384]") << Warn("                    -> Hash SHA2-384 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 7") << ". " << Info("[-sha512 | -sha2-512]") << Warn("                    -> Hash SHA2-512 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 8") << ". " << Info("[-sha512-224 | -sha2-512-224]") << Warn("            -> Hash SHA2-512-224 Signature.") << std::endl;
-    std::cout << "        " << Mark(" 9") << ". " << Info("[-sha512-256 | -sha2-512-256]") << Warn("            -> Hash SHA2-512-256 Signature.") << std::endl;
-    std::cout << "        " << Mark("10") << ". " << Info("-sha3-224") << Warn("                                -> Hash SHA3-224 Signature.") << std::endl;
-    std::cout << "        " << Mark("11") << ". " << Info("-sha3-256") << Warn("                                -> Hash SHA3-256 Signature.") << std::endl;
-    std::cout << "        " << Mark("12") << ". " << Info("-sha3-384") << Warn("                                -> Hash SHA3-384 Signature.") << std::endl;
-    std::cout << "        " << Mark("13") << ". " << Info("-sha3-512") << Warn("                                -> Hash SHA3-512 Signature.") << std::endl;
-    std::cout << "        " << Mark("14") << ". " << Info("[-shake128 | -sha3-ke-128]") << Warn("               -> Hash SHA3-KE-128 Signature.") << std::endl;
-    std::cout << "        " << Mark("15") << ". " << Info("[-shake256 | -sha3-ke-256]") << Warn("               -> Hash SHA3-KE-256 Signature.") << std::endl;
-    std::cout << "        " << Mark("16") << ". " << Info("[-blake2s | -blake256 | -blake2s-256") << Warn("     -> Hash BLAKE2S-256 Signature.") << std::endl;
-    std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512") << Warn("     -> Hash BLAKE2B-512 Signature.") << std::endl;
-    std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Signature.") << std::endl;
-    std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Signature.") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("-md5") << Warn("                                     -> Hash MD5 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-md5-sha1") << Warn("                                -> Hash MD5-SHA1 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-sha1") << Warn("                                    -> Hash SHA1 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-sha224 | -sha2-224]") << Warn("                    -> Hash SHA2-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-sha256 | -sha2-256]") << Warn("                    -> Hash SHA2-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("[-sha384 | -sha2-384]") << Warn("                    -> Hash SHA2-384 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("[-sha512 | -sha2-512]") << Warn("                    -> Hash SHA2-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("[-sha512-224 | -sha2-512-224]") << Warn("            -> Hash SHA2-512-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 9") << ". " << Info("[-sha512-256 | -sha2-512-256]") << Warn("            -> Hash SHA2-512-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("10") << ". " << Info("-sha3-224") << Warn("                                -> Hash SHA3-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark("11") << ". " << Info("-sha3-256") << Warn("                                -> Hash SHA3-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("12") << ". " << Info("-sha3-384") << Warn("                                -> Hash SHA3-384 Calculation.") << std::endl;
+    std::cout << "        " << Mark("13") << ". " << Info("-sha3-512") << Warn("                                -> Hash SHA3-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark("14") << ". " << Info("[-shake128 | -sha3-ke-128]") << Warn("               -> Hash SHA3-KE-128 Calculation.") << std::endl;
+    std::cout << "        " << Mark("15") << ". " << Info("[-shake256 | -sha3-ke-256]") << Warn("               -> Hash SHA3-KE-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("16") << ". " << Info("[-blake2s | -blake256 | -blake2s-256]") << Warn("    -> Hash BLAKE2S-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512]") << Warn("    -> Hash BLAKE2B-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Calculation.") << std::endl;
+    std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Calculation.") << std::endl;
 
 }

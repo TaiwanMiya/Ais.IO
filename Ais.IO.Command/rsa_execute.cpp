@@ -1212,11 +1212,11 @@ void rsa_execute::Verify(Rsa& rsa) {
 	};
 	((RsaVerify)RsaFunctions.at("-verify"))(&verify);
 	if (verify.IS_VALID) {
-		std::cout << Hint("<RSA Signed>") << std::endl;
+		std::cout << Hint("<RSA Verify>") << std::endl;
 		std::cout << Ask("Verification Success!") << std::endl;
 	}
 	else {
-		std::cout << Hint("<RSA Signed>") << std::endl;
+		std::cout << Hint("<RSA Verify>") << std::endl;
 		std::cout << Error("Verification Failure!") << std::endl;
 	}
 }
