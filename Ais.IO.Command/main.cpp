@@ -372,6 +372,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
+            std::replace(arg.begin(), arg.end(), ' ', '\0');
             if (arg.find('~') != std::string::npos) {
                 size_t pos = arg.find('~');
                 std::string startStr = arg.substr(0, pos);
@@ -721,7 +722,7 @@ int main(int argc, char* argv[]) {
     if (mode == "--read") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
@@ -765,7 +766,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--remove") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
@@ -777,7 +778,7 @@ int main(int argc, char* argv[]) {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         void* remover = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader || !remover) {
-            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
@@ -789,7 +790,7 @@ int main(int argc, char* argv[]) {
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(Lib);
             return 1;
         }
@@ -807,7 +808,7 @@ int main(int argc, char* argv[]) {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         void* index_reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
-            std::cerr << Error("Failed to create binary reader for file: ") << Ask(filePath) << "\n";
+            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
             UNLOAD_LIBRARY(Lib);
             return 1;
         }

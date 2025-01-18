@@ -91,47 +91,44 @@ function Usage {
 
 function BinaryWrite {
     Write-Host "Ais Binary IO Write..."
-    .\aisio --write $BASE $file -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
+    .\aisio --write "$BASE" "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
 }
 
 function BinaryAppend {
     Write-Host "Ais Binary IO Append..."
-    .\aisio --append $BASE $file -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
+    .\aisio --append "$BASE" "$file" -bool true -byte 255 -sbyte -128 -short 32767 -ushort 65535 -int 2147483647 -uint 4294967295 -long 9223372036854775807 -ulong 18446744073709551615 -float 3.1415927 -double 3.141592653589793 -bytes "0123456789ABCDEF0123456789ABCDEF" -string "This is Ais.IO Function String."
 }
 
 function BinaryInsert {
     Write-Host "Ais Binary IO Insert..."
-    .\aisio --insert $BASE $file -bool true 0 -byte 255 0 -sbyte -128 0 -short 32767 0 -ushort 65535 0 -int 2147483647 0 -uint 4294967295 0 -long 9223372036854775807 0 -ulong 18446744073709551615 0 -float 3.1415927 0 -double 3.141592653589793 0 -bytes "0123456789ABCDEF0123456789ABCDEF" 0 -string "This is Ais.IO Function String." 0
+    .\aisio --insert "$BASE" "$file" -bool true 0 -byte 255 0 -sbyte -128 0 -short 32767 0 -ushort 65535 0 -int 2147483647 0 -uint 4294967295 0 -long 9223372036854775807 0 -ulong 18446744073709551615 0 -float 3.1415927 0 -double 3.141592653589793 0 -bytes "0123456789ABCDEF0123456789ABCDEF" 0 -string "This is Ais.IO Function String." 0
 }
 
 function BinaryReadAll {
     Write-Host "Ais Binary IO Read all..."
-    $arguments = @("--read-all", $BASE, $file)
-    Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
+    .\aisio --read-all "$BASE" "$file"
 }
 
 function BinaryIndexes {
     Write-Host "Ais Binary IO Indexes..."
-    $arguments = @("--indexes", $file)
-    Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
+    .\aisio --indexes "$file"
 }
 
 function BinaryRemove {
     Write-Host "Ais Binary IO Remove..."
-    $arguments = @("--remove", $file, "-string 0 32")
-    Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
+    .\aisio --remove "$file" -bool 118 1 -byte 116 1 -sbyte 114 1 -short 111 2 -ushort 108 2 -int 103 4 -uint 98 4 -long 89 8 -ulong 80 8 -float 75 4 -double 66 8 -bytes 41 16 -string 0 32
 }
 
 function BinaryRemoveIndex {
     Write-Host "Ais Binary IO Remove Index..."
-    $arguments = @("--remove-index", $file, $indexList)
-    Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
+    $arguments = @("--remove-index", "$file", $indexList)
+    Start-Process -FilePath ".\aisio" -ArgumentList $arguments -NoNewWindow -Wait
 }
 
 function BinaryReadIndex {
     Write-Host "Ais Binary IO Read Indexes..."
-    $arguments = @("--read-index", $BASE, $file, $indexList)
-    Start-Process -FilePath "./aisio" -ArgumentList $arguments -NoNewWindow -Wait
+    $arguments = @("--read-index", "$BASE", "$file", $indexList)
+    Start-Process -FilePath ".\aisio" -ArgumentList $arguments -NoNewWindow -Wait
 }
 
 function BASE_10 {
@@ -139,7 +136,7 @@ function BASE_10 {
         Write-Host "Ais Base 10 Encode..."
         .\aisio "--base10" "-encode" "This is Base10 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 10 Decode..."
         .\aisio "--base10" "-decode" "2275631377870141336533466315340532913972637215315185916509608405656878"
     }
@@ -150,7 +147,7 @@ function BASE_16 {
         Write-Host "Ais Base 16 Encode..."
         .\aisio "--base16" "-encode" "This is Base16 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 16 Decode..."
         .\aisio "--base16" "-decode" "546869732069732042617365313620456E636F64652F4465636F64652E"
     }
@@ -161,7 +158,7 @@ function BASE_32 {
         Write-Host "Ais Base 32 Encode..."
         .\aisio "--base32" "-encode" "This is Base32 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 32 Decode..."
         .\aisio "--base32" "-decode" "KRUGS4ZANFZSAQTBONSTGMRAAES_IVXGG33EMUXUIZLDN5SGKLQ="
     }
@@ -172,7 +169,7 @@ function BASE_58 {
         Write-Host "Ais Base 58 Encode..."
         .\aisio "--base58" "-encode" "This is Base58 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 58 Decode..."
         .\aisio "--base58" "-decode" "4qFPnPkVdmicitJgEZS1kVZHMXD55q1CmJ6MssHP"
     }
@@ -183,7 +180,7 @@ function BASE_62 {
         Write-Host "Ais Base 62 Encode..."
         .\aisio "--base62" "-encode" "This is Base62 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 62 Decode..."
         .\aisio "--base62" "-decode" "HcyJuDO7FzrCwYNWtbLv0nkZbFlzeZg5gRAMIYQ"
     }
@@ -194,7 +191,7 @@ function BASE_64 {
         Write-Host "Ais Base 64 Encode..."
         .\aisio "--base64" "-encode" "This is Base64 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 64 Decode..."
         .\aisio "--base64" "-decode" "VGhpcyBpcyBCYXNlNjQgRW5jb2RlL0RlY29kZS4="
     }
@@ -205,7 +202,7 @@ function BASE_85 {
         Write-Host "Ais Base 85 Encode..."
         .\aisio "--base85" "-encode" "This is Base85 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 85 Decode..."
         .\aisio "--base85" "-decode" 'RA^~)AZc?TLSb`dI5i+eZewp`WiLc!V{c?-E&u=k'
     }
@@ -216,7 +213,7 @@ function BASE_91 {
         Write-Host "Ais Base 91 Encode..."
         .\aisio "--base91" "-encode" "This is Base91 Encode/Decode."
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais Base 91 Decode..."
         .\aisio "--base91" "-decode" 'nX,<:WRT$F,ue9QUz\"y+|irMn<{vJT1T20DC'
     }
@@ -224,176 +221,176 @@ function BASE_91 {
 
 function Generate {
     Write-Host "Ais Generate Any Random Value..."
-    .\aisio -gen 32 -out $BASE
+    .\aisio -gen 32 -out "$BASE"
 }
 
 function Import {
     Write-Host "Ais Import Any String..."
-    .\aisio -imp $AES_KEY -out $BASE
+    .\aisio -imp $AES_KEY -out "$BASE"
 }
 
 function AES_CTR {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES CTR Encrypt..."
-        .\aisio --aes -ctr -encrypt -key $AES_KEY -counter $AES_COUNTER -plain-text "This is AES CTR Encryption/Decryption." -out $BASE
+        .\aisio --aes -ctr -encrypt -key $AES_KEY -counter $AES_COUNTER -plain-text "This is AES CTR Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES CTR Decrypt..."
-        .\aisio --aes -ctr -decrypt -key $AES_KEY -counter $AES_COUNTER -cipher-text $BASE "7F603AB98AF7073B205309B91FCAFC9581DD36055EB25C533429C9EB0C41ACF5070FA94FD62A"
+        .\aisio --aes -ctr -decrypt -key $AES_KEY -counter $AES_COUNTER -cipher-text "$BASE" "7F603AB98AF7073B205309B91FCAFC9581DD36055EB25C533429C9EB0C41ACF5070FA94FD62A"
     }
 }
 
 function AES_CBC {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES CBC Encrypt..."
-        .\aisio --aes -cbc -encrypt -key $AES_KEY -iv $AES_IV -padding -plain-text "This is AES CBC Encryption/Decryption." -out $BASE
+        .\aisio --aes -cbc -encrypt -key $AES_KEY -iv $AES_IV -padding -plain-text "This is AES CBC Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES CBC Decrypt..."
-        .\aisio --aes -cbc -decrypt -key $AES_KEY -iv $AES_IV -padding -cipher-text $BASE "FAFEF277E6AF54441F3407175D3860D16BEDC9570CBB83F9609E2CE90AB1596D02167AA72C5A199D7810C0D0FEC674F8"
+        .\aisio --aes -cbc -decrypt -key $AES_KEY -iv $AES_IV -padding -cipher-text "$BASE" "FAFEF277E6AF54441F3407175D3860D16BEDC9570CBB83F9609E2CE90AB1596D02167AA72C5A199D7810C0D0FEC674F8"
     }
 }
 
 function AES_CFB {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES CFB Encrypt..."
-        .\aisio --aes -cfb -encrypt -key $AES_KEY -iv $AES_IV -segment 128 -plain-text "This is AES CFB Encryption/Decryption." -out $BASE
+        .\aisio --aes -cfb -encrypt -key $AES_KEY -iv $AES_IV -segment 128 -plain-text "This is AES CFB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES CFB Decrypt..."
-        .\aisio --aes -cfb -decrypt -key $AES_KEY -iv $AES_IV -segment 128 -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5742591D658641BE4CE31B24041FA41B791F3021531F171CD401"
+        .\aisio --aes -cfb -decrypt -key $AES_KEY -iv $AES_IV -segment 128 -cipher-text "$BASE" "8A30BF00B0F15E4616BF4C9B5742591D658641BE4CE31B24041FA41B791F3021531F171CD401"
     }
 }
 
 function AES_OFB {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES OFB Encrypt..."
-        .\aisio --aes -ofb -encrypt -key $AES_KEY -iv $AES_IV -plain-text "This is AES OFB Encryption/Decryption." -out $BASE
+        .\aisio --aes -ofb -encrypt -key $AES_KEY -iv $AES_IV -plain-text "This is AES OFB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES OFB Decrypt..."
-        .\aisio --aes -ofb -decrypt -key $AES_KEY -iv $AES_IV -cipher-text $BASE "8A30BF00B0F15E4616BF4C9B5B42591DCF29C1A2F23F43E35CB140041964E890070AAC2913E0"
+        .\aisio --aes -ofb -decrypt -key $AES_KEY -iv $AES_IV -cipher-text "$BASE" "8A30BF00B0F15E4616BF4C9B5B42591DCF29C1A2F23F43E35CB140041964E890070AAC2913E0"
     }
 }
 
 function AES_ECB {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES ECB Encrypt..."
-        .\aisio --aes -ecb -encrypt -key $AES_KEY -padding -plain-text "This is AES ECB Encryption/Decryption." -out $BASE
+        .\aisio --aes -ecb -encrypt -key $AES_KEY -padding -plain-text "This is AES ECB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES ECB Decrypt..."
-        .\aisio --aes -ecb -decrypt -key $AES_KEY -padding -cipher-text $BASE "1CD7A6E38BDBDD9F1EFE4BA5A17AB72CDB9CE185F374FBA7DC7C839C5AC30F7CC070E0DD9FA85879BCF8C8049E637406"
+        .\aisio --aes -ecb -decrypt -key $AES_KEY -padding -cipher-text "$BASE" "1CD7A6E38BDBDD9F1EFE4BA5A17AB72CDB9CE185F374FBA7DC7C839C5AC30F7CC070E0DD9FA85879BCF8C8049E637406"
     }
 }
 
 function AES_GCM {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES GCM Encrypt..."
-        .\aisio --aes -gcm -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES GCM Encryption/Decryption." -out $BASE
+        .\aisio --aes -gcm -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES GCM Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES GCM Decrypt..."
-        .\aisio --aes -gcm -decrypt -key $AES_KEY -nonce $AES_NONCE -tag $BASE $AES_GCM_TAG -aad $AES_AAD -cipher-text $BASE "742389440288A533843D6156F6CC67C28C543B1F397734BA01BE7173FC3E486B70E7A4CD2DF0"
+        .\aisio --aes -gcm -decrypt -key $AES_KEY -nonce $AES_NONCE -tag "$BASE" $AES_GCM_TAG -aad $AES_AAD -cipher-text "$BASE" "742389440288A533843D6156F6CC67C28C543B1F397734BA01BE7173FC3E486B70E7A4CD2DF0"
     }
 }
 
 function AES_CCM {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES CCM Encrypt..."
-        .\aisio --aes -ccm -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES CCM Encryption/Decryption." -out $BASE
+        .\aisio --aes -ccm -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES CCM Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES CCM Decrypt..."
-        .\aisio --aes -ccm -decrypt -key $AES_KEY -nonce $AES_NONCE -tag $BASE $AES_CCM_TAG -aad $AES_AAD -cipher-text $BASE "5245E1C1520D7BC2E1530310E52BA74D96D1C97A8BE395AF88EEFF71D44BEC2EFEF8F6B65761"
+        .\aisio --aes -ccm -decrypt -key $AES_KEY -nonce $AES_NONCE -tag "$BASE" $AES_CCM_TAG -aad $AES_AAD -cipher-text "$BASE" "5245E1C1520D7BC2E1530310E52BA74D96D1C97A8BE395AF88EEFF71D44BEC2EFEF8F6B65761"
     }
 }
 
 function AES_XTS {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES XTS Encrypt..."
-        .\aisio --aes -xts -encrypt -key $AES_KEY -key2 $AES_KEY2 -tweak $AES_TWEAK -plain-text "This is AES XTS Encryption/Decryption." -out $BASE
+        .\aisio --aes -xts -encrypt -key $AES_KEY -key2 $AES_KEY2 -tweak $AES_TWEAK -plain-text "This is AES XTS Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES XTS Decrypt..."
-        .\aisio --aes -xts -decrypt -key $AES_KEY -key2 $AES_KEY2 -tweak $AES_TWEAK -cipher-text $BASE "2BC71BB83EEA376368F9429D09470359293905826B14EDA8B170C3E7A4958020C6AF061181B4"
+        .\aisio --aes -xts -decrypt -key $AES_KEY -key2 $AES_KEY2 -tweak $AES_TWEAK -cipher-text "$BASE" "2BC71BB83EEA376368F9429D09470359293905826B14EDA8B170C3E7A4958020C6AF061181B4"
     }
 }
 
 function AES_OCB {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES OCB Encrypt..."
-        .\aisio --aes -ocb -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES OCB Encryption/Decryption." -out $BASE
+        .\aisio --aes -ocb -encrypt -key $AES_KEY -nonce $AES_NONCE -tag $AES_TAG -aad $AES_AAD -plain-text "This is AES OCB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES OCB Decrypt..."
-        .\aisio --aes -ocb -decrypt -key $AES_KEY -nonce $AES_NONCE -tag $BASE $AES_OCB_TAG -aad $AES_AAD -cipher-text $BASE "3F405A527F7E26DAA3DB8F55D32D33A63C48A9ED40E0ED410CD9E8FC3E090B9627FCC10355A3"
+        .\aisio --aes -ocb -decrypt -key $AES_KEY -nonce $AES_NONCE -tag "$BASE" $AES_OCB_TAG -aad $AES_AAD -cipher-text "$BASE" "3F405A527F7E26DAA3DB8F55D32D33A63C48A9ED40E0ED410CD9E8FC3E090B9627FCC10355A3"
     }
 }
 
 function AES_WRAP {
     if ($encoder -eq '-e') {
         Write-Host "Ais AES WRAP Encrypt..."
-        .\aisio --aes -wrap -encrypt -key $AES_KEY -kek $AES_KEK -out $BASE
+        .\aisio --aes -wrap -encrypt -key $AES_KEY -kek $AES_KEK -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais AES WRAP Decrypt..."
-        .\aisio --aes -wrap -decrypt -wrapkey $BASE "4A0953B24807510E39F18A1AF98153FBA9BF306092D15BB4FB75A04A95148C25B99D7F3A5589FD26" -kek $AES_KEK
+        .\aisio --aes -wrap -decrypt -wrapkey "$BASE" "4A0953B24807510E39F18A1AF98153FBA9BF306092D15BB4FB75A04A95148C25B99D7F3A5589FD26" -kek $AES_KEK
     }
 }
 
 function DES_CBC {
     if ($encoder -eq '-e') {
         Write-Host "Ais DES CBC Encrypt..."
-        .\aisio --des -cbc -encrypt -key $DES_KEY -iv $DES_IV -padding -plain-text "This is DES CBC Encryption/Decryption." -out $BASE
+        .\aisio --des -cbc -encrypt -key $DES_KEY -iv $DES_IV -padding -plain-text "This is DES CBC Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais DES CBC Decrypt..."
-        .\aisio --des -cbc -decrypt -key $DES_KEY -iv $DES_IV -padding -cipher-text $BASE "D53DB3162D7E9A594C574BD6BFE734EBFE30DF7625F68AAD45932111EE6E421FA19624C47AE22DCF"
+        .\aisio --des -cbc -decrypt -key $DES_KEY -iv $DES_IV -padding -cipher-text "$BASE" "D53DB3162D7E9A594C574BD6BFE734EBFE30DF7625F68AAD45932111EE6E421FA19624C47AE22DCF"
     }
 }
 
 function DES_CFB {
     if ($encoder -eq '-e') {
         Write-Host "Ais DES CFB Encrypt..."
-        .\aisio --des -cfb -encrypt -key $DES_KEY -iv $DES_IV -segment 64 -plain-text "This is DES CFB Encryption/Decryption." -out $BASE
+        .\aisio --des -cfb -encrypt -key $DES_KEY -iv $DES_IV -segment 64 -plain-text "This is DES CFB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais DES CFB Decrypt..."
-        .\aisio --des -cfb -decrypt -key $DES_KEY -iv $DES_IV -segment 64 -cipher-text $BASE "479A7330CE6D3098CA0FD5A2569AB8C9A2D8C5BAC89A7273C28AC546F187007DC010D6FBFE00"
+        .\aisio --des -cfb -decrypt -key $DES_KEY -iv $DES_IV -segment 64 -cipher-text "$BASE" "479A7330CE6D3098CA0FD5A2569AB8C9A2D8C5BAC89A7273C28AC546F187007DC010D6FBFE00"
     }
 }
 
 function DES_OFB {
     if ($encoder -eq '-e') {
         Write-Host "Ais DES OFB Encrypt..."
-        .\aisio --des -ofb -encrypt -key $DES_KEY -iv $DES_IV -plain-text "This is DES OFB Encryption/Decryption." -out $BASE
+        .\aisio --des -ofb -encrypt -key $DES_KEY -iv $DES_IV -plain-text "This is DES OFB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais DES OFB Decrypt..."
-        .\aisio --des -ofb -decrypt -key $DES_KEY -iv $DES_IV -cipher-text $BASE "479A7330CE6D3098F01B383128162351EDD36481B3A3364FF992EA0B491FCD420B2A24C1DC19"
+        .\aisio --des -ofb -decrypt -key $DES_KEY -iv $DES_IV -cipher-text "$BASE" "479A7330CE6D3098F01B383128162351EDD36481B3A3364FF992EA0B491FCD420B2A24C1DC19"
     }
 }
 
 function DES_ECB {
     if ($encoder -eq '-e') {
         Write-Host "Ais DES ECB Encrypt..."
-        .\aisio --des -ecb -encrypt -key $DES_KEY -padding -plain-text "This is DES ECB Encryption/Decryption." -out $BASE
+        .\aisio --des -ecb -encrypt -key $DES_KEY -padding -plain-text "This is DES ECB Encryption/Decryption." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais DES ECB Decrypt..."
-        .\aisio --des -ecb -decrypt -key $DES_KEY -padding -cipher-text $BASE "8F10D1E43B42177E6EB26786CAC82B3A2E677A1B59AB8CD5C283E7605F4F42E957D594E8885EF5B1"
+        .\aisio --des -ecb -decrypt -key $DES_KEY -padding -cipher-text "$BASE" "8F10D1E43B42177E6EB26786CAC82B3A2E677A1B59AB8CD5C283E7605F4F42E957D594E8885EF5B1"
     }
 }
 
 function DES_WRAP {
     if ($encoder -eq '-e') {
         Write-Host "Ais DES WRAP Encrypt..."
-        .\aisio --des -wrap -encrypt -key $DES_KEY -kek $DES_KEK -out $BASE
+        .\aisio --des -wrap -encrypt -key $DES_KEY -kek $DES_KEK -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         Write-Host "Ais DES WRAP Decrypt..."
-        .\aisio --des -wrap -decrypt -wrapkey $BASE "F033669ADDDD49C08A5D3BEE5198897D97F6B4E14644E30547CE756961857C28E437634A8D4A1C0B" -kek $DES_KEK
+        .\aisio --des -wrap -decrypt -wrapkey "$BASE" "F033669ADDDD49C08A5D3BEE5198897D97F6B4E14644E30547CE756961857C28E437634A8D4A1C0B" -kek $DES_KEK
     }
 }
 
@@ -401,138 +398,138 @@ function HASH_MD5 {
     Write-Host "Ais HASH MD5 Calculation..."
     $content = "This is HASH MD5 Calculation."
     $salt = "This is Salt by the HASH MD5."
-    .\aisio --hash -md5 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -md5 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_MD5_SHA1 {
     Write-Host "Ais HASH MD5-SHA1 Calculation..."
     $content = "This is HASH MD5-SHA1 Calculation."
     $salt = "This is Salt by the HASH MD5-SHA1."
-    .\aisio --hash -md5-sha1 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -md5-sha1 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA1 {
     Write-Host "Ais HASH SHA1 Calculation..."
     $content = "This is HASH SHA1 Calculation."
     $salt = "This is Salt by the HASH SHA1."
-    .\aisio --hash -sha1 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha1 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_224 {
     Write-Host "Ais HASH SHA2-224 Calculation..."
     $content = "This is HASH SHA2-224 Calculation."
     $salt = "This is Salt by the HASH SHA2-224."
-    .\aisio --hash -sha2-224 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-224 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_256 {
     Write-Host "Ais HASH SHA2-256 Calculation..."
     $content = "This is HASH SHA2-256 Calculation."
     $salt = "This is Salt by the HASH SHA2-256."
-    .\aisio --hash -sha2-256 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-256 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_384 {
     Write-Host "Ais HASH SHA2-384 Calculation..."
     $content = "This is HASH SHA2-384 Calculation."
     $salt = "This is Salt by the HASH SHA2-384."
-    .\aisio --hash -sha2-384 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-384 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512 {
     Write-Host "Ais HASH SHA2-512 Calculation..."
     $content = "This is HASH SHA2-512 Calculation."
     $salt = "This is Salt by the HASH SHA2-512."
-    .\aisio --hash -sha2-512 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-512 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512_224 {
     Write-Host "Ais HASH SHA2-512-224 Calculation..."
     $content = "This is HASH SHA2-512-224 Calculation."
     $salt = "This is Salt by the HASH SHA2-512-224."
-    .\aisio --hash -sha2-512-224 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-512-224 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512_256 {
     Write-Host "Ais HASH SHA2-512-256 Calculation..."
     $content = "This is HASH SHA2-512-256 Calculation."
     $salt = "This is Salt by the HASH SHA2-512-256."
-    .\aisio --hash -sha2-512-256 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha2-512-256 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_224 {
     Write-Host "Ais HASH SHA3-224 Calculation..."
     $content = "This is HASH SHA3-224 Calculation."
     $salt = "This is Salt by the HASH SHA3-224."
-    .\aisio --hash -sha3-224 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-224 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_256 {
     Write-Host "Ais HASH SHA3-256 Calculation..."
     $content = "This is HASH SHA3-256 Calculation."
     $salt = "This is Salt by the HASH SHA3-256."
-    .\aisio --hash -sha3-256 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-256 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_384 {
     Write-Host "Ais HASH SHA3-384 Calculation..."
     $content = "This is HASH SHA3-384 Calculation."
     $salt = "This is Salt by the HASH SHA3-384."
-    .\aisio --hash -sha3-384 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-384 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_512 {
     Write-Host "Ais HASH SHA3-512 Calculation..."
     $content = "This is HASH SHA3-512 Calculation."
     $salt = "This is Salt by the HASH SHA3-512."
-    .\aisio --hash -sha3-512 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sha3-512 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_KE_128 {
     Write-Host "Ais HASH SHA3-KE-128 Calculation..."
     $content = "This is HASH SHA3-KE-128 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-128."
-    .\aisio --hash -sha3-ke-128 -input $content -salt $salt -first -middle -last -length 16 -out $BASE
+    .\aisio --hash -sha3-ke-128 -input $content -salt $salt -first -middle -last -length 16 -out "$BASE"
 }
 
 function HASH_SHA3_KE_256 {
     Write-Host "Ais HASH SHA3-KE-256 Calculation..."
     $content = "This is HASH SHA3-KE-256 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-256."
-    .\aisio --hash -sha3-ke-256 -input $content -salt $salt -first -middle -last -length 32 -out $BASE
+    .\aisio --hash -sha3-ke-256 -input $content -salt $salt -first -middle -last -length 32 -out "$BASE"
 }
 
 function HASH_BLAKE2S_256 {
     Write-Host "Ais HASH BLAKE2S-256 Calculation..."
     $content = "This is HASH BLAKE2S-256 Calculation."
     $salt = "This is Salt by the HASH BLAKE2S-256."
-    .\aisio --hash -blake2s-256 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -blake2s-256 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_BLAKE2B_512 {
     Write-Host "Ais HASH BLAKE2B-512 Calculation..."
     $content = "This is HASH BLAKE2B-512 Calculation."
     $salt = "This is Salt by the HASH BLAKE2B-512."
-    .\aisio --hash -blake2b-512 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -blake2b-512 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SM3 {
     Write-Host "Ais HASH SM3 Calculation..."
     $content = "This is HASH SM3 Calculation."
     $salt = "This is Salt by the HASH SM3."
-    .\aisio --hash -sm3 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -sm3 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_RIPEMD160 {
     Write-Host "Ais HASH RIPEMD160 Calculation..."
     $content = "This is HASH RIPEMD160 Calculation."
     $salt = "This is Salt by the HASH RIPEMD160."
-    .\aisio --hash -ripemd160 -input $content -salt $salt -first -middle -last -out $BASE
+    .\aisio --hash -ripemd160 -input $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function RSA_Generate_Paramters {
     Write-Host "Ais RSA Generate Paramters..."
-    .\aisio --rsa -generate -param 2048 -out $BASE
+    .\aisio --rsa -generate -param 2048 -out "$BASE"
 }
 
 function RSA_Generate_Keys_PEM {
@@ -540,15 +537,19 @@ function RSA_Generate_Keys_PEM {
 }
 
 function RSA_Generate_Keys_DER {
-    .\aisio --rsa -generate -key 2048 -out -der $BASE
+    .\aisio --rsa -generate -key 2048 -out -der "$BASE"
 }
 
 function RSA_Export_Paramters {
-    .\aisio -rsa -export -param -pub -der $BASE $RSA_DER_PUB -priv -der $BASE $RSA_DER_PRIV -out $BASE
+    .\aisio -rsa -export -param -pub -der "$BASE" $RSA_DER_PUB -priv -der "$BASE" $RSA_DER_PRIV -out "$BASE"
 }
 
-function RSA_Export_Keys {
-    .\aisio -rsa -export -key -param $BASE -n $N -e $E -d $D -p $P -q $Q -dp $DP -dq $DQ -qi $QI -out -pem
+function RSA_Export_Keys_PEM {
+    .\aisio -rsa -export -key -param "$BASE" -n $N -e $E -d $D -p $P -q $Q -dp $DP -dq $DQ -qi $QI -out -pem
+}
+
+function RSA_Export_Keys_DER {
+    .\aisio -rsa -export -key -param "$BASE" -n $N -e $E -d $D -p $P -q $Q -dp $DP -dq $DQ -qi $QI -out -der "$BASE"
 }
 
 function RSA_Check_Keys_PEM {
@@ -565,7 +566,7 @@ function RSA_Cryption_PEM {
     if ($encoder -eq '-e') {
         .\aisio -rsa -encrypt -pub -pem "$RSA_PEM_PUB" -plain-text "This is Encryption/Decryption by RSA PEM 2048 Key." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         .\aisio -rsa -decrypt -priv -pem "$RSA_PEM_PRIV" -cipher-text "$BASE" "829E60D6D00A3A2F30AFDA987D7665F235A5DD6B8CF7251506C3C714B0BD47E0A62D3ACE880067F7691513EC4588C355E4839374C4FA4CF0EB26236F307766D9141B9863412B8B141C9923F8ADC1C63C15EF028812E9F993F2134FFC0B29B49A65780C7646EDC3CECA50460868EFF8A189016076D9FB048DED4416247B053A164D9B24FF1E54B9DFEB9D55515F34314A41B8AED3FFA2492A790865CD789F5AABCA030FA43A4A0275DF330E5F68342158179C37A5DEFB21833FA5248AB79BB21B7D18CCAE1A6EFEDC91C95A0147FDAC390537526BFD8515C72EA9D1818AE921D284B533A6329E0D6B45CDDF39386952C31CB859993A28722EB71E12F7B605C698"
     }
 }
@@ -574,15 +575,25 @@ function RSA_Cryption_DER {
     if ($encoder -eq '-e') {
         .\aisio -rsa -encrypt -pub -der "$BASE" "$RSA_DER_PUB" -plain-text "This is Encryption/Decryption by RSA DER 2048 Key." -out "$BASE"
     }
-    else {
+    elseif ($encoder -eq '-d') {
         .\aisio -rsa -decrypt -priv -der "$BASE" "$RSA_DER_PRIV" -cipher-text "$BASE" "724E1EAF36ECC5127CE7FB9FA975EF02493A77A712C8FD3F9009320499F949CC1ED827B2551CB6361A657FCCB106CA4F4858B5C544790A04573E900CC53F9E479EDE9C6C9A93C40034DFB4652F4A25F9896D82FD99B1D0CB44FFFF44D64CFB6E20855AC6A4E062853310C7AE8764F1A68788F3D43E634D3C10880552F1B1E5E060C23E6F5DE82E0BD2C59642128A66015E33B644323F4E384B7A34169036F57746D74DBA37ACB06438CDB8085AB50FB1C482FC2CCDDA04FD74799B2CA44B132E7A292604E327E925A40E04DE2AB52854181F35C65792055504C671992B0B1EA9BDCFBC8591B1F08781864AEB80E89617EBC1FEE8996D22F7C42FC3B93AD8585D"
     }
 }
 
-function RSA_Signed {
-    
+function RSA_Digital_PEM {
+    if ($encoder -eq '-s') {
+        .\aisio -rsa -signed -priv -pem "$RSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -out "$BASE"
+    }
+    elseif ($encoder -eq '-v') {
+        .\aisio -rsa -verify -pub -pem "$RSA_PEM_PUB" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -signature "$BASE" "18DEF0246E638E737074FFF2351185B9B0596923867E79365EE0A78C86D8457E9A164FC55DFBE1656E4691F121FEA751A4A9BD90BA5E5648CB5EFD4E961DE25B284F7ABF94D7510B9DCF0ADE7725EB465207B0EB9F11A4DDEF3E1E9AD6C9D3303E2D597BCD0E32326DD88F98FB6D15A5488B17947155A5AB8F2EF2C1B224ECD5D626F5826E33713D07EBC5F99CD5366D8DD24356D427C205B844F9357F4880093E494C1A4B942D2A6D4DC1FD83970E44D3B5DAD4382F9494559410E865DB290AFE83BC4A74A5EB7AF6C6D3F6F04CA39028ACE83404667766D8E92EEF1C5FD4984010B8FDDD5D2191A076854D61FEA8382D356C53A4B3DFA8264C8FD46806CC0F"
+    }
 }
 
-function RSA_Verify {
-    
+function RSA_Digital_DER {
+    if ($encoder -eq '-s') {
+        .\aisio -rsa -signed -priv -der "$BASE" "$RSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -out "$BASE"
+    }
+    elseif ($encoder -eq '-v') {
+        .\aisio -rsa -verify -pub -der "$BASE" "$RSA_DER_PUB" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -signature "$BASE" "5DAB236FD6B3E8680C825693391719507B2B9219488EA59E9DE38A0A334A5C592E633CE9E3BA1A90F54FA809E5B52239A6103B73027C1A8DC2D06CC2A79E67822E3CE858C962867BB15C6AA51F84A050E2AD3DE86A3F6D720FDE01152B344CE3BFC4A4A6557F3BD7BA507C1CE3F4AB231E36845BC496093137D90D51397521AEC9A05CA7C2A75EE9DCCA62D09051D0C10037353C68869C09D9B8B5FAE438D9AA0108473AC72F6F073347A71AB425D2EE168DD90A995665768F3386A2AADCC1F3C245C14E19E239ADB52B5B892E10930283532899F8EC92D54A57FE628514395CEF769CAD5DEB657CB9CB6F930AF863B17F4D4EF89C0DABCB36487B8B6A477B14"
+    }
 }

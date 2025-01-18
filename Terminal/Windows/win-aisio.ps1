@@ -108,7 +108,6 @@ while ($parameter.Count -gt 0) {
         '-pem'          { $rsa_format = '-pem';     $parameter = $parameter[1..$parameter.Count]; break }
         '-der'          { $rsa_format = '-der';     $parameter = $parameter[1..$parameter.Count]; break }
         '-param'        { $rsa_format = '-param';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-keys'         { $rsa_format = '-keys';    $parameter = $parameter[1..$parameter.Count]; break }
         '-chk'          { $mode = '-chk';           $parameter = $parameter[1..$parameter.Count]; break }
 
         # OTHER
@@ -242,15 +241,16 @@ for ($i = 1; $i -le $iterations; $i++) {
             switch ($mode) {
                 '-gen' {
                     switch ($rsa_format) {
-                        '-pem'      { RSA_Generate_Paramters }
-                        '-der'      { RSA_Generate_Keys_PEM }
-                        '-param'    { RSA_Generate_Keys_DER }
+                        '-pem'      { RSA_Generate_Keys_PEM }
+                        '-der'      { RSA_Generate_Keys_DER }
+                        '-param'    { RSA_Generate_Paramters }
                     }
                 }
                 '-exp' {
                     switch ($rsa_format) {
+                        '-pem'      { RSA_Export_Keys_PEM }
+                        '-der'      { RSA_Export_Keys_DER }
                         '-param'    { RSA_Export_Paramters }
-                        '-keys'     { RSA_Export_Keys }
                     }
                 }
                 '-chk' {
@@ -267,8 +267,8 @@ for ($i = 1; $i -le $iterations; $i++) {
                 }
                 '-digital' {
                     switch ($rsa_format) {
-                        '-pem'      {}
-                        '-der'      {}
+                        '-pem'      { RSA_Digital_PEM }
+                        '-der'      { RSA_Digital_DER }
                     }
                 }
             }

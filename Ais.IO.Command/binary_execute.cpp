@@ -514,10 +514,8 @@ void binary_execute::ExecuteRemoveIndex(void* reader, void* remover, const std::
     for (const auto& cmd : commands) {
         try {
             uint64_t indexCount = std::stoull(cmd.value);
-            if (indexCount >= count) {
-                std::cerr << Error("Index count out of range: " + cmd.value) << std::endl;
+            if (indexCount >= count)
                 continue;
-            }
             BINARYIO_INDICES* index = &indices[indexCount];
             ((RemoveIndex)ReadFunctions.at("-remove"))(remover, filePath.c_str(), index);
         }
@@ -551,10 +549,8 @@ void binary_execute::ExecuteReadIndex(void* reader, void* index_reader, const st
     for (const auto& cmd : commands) {
         try {
             uint64_t indexCount = std::stoull(cmd.value);
-            if (indexCount >= index_count) {
-                std::cerr << Error("Index count out of range: " + cmd.value) << std::endl;
+            if (indexCount >= index_count)
                 continue;
-            }
             BINARYIO_INDICES* index = &indices[indexCount];
             int64_t position = index->POSITION;
             uint64_t length = index->LENGTH;
