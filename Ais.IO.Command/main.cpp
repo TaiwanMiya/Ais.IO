@@ -669,6 +669,54 @@ void LoadFunctions() {
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");
 }
 
+bool FindFileInEnvPath(const std::string& filename, std::string& resolvedPath) {
+#if _WIN32
+    char* envPath = nullptr;
+    size_t envPathSize = 0;
+
+    if (_dupenv_s(&envPath, &envPathSize, "PATH") != 0 || envPath == nullptr) {
+        std::cerr << "Environment variable PATH not found or failed to read.\n";
+        return false;
+    }
+
+    std::string pathStr(envPath);
+    free(envPath);
+
+    std::stringstream pathStream(pathStr);
+    std::string directory;
+
+    while (std::getline(pathStream, directory, ';')) {
+        std::filesystem::path potentialPath = std::filesystem::path(directory) / filename;
+        if (std::filesystem::exists(potentialPath)) {
+            resolvedPath = potentialPath.string();
+            return true;
+        }
+    }
+
+    return false;
+#else
+    const char* envPath = std::getenv("PATH");
+    if (envPath == nullptr) {
+        std::cerr << "Environment variable PATH not found or failed to read.\n";
+        return false;
+    }
+
+    std::string pathStr(envPath);
+    std::stringstream pathStream(pathStr);
+    std::string directory;
+
+    while (std::getline(pathStream, directory, ':')) {
+        std::filesystem::path potentialPath = std::filesystem::path(directory) / filename;
+        if (std::filesystem::exists(potentialPath)) {
+            resolvedPath = potentialPath.string();
+            return true;
+        }
+    }
+
+    return false;
+#endif
+}
+
 int main(int argc, char* argv[]) {
     std::string mode;
     std::string filePath;
@@ -679,7 +727,15 @@ int main(int argc, char* argv[]) {
     EnableVirtualTerminalProcessing();
 #endif
 
-
+    if (argc == 3 && std::string(argv[1]) == "--path") {
+        std::string resolvedPath = "";
+        bool is_resolved = FindFileInEnvPath(argv[2], resolvedPath);
+        if (is_resolved)
+            std::cout << Hint("File found at: ") << Ask(resolvedPath) << std::endl;
+        else
+            std::cout << Error("File not found in PATH directories.") << std::endl;
+        return 0;
+    }
 
     if (argc == 2 && std::string(argv[1]) == "--colors") {
         ListColorTable();

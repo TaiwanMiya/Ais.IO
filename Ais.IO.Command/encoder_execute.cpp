@@ -90,8 +90,8 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
             std::cout << Hint("Input Path:\n") << Ask(inputPath.string()) << "\n";
         if (!outputPath.empty())
             std::cout << Hint("Output Path:\n") << Ask(outputPath.string()) << "\n";
-        std::cout << Hint("Input Length: [") << Ask(std::to_string(inputLength))
-            << Hint("]\nOutput Length: [") << Ask(std::to_string(resultCode)) << Hint("]\n");
+        std::cout << Hint("Input Length: [") << Ask(std::to_string(inputLength)) << Hint("]") << std::endl;
+        std::cout << Hint("Output Length: [") << Ask(std::to_string(resultCode)) << Hint("]") << std::endl;
     }
 
     std::cout << Mark(display + " Action Completed!") << std::endl;

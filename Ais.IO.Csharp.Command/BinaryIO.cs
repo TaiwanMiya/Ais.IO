@@ -89,19 +89,44 @@ namespace Ais.IO.Csharp.Command
         {
             Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
             BINARYIO_INDICES[] indexes = binary.GetAllIndices();
+            ulong count = 0;
             foreach (BINARYIO_INDICES index in indexes)
-                Console.WriteLine($"pos:{index.POSITION}, type:{index.TYPE}, len:{index.LENGTH}");
+            {
+                Console.WriteLine($"{count}. pos:{index.POSITION}, type:{index.TYPE}, len:{index.LENGTH}");
+                count++;
+            }
             Console.WriteLine($"Total Count: {indexes.Length}");
             binary.Close();
 
-            RemoveIndex(indexes[12]);
+            ReadIndex(indexes);
+            RemoveIndex(indexes);
         }
 
-        public static void RemoveIndex(BINARYIO_INDICES index)
+        public static void RemoveIndex(BINARYIO_INDICES[] indexes)
         {
             Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
-            binary.RemoveIndex(index);
+            foreach (BINARYIO_INDICES index in indexes)
+                binary.RemoveIndex(index);
             binary.Close();
+        }
+
+        public static void ReadIndex(BINARYIO_INDICES[] indexes)
+        {
+            Csharp.BinaryIO binary = new Csharp.BinaryIO("test.bin");
+            string message = string.Empty;
+            foreach (BINARYIO_INDICES index in indexes)
+            {
+                object result = binary.Read((long)index.POSITION);
+                if (result == null)
+                    message += $"System.Nullable = NULL";
+                else if (result.GetType() == typeof(byte[]))
+                    message += $"{result.GetType()} = {Encoding.UTF8.GetString((byte[])result)}";
+                else
+                    message += $"{result.GetType()} = {result}";
+                message += Environment.NewLine;
+            }
+            binary.Close();
+            Console.WriteLine(message);
         }
     }
 }

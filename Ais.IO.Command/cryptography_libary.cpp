@@ -347,6 +347,8 @@ void cryptography_libary::RandStart(Rand& rand) {
 		ValueEncode(rand.output_option, result, result_str);
 		std::cout << Hint("<Generate>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") <<  std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]\n");
 		break;
 	case RAND_TYPE::RAND_IMPORT:
 		ValueDecode(rand.rand_option, rand.Value, result);
@@ -355,6 +357,9 @@ void cryptography_libary::RandStart(Rand& rand) {
 		ValueEncode(rand.output_option, result, result_str);
 		std::cout << Hint("<Convert>") << std::endl;
 		std::cout << Ask(result_str) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
+		std::cout << Hint("Input Length: [") << Ask(std::to_string(rand.Value.size())) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
 		break;
 	}
 }

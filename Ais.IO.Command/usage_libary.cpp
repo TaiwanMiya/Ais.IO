@@ -60,6 +60,9 @@ void usage_libary::ShowUsage() {
     std::cout << Hint("    Show Colors:") << std::endl;
     std::cout << Info("        --colors") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << Hint("    Check System Environment Variables / System Environment Paths:") << std::endl;
+    std::cout << Info("        --path <file>") << std::endl;
+    std::cout << "" << std::endl;
     std::cout << Hint("    Generate Symmetry Key / Generate Random Bytes:") << std::endl;
     std::cout << Info("        [-gen | --generate] <number> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;

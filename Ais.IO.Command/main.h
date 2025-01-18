@@ -21,6 +21,7 @@
 #include <cstring>
 #include <filesystem>
 #include <functional>
+#include <cstdlib>
 
 enum BINARYIO_TYPE : unsigned char {
     TYPE_BOOLEAN = 1,

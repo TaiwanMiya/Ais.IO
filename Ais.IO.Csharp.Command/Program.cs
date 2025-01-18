@@ -15,10 +15,10 @@ namespace Ais.IO.Csharp.Command
                 Stopwatch sw = new Stopwatch();
 
                 sw.Start();
-                //BinaryIO.WriteRelease();
-                //BinaryIO.AppendRelease();
-                //BinaryIO.InsertRelease();
-                //BinaryIO.GetIndex();
+                BinaryIO.WriteRelease();
+                BinaryIO.AppendRelease();
+                BinaryIO.InsertRelease();
+                BinaryIO.GetIndex();
                 //BinaryIO.ReadRelease();
                 //EncoderIO.BaseEncode(out string b10, out string b16, out string b32, out string b58, out string b62, out string b64, out string b85, out string b91);
                 //EncoderIO.BaseDecode(b10, b16, b32, b58, b62, b64, b85, b91);
@@ -29,7 +29,7 @@ namespace Ais.IO.Csharp.Command
 
                 //StartDes(1);
 
-                StartHash(1);
+                //StartHash(1);
 
                 //StartRsa(1);
 
@@ -150,9 +150,9 @@ namespace Ais.IO.Csharp.Command
 
                 //RsaIO.ToParamtersDER();
 
-                //RsaIO.ToKeysPEM();
+                RsaIO.ToKeysPEM();
 
-                //RsaIO.ToKeysDER();
+                RsaIO.ToKeysDER();
             }
         }
     }

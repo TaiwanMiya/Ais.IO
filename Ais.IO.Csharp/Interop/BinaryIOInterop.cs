@@ -42,43 +42,43 @@ namespace Ais.IO.Csharp
         public static extern ulong GetReaderLength(IntPtr reader);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool ReadBoolean(IntPtr reader);
+        public static extern bool ReadBoolean(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte ReadByte(IntPtr reader);
+        public static extern byte ReadByte(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern sbyte ReadSByte(IntPtr reader);
+        public static extern sbyte ReadSByte(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern short ReadShort(IntPtr reader);
+        public static extern short ReadShort(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ushort ReadUShort(IntPtr reader);
+        public static extern ushort ReadUShort(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ReadInt(IntPtr reader);
+        public static extern int ReadInt(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint ReadUInt(IntPtr reader);
+        public static extern uint ReadUInt(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long ReadLong(IntPtr reader);
+        public static extern long ReadLong(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong ReadULong(IntPtr reader);
+        public static extern ulong ReadULong(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern float ReadFloat(IntPtr reader);
+        public static extern float ReadFloat(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern double ReadDouble(IntPtr reader);
+        public static extern double ReadDouble(IntPtr reader, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ReadBytes(IntPtr reader, byte[] buffer, ulong bufferSize);
+        public static extern void ReadBytes(IntPtr reader, byte[] buffer, ulong bufferSize, long position = -1);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ReadString(IntPtr reader, StringBuilder buffer, ulong bufferSize);
+        public static extern void ReadString(IntPtr reader, StringBuilder buffer, ulong bufferSize, long position = -1);
         #endregion
 
         #region BinaryWriterIO.h
