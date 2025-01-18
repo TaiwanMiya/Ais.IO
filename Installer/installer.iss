@@ -7,6 +7,7 @@
 #define MyAppPublisher "Ais Fran, Inc."
 #define MyAppURL "https://github.com/TaiwanMiya/Ais.IO"
 #define MyAppExeName "aisio.exe"
+#define MyAppDll "Ais.IO.dll"
 #define AppImage "C:\Users\User\Documents\Ais.IO\Installer\AisIO.bmp"
 
 [Setup]
@@ -15,7 +16,7 @@
 AppId={{A904D573-F069-4E88-9547-C266D06F4C14}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVerName={#MyAppName}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -43,7 +44,8 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 WizardSmallImageFile={#AppImage}
-AlwaysRestart=yes
+AlwaysRestart=no
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -83,12 +85,15 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 
 [Files]
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppDll}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}\{#MyAppExeName}";  IconFilename: "{app}\AisIO_64x64.ico"
+
+[Run]
+Filename: "cmd.exe"; Parameters: "/K aisio"; WorkingDir: "{app}"; Flags: postinstall runasoriginaluser waituntilidle;
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}"
@@ -97,10 +102,115 @@ Type: filesandordirs; Name: "{app}"
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+const
+  SHCNE_ASSOCCHANGED = $08000000;
+  SHCNF_FLUSHNOWAIT = $00003000;
+
+procedure SHChangeNotify(wEventID: integer; uFlags: cardinal; dwItem1, dwItem2: cardinal);
+external 'SHChangeNotify@shell32.dll stdcall';
+
+procedure SendChangeNotification;
+begin
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, 0, 0);
+end;
+
+function PathExists(CurrentPath, TargetPath: string): Boolean;
+var
+  PaddedCurrentPath, PaddedTargetPath: string;
+begin
+  // 在CurrentPath和TargetPath兩端加上分號，確保匹配準確性
+  PaddedCurrentPath := ';' + CurrentPath + ';';
+  PaddedTargetPath := ';' + TargetPath + ';';
+  Result := Pos(PaddedTargetPath, PaddedCurrentPath) > 0;
+end;
+
+function AddPath(CurrentPath, TargetPath: string): string;
+begin
+  // 如果路徑不存在，則追加
+  if PathExists(CurrentPath, TargetPath) then
+    Result := CurrentPath
+  else
+    Result := CurrentPath + ';' + TargetPath;
+end;
+
+function RemovePath(CurrentPath, TargetPath: string): string;
+var
+  PaddedCurrentPath, PaddedTargetPath: string;
+  StartPos: Integer;
+begin
+  // 在 CurrentPath 和 TargetPath 兩端加上分號
+  PaddedCurrentPath := ';' + CurrentPath + ';';
+  PaddedTargetPath := ';' + TargetPath + ';';
+
+  // 找到 TargetPath 的位置
+  StartPos := Pos(PaddedTargetPath, PaddedCurrentPath);
+  if StartPos > 0 then
+  begin
+    // 移除匹配路徑
+    Delete(PaddedCurrentPath, StartPos, Length(PaddedTargetPath));
+  end;
+
+  // 去開頭和結尾的分號
+  Result := Copy(PaddedCurrentPath, 2, Length(PaddedCurrentPath) - 1);
+end;
+
+procedure BroadcastEnvironmentChange();
+begin
+  // 使用 Inno Setup 原生方法廣播環境變數變更
+  RegWriteStringValue(HKEY_LOCAL_MACHINE,
+    'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+    'Update', '1'); // 建立一個更新標誌 (可選)
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, 0, 0);
+end;
+
+procedure AddToPath();
+var
+  EnvPath, AppPath, NewPath: string;
+begin
+  AppPath := ExpandConstant('{app}');
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE,
+      'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+      'Path', EnvPath) then
+  begin
+    NewPath := AddPath(EnvPath, AppPath);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE,
+        'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+        'Path', NewPath);
+    BroadcastEnvironmentChange(); // 通知更新
+  end;
+end;
+
+procedure RemoveFromPath();
+var
+  EnvPath, AppPath, NewPath: string;
+begin
+  AppPath := ExpandConstant('{app}');
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE,
+      'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+      'Path', EnvPath) then
+  begin
+    NewPath := RemovePath(EnvPath, AppPath);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE,
+        'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+        'Path', Trim(NewPath)); // 確保移除多餘空格
+    BroadcastEnvironmentChange(); // 通知更新
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if CurStep = ssDone then
-  begin
-    MsgBox('You need to restart your computer after the installation is complete. Restart now?', mbInformation, MB_OK);
-  end;
+  if CurStep = ssInstall then
+    AddToPath();
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then
+    RemoveFromPath();
+end;
+
+procedure DeinitializeSetup();
+begin
+  // 在安裝和解除安裝結束後執行
+  RemoveFromPath();
 end;
