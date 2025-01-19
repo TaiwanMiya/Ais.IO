@@ -731,14 +731,14 @@ void rsa_execute::GenerateParameters(Rsa& rsa) {
 	}
 	std::cout << Hint("<RSA Paramters Generate>") << std::endl;
 	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
-	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
-	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
-	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
-	std::cout << Mark("First Prime Factor (P):\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Second Prime Factor (Q):\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("First CRT Exponent (DP):\n") << Ask(dp_str) << std::endl;
-	std::cout << Mark("Second CRT Exponent (DQ):\n") << Ask(dq_str) << std::endl;
-	std::cout << Mark("CRT Coefficient (QI):\n") << Ask(qi_str) << std::endl;
+	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
+	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
+	std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
+	std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+	std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+	std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
+	std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
+	std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
 }
 
 void rsa_execute::GenerateKeys(Rsa& rsa) {
@@ -900,14 +900,14 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 	}
 	std::cout << Hint("<RSA Paramters Export>") << std::endl;
 	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
-	std::cout << Mark("Modulus (N):\n") << Ask(n_str) << std::endl;
-	std::cout << Mark("Public Exponent (E):\n") << Ask(e_str) << std::endl;
-	std::cout << Mark("Private Exponent (D):\n") << Ask(d_str) << std::endl;
-	std::cout << Mark("First Prime Factor (P):\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Second Prime Factor (Q):\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("First CRT Exponent (DP):\n") << Ask(dp_str) << std::endl;
-	std::cout << Mark("Second CRT Exponent (DQ):\n") << Ask(dq_str) << std::endl;
-	std::cout << Mark("CRT Coefficient (QI):\n") << Ask(qi_str) << std::endl;
+	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
+	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
+	std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
+	std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+	std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+	std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
+	std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
+	std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
 }
 
 void rsa_execute::ExportKeys(Rsa& rsa) {

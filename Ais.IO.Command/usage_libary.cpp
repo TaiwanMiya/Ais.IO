@@ -54,7 +54,10 @@ void usage_libary::ShowUsage() {
     std::cout << Hint("    5. Helper by Hash:") << std::endl;
     std::cout << Info("        [-h | -help | --help] [-h | -hash]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << Hint("    6. Helper by Rsa:") << std::endl;
+    std::cout << Hint("    6. Helper by Dsa:") << std::endl;
+    std::cout << Info("        [-h | -help | --help] [-ds | -dsa]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    7. Helper by Rsa:") << std::endl;
     std::cout << Info("        [-h | -help | --help] [-r | -rsa]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << Hint("    Show Colors:") << std::endl;
@@ -330,6 +333,18 @@ void usage_libary::ShowHashUsage() {
     std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
+}
+
+void usage_libary::ShowDsaUsage() {
+    std::cout << Info("      :::::::::") << Warn("      ::::::::") << Error("          ::: ") << std::endl;
+    std::cout << Info("     :+:    :+:") << Warn("    :+:    :+:") << Error("       :+: :+:") << std::endl;
+    std::cout << Info("    +:+    +:+ ") << Warn("   +:+        ") << Error("     +:+   +:+") << std::endl;
+    std::cout << Info("   +#+    +:+  ") << Warn("  +#++:++#++  ") << Error("   +#++:++#++:") << std::endl;
+    std::cout << Info("  +#+    +#+   ") << Warn("        +#+   ") << Error("  +#+     +#+ ") << std::endl;
+    std::cout << Info(" #+#    #+#    ") << Warn("#+#    #+#    ") << Error(" #+#     #+#  ") << std::endl;
+    std::cout << Info("#########      ") << Warn("########      ") << Error("###     ###   ") << std::endl;
+    std::cout << Mark("Dsa Cryptography Usage") << std::endl;
+    std::cout << "" << std::endl;
 }
 
 void usage_libary::ShowRsaUsage() {

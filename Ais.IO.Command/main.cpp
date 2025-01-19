@@ -11,6 +11,7 @@
 #include "hash_execute.h"
 #include "usage_libary.h"
 #include "rsa_execute.h"
+#include "dsa_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -33,6 +34,7 @@ std::unordered_map<std::string, void*> SymmetryFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
 std::unordered_map<std::string, void*> DesFunctions;
 std::unordered_map<std::string, void*> HashFunctions;
+std::unordered_map<std::string, void*> DsaFunctions;
 std::unordered_map<std::string, void*> RsaFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
@@ -172,22 +174,22 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         "--help",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index", "--read-index",
         "--base10", "--base16", "--base32", "--base58", "--base62", "--base64", "--base85", "--base91",
-        "--generate", "--convert", "--aes", "--des", "--hash", "--rsa"
+        "--generate", "--convert", "--aes", "--des", "--hash", "--dsa", "--rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
         { "-help", "--help"}, {"-h", "--help"},
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"}, {"-ri", "--read-index"},
         {"-b10", "--base10"}, {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b58", "--base58"}, {"-b62", "--base62"}, {"-b64", "--base64"}, {"-b85", "--base85"}, {"-b91", "--base91"},
-        {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-rsa", "--rsa"}
+        {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-dsa", "--dsa"}, {"-rsa", "--rsa"}
     };
 
     std::unordered_set<std::string> validHelper = {
-        "-binary", "-base", "-aes", "-des", "-hash", "-rsa"
+        "-binary", "-base", "-aes", "-des", "-hash", "-dsa", "-rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidHelper = {
-        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-h", "-hash"},  {"-r", "-rsa"}
+        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-h", "-hash"}, {"-ds", "-dsa"}, {"-r", "-rsa"}
     };
 
     std::unordered_set<std::string> validBytesOptions = {
@@ -248,6 +250,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 usage_libary::ShowDesUsage();
             if (helper == "-hash")
                 usage_libary::ShowHashUsage();
+            if (helper == "-dsa")
+                usage_libary::ShowDsaUsage();
             if (helper == "-rsa")
                 usage_libary::ShowRsaUsage();
             exit(0);
@@ -652,6 +656,9 @@ void LoadFunctions() {
     HashFunctions["-hash"] = GET_PROC_ADDRESS(Lib, "Hash");
     HashFunctions["-hash-length"] = GET_PROC_ADDRESS(Lib, "GetHashLength");
 
+    DsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "DsaGetParametersLength");
+    DsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "DsaGenerateParameters");
+
     RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
     RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
@@ -916,6 +923,11 @@ int main(int argc, char* argv[]) {
         Hashes hash;
         hash_execute::ParseParameters(argc, argv, hash);
         hash_execute::HashStart(hash);
+    }
+    else if (mode == "--dsa") {
+        Dsa dsa;
+        dsa_execute::ParseParameters(argc, argv, dsa);
+        dsa_execute::DsaStart(dsa);
     }
     else if (mode == "--rsa") {
         Rsa rsa;

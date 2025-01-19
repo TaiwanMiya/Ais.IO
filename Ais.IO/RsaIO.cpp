@@ -613,6 +613,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
         return handleErrors_asymmetric("Get Bits (bits) failed.", NULL, NULL, pkey);
 
     if (param_n && OSSL_PARAM_get_BN(param_n, &n)) {
+        params->N_LENGTH = BN_num_bytes(n);
         BN_bn2bin(n, params->N);
         BN_free(n);
     }
@@ -623,6 +624,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_e && OSSL_PARAM_get_BN(param_e, &e)) {
+        params->E_LENGTH = BN_num_bytes(e);
         BN_bn2bin(e, params->E);
         BN_free(e);
     }
@@ -633,6 +635,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_d && OSSL_PARAM_get_BN(param_d, &d)) {
+        params->D_LENGTH = BN_num_bytes(d);
         BN_bn2bin(d, params->D);
         BN_free(d);
     }
@@ -643,6 +646,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_p && OSSL_PARAM_get_BN(param_p, &p)) {
+        params->P_LENGTH = BN_num_bytes(p);
         BN_bn2bin(p, params->P);
         BN_free(p);
     }
@@ -653,6 +657,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_q && OSSL_PARAM_get_BN(param_q, &q)) {
+        params->Q_LENGTH = BN_num_bytes(q);
         BN_bn2bin(q, params->Q);
         BN_free(q);
     }
@@ -663,6 +668,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_dp && OSSL_PARAM_get_BN(param_dp, &dp)) {
+        params->DP_LENGTH = BN_num_bytes(dp);
         BN_bn2bin(dp, params->DP);
         BN_free(dp);
     }
@@ -673,6 +679,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_dq && OSSL_PARAM_get_BN(param_dq, &dq)) {
+        params->DQ_LENGTH = BN_num_bytes(dq);
         BN_bn2bin(dq, params->DQ);
         BN_free(dq);
     }
@@ -683,6 +690,7 @@ int RsaExportParameters(RSA_EXPORT* params) {
     }
 
     if (param_qi && OSSL_PARAM_get_BN(param_qi, &qi)) {
+        params->QI_LENGTH = BN_num_bytes(qi);
         BN_bn2bin(qi, params->QI);
         BN_free(qi);
     }

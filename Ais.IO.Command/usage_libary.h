@@ -10,6 +10,7 @@ public:
 	static void ShowAesUsage();
 	static void ShowDesUsage();
 	static void ShowHashUsage();
+	static void ShowDsaUsage();
 	static void ShowRsaUsage();
 private:
 	static void ShowWayUsage();

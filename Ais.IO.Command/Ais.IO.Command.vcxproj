@@ -156,6 +156,7 @@
     <ClCompile Include="aes_execute.cpp" />
     <ClCompile Include="binary_execute.cpp" />
     <ClCompile Include="des_execute.cpp" />
+    <ClCompile Include="dsa_execute.cpp" />
     <ClCompile Include="encoder_execute.cpp" />
     <ClCompile Include="cryptography_libary.cpp" />
     <ClCompile Include="hash_execute.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="aes_execute.h" />
     <ClInclude Include="binary_execute.h" />
     <ClInclude Include="des_execute.h" />
+    <ClInclude Include="dsa_execute.h" />
     <ClInclude Include="encoder_execute.h" />
     <ClInclude Include="cryptography_libary.h" />
     <ClInclude Include="hash_execute.h" />

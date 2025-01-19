@@ -112,6 +112,11 @@ enum HASH_TYPE {
     HASH_RIPEMD160      = 19,
 };
 
+enum DSA_MODE : unsigned long long {
+    DSA_GENERATE_PARAMS = 0,
+    DSA_GENERATE_KEYS = 1,
+};
+
 enum RSA_MODE : unsigned long long {
     RSA_GENERATE_PARAMS = 0,
     RSA_GENERATE_KEYS = 1,
@@ -250,6 +255,21 @@ struct Hashes {
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     SALT_SEQUENCE Sequence = SALT_SEQUENCE::SALT_NULL;
+};
+
+struct Dsa {
+    DSA_MODE Mode;
+    std::string Y;
+    std::string X;
+    std::string P;
+    std::string Q;
+    std::string G;
+    std::string Params;
+    std::string Output;
+    size_t KeyLength = 0;
+
+    CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 };
 
 struct Rsa {
@@ -621,6 +641,20 @@ struct HASH_STRUCTURE {
     size_t OUTPUT_LENGTH;
 };
 
+struct DSA_PARAMETERS {
+    const size_t KEY_LENGTH;
+    unsigned char* Y;
+    unsigned char* X;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* G;
+    size_t Y_LENGTH;
+    size_t X_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t G_LENGTH;
+};
+
 struct RSA_PARAMETERS {
     const size_t KEY_LENGTH;
     unsigned char* N;
@@ -911,6 +945,12 @@ typedef int (*Hash)(HASH_STRUCTURE*);
 typedef int (*GetHashLength)(HASH_TYPE);
 #pragma endregion
 
+#pragma region DsaIO
+typedef int (*DsaGetParametersLength)(DSA_PARAMETERS*);
+typedef int (*DsaGenerateParameters)(DSA_PARAMETERS*);
+#pragma endregion
+
+
 #pragma region RsaIO
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
@@ -935,6 +975,7 @@ extern std::unordered_map<std::string, void*> SymmetryFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
 extern std::unordered_map<std::string, void*> DesFunctions;
 extern std::unordered_map<std::string, void*> HashFunctions;
+extern std::unordered_map<std::string, void*> DsaFunctions;
 extern std::unordered_map<std::string, void*> RsaFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;

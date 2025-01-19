@@ -60,6 +60,9 @@
     <ClCompile Include="rsa_execute.cpp">
       <Filter>來源檔案\Execute</Filter>
     </ClCompile>
+    <ClCompile Include="dsa_execute.cpp">
+      <Filter>來源檔案\Execute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -93,6 +96,9 @@
       <Filter>標頭檔\Libary</Filter>
     </ClInclude>
     <ClInclude Include="rsa_execute.h">
+      <Filter>標頭檔\Execute</Filter>
+    </ClInclude>
+    <ClInclude Include="dsa_execute.h">
       <Filter>標頭檔\Execute</Filter>
     </ClInclude>
   </ItemGroup>

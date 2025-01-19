@@ -223,6 +223,7 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
     <ClInclude Include="BinaryWriterIO.h" />
     <ClInclude Include="BaseEncoderIO.h" />
     <ClInclude Include="DesIO.h" />
+    <ClInclude Include="DsaIO.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="SymmetryIO.h" />
     <ClInclude Include="HashIO.h" />
@@ -241,6 +242,7 @@ copy /y "$(ProjectDir)dll\libssl-3-x64.dll" "$(OutDir)libssl-3-x64.dll"</Command
     <ClCompile Include="DesIO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="BaseEncoderIO.cpp" />
+    <ClCompile Include="DsaIO.cpp" />
     <ClCompile Include="SymmetryIO.cpp" />
     <ClCompile Include="HashIO.cpp" />
     <ClCompile Include="pch.cpp">
