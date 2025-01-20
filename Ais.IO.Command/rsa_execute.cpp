@@ -706,7 +706,8 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	publicKey.resize(rsa.KeyLength);
 	privateKey.resize(rsa.KeyLength);
 	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, password);
-	password.push_back('\0');
+	if (rsa.password_option)
+		password.push_back('\0');
 	RSA_KEY_PAIR keypair = {
 		rsa.KeyLength,
 		rsa.KeyFormat,

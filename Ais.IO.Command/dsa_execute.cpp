@@ -121,6 +121,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 			case dsa_execute::hash("-paramters"):
 				dsa.Mode = DSA_MODE::DSA_CHECK_PARAMETER;
 				i++;
+				dsa.param_option = asymmetric_libary::GetOption(dsa, i, argv);
+				dsa.Params = argv[i + 1];
+				i++;
 				break;
 			}
 			break;
@@ -377,7 +380,8 @@ void dsa_execute::ExportParamters(Dsa& dsa) {
 	cryptography_libary::ValueDecode(dsa.publickey_option, dsa.PublicKey, publicKey);
 	cryptography_libary::ValueDecode(dsa.privatekey_option, dsa.PrivateKey, privateKey);
 	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, password);
-	password.push_back('\0');
+	if (dsa.password_option)
+		password.push_back('\0');
 	DSA_KEY_PAIR keyLength = {
 		0,
 		dsa.KeyFormat,

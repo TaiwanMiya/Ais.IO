@@ -93,7 +93,7 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}\{#MyAppExeName}";  IconFilename: "{app}\AisIO_64x64.ico"
 
 [Run]
-Filename: "cmd.exe"; Parameters: "/K aisio"; WorkingDir: "{app}"; Flags: postinstall runasoriginaluser waituntilidle;
+Filename: "cmd.exe"; Parameters: "rundll32.exe user32.dll,UpdatePerUserSystemParameters\n/K aisio"; WorkingDir: "{app}"; Flags: postinstall runasoriginaluser waituntilidle;
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}"

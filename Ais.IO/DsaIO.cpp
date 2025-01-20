@@ -5,11 +5,11 @@
 
 int DsaGetParametersLength(DSA_PARAMETERS* params) {
     size_t q_bit_length = (params->KEY_LENGTH <= 1024) ? 160 : 256;
-    params->P_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);     // p 的長度為密鑰長度的字節數
-    params->Q_LENGTH = 28;                                      // q 的長度為 q 位數的字節數
-    params->G_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);     // g 的長度與 p 相同
-    params->X_LENGTH = params->Q_LENGTH;                        // x 的長度等於 q 的長度
-    params->Y_LENGTH = params->P_LENGTH;                        // y 的長度等於 p 的長度
+    params->P_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);
+    params->Q_LENGTH = 28;
+    params->G_LENGTH = DIV_ROUND_UP(params->KEY_LENGTH, 8);
+    params->X_LENGTH = params->Q_LENGTH;
+    params->Y_LENGTH = params->P_LENGTH;
     return 0;
 }
 
@@ -327,6 +327,10 @@ int DsaExportParameters(DSA_EXPORT* params) {
         memset(params->G, 0, params->G_LENGTH);
         params->G_LENGTH = 0;
     }
+
+    p = NULL;
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_FFC_P, &p))
+        return handleErrors_asymmetric("Failed to retrieve P parameter.", NULL, NULL, NULL, pkey, NULL);
 
     params->KEY_LENGTH = BN_num_bits(p);
 
