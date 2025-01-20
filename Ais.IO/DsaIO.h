@@ -5,7 +5,7 @@
 #ifdef _WIN32
 #define DSAIO_API __declspec(dllexport)
 #else
-#define RSAIO_API
+#define DSAIO_API
 #endif
 #endif
 
