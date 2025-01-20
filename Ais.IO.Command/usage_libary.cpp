@@ -16,6 +16,23 @@ void usage_libary::ShowWayUsage() {
     std::cout << "" << std::endl;
 }
 
+void usage_libary::ShowKeysWayUsage() {
+    std::cout << Hint("    Supported [--keys-way]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-pem") << Warn("                                     -> PEM Raw data.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-pem [-f | -file] <path>]") << Warn("                -> PEM Archival data.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-der") << Warn("                                     -> DER Raw data.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-der [-b10 | -base10]") << Warn("                    -> DER Base10 data.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("-der [-b16 | -base16]") << Warn("                    -> DER Base16 data.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("-der [-b32 | -base32]") << Warn("                    -> DER Base32 data.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("-der [-b58 | -base58]") << Warn("                    -> DER Base58 data.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("-der [-b62 | -base62]") << Warn("                    -> DER Base62 data.") << std::endl;
+    std::cout << "        " << Mark(" 9") << ". " << Info("-der [-b64 | -base64]") << Warn("                    -> DER Base64 data.") << std::endl;
+    std::cout << "        " << Mark("10") << ". " << Info("-der [-b85 | -base85]") << Warn("                    -> DER Base85 data.") << std::endl;
+    std::cout << "        " << Mark("11") << ". " << Info("-der [-b91 | -base91]") << Warn("                    -> DER Base91 data.") << std::endl;
+    std::cout << "        " << Mark("12") << ". " << Info("-der [-f | -file] <path>") << Warn("                 -> DER Archival data.") << std::endl;
+    std::cout << "" << std::endl;
+}
+
 void usage_libary::ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
     std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
@@ -331,26 +348,54 @@ void usage_libary::ShowHashUsage() {
     std::cout << "        " << Mark(" 2") << ". " << Info("[-mid | -middle]") << Warn("          -> Add Salt (Middle, can be added)") << std::endl;
     std::cout << "        " << Mark(" 3") << ". " << Info("[-las | -last]") << Warn("            -> Add Salt (Last, can be added)") << std::endl;
     std::cout << "" << std::endl;
+
+    usage_libary::ShowWayUsage();
+}
+
+void usage_libary::ShowDsaUsage() {
+    std::cout << Ask("      :::::::::") << Warn("      ::::::::") << Error("          ::: ") << std::endl;
+    std::cout << Ask("     :+:    :+:") << Warn("    :+:    :+:") << Error("       :+: :+:") << std::endl;
+    std::cout << Ask("    +:+    +:+ ") << Warn("   +:+        ") << Error("     +:+   +:+") << std::endl;
+    std::cout << Ask("   +#+    +:+  ") << Warn("  +#++:++#++  ") << Error("   +#++:++#++:") << std::endl;
+    std::cout << Ask("  +#+    +#+   ") << Warn("        +#+   ") << Error("  +#+     +#+ ") << std::endl;
+    std::cout << Ask(" #+#    #+#    ") << Warn("#+#    #+#    ") << Error(" #+#     #+#  ") << std::endl;
+    std::cout << Ask("#########      ") << Warn("########      ") << Error("###     ###   ") << std::endl;
+    std::cout << Mark("Dsa Cryptography Usage") << std::endl;
+    std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 1") << ". " << Hint("DSA Generate Paramters:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-param | -params | -paramter | -paramters] <size> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 2") << ". " << Hint("DSA Generate Public Key & Private Key:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-key | -keys] <size> [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("DSA Export Paramters from Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-param | -params | -paramter | -paramters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("DSA Export Public Key & Private Key from Paramters:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-key | -keys] [-param | -params | -paramter | -paramters] [--way] [--paramters-list] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("DSA Extract Public Key from Private Key:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("DSA Extract Parameters from Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-param | -params | -paramter | -paramters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("DSA Extract Public Key & Private Key from Parameters:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-key | -keys] [-param | -params | -paramter | -paramters] [--keys-way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("DSA Confirms Whether the Public Key is Valid:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("DSA Confirms Whether the Private Key is Valid:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("DSA Confirms Whether the Parameters is Valid:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-param | -params | -paramter | -paramters] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
-}
 
-void usage_libary::ShowDsaUsage() {
-    std::cout << Info("      :::::::::") << Warn("      ::::::::") << Error("          ::: ") << std::endl;
-    std::cout << Info("     :+:    :+:") << Warn("    :+:    :+:") << Error("       :+: :+:") << std::endl;
-    std::cout << Info("    +:+    +:+ ") << Warn("   +:+        ") << Error("     +:+   +:+") << std::endl;
-    std::cout << Info("   +#+    +:+  ") << Warn("  +#++:++#++  ") << Error("   +#++:++#++:") << std::endl;
-    std::cout << Info("  +#+    +#+   ") << Warn("        +#+   ") << Error("  +#+     +#+ ") << std::endl;
-    std::cout << Info(" #+#    #+#    ") << Warn("#+#    #+#    ") << Error(" #+#     #+#  ") << std::endl;
-    std::cout << Info("#########      ") << Warn("########      ") << Error("###     ###   ") << std::endl;
-    std::cout << Mark("Dsa Cryptography Usage") << std::endl;
-    std::cout << "" << std::endl;
+    usage_libary::ShowKeysWayUsage();
 }
 
 void usage_libary::ShowRsaUsage() {
@@ -399,16 +444,7 @@ void usage_libary::ShowRsaUsage() {
 
     usage_libary::ShowWayUsage();
 
-    std::cout << Hint("    Supported [--keys-way]:\n");
-    std::cout << "        " << Mark(" 1") << ". " << Info("-pem") << Warn("                                     -> PEM Raw data.") << std::endl;
-    std::cout << "        " << Mark(" 2") << ". " << Info("-pem [-f | -file] <path>]") << Warn("                -> PEM Archival data.") << std::endl;
-    std::cout << "        " << Mark(" 3") << ". " << Info("-der") << Warn("                                     -> DER Raw data.") << std::endl;
-    std::cout << "        " << Mark(" 4") << ". " << Info("-der [-b16 | -base16]") << Warn("                    -> DER Base16 data.") << std::endl;
-    std::cout << "        " << Mark(" 5") << ". " << Info("-der [-b32 | -base32]") << Warn("                    -> DER Base32 data.") << std::endl;
-    std::cout << "        " << Mark(" 6") << ". " << Info("-der [-b64 | -base64]") << Warn("                    -> DER Base64 data.") << std::endl;
-    std::cout << "        " << Mark(" 7") << ". " << Info("-der [-b85 | -base85]") << Warn("                    -> DER Base85 data.") << std::endl;
-    std::cout << "        " << Mark(" 8") << ". " << Info("-der [-f | -file] <path>") << Warn("                 -> DER Archival data.") << std::endl;
-    std::cout << "" << std::endl;
+    usage_libary::ShowKeysWayUsage();
 
     std::cout << Hint("    Supported [--paramters-list]:\n");
     std::cout << "        " << Mark(" 1") << ". " << Info("[-n | -modulus]") << Warn("                          -> Modulus data by [--way].") << std::endl;

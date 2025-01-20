@@ -452,10 +452,12 @@ int DsaExtractPublicKey(DSA_EXTRACT_PUBLIC_KEY* params) {
 
     switch (params->PUBLIC_KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        PEM_write_bio_PUBKEY(pub_bio, pkey);
+        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey))
+            return handleErrors_asymmetric("Failed to write public key in PEM format.", pub_bio, priv_bio, pkey);
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        i2d_PUBKEY_bio(pub_bio, pkey);
+        if (1 != i2d_PUBKEY_bio(pub_bio, pkey))
+            return handleErrors_asymmetric("Failed to write public key in DER format.", pub_bio, priv_bio, pkey);
         break;
     default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
     }
@@ -507,28 +509,98 @@ int DsaExtractParametersByKeys(DSA_EXTRACT_PARAMETERS_KEYS* params) {
     BIO_free(pub_bio);
     BIO_free(priv_bio);
 
-    EVP_PKEY_CTX* ctx_param = EVP_PKEY_CTX_new_id(EVP_PKEY_DSA, NULL);
-    if (!ctx_param)
-        return handleErrors_asymmetric("Failed to initialize DSA param gen context.", NULL);
-
-    if (1 != EVP_PKEY_paramgen_init(ctx_param))
-        return handleErrors_asymmetric("Failed to init param gen.", ctx_param);
-
-    if (1 != EVP_PKEY_paramgen(ctx_param, &pkey))
-        return handleErrors_asymmetric("Failed to generate DSA param.", ctx_param);
-
     switch (params->PARAMETERS_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        PEM_write_bio_Parameters(param_bio, pkey);
+        if (1 != PEM_write_bio_Parameters(param_bio, pkey))
+            return handleErrors_asymmetric("Failed to write parameters in PEM format.", pub_bio, priv_bio, pkey);
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        i2d_KeyParams_bio(param_bio, pkey);
+        if (1 != i2d_KeyParams_bio(param_bio, pkey))
+            return handleErrors_asymmetric("Failed to write parameters in DER format.", pub_bio, priv_bio, pkey);
         break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
     }
+
+    size_t param_len = BIO_pending(param_bio);
+
+    if (params->PARAMETERS == nullptr || params->PARAMETERS_LENGTH < param_len)
+        params->PARAMETERS = new unsigned char[param_len];
+
+    BIO_read(param_bio, params->PARAMETERS, param_len);
+
+    params->PARAMETERS_LENGTH = param_len;
 
     BIO_free(param_bio);
     EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx_param);
+    return 0;
+}
+
+int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params) {
+    ERR_clear_error();
+
+    BIO* pub_bio = BIO_new(BIO_s_mem());
+    BIO* priv_bio = BIO_new(BIO_s_mem());
+    BIO* param_bio = BIO_new_mem_buf(params->PARAMETERS, static_cast<int>(params->PARAMETERS_LENGTH));
+
+    if (!param_bio)
+        return handleErrors_asymmetric("Failed to create BIOs for param data.", param_bio, NULL, NULL);
+
+    EVP_PKEY* pkey = nullptr;
+    switch (params->PARAMETERS_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_Parameters(param_bio, &pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_KeyParams_bio(EVP_PKEY_DSA, &pkey, param_bio);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", param_bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse parameters.", param_bio, NULL, pkey);
+
+    BIO_free(param_bio);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create EVP_PKEY_CTX for key generation.", NULL);
+
+    if (EVP_PKEY_keygen_init(ctx) <= 0)
+        return handleErrors_asymmetric("Failed to initialize key generation.", ctx);
+
+    if (EVP_PKEY_keygen(ctx, &pkey) <= 0)
+        return handleErrors_asymmetric("Failed to generate DSA key pair.", ctx);
+
+    EVP_PKEY_CTX_free(ctx);
+
+    switch (params->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey) || 1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+            return handleErrors_asymmetric("Failed to write keys in PEM format.", pub_bio, priv_bio, pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_PUBKEY_bio(pub_bio, pkey) || 1 != i2d_PrivateKey_bio(priv_bio, pkey))
+            return handleErrors_asymmetric("Failed to write keys in DER format.", pub_bio, priv_bio, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
+    }
+
+    size_t pub_len = BIO_pending(pub_bio);
+    size_t priv_len = BIO_pending(priv_bio);
+    if (params->PUBLIC_KEY == nullptr || params->PRIVATE_KEY == nullptr || params->PUBLIC_KEY_LENGTH < pub_len || params->PRIVATE_KEY_LENGTH < priv_len) {
+        params->PUBLIC_KEY = new unsigned char[pub_len];
+        params->PRIVATE_KEY = new unsigned char[priv_len];
+    }
+
+    BIO_read(pub_bio, params->PUBLIC_KEY, pub_len);
+    BIO_read(priv_bio, params->PRIVATE_KEY, priv_len);
+
+    params->PUBLIC_KEY_LENGTH = pub_len;
+    params->PRIVATE_KEY_LENGTH = priv_len;
+
+    BIO_free_all(pub_bio);
+    BIO_free_all(priv_bio);
+    EVP_PKEY_free(pkey);
     return 0;
 }
 
@@ -597,6 +669,40 @@ int DsaCheckPrivateKey(DSA_CHECK_PRIVATE_KEY* check) {
     if (!ctx)
         return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
     check->IS_KEY_OK = EVP_PKEY_private_check(ctx) > 0;
+
+    BIO_free(bio);
+    EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
+int DsaCheckParameters(DSA_CHECK_PARAMETERS* check) {
+    ERR_clear_error();
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(check->PARAMETERS, static_cast<int>(check->PARAMETERS_LENGTH));
+
+    switch (check->PARAM_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_Parameters(bio, &pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_KeyParams_bio(EVP_PKEY_DSA, &pkey, bio);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse parameters.", bio, NULL, pkey);
+
+    BIGNUM* p = NULL;
+    if (1 != EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_FFC_P, &p))
+        return handleErrors_asymmetric("Failed to retrieve P parameter.", bio, NULL, pkey);
+
+    check->KEY_LENGTH = BN_num_bits(p);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
+    check->IS_KEY_OK = EVP_PKEY_param_check(ctx) > 0;
 
     BIO_free(bio);
     EVP_PKEY_CTX_free(ctx);

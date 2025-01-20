@@ -662,9 +662,12 @@ void LoadFunctions() {
     DsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "DsaGenerateKeys");
     DsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "DsaExportParameters");
     DsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "DsaExportKeys");
-    DsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "DsaExtractPublicKey");
+    DsaFunctions["-key-extract-pub"] = GET_PROC_ADDRESS(Lib, "DsaExtractPublicKey");
+    DsaFunctions["-key-extract-param"] = GET_PROC_ADDRESS(Lib, "DsaExtractParametersByKeys");
+    DsaFunctions["-key-extract-key"] = GET_PROC_ADDRESS(Lib, "DsaExtractKeysByParameters");
     DsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPublicKey");
     DsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPrivateKey");
+    DsaFunctions["-param-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckParameters");
 
     RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");

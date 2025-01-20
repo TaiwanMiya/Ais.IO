@@ -14,7 +14,10 @@ private:
 	static void ExportParamters(Dsa& dsa);
 	static void ExportKeys(Dsa& dsa);
 	static void ExtractPublicKey(Dsa& dsa);
+	static void ExtractParametersByKeys(Dsa& dsa);
+	static void ExtractKeysByParameters(Dsa& dsa);
 	static void CheckPublicKey(Dsa& dsa);
 	static void CheckPrivateKey(Dsa& dsa);
+	static void CheckParameters(Dsa& dsa);
 };
 

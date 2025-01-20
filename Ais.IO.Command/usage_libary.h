@@ -14,5 +14,6 @@ public:
 	static void ShowRsaUsage();
 private:
 	static void ShowWayUsage();
+	static void ShowKeysWayUsage();
 };
 

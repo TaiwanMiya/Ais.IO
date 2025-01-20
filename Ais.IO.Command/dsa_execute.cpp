@@ -77,10 +77,20 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				dsa.Mode = DSA_MODE::DSA_EXTRACT_PUBLIC;
 				i++;
 				break;
+			case dsa_execute::hash("-key"):
+			case dsa_execute::hash("-keys"):
+				dsa.Mode = DSA_MODE::DSA_EXTRACT_KEYS;
+				i++;
+				break;
 			case dsa_execute::hash("-param"):
 			case dsa_execute::hash("-params"):
 			case dsa_execute::hash("-paramter"):
 			case dsa_execute::hash("-paramters"):
+				dsa.Mode = DSA_MODE::DSA_EXTRACT_PARAMETERS;
+				i++;
+				break;
+			default:
+				dsa.Mode = DSA_MODE::DSA_EXTRACT_PUBLIC;
 				break;
 			}
 			break;
@@ -103,6 +113,13 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				i++;
 				dsa.privatekey_option = asymmetric_libary::GetOption(dsa, i, argv);
 				dsa.PrivateKey = argv[i + 1];
+				i++;
+				break;
+			case dsa_execute::hash("-param"):
+			case dsa_execute::hash("-params"):
+			case dsa_execute::hash("-paramter"):
+			case dsa_execute::hash("-paramters"):
+				dsa.Mode = DSA_MODE::DSA_CHECK_PARAMETER;
 				i++;
 				break;
 			}
@@ -132,7 +149,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 		case dsa_execute::hash("-params"):
 		case dsa_execute::hash("-paramter"):
 		case dsa_execute::hash("-paramters"):
-			dsa.param_option = cryptography_libary::GetOption(i, argv);
+			dsa.param_option = dsa.Mode == DSA_MODE::DSA_EXTRACT_KEYS
+				? asymmetric_libary::GetOption(dsa, i, argv)
+				: cryptography_libary::GetOption(i, argv);
 			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
 				dsa.Params = argv[i + 1];
 				i++;
@@ -140,7 +159,7 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 			break;
 		case dsa_execute::hash("-out"):
 		case dsa_execute::hash("-output"):
-			if (dsa.Mode == DSA_MODE::DSA_GENERATE_KEYS || dsa.Mode == DSA_MODE::DSA_EXPORT_KEYS) {
+			if (dsa.Mode == DSA_MODE::DSA_GENERATE_KEYS || dsa.Mode == DSA_MODE::DSA_EXPORT_KEYS || dsa.Mode == DSA_MODE::DSA_EXTRACT_KEYS) {
 				CRYPT_OPTIONS option = asymmetric_libary::GetOption(dsa, i, argv);
 				dsa.publickey_option = option;
 				dsa.privatekey_option = option;
@@ -166,10 +185,39 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 			else if (dsa.Mode == DSA_MODE::DSA_GENERATE_PARAMS || dsa.Mode == DSA_MODE::DSA_EXPORT_PARAMS) {
 				dsa.param_option = cryptography_libary::GetOption(i, argv);
 				if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
-					std::regex pattern(R"((\.param)$)");
 					dsa.Params = argv[i + 1];
 					i++;
 				}
+			}
+			else if (dsa.Mode == DSA_MODE::DSA_EXTRACT_PUBLIC) {
+				ASYMMETRIC_KEY_FORMAT original_format = dsa.KeyFormat;
+				dsa.publickey_option = asymmetric_libary::GetOption(dsa, i, argv);
+				if (dsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						dsa.PublicKey = argv[i + 1];
+					else
+						dsa.PublicKey = dsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-pub.der"
+						: std::string(argv[i + 1]) + "-pub.pem";
+				}
+				dsa.ExtractKeyFormat = dsa.KeyFormat;
+				dsa.KeyFormat = original_format;
+			}
+			else if (dsa.Mode == DSA_MODE::DSA_EXTRACT_PARAMETERS) {
+				ASYMMETRIC_KEY_FORMAT original_format = dsa.KeyFormat;
+				dsa.param_option = asymmetric_libary::GetOption(dsa, i, argv);
+				if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-param.der|\-param.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						dsa.Params = argv[i + 1];
+					else
+						dsa.Params = dsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-param.der"
+						: std::string(argv[i + 1]) + "-param.pem";
+				}
+				dsa.ExtractKeyFormat = dsa.KeyFormat;
+				dsa.KeyFormat = original_format;
 			}
 			else {
 				dsa.output_option = cryptography_libary::GetOption(i, argv);
@@ -201,11 +249,20 @@ void dsa_execute::DsaStart(Dsa& dsa) {
 	case DSA_MODE::DSA_EXTRACT_PUBLIC:
 		ExtractPublicKey(dsa);
 		break;
+	case DSA_MODE::DSA_EXTRACT_PARAMETERS:
+		ExtractParametersByKeys(dsa);
+		break;
+	case DSA_MODE::DSA_EXTRACT_KEYS:
+		ExtractKeysByParameters(dsa);
+		break;
 	case DSA_MODE::DSA_CHECK_PUBLIC:
 		CheckPublicKey(dsa);
 		break;
 	case DSA_MODE::DSA_CHECK_PRIVATE:
 		CheckPrivateKey(dsa);
+		break;
+	case DSA_MODE::DSA_CHECK_PARAMETER:
+		CheckParameters(dsa);
 		break;
 	}
 }
@@ -530,7 +587,7 @@ void dsa_execute::ExtractPublicKey(Dsa& dsa) {
 		privateKey.size(),
 		pemPass.size()
 	};
-	((DsaExtractPublicKey)DsaFunctions.at("-key-extract"))(&pub);
+	((DsaExtractPublicKey)DsaFunctions.at("-key-extract-pub"))(&pub);
 
 	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
 	std::cout << Hint("<DSA Extract Public Key>") << std::endl;
@@ -538,6 +595,95 @@ void dsa_execute::ExtractPublicKey(Dsa& dsa) {
 	std::string publicKey_str = dsa.PublicKey;
 	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
 	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
+}
+
+void dsa_execute::ExtractParametersByKeys(Dsa& dsa) {
+	std::vector<unsigned char> parameters;
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(dsa.publickey_option, dsa.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(dsa.privatekey_option, dsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, pemPass);
+	pemPass.push_back('\0');
+
+	DSA_CHECK_PRIVATE_KEY priv = {
+		dsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
+
+	parameters.resize(priv.KEY_LENGTH);
+
+	DSA_EXTRACT_PARAMETERS_KEYS param = {
+		dsa.ExtractKeyFormat,
+		dsa.KeyFormat,
+		parameters.data(),
+		publicKey.data(),
+		privateKey.data(),
+		pemPass.data(),
+		parameters.size(),
+		publicKey.size(),
+		privateKey.size(),
+		pemPass.size(),
+	};
+	((DsaExtractParametersByKeys)DsaFunctions.at("-key-extract-param"))(&param);
+
+	parameters.resize(param.PARAMETERS_LENGTH);
+	std::cout << Hint("<DSA Extract Parameters>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	std::string parameters_str = dsa.Params;
+	cryptography_libary::ValueEncode(dsa.param_option, parameters, parameters_str);
+	std::cout << Mark("Parameters:\n") << Ask(parameters_str) << std::endl;
+}
+
+void dsa_execute::ExtractKeysByParameters(Dsa& dsa) {
+	std::vector<unsigned char> parameters;
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(dsa.param_option, dsa.Params, parameters);
+	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, pemPass);
+	if (dsa.password_option)
+		pemPass.push_back('\0');
+
+	DSA_CHECK_PARAMETERS param = {
+		dsa.ExtractKeyFormat,
+		parameters.data(),
+		parameters.size()
+	};
+	((DsaCheckParameters)DsaFunctions.at("-param-check"))(&param);
+
+	publicKey.resize(param.KEY_LENGTH);
+	privateKey.resize(param.KEY_LENGTH);
+
+	DSA_EXTRACT_KEYS_PARAMETERS keys = {
+		dsa.ExtractKeyFormat,
+		dsa.KeyFormat,
+		parameters.data(),
+		publicKey.data(),
+		privateKey.data(),
+		pemPass.data(),
+		parameters.size(),
+		publicKey.size(),
+		privateKey.size(),
+		pemPass.size()
+	};
+	((DsaExtractKeysByParameters)DsaFunctions.at("-key-extract-key"))(&keys);
+
+	publicKey.resize(keys.PUBLIC_KEY_LENGTH);
+	privateKey.resize(keys.PRIVATE_KEY_LENGTH);
+	std::cout << Hint("<DSA Extract Keys>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
+	std::string publicKey_str = dsa.PublicKey;
+	std::string privateKey_str = dsa.PrivateKey;
+	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+	cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
+	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
+	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
 }
 
 void dsa_execute::CheckPublicKey(Dsa& dsa) {
@@ -576,4 +722,21 @@ void dsa_execute::CheckPrivateKey(Dsa& dsa) {
 		std::cout << Hint("Dsa Private Key Check Success.") << std::endl;
 	else
 		std::cout << Error("Dsa Private Key Check Falture.") << std::endl;
+}
+
+void dsa_execute::CheckParameters(Dsa& dsa) {
+	std::vector<unsigned char> parameters;
+	cryptography_libary::ValueDecode(dsa.param_option, dsa.Params, parameters);
+	DSA_CHECK_PARAMETERS param = {
+		dsa.KeyFormat,
+		parameters.data(),
+		parameters.size()
+	};
+	((DsaCheckParameters)DsaFunctions.at("-param-check"))(&param);
+	std::cout << Hint("<DSA Parameters Check>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
+	if (param.IS_KEY_OK)
+		std::cout << Hint("Dsa Parameters Check Success.") << std::endl;
+	else
+		std::cout << Error("Dsa Parameters Check Falture.") << std::endl;
 }

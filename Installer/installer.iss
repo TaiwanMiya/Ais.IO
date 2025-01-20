@@ -3,7 +3,7 @@
 
 #define MyAppName "aisio"
 #define MyAppDirName "AisIO"
-#define MyAppVersion "1.0.9"
+#define MyAppVersion "1.0.10"
 #define MyAppPublisher "Ais Fran, Inc."
 #define MyAppURL "https://github.com/TaiwanMiya/Ais.IO"
 #define MyAppExeName "aisio.exe"

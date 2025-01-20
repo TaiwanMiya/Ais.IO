@@ -107,6 +107,19 @@ struct DSA_EXTRACT_PARAMETERS_KEYS {
     size_t PEM_PASSWORD_LENGTH;
 };
 
+struct DSA_EXTRACT_KEYS_PARAMETERS {
+    const ASYMMETRIC_KEY_FORMAT PARAMETERS_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PARAMETERS;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PARAMETERS_LENGTH;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
 struct DSA_CHECK_PUBLIC_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PUBLIC_KEY;
@@ -125,6 +138,14 @@ struct DSA_CHECK_PRIVATE_KEY {
     size_t KEY_LENGTH;
 };
 
+struct DSA_CHECK_PARAMETERS {
+    const ASYMMETRIC_KEY_FORMAT PARAM_FORMAT;
+    const unsigned char* PARAMETERS;
+    size_t PARAMETERS_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
 EXT DSAIO_API int DsaGetParametersLength(DSA_PARAMETERS* params);
 EXT DSAIO_API int DsaGetKeyLength(DSA_KEY_PAIR* params);
 EXT DSAIO_API int DsaGenerateParameters(DSA_PARAMETERS* params);
@@ -133,5 +154,7 @@ EXT DSAIO_API int DsaExportParameters(DSA_EXPORT* params);
 EXT DSAIO_API int DsaExportKeys(DSA_EXPORT* params);
 EXT DSAIO_API int DsaExtractPublicKey(DSA_EXTRACT_PUBLIC_KEY* params);
 EXT DSAIO_API int DsaExtractParametersByKeys(DSA_EXTRACT_PARAMETERS_KEYS* params);
+EXT DSAIO_API int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params);
 EXT DSAIO_API int DsaCheckPublicKey(DSA_CHECK_PUBLIC_KEY* check);
 EXT DSAIO_API int DsaCheckPrivateKey(DSA_CHECK_PRIVATE_KEY* check);
+EXT DSAIO_API int DsaCheckParameters(DSA_CHECK_PARAMETERS* check);

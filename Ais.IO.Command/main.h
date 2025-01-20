@@ -119,8 +119,10 @@ enum DSA_MODE : unsigned long long {
     DSA_EXPORT_KEYS = 3,
     DSA_EXTRACT_PUBLIC = 4,
     DSA_EXTRACT_PARAMETERS = 5,
-    DSA_CHECK_PUBLIC = 6,
-    DSA_CHECK_PRIVATE = 7,
+    DSA_EXTRACT_KEYS = 6,
+    DSA_CHECK_PUBLIC = 7,
+    DSA_CHECK_PRIVATE = 8,
+    DSA_CHECK_PARAMETER = 9,
 };
 
 enum RSA_MODE : unsigned long long {
@@ -721,6 +723,32 @@ struct DSA_EXTRACT_PUBLIC_KEY {
     size_t PEM_PASSWORD_LENGTH;
 };
 
+struct DSA_EXTRACT_PARAMETERS_KEYS {
+    const ASYMMETRIC_KEY_FORMAT PARAMETERS_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PARAMETERS;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PARAMETERS_LENGTH;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_EXTRACT_KEYS_PARAMETERS {
+    const ASYMMETRIC_KEY_FORMAT PARAMETERS_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PARAMETERS;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PARAMETERS_LENGTH;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
 struct DSA_CHECK_PUBLIC_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PUBLIC_KEY;
@@ -735,6 +763,14 @@ struct DSA_CHECK_PRIVATE_KEY {
     size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
     size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct DSA_CHECK_PARAMETERS {
+    const ASYMMETRIC_KEY_FORMAT PARAM_FORMAT;
+    const unsigned char* PARAMETERS;
+    size_t PARAMETERS_LENGTH;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
 };
@@ -1048,8 +1084,11 @@ typedef int (*DsaGenerateKeys)(DSA_KEY_PAIR*);
 typedef int (*DsaExportParameters)(DSA_EXPORT*);
 typedef int (*DsaExportKeys)(DSA_EXPORT*);
 typedef int (*DsaExtractPublicKey)(DSA_EXTRACT_PUBLIC_KEY*);
+typedef int (*DsaExtractParametersByKeys)(DSA_EXTRACT_PARAMETERS_KEYS*);
+typedef int (*DsaExtractKeysByParameters)(DSA_EXTRACT_KEYS_PARAMETERS*);
 typedef int (*DsaCheckPublicKey)(DSA_CHECK_PUBLIC_KEY*);
 typedef int (*DsaCheckPrivateKey)(DSA_CHECK_PRIVATE_KEY*);
+typedef int (*DsaCheckParameters)(DSA_CHECK_PARAMETERS*);
 #pragma endregion
 
 
