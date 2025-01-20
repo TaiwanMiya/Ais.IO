@@ -657,16 +657,24 @@ void LoadFunctions() {
     HashFunctions["-hash-length"] = GET_PROC_ADDRESS(Lib, "GetHashLength");
 
     DsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "DsaGetParametersLength");
+    DsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "DsaGetKeyLength");
     DsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "DsaGenerateParameters");
+    DsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "DsaGenerateKeys");
+    DsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "DsaExportParameters");
+    DsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "DsaExportKeys");
+    DsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "DsaExtractPublicKey");
+    DsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPublicKey");
+    DsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPrivateKey");
 
     RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
-    RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
-    RsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
     RsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
     RsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
     RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
+    RsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "RsaExtractPublicKey");
+    RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
+    RsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
     RsaFunctions["-encrypt"] = GET_PROC_ADDRESS(Lib, "RsaEncryption");
     RsaFunctions["-decrypt"] = GET_PROC_ADDRESS(Lib, "RsaDecryption");
     RsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "RsaSigned");

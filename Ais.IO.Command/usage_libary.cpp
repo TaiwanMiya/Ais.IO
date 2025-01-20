@@ -331,6 +331,12 @@ void usage_libary::ShowHashUsage() {
     std::cout << "        " << Mark(" 2") << ". " << Info("[-mid | -middle]") << Warn("          -> Add Salt (Middle, can be added)") << std::endl;
     std::cout << "        " << Mark(" 3") << ". " << Info("[-las | -last]") << Warn("            -> Add Salt (Last, can be added)") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 1") << ". " << Hint("DSA Generate Paramters:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-param | -params | -paramter | -paramters] <size> [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 2") << ". " << Hint("DSA Generate Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-key | -keys] <size> [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
 }
@@ -369,22 +375,25 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "    " << Mark(" 4") << ". " << Hint("RSA Export Public Key & Private Key from Paramters:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-exp | -export] [-key | -keys] [-param | -params | -paramter | -paramters] [--way] [--paramters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 5") << ". " << Hint("RSA Confirms Whether the Public Key is Valid:") << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("RSA Extract Public Key from Private Key:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("RSA Confirms Whether the Public Key is Valid:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 6") << ". " << Hint("RSA Confirms Whether the Private Key is Valid:") << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("RSA Confirms Whether the Private Key is Valid:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 7") << ". " << Hint("RSA Encryption:") << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("RSA Encryption:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-en | -encrypt] [-pub | -public | -public-key] [--keys-way] [-pt | -plain-text] [--way] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 8") << ". " << Hint("RSA Decryption:") << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("RSA Decryption:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-de | -decrypt] [-priv | -private | -private-key] [--keys-way] [-ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 9") << ". " << Hint("RSA Signed Data:") << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("RSA Signed Data:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark("10") << ". " << Hint("RSA Verify Data:") << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("RSA Verify Data:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
     std::cout << "" << std::endl;
 

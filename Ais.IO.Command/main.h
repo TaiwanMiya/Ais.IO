@@ -115,6 +115,12 @@ enum HASH_TYPE {
 enum DSA_MODE : unsigned long long {
     DSA_GENERATE_PARAMS = 0,
     DSA_GENERATE_KEYS = 1,
+    DSA_EXPORT_PARAMS = 2,
+    DSA_EXPORT_KEYS = 3,
+    DSA_EXTRACT_PUBLIC = 4,
+    DSA_EXTRACT_PARAMETERS = 5,
+    DSA_CHECK_PUBLIC = 6,
+    DSA_CHECK_PRIVATE = 7,
 };
 
 enum RSA_MODE : unsigned long long {
@@ -122,12 +128,13 @@ enum RSA_MODE : unsigned long long {
     RSA_GENERATE_KEYS = 1,
     RSA_EXPORT_PARAMS = 2,
     RSA_EXPORT_KEYS = 3,
-    RSA_CHECK_PUBLIC = 4,
-    RSA_CHECK_PRIVATE = 5,
-    RSA_ENCRPTION = 6,
-    RSA_DECRPTION = 7,
-    RSA_SIGNATURE = 8,
-    RSA_VERIFICATION = 9,
+    RSA_EXTRACT_PUBLIC = 4,
+    RSA_CHECK_PUBLIC = 5,
+    RSA_CHECK_PRIVATE = 6,
+    RSA_ENCRPTION = 7,
+    RSA_DECRPTION = 8,
+    RSA_SIGNATURE = 9,
+    RSA_VERIFICATION = 10,
 };
 
 enum SYMMETRY_CRYPTER {
@@ -265,11 +272,23 @@ struct Dsa {
     std::string Q;
     std::string G;
     std::string Params;
+    std::string PublicKey;
+    std::string PrivateKey;
+    std::string Password;
     std::string Output;
     size_t KeyLength = 0;
 
     CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
+    ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    ASYMMETRIC_KEY_FORMAT ExtractKeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
+    int AlgorithmSize = 256;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
 };
 
 struct Rsa {
@@ -304,6 +323,7 @@ struct Rsa {
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    ASYMMETRIC_KEY_FORMAT ExtractKeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
     SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
     int AlgorithmSize = 256;
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
@@ -655,6 +675,70 @@ struct DSA_PARAMETERS {
     size_t G_LENGTH;
 };
 
+struct DSA_KEY_PAIR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct DSA_EXPORT {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* Y;
+    unsigned char* X;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* G;
+    size_t Y_LENGTH;
+    size_t X_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t G_LENGTH;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_EXTRACT_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct DSA_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
 struct RSA_PARAMETERS {
     const size_t KEY_LENGTH;
     unsigned char* N;
@@ -689,24 +773,6 @@ struct RSA_KEY_PAIR {
     const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
 };
 
-struct RSA_CHECK_PUBLIC_KEY {
-    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    const unsigned char* PUBLIC_KEY;
-    size_t PUBLIC_KEY_LENGTH;
-    bool IS_KEY_OK;
-    size_t KEY_LENGTH;
-};
-
-struct RSA_CHECK_PRIVATE_KEY {
-    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
-    const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
-    const unsigned char* PEM_PASSWORD;
-    size_t PEM_PASSWORD_LENGTH;
-    bool IS_KEY_OK;
-    size_t KEY_LENGTH;
-};
-
 struct RSA_EXPORT {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -732,6 +798,35 @@ struct RSA_EXPORT {
     size_t PUBLIC_KEY_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
+};
+
+struct RSA_EXTRACT_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct RSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
 };
 
 struct RSA_ENCRYPT {
@@ -947,19 +1042,27 @@ typedef int (*GetHashLength)(HASH_TYPE);
 
 #pragma region DsaIO
 typedef int (*DsaGetParametersLength)(DSA_PARAMETERS*);
+typedef int (*DsaGetKeyLength)(DSA_KEY_PAIR*);
 typedef int (*DsaGenerateParameters)(DSA_PARAMETERS*);
+typedef int (*DsaGenerateKeys)(DSA_KEY_PAIR*);
+typedef int (*DsaExportParameters)(DSA_EXPORT*);
+typedef int (*DsaExportKeys)(DSA_EXPORT*);
+typedef int (*DsaExtractPublicKey)(DSA_EXTRACT_PUBLIC_KEY*);
+typedef int (*DsaCheckPublicKey)(DSA_CHECK_PUBLIC_KEY*);
+typedef int (*DsaCheckPrivateKey)(DSA_CHECK_PRIVATE_KEY*);
 #pragma endregion
 
 
 #pragma region RsaIO
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
-typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
-typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
 typedef int (*RsaExportParameters)(RSA_EXPORT*);
 typedef int (*RsaExportKeys)(RSA_EXPORT*);
+typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
+typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
+typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
 typedef int (*RsaEncryption)(RSA_ENCRYPT*);
 typedef int (*RsaDecryption)(RSA_DECRYPT*);
 typedef int (*RsaSigned)(RSA_SIGNED*);

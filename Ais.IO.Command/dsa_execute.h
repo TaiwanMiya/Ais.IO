@@ -11,5 +11,10 @@ private:
 	static size_t set_hash(const char* str);
 	static void GenerateParameters(Dsa& dsa);
 	static void GenerateKeys(Dsa& dsa);
+	static void ExportParamters(Dsa& dsa);
+	static void ExportKeys(Dsa& dsa);
+	static void ExtractPublicKey(Dsa& dsa);
+	static void CheckPublicKey(Dsa& dsa);
+	static void CheckPrivateKey(Dsa& dsa);
 };
 

@@ -2,6 +2,7 @@
 #include "string_case.h"
 #include "output_colors.h"
 #include "cryptography_libary.h"
+#include "asymmetric_libary.h"
 
 constexpr size_t rsa_execute::hash(const char* str) {
 	size_t hash = 0;
@@ -15,72 +16,6 @@ size_t rsa_execute::set_hash(const char* str) {
 	while (*str)
 		hash = hash * 31 + *str++;
 	return hash;
-}
-
-CRYPT_OPTIONS rsa_execute::GetOption(Rsa& rsa, int& i, char* argv[]) {
-	std::string arg_option = ToLower(argv[i + 1]);
-	switch (set_hash(arg_option.c_str())) {
-	case hash("-der"):
-		rsa.KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER;
-		i++;
-		if (argv[i + 1] == NULL)
-			return CRYPT_OPTIONS::OPTION_TEXT;
-		switch (set_hash(ToLower(argv[i + 1]).c_str())) {
-		case hash("-file"):
-		case hash("-f"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_FILE;
-		case hash("-base10"):
-		case hash("-b10"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE10;
-		case hash("-base16"):
-		case hash("-b16"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE16;
-		case hash("-base32"):
-		case hash("-b32"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE32;
-		case hash("-base58"):
-		case hash("-b58"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE58;
-		case hash("-base62"):
-		case hash("-b62"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE62;
-		case hash("-base64"):
-		case hash("-b64"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE64;
-		case hash("-base85"):
-		case hash("-b85"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE85;
-		case hash("-base91"):
-		case hash("-b91"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_BASE91;
-		default:
-			return CRYPT_OPTIONS::OPTION_TEXT;
-		}
-	case hash("-pem"):
-		rsa.KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
-		i++;
-		if (argv[i + 1] == NULL)
-			return CRYPT_OPTIONS::OPTION_TEXT;
-		switch (set_hash(ToLower(argv[i + 1]).c_str())) {
-		case hash("-file"):
-		case hash("-f"):
-			i++;
-			return CRYPT_OPTIONS::OPTION_FILE;
-		default:
-			return CRYPT_OPTIONS::OPTION_TEXT;
-		}
-	default:
-		return CRYPT_OPTIONS::OPTION_TEXT;
-	}
 }
 
 void rsa_execute::ParseAlgorithm(int& i, char* argv[], Rsa& rsa) {
@@ -402,6 +337,10 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				continue;
 			}
 			break;
+		case rsa_execute::hash("-ext"):
+		case rsa_execute::hash("-extract"):
+			rsa.Mode = RSA_MODE::RSA_EXTRACT_PUBLIC;
+			break;
 		case rsa_execute::hash("-chk"):
 		case rsa_execute::hash("-check"):
 			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
@@ -410,7 +349,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			case rsa_execute::hash("-public-key"):
 				rsa.Mode = RSA_MODE::RSA_CHECK_PUBLIC;
 				i++;
-				rsa.publickey_option = rsa_execute::GetOption(rsa, i, argv);
+				rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
 				rsa.PublicKey = argv[i + 1];
 				i++;
 				break;
@@ -419,7 +358,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			case rsa_execute::hash("-private-key"):
 				rsa.Mode = RSA_MODE::RSA_CHECK_PRIVATE;
 				i++;
-				rsa.privatekey_option = rsa_execute::GetOption(rsa, i, argv);
+				rsa.privatekey_option = asymmetric_libary::GetOption(rsa, i, argv);
 				rsa.PrivateKey = argv[i + 1];
 				i++;
 				break;
@@ -444,19 +383,20 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-pub"):
 		case rsa_execute::hash("-public"):
 		case rsa_execute::hash("-public-key"):
-			rsa.publickey_option = rsa_execute::GetOption(rsa, i, argv);
+			rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
 			rsa.PublicKey = argv[i + 1];
 			i++;
 			break;
 		case rsa_execute::hash("-priv"):
 		case rsa_execute::hash("-private"):
 		case rsa_execute::hash("-private-key"):
-			rsa.privatekey_option = rsa_execute::GetOption(rsa, i, argv);
+			rsa.privatekey_option = asymmetric_libary::GetOption(rsa, i, argv);
 			rsa.PrivateKey = argv[i + 1];
 			i++;
 			break;
 		case rsa_execute::hash("-pwd"):
 		case rsa_execute::hash("-pass"):
+		case rsa_execute::hash("-password"):
 			rsa.password_option = cryptography_libary::GetOption(i, argv);
 			rsa.Password = argv[i + 1];
 			i++;
@@ -571,7 +511,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-out"):
 		case rsa_execute::hash("-output"):
 			if (rsa.Mode == RSA_MODE::RSA_GENERATE_KEYS || rsa.Mode == RSA_MODE::RSA_EXPORT_KEYS) {
-				CRYPT_OPTIONS option = rsa_execute::GetOption(rsa, i, argv);
+				CRYPT_OPTIONS option = asymmetric_libary::GetOption(rsa, i, argv);
 				rsa.publickey_option = option;
 				rsa.privatekey_option = option;
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
@@ -600,6 +540,21 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 					rsa.Params = argv[i + 1];
 					i++;
 				}
+			}
+			else if (rsa.Mode == RSA_MODE::RSA_EXTRACT_PUBLIC) {
+				ASYMMETRIC_KEY_FORMAT original_format = rsa.KeyFormat;
+				rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
+				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						rsa.PublicKey = argv[i + 1];
+					else
+						rsa.PublicKey = rsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-pub.der"
+						: std::string(argv[i + 1]) + "-pub.pem";
+				}
+				rsa.ExtractKeyFormat = rsa.KeyFormat;
+				rsa.KeyFormat = original_format;
 			}
 			else {
 				rsa.output_option = cryptography_libary::GetOption(i, argv);
@@ -633,6 +588,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_CHECK_PRIVATE:
 		CheckPrivateKey(rsa);
+		break;
+	case RSA_MODE::RSA_EXTRACT_PUBLIC:
+		ExtractPublicKey(rsa);
 		break;
 	case RSA_MODE::RSA_ENCRPTION:
 		Encrypt(rsa);
@@ -748,8 +706,7 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	publicKey.resize(rsa.KeyLength);
 	privateKey.resize(rsa.KeyLength);
 	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, password);
-	if (rsa.password_option)
-		password.push_back('\0');
+	password.push_back('\0');
 	RSA_KEY_PAIR keypair = {
 		rsa.KeyLength,
 		rsa.KeyFormat,
@@ -1016,6 +973,45 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
 	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
 	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
+}
+
+void rsa_execute::ExtractPublicKey(Rsa& rsa) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	pemPass.push_back('\0');
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+
+	publicKey.resize(priv.KEY_LENGTH);
+	
+	RSA_EXTRACT_PUBLIC_KEY pub = {
+		rsa.ExtractKeyFormat,
+		rsa.KeyFormat,
+		publicKey.data(),
+		privateKey.data(),
+		pemPass.data(),
+		publicKey.size(),
+		privateKey.size(),
+		pemPass.size()
+	};
+	((RsaExtractPublicKey)RsaFunctions.at("-key-extract"))(&pub);
+
+	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
+	std::cout << Hint("<RSA Extract Public Key>") << std::endl;
+	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	std::string publicKey_str = rsa.PublicKey;
+	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
 }
 
 void rsa_execute::CheckPublicKey(Rsa& rsa) {

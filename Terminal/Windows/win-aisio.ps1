@@ -43,6 +43,7 @@ while ($parameter.Count -gt 0) {
                                                     $parameter = $parameter[1..$parameter.Count]; break }
         '-imp'  { $operation = '-imp';              $parameter = $parameter[1..$parameter.Count]; break }
         '-exp'  { $mode = '-exp';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-ext'  { $mode = '-ext';                   $parameter = $parameter[1..$parameter.Count]; break }
 
         # AES
         '-aes'  { $operation = '-aes';              $parameter = $parameter[1..$parameter.Count]; break }
@@ -251,6 +252,12 @@ for ($i = 1; $i -le $iterations; $i++) {
                         '-pem'      { RSA_Export_Keys_PEM }
                         '-der'      { RSA_Export_Keys_DER }
                         '-param'    { RSA_Export_Paramters }
+                    }
+                }
+                '-ext' {
+                    switch ($rsa_format) {
+                        '-pem'      { RSA_Extract_Public_Key_PEM }
+                        '-der'      { RSA_Extract_Public_Key_DER }
                     }
                 }
                 '-chk' {

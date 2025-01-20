@@ -183,13 +183,15 @@ CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 
 	"56" "Rsa Export Paramters" \
 	"57" "Rsa Export PEM Keys" \
 	"58" "Rsa Export DER Keys" \
-	"59" "Rsa Check PEM Keys" \
-	"60" "Rsa Check DER Keys" \
-	"61" "RSA Cryption PEM" \
-	"62" "RSA Cryption DER" \
-	"63" "RSA Digital PEM" \
-	"64" "RSA Digital DER" \
-	"65" "Exit" 3>&1 1>&2 2>&3)
+	"59" "Rsa Extract PEM Public Key" \
+	"60" "Rsa Extract DER Public Key" \
+	"61" "Rsa Check PEM Keys" \
+	"62" "Rsa Check DER Keys" \
+	"63" "RSA Cryption PEM" \
+	"64" "RSA Cryption DER" \
+	"65" "RSA Digital PEM" \
+	"66" "RSA Digital DER" \
+	"67" "Exit" 3>&1 1>&2 2>&3)
 
 start_time=$(date +%s%N)
 for ((i=1; i<=iterations; i++)); do
@@ -372,24 +374,30 @@ for ((i=1; i<=iterations; i++)); do
 			RSA_Export_Keys_DER
 			;;
 		59)
-			RSA_Check_Keys_PEM
+			RSA_Extract_Public_Key_PEM
 			;;
 		60)
-			RSA_Check_Keys_DER
+			RSA_Extract_Public_Key_DER
 			;;
 		61)
-			RSA_Cryption_PEM
+			RSA_Check_Keys_PEM
 			;;
 		62)
-			RSA_Cryption_DER
+			RSA_Check_Keys_DER
 			;;
 		63)
-			RSA_Digital_PEM
+			RSA_Cryption_PEM
 			;;
 		64)
-			RSA_Digital_DER
+			RSA_Cryption_DER
 			;;
 		65)
+			RSA_Digital_PEM
+			;;
+		66)
+			RSA_Digital_DER
+			;;
+		67)
 			echo "Exit..."
 			exit 0
 			;;

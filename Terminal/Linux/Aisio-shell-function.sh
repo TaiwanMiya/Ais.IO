@@ -401,6 +401,14 @@ RSA_Export_Keys_DER() {
 	./aisio -rsa -export -key -param "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -der "$BASE"
 }
 
+RSA_Extract_Public_Key_PEM() {
+	./aisio -rsa -extract -priv -pem "$RSA_PEM_PRIV" -out -pem
+}
+
+RSA_Extract_Public_Key_DER() {
+	./aisio -rsa -extract -priv -der "$BASE" "$RSA_DER_PRIV" -out -der "$BASE"
+}
+
 RSA_Check_Keys_PEM() {
 	./aisio -rsa -check -pub -pem "$RSA_PEM_PUB"
 	./aisio -rsa -check -priv -pem "$RSA_PEM_PRIV"

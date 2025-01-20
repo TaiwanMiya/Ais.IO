@@ -131,7 +131,7 @@ while [[ "$#" -gt 0 ]]; do
 			fi
 			shift
 			;;
-		-exp|-chk)
+		-exp|-ext|-chk)
 			mode="$1"
 			shift
 			;;
@@ -400,6 +400,16 @@ for ((i=1; i<=iterations; i++)); do
 							;;
 						-param)
 							RSA_Export_Paramters
+							;;
+					esac
+					;;
+				-ext)
+					case "$rsa_format" in
+						-pem)
+							RSA_Extract_Public_Key_PEM	
+							;;
+						-der)
+							RSA_Extract_Public_Key_DER
 							;;
 					esac
 					;;

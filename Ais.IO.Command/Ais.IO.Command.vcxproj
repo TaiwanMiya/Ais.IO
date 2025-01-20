@@ -154,6 +154,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aes_execute.cpp" />
+    <ClCompile Include="asymmetric_libary.cpp" />
     <ClCompile Include="binary_execute.cpp" />
     <ClCompile Include="des_execute.cpp" />
     <ClCompile Include="dsa_execute.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aes_execute.h" />
+    <ClInclude Include="asymmetric_libary.h" />
     <ClInclude Include="binary_execute.h" />
     <ClInclude Include="des_execute.h" />
     <ClInclude Include="dsa_execute.h" />

@@ -36,17 +36,102 @@
 
 struct DSA_PARAMETERS {
     const size_t KEY_LENGTH;
-    unsigned char* Y; // 公鑰 y
-    unsigned char* X; // 私鑰 x
-    unsigned char* P; // 素數 p
-    unsigned char* Q; // 素數 q
-    unsigned char* G; // 生成元 g
-    size_t Y_LENGTH;  // 公鑰 y 長度
-    size_t X_LENGTH;  // 私鑰 x 長度
-    size_t P_LENGTH;  // 素數 p 長度
-    size_t Q_LENGTH;  // 素數 q 長度
-    size_t G_LENGTH;  // 生成元 g 長度
+    unsigned char* Y;
+    unsigned char* X;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* G;
+    size_t Y_LENGTH;
+    size_t X_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t G_LENGTH;
+};
+
+struct DSA_KEY_PAIR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct DSA_EXPORT {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* Y;
+    unsigned char* X;
+    unsigned char* P;
+    unsigned char* Q;
+    unsigned char* G;
+    size_t Y_LENGTH;
+    size_t X_LENGTH;
+    size_t P_LENGTH;
+    size_t Q_LENGTH;
+    size_t G_LENGTH;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_EXTRACT_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_EXTRACT_PARAMETERS_KEYS {
+    const ASYMMETRIC_KEY_FORMAT PARAMETERS_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PARAMETERS;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PARAMETERS_LENGTH;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct DSA_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct DSA_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
 };
 
 EXT DSAIO_API int DsaGetParametersLength(DSA_PARAMETERS* params);
+EXT DSAIO_API int DsaGetKeyLength(DSA_KEY_PAIR* params);
 EXT DSAIO_API int DsaGenerateParameters(DSA_PARAMETERS* params);
+EXT DSAIO_API int DsaGenerateKeys(DSA_KEY_PAIR* generate);
+EXT DSAIO_API int DsaExportParameters(DSA_EXPORT* params);
+EXT DSAIO_API int DsaExportKeys(DSA_EXPORT* params);
+EXT DSAIO_API int DsaExtractPublicKey(DSA_EXTRACT_PUBLIC_KEY* params);
+EXT DSAIO_API int DsaExtractParametersByKeys(DSA_EXTRACT_PARAMETERS_KEYS* params);
+EXT DSAIO_API int DsaCheckPublicKey(DSA_CHECK_PUBLIC_KEY* check);
+EXT DSAIO_API int DsaCheckPrivateKey(DSA_CHECK_PRIVATE_KEY* check);
