@@ -13,22 +13,26 @@ mode=$(whiptail --title "Encode/Decode or Encrypt/Decrypt" --menu "Choice:" 15 4
 	"4" "Verify" \
 	3>&1 1>&2 2>&3)
 
-if [[ $mode == "1" ]]; then
-	encoder="-e"
-elif [[ $mode == "2" ]]; then
-	encoder="-d"
-elif [[ $mode == "3" ]]; then
-	encoder='-s'
-elif [[ $mode == "4" ]]; then
-	encoder='-v'
-else
-	echo "Invalid option!"
-	exit 1
-fi
+case $mode in
+	1)
+		encoder="-e"
+		;;
+	2)
+		encoder="-d"
+		;;
+	3)
+		encoder='-s'
+		;;
+	4)
+		encoder='-v'
+		;;
+	*)
+		exit 1
+		;;
+esac
 
 iterations=$(whiptail --title "Set Loop Count" --inputbox "Choice your loop count (Default Count 1):" 10 40 1 3>&1 1>&2 2>&3)
 if ! [[ $iterations =~ ^[0-9]+$ ]]; then
-	echo "Invalid option!"
 	exit 1
 fi
 index_list=$(seq 0 $((iterations-1)) | tr '\n' ' ')
@@ -86,21 +90,37 @@ CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 
 	"50" "Hash BLAKE2B 512 Calculation"\
 	"51" "Hash SM3 Calculation"\
 	"52" "Hash RIPEMD160 Calculation"\
-	"53" "Rsa Generate Parameters" \
-	"54" "Rsa Generate PEM Keys" \
-	"55" "Rsa Generate DER Keys" \
-	"56" "Rsa Export Parameters" \
-	"57" "Rsa Export PEM Keys" \
-	"58" "Rsa Export DER Keys" \
-	"59" "Rsa Extract PEM Public Key" \
-	"60" "Rsa Extract DER Public Key" \
-	"61" "Rsa Check PEM Keys" \
-	"62" "Rsa Check DER Keys" \
-	"63" "RSA Cryption PEM" \
-	"64" "RSA Cryption DER" \
-	"65" "RSA Digital PEM" \
-	"66" "RSA Digital DER" \
-	"67" "Exit" 3>&1 1>&2 2>&3)
+	"53" "Dsa Generate Parameters" \
+	"54" "Dsa Generate PEM Keys" \
+	"55" "Dsa Generate DER Keys" \
+	"56" "Dsa Export Parameters" \
+	"57" "Dsa Export PEM Keys" \
+	"58" "Dsa Export DER Keys" \
+	"59" "Dsa Extract PEM Public Key" \
+	"60" "Dsa Extract DER Public Key" \
+	"61" "Dsa Extract PEM Parameters" \
+	"62" "Dsa Extract DER Parameters" \
+	"63" "Dsa Extract PEM Keys" \
+	"64" "Dsa Extract DER Keys" \
+	"65" "Dsa Check PEM Keys" \
+	"66" "Dsa Check DER Keys" \
+	"67" "Dsa Digital PEM" \
+	"68" "Dsa Digital DER" \
+	"69" "Rsa Generate Parameters" \
+	"70" "Rsa Generate PEM Keys" \
+	"71" "Rsa Generate DER Keys" \
+	"72" "Rsa Export Parameters" \
+	"73" "Rsa Export PEM Keys" \
+	"74" "Rsa Export DER Keys" \
+	"75" "Rsa Extract PEM Public Key" \
+	"76" "Rsa Extract DER Public Key" \
+	"77" "Rsa Check PEM Keys" \
+	"78" "Rsa Check DER Keys" \
+	"79" "Rsa Cryption PEM" \
+	"80" "Rsa Cryption DER" \
+	"81" "Rsa Digital PEM" \
+	"82" "Rsa Digital DER" \
+	"83" "Exit" 3>&1 1>&2 2>&3)
 
 start_time=$(date +%s%N)
 for ((i=1; i<=iterations; i++)); do
@@ -265,53 +285,100 @@ for ((i=1; i<=iterations; i++)); do
 			HASH_RIPEMD160
 			;;
 		53)
-			RSA_Generate_Parameters
+			DSA_Generate_Parameters
 			;;
 		54)
-			RSA_Generate_Keys_PEM
+			DSA_Generate_Keys_PEM
 			;;
 		55)
-			RSA_Generate_Keys_DER
+			DSA_Generate_Keys_DER
 			;;
 		56)
-			RSA_Export_Parameters
+			DSA_Export_Parameters
 			;;
 		57)
-			RSA_Export_Keys_PEM
+			DSA_Export_Keys_PEM
 			;;
 		58)
-			RSA_Export_Keys_DER
+			DSA_Export_Keys_DER
 			;;
 		59)
-			RSA_Extract_Public_Key_PEM
+			DSA_Extract_Public_Key_PEM
 			;;
 		60)
-			RSA_Extract_Public_Key_DER
+			DSA_Extract_Public_Key_DER
 			;;
 		61)
-			RSA_Check_Keys_PEM
+			DSA_Extract_Parameters_PEM
 			;;
 		62)
-			RSA_Check_Keys_DER
+			DSA_Extract_Parameters_DER
 			;;
 		63)
-			RSA_Cryption_PEM
+			DSA_Extract_Keys_PEM
 			;;
 		64)
-			RSA_Cryption_DER
+			DSA_Extract_Keys_DER
 			;;
 		65)
-			RSA_Digital_PEM
+			DSA_Check_Keys_PEM
 			;;
 		66)
-			RSA_Digital_DER
+			DSA_Check_Keys_DER
 			;;
 		67)
+			DSA_Digital_PEM
+			;;
+		68)
+			DSA_Digital_DER
+			;;
+		69)
+			RSA_Generate_Parameters
+			;;
+		70)
+			RSA_Generate_Keys_PEM
+			;;
+		71)
+			RSA_Generate_Keys_DER
+			;;
+		72)
+			RSA_Export_Parameters
+			;;
+		73)
+			RSA_Export_Keys_PEM
+			;;
+		74)
+			RSA_Export_Keys_DER
+			;;
+		75)
+			RSA_Extract_Public_Key_PEM
+			;;
+		76)
+			RSA_Extract_Public_Key_DER
+			;;
+		77)
+			RSA_Check_Keys_PEM
+			;;
+		78)
+			RSA_Check_Keys_DER
+			;;
+		79)
+			RSA_Cryption_PEM
+			;;
+		80)
+			RSA_Cryption_DER
+			;;
+		81)
+			RSA_Digital_PEM
+			;;
+		82)
+			RSA_Digital_DER
+			;;
+		83)
 			echo "Exit..."
 			exit 0
 			;;
 		*)
-			echo "Invalid option!"
 			exit 1
 			;;
 	esac

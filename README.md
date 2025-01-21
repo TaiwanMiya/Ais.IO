@@ -10,8 +10,9 @@ The repository contains binary file operations, Base encoding, and the use of en
 3. [AES Cryptography](#AES-Cryptography)
 4. [DES Cryptography](#DES-Cryptography)
 5. [HASH Calculation](#HASH-Calculation)
-6. [RSA Cryptography](#RSA-Cryptography)
-7. [Ais IO License](#License)
+6. [DSA Cryptography](#DSA-Cryptography)
+7. [RSA Cryptography](#RSA-Cryptography)
+8. [Ais IO License](#License)
 
 ---
 
@@ -577,6 +578,274 @@ BASE="-base16"
 
 ---
 
+## **DSA Cryptography**
+DSA (Digital Signature Algorithm) is a widely used public-key cryptography algorithm primarily for creating digital signatures and verifying their authenticity.
+Unlike RSA, DSA is specifically optimized for signing rather than encryption.
+
+### Dsa Support Features
+1. Key Generation
+2. Parameter Generation
+3. Key Export Parameter
+4. Parameter Export Key
+5. Private Key Extract Public Key
+6. Keys Extract Parameters
+7. Parameters Extract Keys
+8. Check if the Key is Valid
+9. Check if the Parameter is Valid
+10. Digital Signature Creation
+11. Digital Signature Verification
+
+### Dsa Key Specifications
+- Key Size: 1024-bit, 2048-bit, 3072-bit. Larger keys offer greater security but are slower for signing and verification.
+- Format: PEM (Privacy-Enhanced Mail) or DER (Distinguished Encoding Rules).
+- Public Key: Used for verifying signatures.
+- Private Key: Used for creating digital signatures.
+
+### Dsa Cryptography Introduction
+| Feature                     | Mode      | Required Arguments                                                             | Description                                                                          |
+|-----------------------------|-----------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| **`Generate Parameter`**    | `-gen`    | `-param <size>`                                                                | Create a key of your specified size, and export it to Base Encoding or File formats. |
+| **`Generate Key`**          | `-gen`    | `-key <size>` `-pass <password>`                                               | Creates a key of a specified size and exports it to PEM, DER or other file formats.  |
+| **`Export to Parameter`**   | `-exp`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]` or `[--dsa-parameters-list]` | Export the Dsa key to Dsa Parameters.                                                |
+| **`Export to Key`**         | `-exp`    | `-key` `-param [--way]`                                                        | Export the Dsa Parameters to Dsa key.                                                |
+| **`Private to Public Key`** | `-ext`    | `-priv [--keys-way]`                                                           | Extract the public key from the private key.                                         |
+| **`Keys to Parameters`**    | `-ext`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]`                              | Extract parameters from public and private keys.                                     |
+| **`Parameters to Keys`**    | `-ext`    | `-key` `-param [--keys-way]`                                                   | Extract public and private keys from parameters.                                     |
+| **`Check Public Key`**      | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Rsa Public Key is Valid.                                                |
+| **`Check Private Key`**     | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Rsa Private Key is Valid.                                               |
+| **`Check Parameters`**      | `-chk`    | `-param [--keys-way]`                                                          | Check if the Rsa Parameters is Valid.                                                |
+| **`Signed`**                | `-sign`   | `-priv [--keys-way]` `-pass <password>` `-data [--way]` `-hash [--hash-type]`  | Generates a digital signature for the given plaintext using a private key.           |
+| **`Verify`**                | `-ver`    | `-pub [--keys-way]` `-data [--way]` `-sg [--way]` `-hash [--hash-type]`        | Verifies a digital signature using the corresponding public key.                     |
+
+   - The `<size>` when creating a key can be adjusted according to your needs.
+   - `<password>` is only used when you need to operate the PEM private key. You can also leave it blank, which means that the key is not encrypted with the PEM password.
+   - Read the [*`[--keys-way]`*](#explanation-of---keys-way)
+   - Read the [*`[--way]`*](#explanation-of---way)
+   - Read the [*`[--dsa-parameters-list]`*](#explanation-of---dsa-parameters-list)
+   - Read the [*`[--hash-type]`*](#explanation-of---hash-type)
+
+### *Dsa Instruction Usage*
+
+#### *Dsa example shell*
+```sh
+#!/bin/bash
+# Example Dsa Instructions
+# Dsa Settings...
+BASE="-base16"
+PEM_ROOT_FILE="dsa-pem-pkey"
+DER_ROOT_FILE="dsa-der-pkey"
+PARAM_FILE="dsa-paramters.bin"
+SIGNATURE_FILE="dsa-signature.bin"
+DSA_PEM_PUB=$(cat <<EOF
+-----BEGIN PUBLIC KEY-----
+MIIDQjCCAjUGByqGSM44BAEwggIoAoIBAQCY9GUYhwpyF7gKgx8H66fEQnP6ivmG
+P5hfYETIhyHx6TOBsdRrzTRKI/0bSoL0PCo/UEB3Hw+f2nEtJYEPZQbrt26a5TwP
+BAHtkv2J2aphRxddI+IM9Z48o9CsMUHAFHu7hlvnSzNao9ThTM1NmNDcg5Hlldci
+Xf0jk3e3wQ4h62RbiL6cP84TtMhUZw137m7Vwupj+zF0/gqSo4uupbjEIrHa0MdC
+xPZ1rfhmCN5pCGNAzqlkD9Ql++5B+BnLlnBJ66ou0H526+fOax2bbc2mVpizVpOj
+mHJbxgcCU0iSR1YewSOXCELIerKecTVKz4Z0hnQvF0xaE3hv563eTCrvAh0AqVGm
+ATUhRKXQrQ71lc/ziY2vvYXul1tl8LrVJwKCAQAkQLfgNcjKRlaQo4mrbunkRQdA
+LsDFtcnaFl41gg6Ni/hWVjTh///Jya1vG69fRThx8WlejSlWCDl5fc3+U5IPU7Bp
+trQ15KifCZtvCSF6fsbFLJDHhKXY8xSpRT9unaQfYvkJmg1jLR+jvr6HSMiG4Odh
+iSRNrpeSj3W/nrO+NCM8hYxVGZH5qnSY4zZPZuwUzKHpVPz4VqXUQYdHncsQrGnC
+aGiPuteGlIjHi+B1nr1t6PGFruXFsdFjJJqgZIQKbLwooEVaI8JEjJmAAs7un2+6
+B2zeqaZXf5eK96s7wlQoZBseyFR8kHZQRTT6gl4zze+fmdFFhyY+1/tUyDLyA4IB
+BQACggEAAPTh+K9EPL76qKgQLzkutTAIZIvcGWEhNNhN6zkNXsoRWV/FMEGVvOA5
+kGshoBXK0++xia5w/jQV1aTt1QG6nJO+ZCFCIOu8UatRkH7FYhqUcuS7+Jr+jE+2
+73WbA4nrktZOKh68Jpo2N1JHLIY1J8ECTaWJQSsDRGLdho3T39aXeyoux+ykZbXJ
+z7Hj3LVmKCw27D+jjpVwP+SCZYp5dD5Hyt8OJXz7frcs5/1D8q5tvieVAM7yETKI
+vEjUZI2XfCh951/gcWfsinH/xW7pfgPn41qirKnEXHhtJwayk15TU9BXe3bjN4hu
+KA4K5YIsn4QcrR9N7QVBfVgY5OAfuQ==
+-----END PUBLIC KEY-----
+EOF
+)
+DSA_PEM_PRIV=$(cat <<EOF
+-----BEGIN PRIVATE KEY-----
+MIICXQIBADCCAjUGByqGSM44BAEwggIoAoIBAQCY9GUYhwpyF7gKgx8H66fEQnP6
+ivmGP5hfYETIhyHx6TOBsdRrzTRKI/0bSoL0PCo/UEB3Hw+f2nEtJYEPZQbrt26a
+5TwPBAHtkv2J2aphRxddI+IM9Z48o9CsMUHAFHu7hlvnSzNao9ThTM1NmNDcg5Hl
+ldciXf0jk3e3wQ4h62RbiL6cP84TtMhUZw137m7Vwupj+zF0/gqSo4uupbjEIrHa
+0MdCxPZ1rfhmCN5pCGNAzqlkD9Ql++5B+BnLlnBJ66ou0H526+fOax2bbc2mVpiz
+VpOjmHJbxgcCU0iSR1YewSOXCELIerKecTVKz4Z0hnQvF0xaE3hv563eTCrvAh0A
+qVGmATUhRKXQrQ71lc/ziY2vvYXul1tl8LrVJwKCAQAkQLfgNcjKRlaQo4mrbunk
+RQdALsDFtcnaFl41gg6Ni/hWVjTh///Jya1vG69fRThx8WlejSlWCDl5fc3+U5IP
+U7BptrQ15KifCZtvCSF6fsbFLJDHhKXY8xSpRT9unaQfYvkJmg1jLR+jvr6HSMiG
+4OdhiSRNrpeSj3W/nrO+NCM8hYxVGZH5qnSY4zZPZuwUzKHpVPz4VqXUQYdHncsQ
+rGnCaGiPuteGlIjHi+B1nr1t6PGFruXFsdFjJJqgZIQKbLwooEVaI8JEjJmAAs7u
+n2+6B2zeqaZXf5eK96s7wlQoZBseyFR8kHZQRTT6gl4zze+fmdFFhyY+1/tUyDLy
+BB8CHQCms1+yK39ilI2kvC4l2bJv8abckFXRpaTT64/y
+-----END PRIVATE KEY-----
+EOF
+)
+DSA_PEM_PARAM=$(cat <<EOF
+-----BEGIN DSA PARAMETERS-----
+MIICKAKCAQEAmPRlGIcKche4CoMfB+unxEJz+or5hj+YX2BEyIch8ekzgbHUa800
+SiP9G0qC9DwqP1BAdx8Pn9pxLSWBD2UG67dumuU8DwQB7ZL9idmqYUcXXSPiDPWe
+PKPQrDFBwBR7u4Zb50szWqPU4UzNTZjQ3IOR5ZXXIl39I5N3t8EOIetkW4i+nD/O
+E7TIVGcNd+5u1cLqY/sxdP4KkqOLrqW4xCKx2tDHQsT2da34ZgjeaQhjQM6pZA/U
+JfvuQfgZy5ZwSeuqLtB+duvnzmsdm23NplaYs1aTo5hyW8YHAlNIkkdWHsEjlwhC
+yHqynnE1Ss+GdIZ0LxdMWhN4b+et3kwq7wIdAKlRpgE1IUSl0K0O9ZXP84mNr72F
+7pdbZfC61ScCggEAJEC34DXIykZWkKOJq27p5EUHQC7AxbXJ2hZeNYIOjYv4VlY0
+4f//ycmtbxuvX0U4cfFpXo0pVgg5eX3N/lOSD1Owaba0NeSonwmbbwkhen7GxSyQ
+x4Sl2PMUqUU/bp2kH2L5CZoNYy0fo76+h0jIhuDnYYkkTa6Xko91v56zvjQjPIWM
+VRmR+ap0mOM2T2bsFMyh6VT8+Fal1EGHR53LEKxpwmhoj7rXhpSIx4vgdZ69bejx
+ha7lxbHRYySaoGSECmy8KKBFWiPCRIyZgALO7p9vugds3qmmV3+XiverO8JUKGQb
+HshUfJB2UEU0+oJeM83vn5nRRYcmPtf7VMgy8g==
+-----END DSA PARAMETERS-----
+EOF
+)
+DSA_DER_PUB="308203423082023506072A8648CE38040130820228028201010098F46518870A7217B80A831F07EBA7C44273FA8AF9863F985F6044C88721F1E93381B1D46BCD344A23FD1B4A82F43C2A3F5040771F0F9FDA712D25810F6506EBB76E9AE53C0F0401ED92FD89D9AA6147175D23E20CF59E3CA3D0AC3141C0147BBB865BE74B335AA3D4E14CCD4D98D0DC8391E595D7225DFD239377B7C10E21EB645B88BE9C3FCE13B4C854670D77EE6ED5C2EA63FB3174FE0A92A38BAEA5B8C422B1DAD0C742C4F675ADF86608DE69086340CEA9640FD425FBEE41F819CB967049EBAA2ED07E76EBE7CE6B1D9B6DCDA65698B35693A398725BC6070253489247561EC123970842C87AB29E71354ACF867486742F174C5A13786FE7ADDE4C2AEF021D00A951A601352144A5D0AD0EF595CFF3898DAFBD85EE975B65F0BAD527028201002440B7E035C8CA465690A389AB6EE9E44507402EC0C5B5C9DA165E35820E8D8BF8565634E1FFFFC9C9AD6F1BAF5F453871F1695E8D29560839797DCDFE53920F53B069B6B435E4A89F099B6F09217A7EC6C52C90C784A5D8F314A9453F6E9DA41F62F9099A0D632D1FA3BEBE8748C886E0E76189244DAE97928F75BF9EB3BE34233C858C551991F9AA7498E3364F66EC14CCA1E954FCF856A5D44187479DCB10AC69C268688FBAD7869488C78BE0759EBD6DE8F185AEE5C5B1D163249AA064840A6CBC28A0455A23C2448C998002CEEE9F6FBA076CDEA9A6577F978AF7AB3BC25428641B1EC8547C9076504534FA825E33CDEF9F99D14587263ED7FB54C832F203820105000282010000F4E1F8AF443CBEFAA8A8102F392EB53008648BDC19612134D84DEB390D5ECA11595FC5304195BCE039906B21A015CAD3EFB189AE70FE3415D5A4EDD501BA9C93BE64214220EBBC51AB51907EC5621A9472E4BBF89AFE8C4FB6EF759B0389EB92D64E2A1EBC269A363752472C863527C1024DA589412B034462DD868DD3DFD6977B2A2EC7ECA465B5C9CFB1E3DCB566282C36EC3FA38E95703FE482658A79743E47CADF0E257CFB7EB72CE7FD43F2AE6DBE279500CEF2113288BC48D4648D977C287DE75FE07167EC8A71FFC56EE97E03E7E35AA2ACA9C45C786D2706B2935E5353D0577B76E337886E280E0AE5822C9F841CAD1F4DED05417D5818E4E01FB9"
+DSA_DER_PRIV="3082034E020100028201010098F46518870A7217B80A831F07EBA7C44273FA8AF9863F985F6044C88721F1E93381B1D46BCD344A23FD1B4A82F43C2A3F5040771F0F9FDA712D25810F6506EBB76E9AE53C0F0401ED92FD89D9AA6147175D23E20CF59E3CA3D0AC3141C0147BBB865BE74B335AA3D4E14CCD4D98D0DC8391E595D7225DFD239377B7C10E21EB645B88BE9C3FCE13B4C854670D77EE6ED5C2EA63FB3174FE0A92A38BAEA5B8C422B1DAD0C742C4F675ADF86608DE69086340CEA9640FD425FBEE41F819CB967049EBAA2ED07E76EBE7CE6B1D9B6DCDA65698B35693A398725BC6070253489247561EC123970842C87AB29E71354ACF867486742F174C5A13786FE7ADDE4C2AEF021D00A951A601352144A5D0AD0EF595CFF3898DAFBD85EE975B65F0BAD527028201002440B7E035C8CA465690A389AB6EE9E44507402EC0C5B5C9DA165E35820E8D8BF8565634E1FFFFC9C9AD6F1BAF5F453871F1695E8D29560839797DCDFE53920F53B069B6B435E4A89F099B6F09217A7EC6C52C90C784A5D8F314A9453F6E9DA41F62F9099A0D632D1FA3BEBE8748C886E0E76189244DAE97928F75BF9EB3BE34233C858C551991F9AA7498E3364F66EC14CCA1E954FCF856A5D44187479DCB10AC69C268688FBAD7869488C78BE0759EBD6DE8F185AEE5C5B1D163249AA064840A6CBC28A0455A23C2448C998002CEEE9F6FBA076CDEA9A6577F978AF7AB3BC25428641B1EC8547C9076504534FA825E33CDEF9F99D14587263ED7FB54C832F20282010000F4E1F8AF443CBEFAA8A8102F392EB53008648BDC19612134D84DEB390D5ECA11595FC5304195BCE039906B21A015CAD3EFB189AE70FE3415D5A4EDD501BA9C93BE64214220EBBC51AB51907EC5621A9472E4BBF89AFE8C4FB6EF759B0389EB92D64E2A1EBC269A363752472C863527C1024DA589412B034462DD868DD3DFD6977B2A2EC7ECA465B5C9CFB1E3DCB566282C36EC3FA38E95703FE482658A79743E47CADF0E257CFB7EB72CE7FD43F2AE6DBE279500CEF2113288BC48D4648D977C287DE75FE07167EC8A71FFC56EE97E03E7E35AA2ACA9C45C786D2706B2935E5353D0577B76E337886E280E0AE5822C9F841CAD1F4DED05417D5818E4E01FB9021D00A6B35FB22B7F62948DA4BC2E25D9B26FF1A6DC9055D1A5A4D3EB8FF2"
+DSA_DER_PARAM="30820228028201010098F46518870A7217B80A831F07EBA7C44273FA8AF9863F985F6044C88721F1E93381B1D46BCD344A23FD1B4A82F43C2A3F5040771F0F9FDA712D25810F6506EBB76E9AE53C0F0401ED92FD89D9AA6147175D23E20CF59E3CA3D0AC3141C0147BBB865BE74B335AA3D4E14CCD4D98D0DC8391E595D7225DFD239377B7C10E21EB645B88BE9C3FCE13B4C854670D77EE6ED5C2EA63FB3174FE0A92A38BAEA5B8C422B1DAD0C742C4F675ADF86608DE69086340CEA9640FD425FBEE41F819CB967049EBAA2ED07E76EBE7CE6B1D9B6DCDA65698B35693A398725BC6070253489247561EC123970842C87AB29E71354ACF867486742F174C5A13786FE7ADDE4C2AEF021D00A951A601352144A5D0AD0EF595CFF3898DAFBD85EE975B65F0BAD527028201002440B7E035C8CA465690A389AB6EE9E44507402EC0C5B5C9DA165E35820E8D8BF8565634E1FFFFC9C9AD6F1BAF5F453871F1695E8D29560839797DCDFE53920F53B069B6B435E4A89F099B6F09217A7EC6C52C90C784A5D8F314A9453F6E9DA41F62F9099A0D632D1FA3BEBE8748C886E0E76189244DAE97928F75BF9EB3BE34233C858C551991F9AA7498E3364F66EC14CCA1E954FCF856A5D44187479DCB10AC69C268688FBAD7869488C78BE0759EBD6DE8F185AEE5C5B1D163249AA064840A6CBC28A0455A23C2448C998002CEEE9F6FBA076CDEA9A6577F978AF7AB3BC25428641B1EC8547C9076504534FA825E33CDEF9F99D14587263ED7FB54C832F2"
+DSA_Y="F4E1F8AF443CBEFAA8A8102F392EB53008648BDC19612134D84DEB390D5ECA11595FC5304195BCE039906B21A015CAD3EFB189AE70FE3415D5A4EDD501BA9C93BE64214220EBBC51AB51907EC5621A9472E4BBF89AFE8C4FB6EF759B0389EB92D64E2A1EBC269A363752472C863527C1024DA589412B034462DD868DD3DFD6977B2A2EC7ECA465B5C9CFB1E3DCB566282C36EC3FA38E95703FE482658A79743E47CADF0E257CFB7EB72CE7FD43F2AE6DBE279500CEF2113288BC48D4648D977C287DE75FE07167EC8A71FFC56EE97E03E7E35AA2ACA9C45C786D2706B2935E5353D0577B76E337886E280E0AE5822C9F841CAD1F4DED05417D5818E4E01FB9"
+DSA_X="A6B35FB22B7F62948DA4BC2E25D9B26FF1A6DC9055D1A5A4D3EB8FF2"
+DSA_P="98F46518870A7217B80A831F07EBA7C44273FA8AF9863F985F6044C88721F1E93381B1D46BCD344A23FD1B4A82F43C2A3F5040771F0F9FDA712D25810F6506EBB76E9AE53C0F0401ED92FD89D9AA6147175D23E20CF59E3CA3D0AC3141C0147BBB865BE74B335AA3D4E14CCD4D98D0DC8391E595D7225DFD239377B7C10E21EB645B88BE9C3FCE13B4C854670D77EE6ED5C2EA63FB3174FE0A92A38BAEA5B8C422B1DAD0C742C4F675ADF86608DE69086340CEA9640FD425FBEE41F819CB967049EBAA2ED07E76EBE7CE6B1D9B6DCDA65698B35693A398725BC6070253489247561EC123970842C87AB29E71354ACF867486742F174C5A13786FE7ADDE4C2AEF"
+DSA_Q="A951A601352144A5D0AD0EF595CFF3898DAFBD85EE975B65F0BAD527"
+DSA_G="2440B7E035C8CA465690A389AB6EE9E44507402EC0C5B5C9DA165E35820E8D8BF8565634E1FFFFC9C9AD6F1BAF5F453871F1695E8D29560839797DCDFE53920F53B069B6B435E4A89F099B6F09217A7EC6C52C90C784A5D8F314A9453F6E9DA41F62F9099A0D632D1FA3BEBE8748C886E0E76189244DAE97928F75BF9EB3BE34233C858C551991F9AA7498E3364F66EC14CCA1E954FCF856A5D44187479DCB10AC69C268688FBAD7869488C78BE0759EBD6DE8F185AEE5C5B1D163249AA064840A6CBC28A0455A23C2448C998002CEEE9F6FBA076CDEA9A6577F978AF7AB3BC25428641B1EC8547C9076504534FA825E33CDEF9F99D14587263ED7FB54C832F2"
+
+# DSA Generate Key (PEM)
+./aisio -dsa -generate -keys 2048 -out -pem
+
+# DSA Generate Key (PEM File)
+./aisio -dsa -generate -keys 2048 -out -pem -file "$PEM_ROOT_FILE"
+
+# DSA Generate Key (DER)
+./aisio -dsa -generate -keys 2048 -out -der "$BASE"
+
+# DSA Generate Key (DER File)
+./aisio -dsa -generate -keys 2048 -out -der -file "$DER_ROOT_FILE"
+
+# DSA Generate Parameters (Base Encoding)
+./aisio -dsa -generate -params 2048 -out "$BASE"
+
+# DSA Generate Parameters (Parameters File)
+./aisio -dsa -generate -params 2048 -out -file "$PARAM_FILE"
+
+# DSA Export To Parameters (PEM)
+./aisio -dsa -export -params -pub -pem "$DSA_PEM_PUB" -priv -pem "$DSA_PEM_PRIV" -out "$BASE"
+
+# DSA Export To Parameters (PEM File + Parameters File)
+./aisio -dsa -export -params -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -out -file "$PARAM_FILE"
+
+# DSA Export To Parameters (DER)
+./aisio -dsa -export -params -pub -der "$BASE" "$DSA_DER_PUB" -priv -der "$BASE" "$DSA_DER_PRIV" -out "$BASE"
+
+# DSA Export To Parameters (DER File + Parameters File)
+./aisio -dsa -export -params -pub -der -file "$DER_ROOT_FILE"-pub.der -priv -der -file "$DER_ROOT_FILE"-priv.der -out -file "$PARAM_FILE"
+
+# DSA Export To Public Key and Private Key (PEM)
+./aisio -dsa -export -keys -params "$BASE" -y "$DSA_Y" -x "$DSA_X" -p "$DSA_P" -q "$DSA_Q" -g "$DSA_G" -out -pem
+
+# DSA Export To Public Key and Private Key (Parameters File + PEM File)
+./aisio -dsa -export -keys -params -file "$PARAM_FILE" -out -pem -file "$PEM_ROOT_FILE"
+
+# DSA Export To Public Key and Private Key (DER)
+./aisio -dsa -export -keys -params "$BASE" -y "YDSA_N" -x "$DSA_X" -p "$DSA_P" -q "$DSA_Q" -g "$DSA_G" -out -der "$BASE"
+
+# DSA Export To Public Key and Private Key (Parameters File + DER File)
+./aisio -dsa -export -keys -params -file "$PARAM_FILE" -out -der -file "$DER_ROOT_FILE"
+
+# DSA Extract Public Key from Private Key (PEM)
+./aisio -dsa -extract -priv -pem "$DSA_PEM_PRIV" -out -pem
+
+# DSA Extract Public Key from Private Key (PEM File)
+./aisio -dsa -extract -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -out -pem -file "$PEM_ROOT_FILE"
+
+# DSA Extract Public Key from Private Key (DER)
+./aisio -dsa -extract -priv -der "$BASE" "$DSA_DER_PRIV" -out -der "$BASE"
+
+# DSA Extract Public Key from Private Key (DER File)
+./aisio -dsa -extract -priv -der -file "$DER_ROOT_FILE"-priv.der -out -der -file "$DER_ROOT_FILE"
+
+# DSA Extract Parameters from Public Key and Private Key (PEM)
+./aisio -dsa -extract -param -pub -pem "$DSA_PEM_PUB" -priv -pem "$DSA_PEM_PRIV" -out -pem
+
+# DSA Extract Parameters from Public Key and Private Key (PEM File)
+./aisio -dsa -extract -param -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -out -pem -file "$PEM_ROOT_FILE"
+
+# DSA Extract Parameters from Public Key and Private Key (DER)
+./aisio -dsa -extract -param -pub -der "$BASE" "$DSA_DER_PUB" -priv -der "$BASE" "$DSA_DER_PRIV" -out -der "$BASE"
+
+# DSA Extract Parameters from Public Key and Private Key (DER File)
+./aisio -dsa -extract -param -pub -der -file "$DER_ROOT_FILE"-pub.der -priv -der -file "$DER_ROOT_FILE"-priv.der -out -der -file "$DER_ROOT_FILE"
+
+# DSA Extract Public Key and Private Key from Parameters (PEM)
+./aisio -dsa -extract -key -param -pem "$DSA_PEM_PARAM" -out -pem
+
+# DSA Extract Public Key and Private Key from Parameters (PEM File)
+./aisio -dsa -extract -key -param -pem -file "$PEM_ROOT_FILE"-param.pem -out -pem -file "$PEM_ROOT_FILE"
+
+# DSA Extract Public Key and Private Key from Parameters (DER)
+./aisio -dsa -extract -key -param -der "$BASE" "$DSA_DER_PARAM" -out -der "$BASE"
+
+# DSA Extract Public Key and Private Key from Parameters (DER File)
+./aisio -dsa -extract -key -param -der -file "$DER_ROOT_FILE"-param.der -out -der -file "$DER_ROOT_FILE"
+
+# DSA Check Public Key (PEM)
+./aisio -dsa -check -pub -pem "$DSA_PEM_PUB"
+
+# DSA Check Private Key (PEM)
+./aisio -dsa -check -priv -pem "$DSA_PEM_PRIV"
+
+# DSA Check Parameters (PEM)
+./aisio -dsa -check -param -pem "$DSA_PEM_PARAM"
+
+# DSA Check Public Key (PEM File)
+./aisio -dsa -check -pub -pem -file "$PEM_ROOT_FILE"-pub.pem
+
+# DSA Check Private Key (PEM File)
+./aisio -dsa -check -priv -pem -file "$PEM_ROOT_FILE"-priv.pem
+
+# DSA Check Parameters (PEM File)
+./aisio -dsa -check -param -pem -file "$PEM_ROOT_FILE"-param.pem
+
+# DSA Check Public Key (DER)
+./aisio -dsa -check -pub -der "$BASE" "$DSA_DER_PUB"
+
+# DSA Check Private Key (DER)
+./aisio -dsa -check -priv -der "$BASE" "$DSA_DER_PRIV"
+
+# DSA Check Parameters (DER)
+./aisio -dsa -check -param -der "$BASE" "$DSA_DER_PARAM"
+
+# DSA Check Public Key (DER File)
+./aisio -dsa -check -pub -der -file "$DER_ROOT_FILE"-pub.der
+
+# DSA Check Private Key (DER File)
+./aisio -dsa -check -priv -der -file "$DER_ROOT_FILE"-priv.der
+
+# DSA Check Parameters (DER File)
+./aisio -dsa -check -param -der -file "$DER_ROOT_FILE"-param.der
+
+# DSA Signed (PEM)
+RESULT=$(./aisio -dsa -signed -priv -pem "$DSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<DSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+echo "$RESULT"
+
+# DSA Verify (PEM)
+./aisio -dsa -verify -pub -pem "$DSA_PEM_PUB" -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -signature "$BASE" "$RESULT"
+
+# DSA Signed (PEM File)
+./aisio -dsa -signed -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -out -file "$SIGNATURE_FILE"
+
+# DSA Verify (PEM File)
+./aisio -dsa -verify -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -signature -file "$SIGNATURE_FILE"
+
+# DSA Signed (DER)
+RESULT=$(./aisio -dsa -signed -priv -der "$BASE" "$DSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<DSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+echo "$RESULT"
+
+# DSA Verify (DER)
+./aisio -dsa -verify -pub -der "$BASE" "$DSA_DER_PUB" -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -signature "$BASE" "$RESULT"
+
+# DSA Signed (DER File)
+./aisio -dsa -signed -priv -der -file "$DER_ROOT_FILE"-priv.der -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -out -file "$SIGNATURE_FILE"
+
+# DSA Verify (DER File)
+./aisio -dsa -verify -pub -der -file "$DER_ROOT_FILE"-pub.der -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -signature -file "$SIGNATURE_FILE"
+```
+
+---
+
 ## **RSA Cryptography**
 RSA (Rivest–Shamir–Adleman) is a widely used public-key cryptography algorithm for secure data transmission and digital signatures.
 It enables secure communication by using a pair of keys: a public key for encryption and a private key for decryption.
@@ -586,31 +855,33 @@ It enables secure communication by using a pair of keys: a public key for encryp
 2. Parameter Generation
 3. Key Export Parameter
 4. Parameter Export Key
-5. Check if the Key is Valid
-6. Encryption
-7. Decryption
-8. Digital Signatures
-9. Signature Verification
+5. Private Key Extract Public Key
+6. Check if the Key is Valid
+7. Encryption
+8. Decryption
+9. Digital Signatures
+10. Signature Verification
 
 ### Rsa Key Specifications
-Key Size: 1024-bit, 2048-bit, 3072-bit, 4096-bit, 6144-bit, 8192-bit, 12288-bit, 16384-bit etc, You can also use unconventional lengths, which you can define yourself.
-Format: PEM (Privacy-Enhanced Mail) or DER (Distinguished Encoding Rules).
-Public Key: Used to encrypt data or verify digital signatures.
-Private Key: Used to decrypt data or create digital signatures.
+- Key Size: 1024-bit, 2048-bit, 3072-bit, 4096-bit, 6144-bit, 8192-bit, 12288-bit, 16384-bit etc, You can also use unconventional lengths, which you can define yourself.
+- Format: PEM (Privacy-Enhanced Mail) or DER (Distinguished Encoding Rules).
+- Public Key: Used to encrypt data or verify digital signatures.
+- Private Key: Used to decrypt data or create digital signatures.
 
 ### Rsa Cryptography Introduction
-| Feature                  | Mode      | Required Arguments                                                             | Description                                                                          |
-|--------------------------|-----------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| **`Generate Parameter`**  | `-gen`    | `-param <size>`                                                               | Create a key of your specified size, and export it to Base Encoding or File formats. |
-| **`Generate Key`**       | `-gen`    | `-key <size>` `-pass <password>`                                               | Creates a key of a specified size and exports it to PEM, DER or other file formats.  |
-| **`Export to Parameter`** | `-exp`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]` or `[--rsa-parameters-list]`| Export the Rsa key to Rsa Parameters.                                                |
-| **`Export to Key`**      | `-exp`    | `-key` `-param [--way]`                                                        | Export the Rsa Parameters to Rsa key.                                                |
-| **`Check Public Key`**   | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Rsa Public Key is Valid.                                                |
-| **`Check Private Key`**  | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Rsa Private Key is Valid.                                               |
-| **`Encryption`**         | `-en`     | `-pub [--keys-way]` `-pt [--way] <plain-text>`                                 | Encrypts plaintext using a public key.                                               |
-| **`Decryption`**         | `-de`     | `-priv [--keys-way]` `-pass <password>` `-ct [--way] <cipher-text>`            | Decrypts ciphertext using a private key.                                             |
-| **`Signed`**             | `-sign`   | `-priv [--keys-way]` `-pass <password>` `-data [--way]` `-hash [--hash-type]`  | Generates a digital signature for the given plaintext using a private key.           |
-| **`Verify`**             | `-ver`    | `-pub [--keys-way]` `-data [--way]` `-sg [--way]` `-hash [--hash-type]`        | Verifies a digital signature using the corresponding public key.                     |
+| Feature                     | Mode      | Required Arguments                                                             | Description                                                                          |
+|-----------------------------|-----------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| **`Generate Parameter`**    | `-gen`    | `-param <size>`                                                                | Create a key of your specified size, and export it to Base Encoding or File formats. |
+| **`Generate Key`**          | `-gen`    | `-key <size>` `-pass <password>`                                               | Creates a key of a specified size and exports it to PEM, DER or other file formats.  |
+| **`Export to Parameter`**   | `-exp`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]` or `[--rsa-parameters-list]` | Export the Rsa key to Rsa Parameters.                                                |
+| **`Export to Key`**         | `-exp`    | `-key` `-param [--way]`                                                        | Export the Rsa Parameters to Rsa key.                                                |
+| **`Private to Public Key`** | `-ext`    | `-priv [--keys-way]`                                                           | Extract the public key from the private key.                                         |
+| **`Check Public Key`**      | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Rsa Public Key is Valid.                                                |
+| **`Check Private Key`**     | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Rsa Private Key is Valid.                                               |
+| **`Encryption`**            | `-en`     | `-pub [--keys-way]` `-pt [--way] <plain-text>`                                 | Encrypts plaintext using a public key.                                               |
+| **`Decryption`**            | `-de`     | `-priv [--keys-way]` `-pass <password>` `-ct [--way] <cipher-text>`            | Decrypts ciphertext using a private key.                                             |
+| **`Signed`**                | `-sign`   | `-priv [--keys-way]` `-pass <password>` `-data [--way]` `-hash [--hash-type]`  | Generates a digital signature for the given plaintext using a private key.           |
+| **`Verify`**                | `-ver`    | `-pub [--keys-way]` `-data [--way]` `-sg [--way]` `-hash [--hash-type]`        | Verifies a digital signature using the corresponding public key.                     |
 
    - The `<size>` when creating a key can be adjusted according to your needs.
    - `<password>` is only used when you need to operate the PEM private key. You can also leave it blank, which means that the key is not encrypted with the PEM password.
@@ -629,11 +900,11 @@ Private Key: Used to decrypt data or create digital signatures.
 # Example Rsa Instructions
 # Rsa Settings...
 BASE="-base16"
-PEM_ROOT_FILE="pem-pkey"
-DER_ROOT_FILE="der-pkey"
-PARAM_FILE="paramters.bin"
-RESULT_FILE="encryption.bin"
-SIGNATURE_FILE="signature.bin"
+PEM_ROOT_FILE="rsa-pem-pkey"
+DER_ROOT_FILE="rsa-der-pkey"
+PARAM_FILE="rsa-paramters.bin"
+RESULT_FILE="rsa-encryption.bin"
+SIGNATURE_FILE="rsa-signature.bin"
 RSA_PEM_PUB=$(cat <<EOF
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp6dycJXIORK+KCoiJkTb
@@ -679,14 +950,14 @@ EOF
 )
 RSA_DER_PUB="30820122300D06092A864886F70D01010105000382010F003082010A0282010100A7A7727095C83912BE282A222644DB072AE132AE9176D0F3537CC091270265B35C94D7BAA4802655B827356CA287AB0BEA7C3361B7B93BADF56D43D43DF69ADDB0E10C9C314AFAA76BC1516BCD6D2CC6121E35FDA9FBB55859F072B19A8810ED7494F90DD6F128824DB61F8A5454F1EB846B10390DE4525085500AB80E985E1C08D8C4BDA500FDB753F8250ABBA99D61962FE19C57CA14DBDAE80C81890C0E261A9B9D84E2C20C1F77989664208A5273A48DD8463CA3EE7F5CCE1F3D86C18C5CF389CB832A71F05011DDBAD5579998793DA95CFBC2CE60DA5471037BF65B9B226FDBA03C80957D84BB336C2F1A11CDCCAC968BAC40FA15A232B0B5959A0DC4950203010001"
 RSA_DER_PRIV="308204A30201000282010100A7A7727095C83912BE282A222644DB072AE132AE9176D0F3537CC091270265B35C94D7BAA4802655B827356CA287AB0BEA7C3361B7B93BADF56D43D43DF69ADDB0E10C9C314AFAA76BC1516BCD6D2CC6121E35FDA9FBB55859F072B19A8810ED7494F90DD6F128824DB61F8A5454F1EB846B10390DE4525085500AB80E985E1C08D8C4BDA500FDB753F8250ABBA99D61962FE19C57CA14DBDAE80C81890C0E261A9B9D84E2C20C1F77989664208A5273A48DD8463CA3EE7F5CCE1F3D86C18C5CF389CB832A71F05011DDBAD5579998793DA95CFBC2CE60DA5471037BF65B9B226FDBA03C80957D84BB336C2F1A11CDCCAC968BAC40FA15A232B0B5959A0DC4950203010001028201003FD0B5DB416111ADBB5EAAE3E3028B78F61250713EB4897F31B9F559BCB865C4E006E44F98BFD965E3EBB36A34AC52FD6F0AF41221876068F357DCCF09719BF2FF7D54FA1F1E879FA4647F9989265AABB4E475A8A6B5EFFBCDCE7FA0E1F87723B2AE573B09CEC1B9108625ED0FBAD3E9274560921E2958B9F83D7F653A9AC4C5492D7EBFF70DDE5893657AD2DF6E9A96A3A8D4D9674405607F23852C688339EBA85BEB51656CCD008C541F4082984BCAD1BCAB12234058E37F4D6FFEC3AA1BFEAE41F4C0B775EAD85B0045C725DBEC62C77680660AB463126FEE68EBAF470AABA6F0817C0E7697067605A2BE08AB176D330DE8FD7B77D0E9F9F4B7E414E581A702818100C66264D04FD3453E55A7FBD0D8EAB7B5E9DAFB3D1806A8145919F033ECFFC87D797DA687380F5D65AE510EC1A1102E643725623BE5E5E7153823C759C288C94A7F57C47B2F1CB5D13351B70A7277903565D30D7E9F7A7F2B9970ED1DD6A9E7D882E8D20EC586004A718C77E77E2E56FEFA4904936F69021519D8849E9BC8F7B502818100D8584CDA06965E193FCAE823111201590260370F86AFA0CD2720ACD9E95A00CC8BF2FFB88858422ECC7F462EB3D6998E65030EA0987331F4EA130434F832F6C225E2B545440A4B7F9CB04FF9F463D0BE594193DDCA514BA58F34BD6F190B287A9A32514C122F5C20775B6387D1FAC769648F808EE2760569723791FCC5E7E5610281804BE74BB154497E7DDA221ABC0EB2C7B587936C7B349D1F6421AF45F36823799F60838DDAC0BD483BE6554733189FEB5016B56BFF84F7D0D1929845E6F7028519C6DD5AE4D2E2C64213C399281B21DA0044445B2E6E705D05DE809188D02053FFC81EB2784A64F9E981C67FFE078E4D64E3785A92DA96AFE048F249D3B1C153DD02818100A492D7336B9B6B4D8DC78EBB4E3B022771B53B6D6629A80B27DEA55EC7329E34FBA9087A99CD79DB1BD91DCC5D25BC7E23BD259D691B083FA4E87E64C5020FD034FDB6A35054FC85C0EE2688A02E6616C6D329E6A8071BA27FC3C0EF08800274F163A1905AAD0849F241E4FEE6EEFC4EE21E7FCF31DA51D79AF946E6A0ADFD41028180539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889BB264C45AB87AC1885CAEC064E0D3F7CDD30261A522DFC1F6E88B378F96B843F3C13AB960434CE24FEC96B038F5560151A611DF3070519140E508EDF398615A35FB8EB771D3BAADFA0D362263C10D90772AC0FA43C4D62F376D9"
-N="A7A7727095C83912BE282A222644DB072AE132AE9176D0F3537CC091270265B35C94D7BAA4802655B827356CA287AB0BEA7C3361B7B93BADF56D43D43DF69ADDB0E10C9C314AFAA76BC1516BCD6D2CC6121E35FDA9FBB55859F072B19A8810ED7494F90DD6F128824DB61F8A5454F1EB846B10390DE4525085500AB80E985E1C08D8C4BDA500FDB753F8250ABBA99D61962FE19C57CA14DBDAE80C81890C0E261A9B9D84E2C20C1F77989664208A5273A48DD8463CA3EE7F5CCE1F3D86C18C5CF389CB832A71F05011DDBAD5579998793DA95CFBC2CE60DA5471037BF65B9B226FDBA03C80957D84BB336C2F1A11CDCCAC968BAC40FA15A232B0B5959A0DC495"
-E="010001"
-D="3FD0B5DB416111ADBB5EAAE3E3028B78F61250713EB4897F31B9F559BCB865C4E006E44F98BFD965E3EBB36A34AC52FD6F0AF41221876068F357DCCF09719BF2FF7D54FA1F1E879FA4647F9989265AABB4E475A8A6B5EFFBCDCE7FA0E1F87723B2AE573B09CEC1B9108625ED0FBAD3E9274560921E2958B9F83D7F653A9AC4C5492D7EBFF70DDE5893657AD2DF6E9A96A3A8D4D9674405607F23852C688339EBA85BEB51656CCD008C541F4082984BCAD1BCAB12234058E37F4D6FFEC3AA1BFEAE41F4C0B775EAD85B0045C725DBEC62C77680660AB463126FEE68EBAF470AABA6F0817C0E7697067605A2BE08AB176D330DE8FD7B77D0E9F9F4B7E414E581A7"
-P="C66264D04FD3453E55A7FBD0D8EAB7B5E9DAFB3D1806A8145919F033ECFFC87D797DA687380F5D65AE510EC1A1102E643725623BE5E5E7153823C759C288C94A7F57C47B2F1CB5D13351B70A7277903565D30D7E9F7A7F2B9970ED1DD6A9E7D882E8D20EC586004A718C77E77E2E56FEFA4904936F69021519D8849E9BC8F7B5"
-Q="D8584CDA06965E193FCAE823111201590260370F86AFA0CD2720ACD9E95A00CC8BF2FFB88858422ECC7F462EB3D6998E65030EA0987331F4EA130434F832F6C225E2B545440A4B7F9CB04FF9F463D0BE594193DDCA514BA58F34BD6F190B287A9A32514C122F5C20775B6387D1FAC769648F808EE2760569723791FCC5E7E561"
-DP="4BE74BB154497E7DDA221ABC0EB2C7B587936C7B349D1F6421AF45F36823799F60838DDAC0BD483BE6554733189FEB5016B56BFF84F7D0D1929845E6F7028519C6DD5AE4D2E2C64213C399281B21DA0044445B2E6E705D05DE809188D02053FFC81EB2784A64F9E981C67FFE078E4D64E3785A92DA96AFE048F249D3B1C153DD"
-DQ="A492D7336B9B6B4D8DC78EBB4E3B022771B53B6D6629A80B27DEA55EC7329E34FBA9087A99CD79DB1BD91DCC5D25BC7E23BD259D691B083FA4E87E64C5020FD034FDB6A35054FC85C0EE2688A02E6616C6D329E6A8071BA27FC3C0EF08800274F163A1905AAD0849F241E4FEE6EEFC4EE21E7FCF31DA51D79AF946E6A0ADFD41"
-QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889BB264C45AB87AC1885CAEC064E0D3F7CDD30261A522DFC1F6E88B378F96B843F3C13AB960434CE24FEC96B038F5560151A611DF3070519140E508EDF398615A35FB8EB771D3BAADFA0D362263C10D90772AC0FA43C4D62F376D9"
+RSA_N="A7A7727095C83912BE282A222644DB072AE132AE9176D0F3537CC091270265B35C94D7BAA4802655B827356CA287AB0BEA7C3361B7B93BADF56D43D43DF69ADDB0E10C9C314AFAA76BC1516BCD6D2CC6121E35FDA9FBB55859F072B19A8810ED7494F90DD6F128824DB61F8A5454F1EB846B10390DE4525085500AB80E985E1C08D8C4BDA500FDB753F8250ABBA99D61962FE19C57CA14DBDAE80C81890C0E261A9B9D84E2C20C1F77989664208A5273A48DD8463CA3EE7F5CCE1F3D86C18C5CF389CB832A71F05011DDBAD5579998793DA95CFBC2CE60DA5471037BF65B9B226FDBA03C80957D84BB336C2F1A11CDCCAC968BAC40FA15A232B0B5959A0DC495"
+RSA_E="010001"
+RSA_D="3FD0B5DB416111ADBB5EAAE3E3028B78F61250713EB4897F31B9F559BCB865C4E006E44F98BFD965E3EBB36A34AC52FD6F0AF41221876068F357DCCF09719BF2FF7D54FA1F1E879FA4647F9989265AABB4E475A8A6B5EFFBCDCE7FA0E1F87723B2AE573B09CEC1B9108625ED0FBAD3E9274560921E2958B9F83D7F653A9AC4C5492D7EBFF70DDE5893657AD2DF6E9A96A3A8D4D9674405607F23852C688339EBA85BEB51656CCD008C541F4082984BCAD1BCAB12234058E37F4D6FFEC3AA1BFEAE41F4C0B775EAD85B0045C725DBEC62C77680660AB463126FEE68EBAF470AABA6F0817C0E7697067605A2BE08AB176D330DE8FD7B77D0E9F9F4B7E414E581A7"
+RSA_P="C66264D04FD3453E55A7FBD0D8EAB7B5E9DAFB3D1806A8145919F033ECFFC87D797DA687380F5D65AE510EC1A1102E643725623BE5E5E7153823C759C288C94A7F57C47B2F1CB5D13351B70A7277903565D30D7E9F7A7F2B9970ED1DD6A9E7D882E8D20EC586004A718C77E77E2E56FEFA4904936F69021519D8849E9BC8F7B5"
+RSA_Q="D8584CDA06965E193FCAE823111201590260370F86AFA0CD2720ACD9E95A00CC8BF2FFB88858422ECC7F462EB3D6998E65030EA0987331F4EA130434F832F6C225E2B545440A4B7F9CB04FF9F463D0BE594193DDCA514BA58F34BD6F190B287A9A32514C122F5C20775B6387D1FAC769648F808EE2760569723791FCC5E7E561"
+RSA_DP="4BE74BB154497E7DDA221ABC0EB2C7B587936C7B349D1F6421AF45F36823799F60838DDAC0BD483BE6554733189FEB5016B56BFF84F7D0D1929845E6F7028519C6DD5AE4D2E2C64213C399281B21DA0044445B2E6E705D05DE809188D02053FFC81EB2784A64F9E981C67FFE078E4D64E3785A92DA96AFE048F249D3B1C153DD"
+RSA_DQ="A492D7336B9B6B4D8DC78EBB4E3B022771B53B6D6629A80B27DEA55EC7329E34FBA9087A99CD79DB1BD91DCC5D25BC7E23BD259D691B083FA4E87E64C5020FD034FDB6A35054FC85C0EE2688A02E6616C6D329E6A8071BA27FC3C0EF08800274F163A1905AAD0849F241E4FEE6EEFC4EE21E7FCF31DA51D79AF946E6A0ADFD41"
+RSA_QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889BB264C45AB87AC1885CAEC064E0D3F7CDD30261A522DFC1F6E88B378F96B843F3C13AB960434CE24FEC96B038F5560151A611DF3070519140E508EDF398615A35FB8EB771D3BAADFA0D362263C10D90772AC0FA43C4D62F376D9"
 
 # RSA Generate Key (PEM)
 ./aisio -rsa -generate -keys 2048 -out -pem
@@ -719,16 +990,28 @@ QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889
 ./aisio -rsa -export -params -pub -der -file "$DER_ROOT_FILE"-pub.der -priv -der -file "$DER_ROOT_FILE"-priv.der -out -file "$PARAM_FILE"
 
 # RSA Export To Public Key and Private Key (PEM)
-./aisio -rsa -export -keys -params "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -pem
+./aisio -rsa -export -keys -params "$BASE" -n "$RSA_N" -e "$RSA_E" -d "$RSA_D" -p "$RSA_P" -q "$RSA_Q" -dp "$RSA_DP" -dq "$RSA_DQ" -qi "$RSA_QI" -out -pem
 
 # RSA Export To Public Key and Private Key (Parameters File + PEM File)
 ./aisio -rsa -export -keys -params -file "$PARAM_FILE" -out -pem -file "$PEM_ROOT_FILE"
 
 # RSA Export To Public Key and Private Key (DER)
-./aisio -rsa -export -keys -params "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -der "$BASE"
+./aisio -rsa -export -keys -params "$BASE" -n "$RSA_N" -e "$RSA_E" -d "$RSA_D" -p "$RSA_P" -q "$RSA_Q" -dp "$RSA_DP" -dq "$RSA_DQ" -qi "$RSA_QI" -out -der "$BASE"
 
 # RSA Export To Public Key and Private Key (Parameters File + DER File)
 ./aisio -rsa -export -keys -params -file "$PARAM_FILE" -out -der -file "$DER_ROOT_FILE"
+
+# RSA Extract Public Key from Private Key (PEM)
+./aisio -rsa -extract -priv -pem "$RSA_PEM_PRIV" -out -pem
+
+# RSA Extract Public Key from Private Key (PEM File)
+./aisio -rsa -extract -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -out -pem -file "$PEM_ROOT_FILE"
+
+# RSA Extract Public Key from Private Key (DER)
+./aisio -rsa -extract -priv -der "$BASE" "$RSA_DER_PRIV" -out -der "$BASE"
+
+# RSA Extract Public Key from Private Key (DER File)
+./aisio -rsa -extract -priv -der -file "$DER_ROOT_FILE"-priv.der -out -der -file "$DER_ROOT_FILE"
 
 # RSA Check Public Key (PEM)
 ./aisio -rsa -check -pub -pem "$RSA_PEM_PUB"
@@ -835,16 +1118,6 @@ echo "$RESULT"
    09. `-b91` `-base91`           -> Base91 data.
    10. `-f <path>` `-file <path>` -> Archival data.
 
-### *Explanation of `[--rsa-parameters-list]`*
-   1. `-n` `-modulus`                          -> Modulus data by [--way].
-   2. `-e` `-public-exponent`                  -> Public Exponent data by [--way].
-   3. `-d` `-private-exponent`                 -> Private Exponent data by [--way].
-   4. `-p` `-prime1` `-first-prime-factor`     -> First Prime Factor data by [--way].
-   5. `-q` `-prime2` `-second-prime-factor`    -> Second Prime Factor data by [--way].
-   6. `-dp` `-exponent1` `-first-crt-exponent` -> First CRT Exponent data by [--way].
-   7. `-dq` `-exponent2` `-second-crt-exponent`-> Second CRT Exponent data by [--way].
-   8. `-qi` `-coefficient` `-crt-coefficient`  -> CRT Coefficient data by [--way].
-
 ### *Explanation of `[--hash-type]`*
    1. `-md5`                                 -> Hash MD5 Calculation.
    2. `-md5-sha1`                            -> Hash MD5-SHA1 Calculation.
@@ -865,6 +1138,23 @@ echo "$RESULT"
    17. `-blake2b` `-blake512` `-blake2b-512` -> Hash BLAKE2B-512 Calculation.
    18. `-sm3`                                -> Hash SM3 Calculation.
    19. `-ripemd160`                          -> Hash RIPEMD160 Calculation.
+
+### *Explanation of `[--dsa-parameters-list]`*
+   1. `-y` `-public-Key`                        -> Public Key data by [--way].
+   2. `-x` `-private-Key`                       -> Private Key data by [--way].
+   3. `-p` `-prime` `-modulus` `-prime-modulus` -> Prime Modulus data by [--way].
+   4. `-q` `-subprime`                          -> Subprime data by [--way].
+   5. `-g` `-generator`                         -> Generator data by [--way].
+
+### *Explanation of `[--rsa-parameters-list]`*
+   1. `-n` `-modulus`                           -> Modulus data by [--way].
+   2. `-e` `-public-exponent`                   -> Public Exponent data by [--way].
+   3. `-d` `-private-exponent`                  -> Private Exponent data by [--way].
+   4. `-p` `-prime1` `-first-prime-factor`      -> First Prime Factor data by [--way].
+   5. `-q` `-prime2` `-second-prime-factor`     -> Second Prime Factor data by [--way].
+   6. `-dp` `-exponent1` `-first-crt-exponent`  -> First CRT Exponent data by [--way].
+   7. `-dq` `-exponent2` `-second-crt-exponent` -> Second CRT Exponent data by [--way].
+   8. `-qi` `-coefficient` `-crt-coefficient`   -> CRT Coefficient data by [--way].
 
 ---
 
