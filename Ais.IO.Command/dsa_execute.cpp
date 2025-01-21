@@ -127,6 +127,14 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				break;
 			}
 			break;
+		case dsa_execute::hash("-sign"):
+		case dsa_execute::hash("-signed"):
+			dsa.Mode = DSA_MODE::DSA_SIGNATURE;
+			break;
+		case dsa_execute::hash("-ver"):
+		case dsa_execute::hash("-verify"):
+			dsa.Mode = DSA_MODE::DSA_VERIFICATION;
+			break;
 		case dsa_execute::hash("-pub"):
 		case dsa_execute::hash("-public"):
 		case dsa_execute::hash("-public-key"):
@@ -148,6 +156,24 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 			dsa.Password = argv[i + 1];
 			i++;
 			break;
+		case dsa_execute::hash("-sg"):
+		case dsa_execute::hash("-signature"):
+			dsa.signature_option = cryptography_libary::GetOption(i, argv);
+			dsa.Signature = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-hash"): {
+			std::string hashmode = ToLower(argv[i + 1]);
+			if (HashMode.find(hashmode) != HashMode.end()) {
+				dsa.Hash = HashMode[hashmode];
+				i++;
+			}
+			break;
+		}
+		case dsa_execute::hash("-alg"):
+		case dsa_execute::hash("-algorithm"):
+			asymmetric_libary::ParseAlgorithm(i, argv, dsa.Algorithm, dsa.AlgorithmSize, dsa.Segment);
+			break;
 		case dsa_execute::hash("-param"):
 		case dsa_execute::hash("-params"):
 		case dsa_execute::hash("-parameter"):
@@ -159,6 +185,49 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				dsa.Params = argv[i + 1];
 				i++;
 			}
+			break;
+		case dsa_execute::hash("-y"):
+		case dsa_execute::hash("-public-Key"):
+			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			dsa.Y = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-x"):
+		case dsa_execute::hash("-private-Key"):
+			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			dsa.X = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-p"):
+		case dsa_execute::hash("-prime"):
+		case dsa_execute::hash("-modulus"):
+		case dsa_execute::hash("-prime-modulus"):
+			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			dsa.P = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-q"):
+		case dsa_execute::hash("-subprime"):
+			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			dsa.Q = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-g"):
+		case dsa_execute::hash("-generator"):
+			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			dsa.G = argv[i + 1];
+			i++;
+			break;
+		case dsa_execute::hash("-dat"):
+		case dsa_execute::hash("-data"):
+			dsa.data_option = cryptography_libary::GetOption(i, argv);
+			dsa.Data = argv[i + 1];
+			i++;
 			break;
 		case dsa_execute::hash("-out"):
 		case dsa_execute::hash("-output"):
@@ -260,6 +329,12 @@ void dsa_execute::DsaStart(Dsa& dsa) {
 		break;
 	case DSA_MODE::DSA_CHECK_PARAMETER:
 		CheckParameters(dsa);
+		break;
+	case DSA_MODE::DSA_SIGNATURE:
+		Signed(dsa);
+		break;
+	case DSA_MODE::DSA_VERIFICATION:
+		Verify(dsa);
 		break;
 	}
 }
@@ -737,4 +812,83 @@ void dsa_execute::CheckParameters(Dsa& dsa) {
 		std::cout << Hint("Dsa Parameters Check Success.") << std::endl;
 	else
 		std::cout << Error("Dsa Parameters Check Falture.") << std::endl;
+}
+
+void dsa_execute::Signed(Dsa& dsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(dsa.privatekey_option, dsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, pemPass);
+	cryptography_libary::ValueDecode(dsa.data_option, dsa.Data, data);
+
+	DSA_CHECK_PRIVATE_KEY priv = {
+		dsa.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
+	if (priv.IS_KEY_OK)
+		signature.resize(priv.KEY_LENGTH);
+	else {
+		std::cout << Hint("<DSA Signed>") << std::endl;
+		std::cout << Error("Dsa get private key failed.") << std::endl;
+	}
+
+	DSA_SIGNED sign = {
+		dsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		data.data(),
+		signature.data(),
+		privateKey.size(),
+		pemPass.size(),
+		data.size(),
+		dsa.Hash
+	};
+	int result_size = ((DsaSigned)DsaFunctions.at("-signed"))(&sign);
+	if (result_size != -1) {
+		signature.resize(result_size);
+		std::cout << Hint("<DSA Signed>") << std::endl;
+		cryptography_libary::ValueEncode(dsa.output_option, signature, dsa.Output);
+		std::cout << Ask(dsa.Output) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(dsa.Output.size())) << Hint("]") << std::endl;
+	}
+	else {
+		std::cout << Hint("<DSA Signed>") << std::endl;
+		std::cout << Error("Dsa sign failed.") << std::endl;
+	}
+}
+
+void dsa_execute::Verify(Dsa& dsa) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(dsa.publickey_option, dsa.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(dsa.data_option, dsa.Data, data);
+	cryptography_libary::ValueDecode(dsa.signature_option, dsa.Signature, signature);
+
+	DSA_VERIFY verify = {
+		dsa.KeyFormat,
+		publicKey.data(),
+		data.data(),
+		signature.data(),
+		publicKey.size(),
+		data.size(),
+		signature.size(),
+		dsa.Hash
+	};
+	((DsaVerify)DsaFunctions.at("-verify"))(&verify);
+	if (verify.IS_VALID) {
+		std::cout << Hint("<DSA Verify>") << std::endl;
+		std::cout << Ask("Verification Success!") << std::endl;
+	}
+	else {
+		std::cout << Hint("<DSA Verify>") << std::endl;
+		std::cout << Error("Verification Failure!") << std::endl;
+	}
 }

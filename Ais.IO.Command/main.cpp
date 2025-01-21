@@ -668,6 +668,8 @@ void LoadFunctions() {
     DsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPublicKey");
     DsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPrivateKey");
     DsaFunctions["-param-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckParameters");
+    DsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "DsaSigned");
+    DsaFunctions["-verify"] = GET_PROC_ADDRESS(Lib, "DsaVerify");
 
     RsaFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "RsaGetParametersLength");
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");

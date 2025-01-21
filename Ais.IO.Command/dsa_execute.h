@@ -19,5 +19,7 @@ private:
 	static void CheckPublicKey(Dsa& dsa);
 	static void CheckPrivateKey(Dsa& dsa);
 	static void CheckParameters(Dsa& dsa);
+	static void Signed(Dsa& dsa);
+	static void Verify(Dsa& dsa);
 };
 

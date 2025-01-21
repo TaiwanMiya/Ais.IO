@@ -146,6 +146,30 @@ struct DSA_CHECK_PARAMETERS {
     size_t KEY_LENGTH;
 };
 
+struct DSA_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct DSA_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
 EXT DSAIO_API int DsaGetParametersLength(DSA_PARAMETERS* params);
 EXT DSAIO_API int DsaGetKeyLength(DSA_KEY_PAIR* params);
 EXT DSAIO_API int DsaGenerateParameters(DSA_PARAMETERS* params);
@@ -158,3 +182,5 @@ EXT DSAIO_API int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params
 EXT DSAIO_API int DsaCheckPublicKey(DSA_CHECK_PUBLIC_KEY* check);
 EXT DSAIO_API int DsaCheckPrivateKey(DSA_CHECK_PRIVATE_KEY* check);
 EXT DSAIO_API int DsaCheckParameters(DSA_CHECK_PARAMETERS* check);
+EXT DSAIO_API int DsaSigned(DSA_SIGNED* sign);
+EXT DSAIO_API int DsaVerify(DSA_VERIFY* verify);

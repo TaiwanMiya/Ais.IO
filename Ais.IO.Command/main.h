@@ -123,6 +123,8 @@ enum DSA_MODE : unsigned long long {
     DSA_CHECK_PUBLIC = 7,
     DSA_CHECK_PRIVATE = 8,
     DSA_CHECK_PARAMETER = 9,
+    DSA_SIGNATURE = 10,
+    DSA_VERIFICATION = 11,
 };
 
 enum RSA_MODE : unsigned long long {
@@ -277,6 +279,8 @@ struct Dsa {
     std::string PublicKey;
     std::string PrivateKey;
     std::string Password;
+    std::string Data;
+    std::string Signature;
     std::string Output;
     size_t KeyLength = 0;
 
@@ -284,6 +288,8 @@ struct Dsa {
     CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS data_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS signature_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
 
     ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
@@ -291,6 +297,7 @@ struct Dsa {
     SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
     int AlgorithmSize = 256;
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
+    HASH_TYPE Hash = HASH_TYPE::HASH_SHA2_256;
 };
 
 struct Rsa {
@@ -775,6 +782,30 @@ struct DSA_CHECK_PARAMETERS {
     size_t KEY_LENGTH;
 };
 
+struct DSA_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct DSA_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
 struct RSA_PARAMETERS {
     const size_t KEY_LENGTH;
     unsigned char* N;
@@ -1089,6 +1120,8 @@ typedef int (*DsaExtractKeysByParameters)(DSA_EXTRACT_KEYS_PARAMETERS*);
 typedef int (*DsaCheckPublicKey)(DSA_CHECK_PUBLIC_KEY*);
 typedef int (*DsaCheckPrivateKey)(DSA_CHECK_PRIVATE_KEY*);
 typedef int (*DsaCheckParameters)(DSA_CHECK_PARAMETERS*);
+typedef int (*DsaSigned)(DSA_SIGNED*);
+typedef int (*DsaVerify)(DSA_VERIFY*);
 #pragma endregion
 
 

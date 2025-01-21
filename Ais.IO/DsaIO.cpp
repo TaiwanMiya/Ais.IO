@@ -712,3 +712,79 @@ int DsaCheckParameters(DSA_CHECK_PARAMETERS* check) {
     EVP_PKEY_CTX_free(ctx);
     return 0;
 }
+
+int DsaSigned(DSA_SIGNED* sign) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(sign->PRIVATE_KEY, static_cast<int>(sign->PRIVATE_KEY_LENGTH));
+
+    switch (sign->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (sign->PEM_PASSWORD == NULL || sign->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(sign->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid private key format.", bio, NULL, pkey);
+    }
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create digest context.", bio, NULL, pkey);
+
+    const EVP_MD* md = GetHashCrypter(sign->HASH_ALGORITHM);
+    if (1 != EVP_DigestSignInit(ctx, NULL, md, NULL, pkey)) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to initialize signing.", bio, NULL, pkey);
+    }
+
+    size_t siglen = 0;
+    if (1 != EVP_DigestSign(ctx, NULL, &siglen, sign->DATA, sign->DATA_LENGTH)) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to determine signature size.", bio, NULL, pkey);
+    }
+
+    if (1 != EVP_DigestSign(ctx, sign->SIGNATURE, &siglen, sign->DATA, sign->DATA_LENGTH)) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to generate signature.", bio, NULL, pkey);
+    }
+
+    EVP_MD_CTX_free(ctx);
+    return static_cast<int>(siglen);
+}
+
+int DsaVerify(DSA_VERIFY* verify) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(verify->PUBLIC_KEY, static_cast<int>(verify->PUBLIC_KEY_LENGTH));
+
+    switch (verify->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid public key format.", bio, NULL, pkey);
+    }
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create digest context.", bio, NULL, pkey);
+
+    const EVP_MD* md = GetHashCrypter(verify->HASH_ALGORITHM);
+    if (EVP_DigestVerifyInit(ctx, NULL, md, NULL, pkey) <= 0) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to initialize verification.", bio, NULL, pkey);
+    }
+
+    int result = EVP_DigestVerify(ctx, verify->SIGNATURE, verify->SIGNATURE_LENGTH, verify->DATA, verify->DATA_LENGTH);
+    verify->IS_VALID = result == 1;
+    EVP_MD_CTX_free(ctx);
+    return 0;
+}

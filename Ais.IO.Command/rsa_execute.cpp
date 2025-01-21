@@ -844,7 +844,7 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 	if (priv.IS_KEY_OK)
 		plaintext.resize(priv.KEY_LENGTH);
 	else {
-		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Hint("<RSA Decrypt>") << std::endl;
 		std::cout << Error("Rsa get private key failed.") << std::endl;
 	}
 
@@ -893,7 +893,7 @@ void rsa_execute::Signed(Rsa& rsa) {
 	if (priv.IS_KEY_OK)
 		signature.resize(priv.KEY_LENGTH);
 	else {
-		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		std::cout << Hint("<RSA Signed>") << std::endl;
 		std::cout << Error("Rsa get private key failed.") << std::endl;
 	}
 

@@ -572,7 +572,7 @@ BASE="-base16"
 ./aisio -hash -sm3 "This is HASH-SM3 by the Hash libary." -salt "This is HASH-SM3 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH RIPEMD160
-./aisio -hash -ripemd160 "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -ripemd160 "This is HASH-RIPEMD160 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
 ```
 
 ---
