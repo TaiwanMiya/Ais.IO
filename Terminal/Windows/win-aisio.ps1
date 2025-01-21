@@ -244,14 +244,14 @@ for ($i = 1; $i -le $iterations; $i++) {
                     switch ($rsa_format) {
                         '-pem'      { RSA_Generate_Keys_PEM }
                         '-der'      { RSA_Generate_Keys_DER }
-                        '-param'    { RSA_Generate_Paramters }
+                        '-param'    { RSA_Generate_Parameters }
                     }
                 }
                 '-exp' {
                     switch ($rsa_format) {
                         '-pem'      { RSA_Export_Keys_PEM }
                         '-der'      { RSA_Export_Keys_DER }
-                        '-param'    { RSA_Export_Paramters }
+                        '-param'    { RSA_Export_Parameters }
                     }
                 }
                 '-ext' {

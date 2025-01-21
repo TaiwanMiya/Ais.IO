@@ -177,10 +177,10 @@ CHOICE=$(whiptail --title "Aisio Shell Function Menu" --menu "Choice function:" 
 	"50" "Hash BLAKE2B 512 Calculation"\
 	"51" "Hash SM3 Calculation"\
 	"52" "Hash RIPEMD160 Calculation"\
-	"53" "Rsa Generate Paramters" \
+	"53" "Rsa Generate Parameters" \
 	"54" "Rsa Generate PEM Keys" \
 	"55" "Rsa Generate DER Keys" \
-	"56" "Rsa Export Paramters" \
+	"56" "Rsa Export Parameters" \
 	"57" "Rsa Export PEM Keys" \
 	"58" "Rsa Export DER Keys" \
 	"59" "Rsa Extract PEM Public Key" \
@@ -356,7 +356,7 @@ for ((i=1; i<=iterations; i++)); do
 			HASH_RIPEMD160
 			;;
 		53)
-			RSA_Generate_Paramters
+			RSA_Generate_Parameters
 			;;
 		54)
 			RSA_Generate_Keys_PEM
@@ -365,7 +365,7 @@ for ((i=1; i<=iterations; i++)); do
 			RSA_Generate_Keys_DER
 			;;
 		56)
-			RSA_Export_Paramters
+			RSA_Export_Parameters
 			;;
 		57)
 			RSA_Export_Keys_PEM

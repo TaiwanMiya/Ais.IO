@@ -162,6 +162,7 @@
     <ClCompile Include="cryptography_libary.cpp" />
     <ClCompile Include="hash_execute.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mapping_libary.cpp" />
     <ClCompile Include="output_colors.cpp" />
     <ClCompile Include="rsa_execute.cpp" />
     <ClCompile Include="string_case.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="cryptography_libary.h" />
     <ClInclude Include="hash_execute.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="mapping_libary.h" />
     <ClInclude Include="output_colors.h" />
     <ClInclude Include="rsa_execute.h" />
     <ClInclude Include="string_case.h" />

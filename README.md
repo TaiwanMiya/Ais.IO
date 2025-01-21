@@ -518,61 +518,61 @@ SHA3-KE (SHA3 with Keyed-Hash): This variant supports arbitrary-length hash outp
 BASE="-base16"
 
 # HASH MD5
-./aisio -hash -md5 -in "This is HASH-MD5 by the Hash libary." -salt "This is HASH-MD5 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -md5 "This is HASH-MD5 by the Hash libary." -salt "This is HASH-MD5 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH MD5-SHA1
-./aisio -hash -md5-sha1 -in "This is HASH-MD5-SHA1 by the Hash libary." -salt "This is HASH-MD5-SHA1 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -md5-sha1 "This is HASH-MD5-SHA1 by the Hash libary." -salt "This is HASH-MD5-SHA1 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA1
-./aisio -hash -sha1 -in "This is HASH-SHA1 by the Hash libary." -salt "This is HASH-SHA1 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha1 "This is HASH-SHA1 by the Hash libary." -salt "This is HASH-SHA1 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-224
-./aisio -hash -sha2-224 -in "This is HASH-SHA2-224 by the Hash libary." -salt "This is HASH-SHA2-224 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-224 "This is HASH-SHA2-224 by the Hash libary." -salt "This is HASH-SHA2-224 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-256
-./aisio -hash -sha2-256 -in "This is HASH-SHA2-256 by the Hash libary." -salt "This is HASH-SHA2-256 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-256 "This is HASH-SHA2-256 by the Hash libary." -salt "This is HASH-SHA2-256 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-384
-./aisio -hash -sha2-384 -in "This is HASH-SHA2-384 by the Hash libary." -salt "This is HASH-SHA2-384 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-384 "This is HASH-SHA2-384 by the Hash libary." -salt "This is HASH-SHA2-384 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-512
-./aisio -hash -sha2-512 -in "This is HASH-SHA2-512 by the Hash libary." -salt "This is HASH-SHA2-512 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-512 "This is HASH-SHA2-512 by the Hash libary." -salt "This is HASH-SHA2-512 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-512-224
-./aisio -hash -sha2-512-224 -in "This is HASH-SHA2-512-224 by the Hash libary." -salt "This is HASH-SHA2-512-224 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-512-224 "This is HASH-SHA2-512-224 by the Hash libary." -salt "This is HASH-SHA2-512-224 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA2-512-256
-./aisio -hash -sha2-512-256 -in "This is HASH-SHA2-512-256 by the Hash libary." -salt "This is HASH-SHA2-512-256 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha2-512-256 "This is HASH-SHA2-512-256 by the Hash libary." -salt "This is HASH-SHA2-512-256 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA3-224
-./aisio -hash -sha3-224 -in "This is HASH-SHA3-224 by the Hash libary." -salt "This is HASH-SHA3-224 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-224 "This is HASH-SHA3-224 by the Hash libary." -salt "This is HASH-SHA3-224 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA3-256
-./aisio -hash -sha3-256 -in "This is HASH-SHA3-256 by the Hash libary." -salt "This is HASH-SHA3-256 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-256 "This is HASH-SHA3-256 by the Hash libary." -salt "This is HASH-SHA3-256 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA3-384
-./aisio -hash -sha3-384 -in "This is HASH-SHA3-384 by the Hash libary." -salt "This is HASH-SHA3-384 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-384 "This is HASH-SHA3-384 by the Hash libary." -salt "This is HASH-SHA3-384 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA3-512
-./aisio -hash -sha3-512 -in "This is HASH-SHA3-512 by the Hash libary." -salt "This is HASH-SHA3-512 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-512 "This is HASH-SHA3-512 by the Hash libary." -salt "This is HASH-SHA3-512 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SHA3-KE-128
-./aisio -hash -sha3-ke-128 -in "This is HASH-SHA3-KE-128 by the Hash libary." -salt "This is HASH-SHA3-KE-128 Salt by the Hash." -length 16 -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-ke-128 "This is HASH-SHA3-KE-128 by the Hash libary." -salt "This is HASH-SHA3-KE-128 Salt by the Hash." -length 16 -fir -mid -las -out "$BASE"
 
 # HASH SHA3-KE-256
-./aisio -hash -sha3-ke-256 -in "This is HASH-SHA3-KE-256 by the Hash libary." -salt "This is HASH-SHA3-KE-256 Salt by the Hash." -length 32 -fir -mid -las -out "$BASE"
+./aisio -hash -sha3-ke-256 "This is HASH-SHA3-KE-256 by the Hash libary." -salt "This is HASH-SHA3-KE-256 Salt by the Hash." -length 32 -fir -mid -las -out "$BASE"
 
 # HASH BLAKE2S-256
-./aisio -hash -blake2s-256 -in "This is HASH-BLAKE2S-256 by the Hash libary." -salt "This is HASH-BLAKE2S-256 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -blake2s-256 "This is HASH-BLAKE2S-256 by the Hash libary." -salt "This is HASH-BLAKE2S-256 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH BLAKE2B-512
-./aisio -hash -blake2b-512 -in "This is HASH-BLAKE2B-512 by the Hash libary." -salt "This is HASH-BLAKE2B-512 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -blake2b-512 "This is HASH-BLAKE2B-512 by the Hash libary." -salt "This is HASH-BLAKE2B-512 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH SM3
-./aisio -hash -sm3 -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-SM3 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -sm3 "This is HASH-SM3 by the Hash libary." -salt "This is HASH-SM3 Salt by the Hash." -fir -mid -las -out "$BASE"
 
 # HASH RIPEMD160
-./aisio -hash -sm3 -in "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
+./aisio -hash -ripemd160 "This is HASH-SM3 by the Hash libary." -salt "This is HASH-RIPEMD160 Salt by the Hash." -fir -mid -las -out "$BASE"
 ```
 
 ---
@@ -601,9 +601,9 @@ Private Key: Used to decrypt data or create digital signatures.
 ### Rsa Cryptography Introduction
 | Feature                  | Mode      | Required Arguments                                                             | Description                                                                          |
 |--------------------------|-----------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| **`Generate Paramter`**  | `-gen`    | `-param <size>`                                                                | Create a key of your specified size, and export it to Base Encoding or File formats. |
+| **`Generate Parameter`**  | `-gen`    | `-param <size>`                                                               | Create a key of your specified size, and export it to Base Encoding or File formats. |
 | **`Generate Key`**       | `-gen`    | `-key <size>` `-pass <password>`                                               | Creates a key of a specified size and exports it to PEM, DER or other file formats.  |
-| **`Export to Paramter`** | `-exp`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]` or `[--paramters-list]`      | Export the Rsa key to Rsa Parameters.                                                |
+| **`Export to Parameter`** | `-exp`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]` or `[--rsa-parameters-list]`| Export the Rsa key to Rsa Parameters.                                                |
 | **`Export to Key`**      | `-exp`    | `-key` `-param [--way]`                                                        | Export the Rsa Parameters to Rsa key.                                                |
 | **`Check Public Key`**   | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Rsa Public Key is Valid.                                                |
 | **`Check Private Key`**  | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Rsa Private Key is Valid.                                               |
@@ -618,7 +618,7 @@ Private Key: Used to decrypt data or create digital signatures.
    - `<cipher-text>` is your cipher text, which is your encrypted data.
    - Read the [*`[--keys-way]`*](#explanation-of---keys-way)
    - Read the [*`[--way]`*](#explanation-of---way)
-   - Read the [*`[--paramters-list]`*](#explanation-of---paramters-list)
+   - Read the [*`[--rsa-parameters-list]`*](#explanation-of---rsa-parameters-list)
    - Read the [*`[--hash-type]`*](#explanation-of---hash-type)
 
 ### *Rsa Instruction Usage*
@@ -700,34 +700,34 @@ QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889
 # RSA Generate Key (DER File)
 ./aisio -rsa -generate -keys 2048 -out -der -file "$DER_ROOT_FILE"
 
-# RSA Generate Paramters (Base Encoding)
+# RSA Generate Parameters (Base Encoding)
 ./aisio -rsa -generate -params 2048 -out "$BASE"
 
-# RSA Generate Paramters (Paramters File)
+# RSA Generate Parameters (Parameters File)
 ./aisio -rsa -generate -params 2048 -out -file "$PARAM_FILE"
 
-# RSA Export To Paramters (PEM)
+# RSA Export To Parameters (PEM)
 ./aisio -rsa -export -params -pub -pem "$RSA_PEM_PUB" -priv -pem "$RSA_PEM_PRIV" -out "$BASE"
 
-# RSA Export To Paramters (PEM File + Paramters File)
+# RSA Export To Parameters (PEM File + Parameters File)
 ./aisio -rsa -export -params -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -out -file "$PARAM_FILE"
 
-# RSA Export To Paramters (DER)
+# RSA Export To Parameters (DER)
 ./aisio -rsa -export -params -pub -der "$BASE" "$RSA_DER_PUB" -priv -der "$BASE" "$RSA_DER_PRIV" -out "$BASE"
 
-# RSA Export To Paramters (DER File + Paramters File)
+# RSA Export To Parameters (DER File + Parameters File)
 ./aisio -rsa -export -params -pub -der -file "$DER_ROOT_FILE"-pub.der -priv -der -file "$DER_ROOT_FILE"-priv.der -out -file "$PARAM_FILE"
 
 # RSA Export To Public Key and Private Key (PEM)
 ./aisio -rsa -export -keys -params "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -pem
 
-# RSA Export To Public Key and Private Key (Paramters File + PEM File)
+# RSA Export To Public Key and Private Key (Parameters File + PEM File)
 ./aisio -rsa -export -keys -params -file "$PARAM_FILE" -out -pem -file "$PEM_ROOT_FILE"
 
 # RSA Export To Public Key and Private Key (DER)
 ./aisio -rsa -export -keys -params "$BASE" -n "$N" -e "$E" -d "$D" -p "$P" -q "$Q" -dp "$DP" -dq "$DQ" -qi "$QI" -out -der "$BASE"
 
-# RSA Export To Public Key and Private Key (Paramters File + DER File)
+# RSA Export To Public Key and Private Key (Parameters File + DER File)
 ./aisio -rsa -export -keys -params -file "$PARAM_FILE" -out -der -file "$DER_ROOT_FILE"
 
 # RSA Check Public Key (PEM)
@@ -755,7 +755,7 @@ QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B8889
 ./aisio -rsa -check -priv -der -file "$DER_ROOT_FILE"-priv.der
 
 # RSA Encryption (PEM)
-RESULT=$(./aisio -rsa -encrypt -pub -pem "$RSA_PEM_PUB" -plain-text "This is Encryption/Decryption by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nElapsed time:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -encrypt -pub -pem "$RSA_PEM_PUB" -plain-text "This is Encryption/Decryption by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
 echo "$RESULT"
 
 # RSA Decryption (PEM)
@@ -768,7 +768,7 @@ echo "$RESULT"
 ./aisio -rsa -decrypt -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -cipher-text -file "$RESULT_FILE"
 
 # RSA Encryption (DER)
-RESULT=$(./aisio -rsa -encrypt -pub -der "$BASE" "$RSA_DER_PUB" -plain-text "This is Encryption/Decryption by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nElapsed time:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -encrypt -pub -der "$BASE" "$RSA_DER_PUB" -plain-text "This is Encryption/Decryption by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
 echo "$RESULT"
 
 # RSA Decryption (DER)
@@ -781,7 +781,7 @@ echo "$RESULT"
 ./aisio -rsa -decrypt -priv -der -file "$DER_ROOT_FILE"-priv.der -cipher-text -file "$RESULT_FILE"
 
 # RSA Signed (PEM)
-RESULT=$(./aisio -rsa -signed -priv -pem "$RSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nElapsed time:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -signed -priv -pem "$RSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
 echo "$RESULT"
 
 # RSA Verify (PEM)
@@ -794,7 +794,7 @@ echo "$RESULT"
 ./aisio -rsa -verify -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -signature -file "$SIGNATURE_FILE"
 
 # RSA Signed (DER)
-RESULT=$(./aisio -rsa -signed -priv -der "$BASE" "$RSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nElapsed time:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -signed -priv -der "$BASE" "$RSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
 echo "$RESULT"
 
 # RSA Verify (DER)
@@ -835,7 +835,7 @@ echo "$RESULT"
    09. `-b91` `-base91`           -> Base91 data.
    10. `-f <path>` `-file <path>` -> Archival data.
 
-### *Explanation of `[--paramters-list]`*
+### *Explanation of `[--rsa-parameters-list]`*
    1. `-n` `-modulus`                          -> Modulus data by [--way].
    2. `-e` `-public-exponent`                  -> Public Exponent data by [--way].
    3. `-d` `-private-exponent`                 -> Private Exponent data by [--way].

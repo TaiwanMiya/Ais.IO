@@ -398,137 +398,137 @@ function HASH_MD5 {
     Write-Host "Ais HASH MD5 Calculation..."
     $content = "This is HASH MD5 Calculation."
     $salt = "This is Salt by the HASH MD5."
-    .\aisio --hash -md5 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -md5 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_MD5_SHA1 {
     Write-Host "Ais HASH MD5-SHA1 Calculation..."
     $content = "This is HASH MD5-SHA1 Calculation."
     $salt = "This is Salt by the HASH MD5-SHA1."
-    .\aisio --hash -md5-sha1 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -md5-sha1 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA1 {
     Write-Host "Ais HASH SHA1 Calculation..."
     $content = "This is HASH SHA1 Calculation."
     $salt = "This is Salt by the HASH SHA1."
-    .\aisio --hash -sha1 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha1 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_224 {
     Write-Host "Ais HASH SHA2-224 Calculation..."
     $content = "This is HASH SHA2-224 Calculation."
     $salt = "This is Salt by the HASH SHA2-224."
-    .\aisio --hash -sha2-224 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-224 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_256 {
     Write-Host "Ais HASH SHA2-256 Calculation..."
     $content = "This is HASH SHA2-256 Calculation."
     $salt = "This is Salt by the HASH SHA2-256."
-    .\aisio --hash -sha2-256 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-256 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_384 {
     Write-Host "Ais HASH SHA2-384 Calculation..."
     $content = "This is HASH SHA2-384 Calculation."
     $salt = "This is Salt by the HASH SHA2-384."
-    .\aisio --hash -sha2-384 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-384 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512 {
     Write-Host "Ais HASH SHA2-512 Calculation..."
     $content = "This is HASH SHA2-512 Calculation."
     $salt = "This is Salt by the HASH SHA2-512."
-    .\aisio --hash -sha2-512 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-512 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512_224 {
     Write-Host "Ais HASH SHA2-512-224 Calculation..."
     $content = "This is HASH SHA2-512-224 Calculation."
     $salt = "This is Salt by the HASH SHA2-512-224."
-    .\aisio --hash -sha2-512-224 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-512-224 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA2_512_256 {
     Write-Host "Ais HASH SHA2-512-256 Calculation..."
     $content = "This is HASH SHA2-512-256 Calculation."
     $salt = "This is Salt by the HASH SHA2-512-256."
-    .\aisio --hash -sha2-512-256 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha2-512-256 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_224 {
     Write-Host "Ais HASH SHA3-224 Calculation..."
     $content = "This is HASH SHA3-224 Calculation."
     $salt = "This is Salt by the HASH SHA3-224."
-    .\aisio --hash -sha3-224 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha3-224 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_256 {
     Write-Host "Ais HASH SHA3-256 Calculation..."
     $content = "This is HASH SHA3-256 Calculation."
     $salt = "This is Salt by the HASH SHA3-256."
-    .\aisio --hash -sha3-256 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha3-256 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_384 {
     Write-Host "Ais HASH SHA3-384 Calculation..."
     $content = "This is HASH SHA3-384 Calculation."
     $salt = "This is Salt by the HASH SHA3-384."
-    .\aisio --hash -sha3-384 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha3-384 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_512 {
     Write-Host "Ais HASH SHA3-512 Calculation..."
     $content = "This is HASH SHA3-512 Calculation."
     $salt = "This is Salt by the HASH SHA3-512."
-    .\aisio --hash -sha3-512 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sha3-512 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SHA3_KE_128 {
     Write-Host "Ais HASH SHA3-KE-128 Calculation..."
     $content = "This is HASH SHA3-KE-128 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-128."
-    .\aisio --hash -sha3-ke-128 -input $content -salt $salt -first -middle -last -length 16 -out "$BASE"
+    .\aisio --hash -sha3-ke-128 $content -salt $salt -first -middle -last -length 16 -out "$BASE"
 }
 
 function HASH_SHA3_KE_256 {
     Write-Host "Ais HASH SHA3-KE-256 Calculation..."
     $content = "This is HASH SHA3-KE-256 Calculation."
     $salt = "This is Salt by the HASH SHA3-KE-256."
-    .\aisio --hash -sha3-ke-256 -input $content -salt $salt -first -middle -last -length 32 -out "$BASE"
+    .\aisio --hash -sha3-ke-256 $content -salt $salt -first -middle -last -length 32 -out "$BASE"
 }
 
 function HASH_BLAKE2S_256 {
     Write-Host "Ais HASH BLAKE2S-256 Calculation..."
     $content = "This is HASH BLAKE2S-256 Calculation."
     $salt = "This is Salt by the HASH BLAKE2S-256."
-    .\aisio --hash -blake2s-256 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -blake2s-256 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_BLAKE2B_512 {
     Write-Host "Ais HASH BLAKE2B-512 Calculation..."
     $content = "This is HASH BLAKE2B-512 Calculation."
     $salt = "This is Salt by the HASH BLAKE2B-512."
-    .\aisio --hash -blake2b-512 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -blake2b-512 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_SM3 {
     Write-Host "Ais HASH SM3 Calculation..."
     $content = "This is HASH SM3 Calculation."
     $salt = "This is Salt by the HASH SM3."
-    .\aisio --hash -sm3 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -sm3 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
 function HASH_RIPEMD160 {
     Write-Host "Ais HASH RIPEMD160 Calculation..."
     $content = "This is HASH RIPEMD160 Calculation."
     $salt = "This is Salt by the HASH RIPEMD160."
-    .\aisio --hash -ripemd160 -input $content -salt $salt -first -middle -last -out "$BASE"
+    .\aisio --hash -ripemd160 $content -salt $salt -first -middle -last -out "$BASE"
 }
 
-function RSA_Generate_Paramters {
-    Write-Host "Ais RSA Generate Paramters..."
+function RSA_Generate_Parameters {
+    Write-Host "Ais RSA Generate Parameters..."
     .\aisio --rsa -generate -param 2048 -out "$BASE"
 }
 
@@ -540,7 +540,7 @@ function RSA_Generate_Keys_DER {
     .\aisio --rsa -generate -key 2048 -out -der "$BASE"
 }
 
-function RSA_Export_Paramters {
+function RSA_Export_Parameters {
     .\aisio -rsa -export -param -pub -der "$BASE" $RSA_DER_PUB -priv -der "$BASE" $RSA_DER_PRIV -out "$BASE"
 }
 

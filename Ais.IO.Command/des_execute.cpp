@@ -122,6 +122,8 @@ void des_execute::EndHandling(std::vector<unsigned char>& result, Des& des) {
 	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
 	cryptography_libary::ValueEncode(des.output_option, result, result_str);
 	std::cout << Ask(result_str) << std::endl;
+	std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
+	std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
 }
 
 void des_execute::DesStart(Des& des) {

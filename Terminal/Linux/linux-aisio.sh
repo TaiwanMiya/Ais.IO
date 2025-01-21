@@ -386,7 +386,7 @@ for ((i=1; i<=iterations; i++)); do
 							RSA_Generate_Keys_DER
 							;;
 						-param)
-							RSA_Generate_Paramters
+							RSA_Generate_Parameters
 							;;
 					esac
 					;;
@@ -399,7 +399,7 @@ for ((i=1; i<=iterations; i++)); do
 							RSA_Export_Keys_DER
 							;;
 						-param)
-							RSA_Export_Paramters
+							RSA_Export_Parameters
 							;;
 					esac
 					;;

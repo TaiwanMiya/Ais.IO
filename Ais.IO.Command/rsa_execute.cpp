@@ -18,275 +18,6 @@ size_t rsa_execute::set_hash(const char* str) {
 	return hash;
 }
 
-void rsa_execute::ParseAlgorithm(int& i, char* argv[], Rsa& rsa) {
-	std::string arg_option = ToLower(argv[i + 1]);
-	switch (rsa_execute::set_hash(arg_option.c_str())) {
-	case hash("-aes"):
-		i++;
-		if (argv[i + 1] == NULL)
-			return;
-		arg_option = ToLower(argv[i + 1]);
-		switch (rsa_execute::set_hash(ToLower(argv[i + 1]).c_str())) {
-		case hash("-ctr"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CTR;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-cbc"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-cfb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CFB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-				switch (rsa_execute::set_hash(ToLower(argv[i + 1]).c_str())) {
-				case hash("1"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
-					i++;
-					break;
-				case hash("8"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_8_BIT;
-					i++;
-					break;
-				case hash("128"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
-					i++;
-					break;
-				default:
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
-					i++;
-					break;
-				}
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_128_BIT;
-				i++;
-			}
-			break;
-		case hash("-ofb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_OFB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-ecb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_ECB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-gcm"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_GCM;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-ccm"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CCM;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-xts"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_XTS;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-ocb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_OCB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-wrap"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_WRAP;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		default:break;
-		}
-		break;
-	case hash("-des"):
-		i++;
-		switch (rsa_execute::set_hash(ToLower(argv[i + 1]).c_str())) {
-		case hash("-cbc"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_DES_CBC;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-cfb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_DES_CFB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-				switch (rsa_execute::set_hash(ToLower(argv[i + 1]).c_str())) {
-				case hash("1"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
-					i++;
-					break;
-				case hash("8"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_8_BIT;
-					i++;
-					break;
-				case hash("128"):
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_64_BIT;
-					i++;
-					break;
-				default:
-					rsa.Segment = SEGMENT_SIZE_OPTION::SEGMENT_64_BIT;
-					i++;
-					break;
-				}
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-ofb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_DES_OFB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-ecb"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_DES_ECB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		case hash("-wrap"):
-			rsa.Algorithm = SYMMETRY_CRYPTER::SYMMETRY_DES_WRAP;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				rsa.AlgorithmSize = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				rsa.AlgorithmSize = 256;
-			else {
-				rsa.AlgorithmSize = 256;
-				i++;
-			}
-			break;
-		default:break;
-		}
-		break;
-	default:break;
-	}
-}
-
 void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 	for (int i = 0; i < argc; ++i) {
 		std::string arg = ToLower(argv[i]);
@@ -305,8 +36,8 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				break;
 			case rsa_execute::hash("-param"):
 			case rsa_execute::hash("-params"):
-			case rsa_execute::hash("-paramter"):
-			case rsa_execute::hash("-paramters"):
+			case rsa_execute::hash("-parameter"):
+			case rsa_execute::hash("-parameters"):
 				rsa.Mode = RSA_MODE::RSA_GENERATE_PARAMS;
 				i++;
 				if (IsULong(argv[i + 1])) {
@@ -328,8 +59,8 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				break;
 			case rsa_execute::hash("-param"):
 			case rsa_execute::hash("-params"):
-			case rsa_execute::hash("-paramter"):
-			case rsa_execute::hash("-paramters"):
+			case rsa_execute::hash("-parameter"):
+			case rsa_execute::hash("-parameters"):
 				rsa.Mode = RSA_MODE::RSA_EXPORT_PARAMS;
 				i++;
 				break;
@@ -349,7 +80,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			case rsa_execute::hash("-public-key"):
 				rsa.Mode = RSA_MODE::RSA_CHECK_PUBLIC;
 				i++;
-				rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
+				rsa.publickey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 				rsa.PublicKey = argv[i + 1];
 				i++;
 				break;
@@ -358,7 +89,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			case rsa_execute::hash("-private-key"):
 				rsa.Mode = RSA_MODE::RSA_CHECK_PRIVATE;
 				i++;
-				rsa.privatekey_option = asymmetric_libary::GetOption(rsa, i, argv);
+				rsa.privatekey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 				rsa.PrivateKey = argv[i + 1];
 				i++;
 				break;
@@ -383,14 +114,14 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-pub"):
 		case rsa_execute::hash("-public"):
 		case rsa_execute::hash("-public-key"):
-			rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
+			rsa.publickey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 			rsa.PublicKey = argv[i + 1];
 			i++;
 			break;
 		case rsa_execute::hash("-priv"):
 		case rsa_execute::hash("-private"):
 		case rsa_execute::hash("-private-key"):
-			rsa.privatekey_option = asymmetric_libary::GetOption(rsa, i, argv);
+			rsa.privatekey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 			rsa.PrivateKey = argv[i + 1];
 			i++;
 			break;
@@ -417,12 +148,12 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		}
 		case rsa_execute::hash("-alg"):
 		case rsa_execute::hash("-algorithm"):
-			rsa_execute::ParseAlgorithm(i, argv, rsa);
+			asymmetric_libary::ParseAlgorithm(i, argv, rsa.Algorithm, rsa.AlgorithmSize, rsa.Segment);
 			break;
 		case rsa_execute::hash("-param"):
 		case rsa_execute::hash("-params"):
-		case rsa_execute::hash("-paramter"):
-		case rsa_execute::hash("-paramters"):
+		case rsa_execute::hash("-parameter"):
+		case rsa_execute::hash("-parameters"):
 			rsa.param_option = cryptography_libary::GetOption(i, argv);
 			if (rsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
 				rsa.Params = argv[i + 1];
@@ -511,7 +242,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-out"):
 		case rsa_execute::hash("-output"):
 			if (rsa.Mode == RSA_MODE::RSA_GENERATE_KEYS || rsa.Mode == RSA_MODE::RSA_EXPORT_KEYS) {
-				CRYPT_OPTIONS option = asymmetric_libary::GetOption(rsa, i, argv);
+				CRYPT_OPTIONS option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 				rsa.publickey_option = option;
 				rsa.privatekey_option = option;
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
@@ -542,8 +273,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				}
 			}
 			else if (rsa.Mode == RSA_MODE::RSA_EXTRACT_PUBLIC) {
-				ASYMMETRIC_KEY_FORMAT original_format = rsa.KeyFormat;
-				rsa.publickey_option = asymmetric_libary::GetOption(rsa, i, argv);
+				rsa.publickey_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
 					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
 					if (std::regex_search(argv[i + 1], pattern))
@@ -553,8 +283,6 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 						? std::string(argv[i + 1]) + "-pub.der"
 						: std::string(argv[i + 1]) + "-pub.pem";
 				}
-				rsa.ExtractKeyFormat = rsa.KeyFormat;
-				rsa.KeyFormat = original_format;
 			}
 			else {
 				rsa.output_option = cryptography_libary::GetOption(i, argv);
@@ -687,7 +415,7 @@ void rsa_execute::GenerateParameters(Rsa& rsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<RSA Paramters Generate>") << std::endl;
+	std::cout << Hint("<RSA Parameters Generate>") << std::endl;
 	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
 	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
@@ -731,8 +459,8 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
 	std::cout << Hint("<RSA Keys Generate>") << std::endl;
 	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
-	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
+	std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
 }
 
 void rsa_execute::ExportParamters(Rsa& rsa) {
@@ -856,7 +584,7 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<RSA Paramters Export>") << std::endl;
+	std::cout << Hint("<RSA Parameters Export>") << std::endl;
 	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
 	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
@@ -972,8 +700,8 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	std::string privateKey_str = rsa.PrivateKey;
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key:\n") << Ask(privateKey_str) << std::endl;
+	std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
 }
 
 void rsa_execute::ExtractPublicKey(Rsa& rsa) {
@@ -1012,7 +740,7 @@ void rsa_execute::ExtractPublicKey(Rsa& rsa) {
 	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
 	std::string publicKey_str = rsa.PublicKey;
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
-	std::cout << Mark("Public Key:\n") << Ask(publicKey_str) << std::endl;
+	std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
 }
 
 void rsa_execute::CheckPublicKey(Rsa& rsa) {
@@ -1087,6 +815,8 @@ void rsa_execute::Encrypt(Rsa& rsa) {
 		std::cout << Hint("<RSA Encrypt>") << std::endl;
 		cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
 		std::cout << Ask(rsa.Output) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
 	}
 	else {
 		std::cout << Hint("<RSA Encrypt>") << std::endl;
@@ -1134,6 +864,8 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 		std::cout << Hint("<RSA Decrypt>") << std::endl;
 		cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
 		std::cout << Ask(rsa.Output) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
 	}
 	else {
 		std::cout << Hint("<RSA Decrypt>") << std::endl;
@@ -1182,6 +914,8 @@ void rsa_execute::Signed(Rsa& rsa) {
 		std::cout << Hint("<RSA Signed>") << std::endl;
 		cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
 		std::cout << Ask(rsa.Output) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
 	}
 	else {
 		std::cout << Hint("<RSA Signed>") << std::endl;

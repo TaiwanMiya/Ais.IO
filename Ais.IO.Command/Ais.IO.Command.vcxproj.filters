@@ -66,6 +66,9 @@
     <ClCompile Include="asymmetric_libary.cpp">
       <Filter>來源檔案\Libary</Filter>
     </ClCompile>
+    <ClCompile Include="mapping_libary.cpp">
+      <Filter>來源檔案\Libary</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -105,6 +108,9 @@
       <Filter>標頭檔\Execute</Filter>
     </ClInclude>
     <ClInclude Include="asymmetric_libary.h">
+      <Filter>標頭檔\Libary</Filter>
+    </ClInclude>
+    <ClInclude Include="mapping_libary.h">
       <Filter>標頭檔\Libary</Filter>
     </ClInclude>
   </ItemGroup>

@@ -71,6 +71,7 @@ $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(
 
 $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.cpp $(AISO_CMD_DIR)/main.cpp $(AISO_CMD_DIR)/usage_libary.cpp \
 			$(AISO_CMD_DIR)/binary_execute.cpp $(AISO_CMD_DIR)/encoder_execute.cpp \
+			$(AISO_CMD_DIR)/mapping_libary.cpp \
 			$(AISO_CMD_DIR)/asymmetric_libary.cpp \
 			$(AISO_CMD_DIR)/aes_execute.cpp $(AISO_CMD_DIR)/des_execute.cpp \
 			$(AISO_CMD_DIR)/hash_execute.cpp \

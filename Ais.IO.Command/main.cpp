@@ -214,11 +214,11 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     };
 
     std::unordered_set<std::string> ioOptions = {
-        "-input", "-output"
+        "-file", "-output"
     };
 
     std::unordered_map<std::string, std::string> abbreviationIoOptions = {
-        {"-in", "-input"}, {"-out", "-output"}
+        {"-f", "-file"}, {"-out", "-output"}
     };
 
     mode = ToLower(argv[1]);
@@ -496,16 +496,16 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             if (abbreviationIoOptions.count(arg)) {
                 arg = abbreviationIoOptions[arg];
             }
-            if (arg == "-input") {
+            if (arg == "-file") {
                 if (i + 1 >= argc) {
-                    std::cerr << Error("Missing input file path after -input.\n");
+                    std::cerr << Error("Missing input file path after -file.") << std::endl;
                     return false;
                 }
                 cmd.input = argv[++i];
             }
             else if (arg == "-output") {
                 if (i + 1 >= argc) {
-                    std::cerr << Error("Missing output file path after -output.\n");
+                    std::cerr << Error("Missing output file path after -output.") << std::endl;
                     return false;
                 }
                 cmd.output = argv[++i];
@@ -740,6 +740,8 @@ int main(int argc, char* argv[]) {
     std::string filePath;
     CRYPT_OPTIONS binary_bytes_option = CRYPT_OPTIONS::OPTION_TEXT;
     std::vector<Command> commands;
+
+    CheckRedirects();
 
 #if _WIN32
     EnableVirtualTerminalProcessing();

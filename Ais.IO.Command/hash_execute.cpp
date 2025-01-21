@@ -53,9 +53,6 @@ void hash_execute::ParseParameters(int argc, char* argv[], Hashes& hash) {
 		case hash_execute::hash("-sm3"):
 		case hash_execute::hash("-ripemd160"):
 			hash.Mode = HashMode[arg];
-			break;
-		case hash_execute::hash("-input"):
-		case hash_execute::hash("-in"):
 			hash.input_option = cryptography_libary::GetOption(i, argv);
 			hash.Input = argv[i + 1];
 			i++;
@@ -121,9 +118,14 @@ void hash_execute::HashStart(Hashes& hash) {
 	std::string algorithm = "HASH";
 	std::string mode = HashDisplay[hash.Mode];
 	std::string result_str = hash.Output;
+	std::cout << Hint("<" + algorithm + " " + mode + ">") << std::endl;
 	if (result < 0)
 		std::cerr << Error("HASH " + mode + " Encrypt Failed.") << std::endl;
-	std::cout << Hint("<" + algorithm + " " + mode + ">") << std::endl;
-	cryptography_libary::ValueEncode(hash.output_option, output, result_str);
-	std::cout << Ask(result_str) << std::endl;
+	else {
+		cryptography_libary::ValueEncode(hash.output_option, output, result_str);
+		std::cout << Ask(result_str) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(length)) << Hint("]") << std::endl;
+		std::cout << Hint("Input Length: [") << Ask(std::to_string(input.size())) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
+	}
 }

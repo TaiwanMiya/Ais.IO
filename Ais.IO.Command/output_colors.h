@@ -20,6 +20,8 @@ enum TERMINAL_STYLE {
 	STYLE_BRIGHT = 9, // 劃線
 };
 
+extern bool IsRedirects;
+
 bool CheckRedirects();
 void MoveCursorUp(int lines);
 void MoveCursorDown(int lines);
