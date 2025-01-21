@@ -1,6 +1,5 @@
 . .\Aisio-powershell-function.ps1
 
-$file = "test.bin"
 $iterations = 1
 
 if ($args.Count -eq 0) {
@@ -8,10 +7,9 @@ if ($args.Count -eq 0) {
 }
 
 $operation = ""
-$indexList = ""
-$encoder = "-e"
 $mode=""
-$rsa_format="-pem"
+$asym_format="-pem"
+$extract_type=""
 
 $startTime = [datetime]::UtcNow
 $parameter = $args.Clone()
@@ -39,11 +37,13 @@ while ($parameter.Count -gt 0) {
         '-b91'  { $operation = '-b91';              $parameter = $parameter[1..$parameter.Count]; break }
 
         # RAND
-        '-gen'  { if ($operation -eq '-rsa') { $mode = '-gen'; } else { $operation = '-gen'; }
+        '-gen'  { if (($operation -eq '-rsa') -or ($operation -eq '-dsa'))
+                                                    { $mode = '-gen'; } else { $operation = '-gen'; }
                                                     $parameter = $parameter[1..$parameter.Count]; break }
         '-imp'  { $operation = '-imp';              $parameter = $parameter[1..$parameter.Count]; break }
         '-exp'  { $mode = '-exp';                   $parameter = $parameter[1..$parameter.Count]; break }
         '-ext'  { $mode = '-ext';                   $parameter = $parameter[1..$parameter.Count]; break }
+        '-chk'  { $mode = '-chk';                   $parameter = $parameter[1..$parameter.Count]; break }
 
         # AES
         '-aes'  { $operation = '-aes';              $parameter = $parameter[1..$parameter.Count]; break }
@@ -103,23 +103,31 @@ while ($parameter.Count -gt 0) {
         '-sm3'          { $mode = '-sm3';           $parameter = $parameter[1..$parameter.Count]; break }
         '-ripemd160'    { $mode = '-ripemd160';     $parameter = $parameter[1..$parameter.Count]; break }
 
-        # RSA
-        '-rsa'  { $operation = '-rsa';              $parameter = $parameter[1..$parameter.Count]; break }
+        # DSA
+        '-dsa'          { $operation = '-dsa';      $parameter = $parameter[1..$parameter.Count]; break }
 
-        '-pem'          { $rsa_format = '-pem';     $parameter = $parameter[1..$parameter.Count]; break }
-        '-der'          { $rsa_format = '-der';     $parameter = $parameter[1..$parameter.Count]; break }
-        '-param'        { $rsa_format = '-param';   $parameter = $parameter[1..$parameter.Count]; break }
-        '-chk'          { $mode = '-chk';           $parameter = $parameter[1..$parameter.Count]; break }
+        # RSA
+        '-rsa'          { $operation = '-rsa';      $parameter = $parameter[1..$parameter.Count]; break }
+
+        '-pem'          { $asym_format = '-pem';    $parameter = $parameter[1..$parameter.Count]; break }
+        '-der'          { $asym_format = '-der';    $parameter = $parameter[1..$parameter.Count]; break }
+        '-param'        { if ($mode -eq '-ext')     { $extract_type = '-param'; } else { $asym_format = '-param'; }
+                                                    $parameter = $parameter[1..$parameter.Count]; break }
+        '-key'          { if ($mode -eq '-ext')     { $extract_type = '-key'; } else { $asym_format = '-key'; }
+                                                    $parameter = $parameter[1..$parameter.Count]; break }
 
         # OTHER
-        # '-e' { $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
-        '-e' { if ($operation -eq '-rsa') { $mode = '-crypt'; }
+        '-e' { if (($operation -eq '-rsa') -or ($operation -eq '-dsa'))
+                                                    { $mode = '-crypt'; }
                $encoder = '-e';                     $parameter = $parameter[1..$parameter.Count]; break }
-        '-d' { if ($operation -eq '-rsa') { $mode = '-crypt'; }
+        '-d' { if (($operation -eq '-rsa') -or ($operation -eq '-dsa'))
+                                                    { $mode = '-crypt'; }
                $encoder = '-d';                     $parameter = $parameter[1..$parameter.Count]; break }
-        '-s' { if ($operation -eq '-rsa') { $mode = '-digital'; }
+        '-s' { if (($operation -eq '-rsa') -or ($operation -eq '-dsa'))
+                                                    { $mode = '-digital'; }
                $encoder = '-s';                     $parameter = $parameter[1..$parameter.Count]; break }
-        '-v' { if ($operation -eq '-rsa') { $mode = '-digital'; }
+        '-v' { if (($operation -eq '-rsa') -or ($operation -eq '-dsa'))
+                                                    { $mode = '-digital'; }
                $encoder = '-v';                     $parameter = $parameter[1..$parameter.Count]; break }
         '-f' {
             if ($parameter.Count -gt 1) {
@@ -241,41 +249,94 @@ for ($i = 1; $i -le $iterations; $i++) {
         '-rsa' {
             switch ($mode) {
                 '-gen' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
+                        '-param'    { RSA_Generate_Parameters }
                         '-pem'      { RSA_Generate_Keys_PEM }
                         '-der'      { RSA_Generate_Keys_DER }
-                        '-param'    { RSA_Generate_Parameters }
                     }
                 }
                 '-exp' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
+                        '-param'    { RSA_Export_Parameters }
                         '-pem'      { RSA_Export_Keys_PEM }
                         '-der'      { RSA_Export_Keys_DER }
-                        '-param'    { RSA_Export_Parameters }
                     }
                 }
                 '-ext' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
                         '-pem'      { RSA_Extract_Public_Key_PEM }
                         '-der'      { RSA_Extract_Public_Key_DER }
                     }
                 }
                 '-chk' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
                         '-pem'      { RSA_Check_Keys_PEM }
                         '-der'      { RSA_Check_Keys_DER }
                     }
                 }
                 '-crypt' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
                         '-pem'      { RSA_Cryption_PEM }
                         '-der'      { RSA_Cryption_DER }
                     }
                 }
                 '-digital' {
-                    switch ($rsa_format) {
+                    switch ($asym_format) {
                         '-pem'      { RSA_Digital_PEM }
                         '-der'      { RSA_Digital_DER }
+                    }
+                }
+            }
+        }
+
+        '-dsa' {
+            switch ($mode) {
+                '-gen' {
+                    switch ($asym_format) {
+                        '-param'    { DSA_Generate_Parameters }
+                        '-pem'      { DSA_Generate_Keys_PEM }
+                        '-der'      { DSA_Generate_Keys_DER }
+                    }
+                }
+                '-exp' {
+                    switch ($asym_format) {
+                        '-param'    { DSA_Export_Parameters }
+                        '-pem'      { DSA_Export_Keys_PEM }
+                        '-der'      { DSA_Export_Keys_DER }
+                    }
+                }
+                '-ext' {
+                    switch ($extract_type) {
+                        '-param' {
+                            switch ($asym_format) {
+                                '-pem'      { DSA_Extract_Parameters_PEM }
+                                '-der'      { DSA_Extract_Parameters_DER }
+                            }
+                        }
+                        '-key' {
+                            switch ($asym_format) {
+                                '-pem'      { DSA_Extract_Keys_PEM }
+                                '-der'      { DSA_Extract_Keys_DER }
+                            }
+                        }
+                        Default {
+                            switch ($asym_format) {
+                                '-pem'      { DSA_Extract_Public_Key_PEM }
+                                '-der'      { DSA_Extract_Public_Key_DER }
+                            }
+                        }
+                    }
+                }
+                '-chk' {
+                    switch ($asym_format) {
+                        '-pem'      { DSA_Check_Keys_PEM }
+                        '-der'      { DSA_Check_Keys_DER }
+                    }
+                }
+                '-digital' {
+                    switch ($asym_format) {
+                        '-pem'      { DSA_Digital_PEM }
+                        '-der'      { DSA_Digital_DER }
                     }
                 }
             }

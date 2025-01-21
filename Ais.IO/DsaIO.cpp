@@ -569,13 +569,15 @@ int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params) {
     if (!ctx)
         return handleErrors_asymmetric("Failed to create EVP_PKEY_CTX for key generation.", NULL);
 
+    EVP_PKEY* keypair = NULL;
     if (EVP_PKEY_keygen_init(ctx) <= 0)
         return handleErrors_asymmetric("Failed to initialize key generation.", ctx);
 
-    if (EVP_PKEY_keygen(ctx, &pkey) <= 0)
+    if (EVP_PKEY_keygen(ctx, &keypair) <= 0)
         return handleErrors_asymmetric("Failed to generate DSA key pair.", ctx);
 
-    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    pkey = keypair;
 
     switch (params->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
@@ -605,6 +607,7 @@ int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params) {
     BIO_free_all(pub_bio);
     BIO_free_all(priv_bio);
     EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
     return 0;
 }
 

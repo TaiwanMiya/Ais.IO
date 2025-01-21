@@ -178,12 +178,17 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 		case dsa_execute::hash("-params"):
 		case dsa_execute::hash("-parameter"):
 		case dsa_execute::hash("-parameters"):
-			dsa.param_option = dsa.Mode == DSA_MODE::DSA_EXTRACT_KEYS
-				? asymmetric_libary::GetOption(dsa.KeyFormat, i, argv)
-				: cryptography_libary::GetOption(i, argv);
-			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+			if (dsa.Mode == DSA_MODE::DSA_EXTRACT_KEYS) {
+				dsa.param_option = asymmetric_libary::GetOption(dsa.ExtractKeyFormat, i, argv);
 				dsa.Params = argv[i + 1];
 				i++;
+			}
+			else {
+				dsa.param_option = cryptography_libary::GetOption(i, argv);
+				if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+					dsa.Params = argv[i + 1];
+					i++;
+				}
 			}
 			break;
 		case dsa_execute::hash("-y"):
