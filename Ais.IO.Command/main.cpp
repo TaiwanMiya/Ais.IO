@@ -6,6 +6,7 @@
 #include "binary_execute.h"
 #include "encoder_execute.h"
 #include "cryptography_libary.h"
+#include "mapping_libary.h"
 #include "aes_execute.h"
 #include "des_execute.h"
 #include "hash_execute.h"
@@ -172,13 +173,15 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_set<std::string> validMode = {
         "--help",
+        "--map",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index", "--read-index",
         "--base10", "--base16", "--base32", "--base58", "--base62", "--base64", "--base85", "--base91",
         "--generate", "--convert", "--aes", "--des", "--hash", "--dsa", "--rsa"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
-        { "-help", "--help"}, {"-h", "--help"},
+        {"-help", "--help"}, {"-h", "--help"},
+        {"-m", "--map"},
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"}, {"-ri", "--read-index"},
         {"-b10", "--base10"}, {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b58", "--base58"}, {"-b62", "--base62"}, {"-b64", "--base64"}, {"-b85", "--base85"}, {"-b91", "--base91"},
         {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-dsa", "--dsa"}, {"-rsa", "--rsa"}
@@ -219,6 +222,10 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
 
     std::unordered_map<std::string, std::string> abbreviationIoOptions = {
         {"-f", "-file"}, {"-out", "-output"}
+    };
+
+    std::unordered_set<std::string> settingsOptions = {
+        "-pure"
     };
 
     mode = ToLower(argv[1]);
@@ -262,7 +269,12 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         }
     }
 
-    if (mode == "--read" || mode == "--write" || mode == "--append") {
+    if (mode == "--map") {
+        if (argc < 3)
+            return false;
+        filePath = argv[2];
+    }
+    else if (mode == "--read" || mode == "--write" || mode == "--append") {
         if (argc < 4)
             return false;
         PutBaseOptions(argv, abbreviationValidBytesOptions, filePath, option);
@@ -797,7 +809,10 @@ int main(int argc, char* argv[]) {
 
     LoadFunctions();
 
-    if (mode == "--read") {
+    if (mode == "--map") {
+        mapping_libary::ShowHexEditor(filePath.c_str());
+    }
+    else if (mode == "--read") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
         if (!reader) {
             std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";

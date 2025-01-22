@@ -12,7 +12,8 @@ The repository contains binary file operations, Base encoding, and the use of en
 5. [HASH Calculation](#HASH-Calculation)
 6. [DSA Cryptography](#DSA-Cryptography)
 7. [RSA Cryptography](#RSA-Cryptography)
-8. [Ais IO License](#License)
+8. [Other Features](#Other-Features)
+9. [Ais IO License](#License)
 
 ---
 
@@ -240,6 +241,7 @@ Base text encoding involves converting binary data into textual representations.
 # Base91 Decode
 ./aisio --base91 -decode 'nX,<:WRT$F,ue9QUz\"y+|irMn<{vJT1T20DC'
 ```
+
 ---
 
 ## **AES Cryptography**
@@ -1088,6 +1090,261 @@ echo "$RESULT"
 
 # RSA Verify (DER File)
 ./aisio -rsa -verify -pub -der -file "$DER_ROOT_FILE"-pub.der -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -signature -file "$SIGNATURE_FILE"
+```
+
+---
+
+## **Other Features**
+Other functions and miscellaneous items, some miscellaneous items can be combined with other functions.
+For example, creating symmetric encryption keys, initialization vectors, etc...
+
+### Other Support Features
+1. Check System Environment Variables / System Environment Paths
+2. Generate Random Bytes
+3. Convert Bytes
+
+### Other Introduction
+| Features                 | Introduction    | Demand Introduction                  | Use
+|--------------------------|-----------------|--------------------------------------|---------------------------------------------------------------------------------------
+| **`Check Environment`**  | `--path`        | `<filename>`                         | Check whether a file or executable file is in the system environment variable.
+| **`Generate Bytes`**     | `-gen`          | `<bytes-size>` `-out [--way]`        | Create random bytes, usually used to generate asymmetric encryption keys, IVs, Nonce, etc...
+| **`Convert Bytes`**      | `-conv`         | `[--way]` `<value>` `-out [--way]`   | Can convert from different text, Base encoding text, files to another text, Base encoding text, files.
+
+   - `<filename>` in `--path` is the file you want to check.
+   - `-gen` of `<bytes-size>` is the length you want to generate, and `-out [--way]` is the content you want to output.
+   - If `<value>` of `-conv` is a code or archive, please use `[--way]` to import it. The output rules are the same as `-gen`.
+   - Read the [*`[--way]`*](#explanation-of---way)
+
+### *Other Instruction Usage*
+
+#### *Other example shell*
+```sh
+#!/bin/bash
+# Example Other Instructions
+
+# Base10 to Base16
+echo "Base10 to Base16..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708894006" -out -base16
+
+# Base10 to Base32
+echo "Base10 to Base32..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708894514" -out -base32
+
+# Base10 to Base58
+echo "Base10 to Base58..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708895032" -out -base58
+
+# Base10 to Base62
+echo "Base10 to Base62..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708895282" -out -base62
+
+# Base10 to Base64
+echo "Base10 to Base64..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708895284" -out -base64
+
+# Base10 to Base85
+echo "Base10 to Base85..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708895797" -out -base85
+
+# Base10 to Base91
+echo "Base10 to Base91..."
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708896049" -out -base91
+
+# Base16 to Base10
+echo "Base16 to Base10..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653130" -out -base10
+
+# Base16 to Base32
+echo "Base16 to Base32..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653332" -out -base32
+
+# Base16 to Base58
+echo "Base16 to Base58..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653538" -out -base58
+
+# Base16 to Base62
+echo "Base16 to Base62..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653632" -out -base62
+
+# Base16 to Base64
+echo "Base16 to Base64..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653634" -out -base64
+
+# Base16 to Base85
+echo "Base16 to Base85..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653835" -out -base85
+
+# Base16 to Base91
+echo "Base16 to Base91..."
+./aisio -conv -base16 "546869732069732042617365313620746F20426173653931" -out -base91
+
+# Base32 to Base10
+echo "Base32 to Base10..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTCMA=" -out -base10
+
+# Base32 to Base16
+echo "Base32 to Base16..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTCNQ=" -out -base16
+
+# Base32 to Base58
+echo "Base32 to Base58..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTKOA=" -out -base58
+
+# Base32 to Base62
+echo "Base32 to Base62..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTMMQ=" -out -base62
+
+# Base32 to Base64
+echo "Base32 to Base64..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTMNA=" -out -base64
+
+# Base32 to Base85
+echo "Base32 to Base85..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTQNI=" -out -base85
+
+# Base32 to Base91
+echo "Base32 to Base91..."
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSAQTBONSTSMI=" -out -base91
+
+# Base58 to Base10
+echo "Base58 to Base10..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqJoZ" -out -base10
+
+# Base58 to Base16
+echo "Base58 to Base16..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqJof" -out -base16
+
+# Base58 to Base32
+echo "Base58 to Base32..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqJxR" -out -base32
+
+# Base58 to Base62
+echo "Base58 to Base62..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqKBf" -out -base62
+
+# Base58 to Base64
+echo "Base58 to Base64..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqKBh" -out -base64
+
+# Base58 to Base85
+echo "Base58 to Base85..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqKLY" -out -base85
+
+# Base58 to Base91
+echo "Base58 to Base91..."
+./aisio -conv -base58 "8hJqnH74LiGDgtPQSSCoZf8WHrPtFqKQt" -out -base91
+
+# Base62 to Base10
+echo "Base62 to Base10..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYh72" -out -base10
+
+# Base62 to Base16
+echo "Base62 to Base16..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYh78" -out -base16
+
+# Base62 to Base32
+echo "Base62 to Base32..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYhFK" -out -base32
+
+# Base62 to Base58
+echo "Base62 to Base58..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYhNg" -out -base58
+
+# Base62 to Base64
+echo "Base62 to Base64..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYhRk" -out -base64
+
+# Base62 to Base85
+echo "Base62 to Base85..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYha1" -out -base85
+
+# Base62 to Base91
+echo "Base62 to Base91..."
+./aisio -conv -base62 "uSfea3ihz1JnFEPFflMtZPyzkmOUYhe5" -out -base91
+
+# Base64 to Base10
+echo "Base64 to Base10..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTEw" -out -base10
+
+# Base64 to Base16
+echo "Base64 to Base16..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTE2" -out -base16
+
+# Base64 to Base32
+echo "Base64 to Base32..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTMy" -out -base32
+
+# Base64 to Base58
+echo "Base64 to Base58..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTU4" -out -base58
+
+# Base64 to Base62
+echo "Base64 to Base62..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTYy" -out -base62
+
+# Base64 to Base85
+echo "Base64 to Base85..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTg1" -out -base85
+
+# Base64 to Base91
+echo "Base64 to Base91..."
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gQmFzZTkx" -out -base91
+
+# Base85 to Base10
+echo "Base85 to Base10..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7e6w' -out -base10
+
+# Base85 to Base16
+echo "Base85 to Base16..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7e6$' -out -base16
+
+# Base85 to Base32
+echo "Base85 to Base32..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7eC!' -out -base32
+
+# Base85 to Base58
+echo "Base85 to Base58..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7eI+' -out -base58
+
+# Base85 to Base62
+echo "Base85 to Base62..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7eL%' -out -base62
+
+# Base85 to Base64
+echo "Base85 to Base64..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7eL(' -out -base64
+
+# Base85 to Base91
+echo "Base85 to Base91..."
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-Wpb7eU(' -out -base91
+
+# Base91 to Base10
+echo "Base91 to Base10..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7g(iFB' -out -base10
+
+# Base91 to Base16
+echo "Base91 to Base16..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7g(iRB' -out -base16
+
+# Base91 to Base32
+echo "Base91 to Base32..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7gNkJB' -out -base32
+
+# Base91 to Base58
+echo "Base91 to Base58..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7gylVB' -out -base58
+
+# Base91 to Base62
+echo "Base91 to Base62..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7gXmJB' -out -base62
+
+# Base91 to Base64
+echo "Base91 to Base64..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7gXmNB' -out -base64
+
+# Base91 to Base85
+echo "Base91 to Base85..."
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7g8nPB' -out -base85
 ```
 
 ---
