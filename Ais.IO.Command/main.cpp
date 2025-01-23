@@ -505,7 +505,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
     else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
              mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
-        if (argc < 4)
+        if (argc < 4 && !IsInput)
             return false;
         std::string operation = ToLower(argv[2]);
         if (abbreviationEncodeDecodeOptions.count(operation))
@@ -544,7 +544,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             }
         }
 
-        if (cmd.input.empty() && cmd.value.empty()) {
+        if (cmd.input.empty() && cmd.value.empty() && !IsInput) {
             std::cerr << Error("Either an input file or a value is required for encoding/decoding.\n");
             return false;
         }
@@ -773,6 +773,7 @@ int main(int argc, char* argv[]) {
     std::vector<Command> commands;
 
     CheckRedirects();
+    CheckInput();
 
 #if _WIN32
     EnableVirtualTerminalProcessing();

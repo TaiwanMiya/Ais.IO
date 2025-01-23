@@ -541,7 +541,8 @@ void aes_execute::GcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	}
 	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
-	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	if (!IsRowData)
+		std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
 	result.resize(length);
@@ -615,7 +616,8 @@ void aes_execute::CcmEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	}
 	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
-	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	if (!IsRowData)
+		std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
 	result.resize(length);
@@ -749,7 +751,8 @@ void aes_execute::OcbEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	}
 	std::string verify_tag = aes.Output + ".tag";
 	cryptography_libary::ValueEncode(aes.output_option, tag, verify_tag);
-	std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
+	if (!IsRowData)
+		std::cout << Hint("<Aes " + AesDisplay[aes.Mode] + " Tag>") << std::endl;
 	std::cout << Ask(verify_tag) << std::endl;
 	result.assign(ciphertext.begin(), ciphertext.end());
 	result.resize(length);

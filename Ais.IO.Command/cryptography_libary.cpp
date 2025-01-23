@@ -320,7 +320,7 @@ void cryptography_libary::ParseParameters(int argc, char* argv[], Rand& rand) {
 		case hash("-conv"):
 			rand.Type = RAND_TYPE::RAND_IMPORT;
 			rand.rand_option = GetOption(i, argv);
-			rand.Value = argv[i + 1];
+			rand.Value = IsInput ? InputContent : argv[i + 1];
 			break;
 		case hash("-output"):
 		case hash("-out"):

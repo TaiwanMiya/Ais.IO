@@ -2,6 +2,9 @@
 #include <string>
 #include <iostream>
 #include <fcntl.h>
+#include <sstream>
+#include <fstream>
+#include <vector>
 
 #if _WIN32
 void EnableVirtualTerminalProcessing();
@@ -22,7 +25,10 @@ enum TERMINAL_STYLE {
 
 extern bool IsRedirects;
 extern bool IsRowData;
+extern bool IsInput;
+extern std::string InputContent;
 
+bool CheckInput();
 bool CheckRedirects();
 void MoveCursorUp(int lines);
 void MoveCursorDown(int lines);

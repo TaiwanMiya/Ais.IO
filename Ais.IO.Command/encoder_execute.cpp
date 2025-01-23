@@ -8,7 +8,9 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     std::vector<unsigned char> buffer(0);
     std::filesystem::path inputPath;
     std::filesystem::path outputPath;
-    if (!cmd.input.empty()) {
+    if (IsInput)
+        cmd.value = InputContent;
+    else if (!cmd.input.empty()) {
         encoder_execute::SetInput(cmd, size, buffer);
         inputPath = std::filesystem::absolute(cmd.input);
         if (!buffer.data()) {

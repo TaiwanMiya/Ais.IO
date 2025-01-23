@@ -1,7 +1,10 @@
 ﻿#include "output_colors.h"
+#include "cryptography_libary.h"
+#include "main.h"
 
 #ifdef _WIN32
 #include <windows.h>
+#include <io.h>
 
 void EnableVirtualTerminalProcessing() {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -24,6 +27,34 @@ void EnableVirtualTerminalProcessing() {
 
 bool IsRedirects = false;
 bool IsRowData = false;
+bool IsInput = false;
+std::string InputContent = "";
+
+bool CheckInput() {
+#if _WIN32
+    if (_isatty(_fileno(stdin))) {
+#else
+    if (isatty(fileno(stdin))) {
+#endif
+    }
+    else {
+        std::string input;
+        IsInput = true;
+
+        while (std::getline(std::cin, input)) {
+#if _WIN32
+            InputContent += input + "\r\n";
+#else
+            InputContent += input + "\n";
+#endif
+        }
+        if (!InputContent.empty() && InputContent.back() == '\n')
+            InputContent.pop_back();
+        if (!InputContent.empty() && InputContent.back() == '\r')
+            InputContent.pop_back();
+    }
+    return IsInput;
+}
 
 bool CheckRedirects() {
 #ifdef _WIN32

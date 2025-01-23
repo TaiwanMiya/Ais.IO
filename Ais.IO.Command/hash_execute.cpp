@@ -54,8 +54,9 @@ void hash_execute::ParseParameters(int argc, char* argv[], Hashes& hash) {
 		case hash_execute::hash("-ripemd160"):
 			hash.Mode = HashMode[arg];
 			hash.input_option = cryptography_libary::GetOption(i, argv);
-			hash.Input = argv[i + 1];
-			i++;
+			hash.Input = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case hash_execute::hash("-salt"):
 			hash.salt_option = cryptography_libary::GetOption(i, argv);
