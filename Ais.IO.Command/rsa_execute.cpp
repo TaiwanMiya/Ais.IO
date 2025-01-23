@@ -415,16 +415,28 @@ void rsa_execute::GenerateParameters(Rsa& rsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<RSA Parameters Generate>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
-	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
-	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
-	std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
-	std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
-	std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
-	std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Parameters Generate>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
+		std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
+		std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
+		std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
+		std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+		std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+		std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
+		std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
+		std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(n_str) << std::endl;
+		std::cout << Ask(e_str) << std::endl;
+		std::cout << Ask(d_str) << std::endl;
+		std::cout << Ask(p_str) << std::endl;
+		std::cout << Ask(q_str) << std::endl;
+		std::cout << Ask(dp_str) << std::endl;
+		std::cout << Ask(dq_str) << std::endl;
+		std::cout << Ask(qi_str) << std::endl;
+	}
 }
 
 void rsa_execute::GenerateKeys(Rsa& rsa) {
@@ -457,10 +469,16 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 	std::string privateKey_str = rsa.PrivateKey;
 	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Hint("<RSA Keys Generate>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
-	std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Keys Generate>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength))<< std::endl;
+		std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void rsa_execute::ExportParamters(Rsa& rsa) {
@@ -584,16 +602,28 @@ void rsa_execute::ExportParamters(Rsa& rsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		n_str = e_str = d_str = p_str = q_str = dp_str = dq_str = qi_str = std::filesystem::absolute(rsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<RSA Parameters Export>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
-	std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
-	std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
-	std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
-	std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
-	std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
-	std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Parameters Export>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+		std::cout << Mark("Modulus (N) [") << Ask(std::to_string(paramters.N_LENGTH)) << Mark("]:\n") << Ask(n_str) << std::endl;
+		std::cout << Mark("Public Exponent (E) [") << Ask(std::to_string(paramters.E_LENGTH)) << Mark("]:\n") << Ask(e_str) << std::endl;
+		std::cout << Mark("Private Exponent (D) [") << Ask(std::to_string(paramters.D_LENGTH)) << Mark("]:\n") << Ask(d_str) << std::endl;
+		std::cout << Mark("First Prime Factor (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+		std::cout << Mark("Second Prime Factor (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+		std::cout << Mark("First CRT Exponent (DP) [") << Ask(std::to_string(paramters.DP_LENGTH)) << Mark("]:\n") << Ask(dp_str) << std::endl;
+		std::cout << Mark("Second CRT Exponent (DQ) [") << Ask(std::to_string(paramters.DQ_LENGTH)) << Mark("]:\n") << Ask(dq_str) << std::endl;
+		std::cout << Mark("CRT Coefficient (QI) [") << Ask(std::to_string(paramters.QI_LENGTH)) << Mark("]:\n") << Ask(qi_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(n_str) << std::endl;
+		std::cout << Ask(e_str) << std::endl;
+		std::cout << Ask(d_str) << std::endl;
+		std::cout << Ask(p_str) << std::endl;
+		std::cout << Ask(q_str) << std::endl;
+		std::cout << Ask(dp_str) << std::endl;
+		std::cout << Ask(dq_str) << std::endl;
+		std::cout << Ask(qi_str) << std::endl;
+	}
 }
 
 void rsa_execute::ExportKeys(Rsa& rsa) {
@@ -694,14 +724,24 @@ void rsa_execute::ExportKeys(Rsa& rsa) {
 	((RsaExportKeys)RsaFunctions.at("-key-export"))(&paramters);
 	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
 	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
-	std::cout << Hint("<RSA Keys Export>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
-	std::string publicKey_str = rsa.PublicKey;
-	std::string privateKey_str = rsa.PrivateKey;
-	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
-	cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Keys Export>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+		std::string publicKey_str = rsa.PublicKey;
+		std::string privateKey_str = rsa.PrivateKey;
+		cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = rsa.PublicKey;
+		std::string privateKey_str = rsa.PrivateKey;
+		cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(rsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void rsa_execute::ExtractPublicKey(Rsa& rsa) {
@@ -736,11 +776,18 @@ void rsa_execute::ExtractPublicKey(Rsa& rsa) {
 	((RsaExtractPublicKey)RsaFunctions.at("-key-extract"))(&pub);
 
 	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
-	std::cout << Hint("<RSA Extract Public Key>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
-	std::string publicKey_str = rsa.PublicKey;
-	cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
-	std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Extract Public Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string publicKey_str = rsa.PublicKey;
+		cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = rsa.PublicKey;
+		cryptography_libary::ValueEncode(rsa.publickey_option, publicKey, publicKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+	}
 }
 
 void rsa_execute::CheckPublicKey(Rsa& rsa) {
@@ -752,12 +799,16 @@ void rsa_execute::CheckPublicKey(Rsa& rsa) {
 		publicKey.size()
 	};
 	((RsaCheckPublicKey)RsaFunctions.at("-pub-check"))(&pub);
-	std::cout << Hint("<RSA Public Key Check>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
-	if (pub.IS_KEY_OK)
-		std::cout << Hint("Rsa Public Key Check Success.") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Public Key Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
+	}
 	else
-		std::cout << Error("Rsa Public Key Check Falture.") << std::endl;
+		std::cout << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
+	if (pub.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Rsa Public Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Rsa Public Key Check Falture.") << std::endl;
 }
 
 void rsa_execute::CheckPrivateKey(Rsa& rsa) {
@@ -773,12 +824,16 @@ void rsa_execute::CheckPrivateKey(Rsa& rsa) {
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
-	std::cout << Hint("<RSA Private Key Check>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
-	if (priv.IS_KEY_OK)
-		std::cout << Hint("Rsa Private Key Check Success.") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Private Key Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	}
 	else
-		std::cout << Error("Rsa Private Key Check Falture.") << std::endl;
+		std::cout << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	if (priv.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Rsa Private Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Rsa Private Key Check Falture.") << std::endl;
 }
 
 void rsa_execute::Encrypt(Rsa& rsa) {
@@ -812,14 +867,21 @@ void rsa_execute::Encrypt(Rsa& rsa) {
 	int result_size = ((RsaEncryption)RsaFunctions.at("-encrypt"))(&encrypt);
 	if (result_size != -1) {
 		ciphertext.resize(result_size);
-		std::cout << Hint("<RSA Encrypt>") << std::endl;
-		cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
-		std::cout << Ask(rsa.Output) << std::endl;
-		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
-		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		if (!IsRowData) {
+			std::cout << Hint("<RSA Encrypt>") << std::endl;
+			cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(rsa.output_option, ciphertext, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+		}
 	}
 	else {
-		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Encrypt>") << std::endl;
 		std::cout << Error("Rsa encryption failed.") << std::endl;
 	}
 }
@@ -861,14 +923,21 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 	int result_size = ((RsaDecryption)RsaFunctions.at("-decrypt"))(&decrypt);
 	if (result_size != -1) {
 		plaintext.resize(result_size);
-		std::cout << Hint("<RSA Decrypt>") << std::endl;
-		cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
-		std::cout << Ask(rsa.Output) << std::endl;
-		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
-		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		if (!IsRowData) {
+			std::cout << Hint("<RSA Decrypt>") << std::endl;
+			cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(rsa.output_option, plaintext, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+		}
 	}
 	else {
-		std::cout << Hint("<RSA Decrypt>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Decrypt>") << std::endl;
 		std::cout << Error("Rsa decryption failed.") << std::endl;
 	}
 }
@@ -911,14 +980,21 @@ void rsa_execute::Signed(Rsa& rsa) {
 	int result_size = ((RsaSigned)RsaFunctions.at("-signed"))(&sign);
 	if (result_size != -1) {
 		signature.resize(result_size);
-		std::cout << Hint("<RSA Signed>") << std::endl;
-		cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
-		std::cout << Ask(rsa.Output) << std::endl;
-		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
-		std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		if (!IsRowData) {
+			std::cout << Hint("<RSA Signed>") << std::endl;
+			cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
+			std::cout << Ask(rsa.Output) << std::endl;
+		}
 	}
 	else {
-		std::cout << Hint("<RSA Signed>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Signed>") << std::endl;
 		std::cout << Error("Rsa sign failed.") << std::endl;
 	}
 }
@@ -943,11 +1019,13 @@ void rsa_execute::Verify(Rsa& rsa) {
 	};
 	((RsaVerify)RsaFunctions.at("-verify"))(&verify);
 	if (verify.IS_VALID) {
-		std::cout << Hint("<RSA Verify>") << std::endl;
-		std::cout << Ask("Verification Success!") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Verify>") << std::endl;
+		std::cout << Ask(IsRowData ? "Success" : "Verification Success!") << std::endl;
 	}
 	else {
-		std::cout << Hint("<RSA Verify>") << std::endl;
-		std::cout << Error("Verification Failure!") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Verify>") << std::endl;
+		std::cout << Error(IsRowData ? "Falture" : "Verification Failure!") << std::endl;
 	}
 }

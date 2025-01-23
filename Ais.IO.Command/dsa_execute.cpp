@@ -410,7 +410,6 @@ void dsa_execute::GenerateParameters(Dsa& dsa) {
 		std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
 	}
 	else {
-		std::cout << Ask(std::to_string(dsa.KeyLength)) << std::endl;
 		std::cout << Ask(y_str) << std::endl;
 		std::cout << Ask(x_str) << std::endl;
 		std::cout << Ask(p_str) << std::endl;
@@ -566,7 +565,6 @@ void dsa_execute::ExportParamters(Dsa& dsa) {
 		std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
 	}
 	else {
-		std::cout << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
 		std::cout << Ask(y_str) << std::endl;
 		std::cout << Ask(x_str) << std::endl;
 		std::cout << Ask(p_str) << std::endl;
@@ -652,14 +650,24 @@ void dsa_execute::ExportKeys(Dsa& dsa) {
 	((DsaExportKeys)DsaFunctions.at("-key-export"))(&paramters);
 	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
 	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
-	std::cout << Hint("<DSA Keys Export>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
-	std::string publicKey_str = dsa.PublicKey;
-	std::string privateKey_str = dsa.PrivateKey;
-	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
-	cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Keys Export>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+		std::string publicKey_str = dsa.PublicKey;
+		std::string privateKey_str = dsa.PrivateKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = dsa.PublicKey;
+		std::string privateKey_str = dsa.PrivateKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void dsa_execute::ExtractPublicKey(Dsa& dsa) {
@@ -694,11 +702,18 @@ void dsa_execute::ExtractPublicKey(Dsa& dsa) {
 	((DsaExtractPublicKey)DsaFunctions.at("-key-extract-pub"))(&pub);
 
 	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
-	std::cout << Hint("<DSA Extract Public Key>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
-	std::string publicKey_str = dsa.PublicKey;
-	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
-	std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Extract Public Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string publicKey_str = dsa.PublicKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = dsa.PublicKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+	}
 }
 
 void dsa_execute::ExtractParametersByKeys(Dsa& dsa) {
@@ -737,11 +752,18 @@ void dsa_execute::ExtractParametersByKeys(Dsa& dsa) {
 	((DsaExtractParametersByKeys)DsaFunctions.at("-key-extract-param"))(&param);
 
 	parameters.resize(param.PARAMETERS_LENGTH);
-	std::cout << Hint("<DSA Extract Parameters>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
-	std::string parameters_str = dsa.Params;
-	cryptography_libary::ValueEncode(dsa.param_option, parameters, parameters_str);
-	std::cout << Mark("Parameters [") << Ask(std::to_string(param.PARAMETERS_LENGTH)) << Mark("]:\n") << Ask(parameters_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Extract Parameters>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string parameters_str = dsa.Params;
+		cryptography_libary::ValueEncode(dsa.param_option, parameters, parameters_str);
+		std::cout << Mark("Parameters [") << Ask(std::to_string(param.PARAMETERS_LENGTH)) << Mark("]:\n") << Ask(parameters_str) << std::endl;
+	}
+	else {
+		std::string parameters_str = dsa.Params;
+		cryptography_libary::ValueEncode(dsa.param_option, parameters, parameters_str);
+		std::cout << Ask(parameters_str) << std::endl;
+	}
 }
 
 void dsa_execute::ExtractKeysByParameters(Dsa& dsa) {
@@ -780,14 +802,24 @@ void dsa_execute::ExtractKeysByParameters(Dsa& dsa) {
 
 	publicKey.resize(keys.PUBLIC_KEY_LENGTH);
 	privateKey.resize(keys.PRIVATE_KEY_LENGTH);
-	std::cout << Hint("<DSA Extract Keys>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
-	std::string publicKey_str = dsa.PublicKey;
-	std::string privateKey_str = dsa.PrivateKey;
-	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
-	cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Mark("Public Key [") << Ask(std::to_string(keys.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key [") << Ask(std::to_string(keys.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Extract Keys>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
+		std::string publicKey_str = dsa.PublicKey;
+		std::string privateKey_str = dsa.PrivateKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(keys.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(keys.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = dsa.PublicKey;
+		std::string privateKey_str = dsa.PrivateKey;
+		cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void dsa_execute::CheckPublicKey(Dsa& dsa) {
@@ -799,12 +831,16 @@ void dsa_execute::CheckPublicKey(Dsa& dsa) {
 		publicKey.size()
 	};
 	((DsaCheckPublicKey)DsaFunctions.at("-pub-check"))(&pub);
-	std::cout << Hint("<DSA Public Key Check>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
-	if (pub.IS_KEY_OK)
-		std::cout << Hint("Dsa Public Key Check Success.") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Public Key Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
+	}
 	else
-		std::cout << Error("Dsa Public Key Check Falture.") << std::endl;
+		std::cout << Ask(std::to_string(pub.KEY_LENGTH)) << std::endl;
+	if (pub.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Dsa Public Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Dsa Public Key Check Falture.") << std::endl;
 }
 
 void dsa_execute::CheckPrivateKey(Dsa& dsa) {
@@ -820,12 +856,16 @@ void dsa_execute::CheckPrivateKey(Dsa& dsa) {
 		pemPass.size(),
 	};
 	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
-	std::cout << Hint("<DSA Private Key Check>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
-	if (priv.IS_KEY_OK)
-		std::cout << Hint("Dsa Private Key Check Success.") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Private Key Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	}
 	else
-		std::cout << Error("Dsa Private Key Check Falture.") << std::endl;
+		std::cout << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+	if (priv.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Dsa Private Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Dsa Private Key Check Falture.") << std::endl;
 }
 
 void dsa_execute::CheckParameters(Dsa& dsa) {
@@ -837,12 +877,16 @@ void dsa_execute::CheckParameters(Dsa& dsa) {
 		parameters.size()
 	};
 	((DsaCheckParameters)DsaFunctions.at("-param-check"))(&param);
-	std::cout << Hint("<DSA Parameters Check>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
-	if (param.IS_KEY_OK)
-		std::cout << Hint("Dsa Parameters Check Success.") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Parameters Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
+	}
 	else
-		std::cout << Error("Dsa Parameters Check Falture.") << std::endl;
+		std::cout << Ask(std::to_string(param.KEY_LENGTH)) << std::endl;
+	if (param.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Dsa Parameters Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Dsa Parameters Check Falture.") << std::endl;
 }
 
 void dsa_execute::Signed(Dsa& dsa) {
@@ -865,7 +909,8 @@ void dsa_execute::Signed(Dsa& dsa) {
 	if (priv.IS_KEY_OK)
 		signature.resize(priv.KEY_LENGTH);
 	else {
-		std::cout << Hint("<DSA Signed>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<DSA Signed>") << std::endl;
 		std::cout << Error("Dsa get private key failed.") << std::endl;
 	}
 
@@ -883,14 +928,21 @@ void dsa_execute::Signed(Dsa& dsa) {
 	int result_size = ((DsaSigned)DsaFunctions.at("-signed"))(&sign);
 	if (result_size != -1) {
 		signature.resize(result_size);
-		std::cout << Hint("<DSA Signed>") << std::endl;
-		cryptography_libary::ValueEncode(dsa.output_option, signature, dsa.Output);
-		std::cout << Ask(dsa.Output) << std::endl;
-		std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
-		std::cout << Hint("Output Length: [") << Ask(std::to_string(dsa.Output.size())) << Hint("]") << std::endl;
+		if (!IsRowData) {
+			std::cout << Hint("<DSA Signed>") << std::endl;
+			cryptography_libary::ValueEncode(dsa.output_option, signature, dsa.Output);
+			std::cout << Ask(dsa.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(dsa.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(dsa.output_option, signature, dsa.Output);
+			std::cout << Ask(dsa.Output) << std::endl;
+		}
 	}
 	else {
-		std::cout << Hint("<DSA Signed>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<DSA Signed>") << std::endl;
 		std::cout << Error("Dsa sign failed.") << std::endl;
 	}
 }
@@ -915,11 +967,13 @@ void dsa_execute::Verify(Dsa& dsa) {
 	};
 	((DsaVerify)DsaFunctions.at("-verify"))(&verify);
 	if (verify.IS_VALID) {
-		std::cout << Hint("<DSA Verify>") << std::endl;
-		std::cout << Ask("Verification Success!") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<DSA Verify>") << std::endl;
+		std::cout << Ask(IsRowData ? "Success" : "Verification Success!") << std::endl;
 	}
 	else {
-		std::cout << Hint("<DSA Verify>") << std::endl;
-		std::cout << Error("Verification Failure!") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<DSA Verify>") << std::endl;
+		std::cout << Error(IsRowData ? "Falture" : "Verification Failure!") << std::endl;
 	}
 }
