@@ -131,6 +131,7 @@ void binary_execute::GetIndexes(void* reader) {
     for (uint64_t i = 0; i < count; ++i)
         message += Hint(std::to_string(i)) + ". " + Ask(GetTypeName(indices[i].TYPE)) + " = " + Hint("Position:") + Ask(std::to_string(indices[i].POSITION)) + ", " + Hint("Length:") + Ask(std::to_string(indices[i].LENGTH)) + "\n";
     free(indices);
+    message.erase(message.find_last_not_of("\n") + 1);
     std::cout << message << std::endl;
 }
 

@@ -400,13 +400,23 @@ void dsa_execute::GenerateParameters(Dsa& dsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		 y_str = x_str = p_str = q_str = g_str = std::filesystem::absolute(dsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<DSA Parameters Generate>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(dsa.KeyLength)) << std::endl;
-	std::cout << Mark("Public Key (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
-	std::cout << Mark("Private Key (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
-	std::cout << Mark("Prime Modulus (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Subprime (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Parameters Generate>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(dsa.KeyLength)) << std::endl;
+		std::cout << Mark("Public Key (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
+		std::cout << Mark("Private Key (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
+		std::cout << Mark("Prime Modulus (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+		std::cout << Mark("Subprime (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+		std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(std::to_string(dsa.KeyLength)) << std::endl;
+		std::cout << Ask(y_str) << std::endl;
+		std::cout << Ask(x_str) << std::endl;
+		std::cout << Ask(p_str) << std::endl;
+		std::cout << Ask(q_str) << std::endl;
+		std::cout << Ask(g_str) << std::endl;
+	}
 }
 
 void dsa_execute::GenerateKeys(Dsa& dsa) {
@@ -439,10 +449,16 @@ void dsa_execute::GenerateKeys(Dsa& dsa) {
 	std::string privateKey_str = dsa.PrivateKey;
 	cryptography_libary::ValueEncode(dsa.publickey_option, publicKey, publicKey_str);
 	cryptography_libary::ValueEncode(dsa.privatekey_option, privateKey, privateKey_str);
-	std::cout << Hint("<DSA Keys Generate>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(dsa.KeyLength)) << std::endl;
-	std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
-	std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Keys Generate>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(dsa.KeyLength)) << std::endl;
+		std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void dsa_execute::ExportParamters(Dsa& dsa) {
@@ -540,13 +556,23 @@ void dsa_execute::ExportParamters(Dsa& dsa) {
 		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
 		y_str = x_str = p_str = q_str = g_str = std::filesystem::absolute(dsa.Params.c_str()).string();
 	}
-	std::cout << Hint("<DSA Parameters Export>") << std::endl;
-	std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
-	std::cout << Mark("Public Key (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
-	std::cout << Mark("Private Key (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
-	std::cout << Mark("Prime Modulus (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
-	std::cout << Mark("Subprime (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
-	std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Parameters Export>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+		std::cout << Mark("Public Key (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
+		std::cout << Mark("Private Key (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
+		std::cout << Mark("Prime Modulus (P) [") << Ask(std::to_string(paramters.P_LENGTH)) << Mark("]:\n") << Ask(p_str) << std::endl;
+		std::cout << Mark("Subprime (Q) [") << Ask(std::to_string(paramters.Q_LENGTH)) << Mark("]:\n") << Ask(q_str) << std::endl;
+		std::cout << Mark("Generator (G) [") << Ask(std::to_string(paramters.G_LENGTH)) << Mark("]:\n") << Ask(g_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(std::to_string(paramters.KEY_LENGTH)) << std::endl;
+		std::cout << Ask(y_str) << std::endl;
+		std::cout << Ask(x_str) << std::endl;
+		std::cout << Ask(p_str) << std::endl;
+		std::cout << Ask(q_str) << std::endl;
+		std::cout << Ask(g_str) << std::endl;
+	}
 }
 
 void dsa_execute::ExportKeys(Dsa& dsa) {

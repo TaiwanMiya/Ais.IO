@@ -269,6 +269,13 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         }
     }
 
+    for (int i = 1; i < argc; ++i) {
+        if (ToLower(std::string(argv[i])) == "-row") {
+            IsRowData = true;
+            break;
+        }
+    }
+
     if (mode == "--map") {
         if (argc < 3)
             return false;
@@ -283,6 +290,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
+            if (ToLower(arg) == "-row")
+                continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
@@ -311,6 +320,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
+            if (ToLower(arg) == "-row")
+                continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
@@ -350,6 +361,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         for (int i = 3; i < argc; ++i) {
             std::string arg = argv[i];
             std::string arg2 = argv[i + 1];
+            if (ToLower(arg) == "-row" || ToLower(arg2) == "-row")
+                continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
                     commands.push_back(cmd);
@@ -389,6 +402,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
             std::replace(arg.begin(), arg.end(), ' ', '\0');
+            if (ToLower(arg) == "-row")
+                continue;
             if (arg.find('~') != std::string::npos) {
                 size_t pos = arg.find('~');
                 std::string startStr = arg.substr(0, pos);
@@ -508,6 +523,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             if (abbreviationIoOptions.count(arg)) {
                 arg = abbreviationIoOptions[arg];
             }
+            if (ToLower(arg) == "-row")
+                continue;
             if (arg == "-file") {
                 if (i + 1 >= argc) {
                     std::cerr << Error("Missing input file path after -file.") << std::endl;
@@ -821,7 +838,8 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::ExecuteRead(reader, commands, binary_bytes_option);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        std::cout << Mark("Read Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Read Action Completed!") << std::endl;
     }
     else if (mode == "--write") {
         void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(Lib, "CreateBinaryWriter"))(filePath.c_str());
@@ -832,7 +850,8 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::ExecuteWrite(writer, commands, binary_bytes_option);
         ((DestroyBinaryWriter)GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter"))(writer);
-        std::cout << Mark("Write Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Write Action Completed!") << std::endl;
     }
     else if (mode == "--append") {
         void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(Lib, "CreateBinaryAppender"))(filePath.c_str());
@@ -843,7 +862,8 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::ExecuteAppend(appender, commands, binary_bytes_option);
         ((DestroyBinaryAppender)GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender"))(appender);
-        std::cout << Mark("Append Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Append Action Completed!") << std::endl;
     }
     else if (mode == "--insert") {
         void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(Lib, "CreateBinaryInserter"))(filePath.c_str());
@@ -854,7 +874,8 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::ExecuteInsert(inserter, commands, binary_bytes_option);
         ((DestroyBinaryInserter)GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter"))(inserter);
-        std::cout << Mark("Insert Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Insert Action Completed!") << std::endl;
     }
     else if (mode == "--remove") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
@@ -865,7 +886,8 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::ExecuteRemove(reader, filePath, commands);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        std::cout << Mark("Remove Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Remove Action Completed!") << std::endl;
     }
     else if (mode == "--remove-index") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
@@ -878,7 +900,8 @@ int main(int argc, char* argv[]) {
         binary_execute::ExecuteRemoveIndex(reader, remover, filePath, commands);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(remover);
-        std::cout << Mark("Remove Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Remove Action Completed!") << std::endl;
     }
     else if (mode == "--read-all") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
@@ -894,8 +917,10 @@ int main(int argc, char* argv[]) {
             binary_execute::ReadToType(reader, type, count, message, binary_bytes_option);
         }
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+        message.erase(message.find_last_not_of("\n") + 1);
         std::cout << message << std::endl;
-        std::cout << Mark("Read All Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Read All Action Completed!") << std::endl;
     }
     else if (mode == "--read-index") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
@@ -908,8 +933,10 @@ int main(int argc, char* argv[]) {
         std::string message = "";
         binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message, binary_bytes_option);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+        message.erase(message.find_last_not_of("\n") + 1);
         std::cout << message << std::endl;
-        std::cout << Mark("Read Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Read Action Completed!") << std::endl;
     }
     else if (mode == "--indexes") {
         void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
@@ -920,14 +947,14 @@ int main(int argc, char* argv[]) {
         }
         binary_execute::GetIndexes(reader);
         ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        std::cout << Mark("Indexes Action Completed!") << std::endl;
+        if (!IsRowData)
+            std::cout << Mark("Indexes Action Completed!") << std::endl;
     }
     else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
              mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
         Command cmd = commands[0];
         std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
         if (commands.empty()) {
-            std::cerr << "No encoding or decoding command provided.\n";
             std::cerr << Error("No encoding or decoding command provided.\n");
             UNLOAD_LIBRARY(Lib);
             return 1;
@@ -971,6 +998,8 @@ int main(int argc, char* argv[]) {
     }
 
     UNLOAD_LIBRARY(Lib);
+    if (IsRowData)
+        return 0;
     auto timeEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> seconds = timeEnd - timeStart;
     std::ostringstream oss;

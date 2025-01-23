@@ -13,7 +13,8 @@ The repository contains binary file operations, Base encoding, and the use of en
 6. [DSA Cryptography](#DSA-Cryptography)
 7. [RSA Cryptography](#RSA-Cryptography)
 8. [Other Features](#Other-Features)
-9. [Ais IO License](#License)
+9. [General Symbolic Instructions](#General-Symbolic-Instructions)
+10. [Ais IO License](#License)
 
 ---
 
@@ -1122,6 +1123,36 @@ For example, creating symmetric encryption keys, initialization vectors, etc...
 #!/bin/bash
 # Example Other Instructions
 
+# Check Environment Path
+./aisio --path ls
+
+# Generate Random Bytes to Base10 Encoding
+./aisio -gen 32 -out -base10
+
+# Generate Random Bytes to Base16 Encoding
+./aisio -gen 32 -out -base16
+
+# Generate Random Bytes to Base32 Encoding
+./aisio -gen 32 -out -base32
+
+# Generate Random Bytes to Base58 Encoding
+./aisio -gen 32 -out -base58
+
+# Generate Random Bytes to Base62 Encoding
+./aisio -gen 32 -out -base62
+
+# Generate Random Bytes to Base64 Encoding
+./aisio -gen 32 -out -base64
+
+# Generate Random Bytes to Base85 Encoding
+./aisio -gen 32 -out -base85
+
+# Generate Random Bytes to Base91 Encoding
+./aisio -gen 32 -out -base91
+
+# Generate Random Bytes to File
+./aisio -gen 32 -out -file "rand-key.bin"
+
 # Base10 to Base16
 echo "Base10 to Base16..."
 ./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708894006" -out -base16
@@ -1345,9 +1376,35 @@ echo "Base91 to Base64..."
 # Base91 to Base85
 echo "Base91 to Base85..."
 ./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLxD7g8nPB' -out -base85
+
+# Base10 to File
+./aisio -conv -base10 "31580729390886260417779328670558515664373423895309413" -out -file Base10.bin
+
+# Base16 to File
+./aisio -conv -base16 "546869732069732042617365313620746F2046696C65" -out -file Base16.bin
+
+# Base32 to File
+./aisio -conv -base32 "KRUGS4ZANFZSAQTBONSTGMRAORXSARTJNRSQ====" -out -file Base32.bin
+
+# Base58 to File
+./aisio -conv -base58 "Pujd9T1GHLdEswCTPqqFAc1oksDW9a" -out -file Base58.bin
+
+# Base62 to File
+./aisio -conv -base62 "3JKWxXFHrLNw9hLrxecDcwhLtrM2ir" -out -file Base62.bin
+
+# Base64 to File
+./aisio -conv -base64 "VGhpcyBpcyBCYXNlNjQgdG8gRmlsZQ==" -out -file Base64.bin
+
+# Base85 to File
+./aisio -conv -base85 'RA^~)AZc?TLSb`dI5i-2Zy-i#Y-Iod' -out -file Base85.bin
+
+# Base91 to File
+./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLIaDgZ' -out -file Base91.bin
 ```
 
 ---
+
+## General Symbolic Instructions
 
 ### *Explanation of `[--keys-way]`*
    01. `-pem`                               -> PEM Raw data.

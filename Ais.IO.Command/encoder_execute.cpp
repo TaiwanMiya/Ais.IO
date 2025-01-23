@@ -83,18 +83,23 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
             encoder_execute::SetOutput(cmd, static_cast<size_t>(resultCode), buffer);
             outputPath = std::filesystem::absolute(cmd.output);
         }
-        std::cout << Hint("<" + display + ">\n");
-        if (outputPath.empty())
-            std::cout << Ask(std::string(reinterpret_cast<char*>(outputBuffer.data()))) << "\n";
-        if (!inputPath.empty())
-            std::cout << Hint("Input Path:\n") << Ask(inputPath.string()) << "\n";
-        if (!outputPath.empty())
-            std::cout << Hint("Output Path:\n") << Ask(outputPath.string()) << "\n";
-        std::cout << Hint("Input Length: [") << Ask(std::to_string(inputLength)) << Hint("]") << std::endl;
-        std::cout << Hint("Output Length: [") << Ask(std::to_string(resultCode)) << Hint("]") << std::endl;
+        if (!IsRowData) {
+            std::cout << Hint("<" + display + ">\n");
+            if (outputPath.empty())
+                std::cout << Ask(std::string(reinterpret_cast<char*>(outputBuffer.data()))) << "\n";
+            if (!inputPath.empty())
+                std::cout << Hint("Input Path:\n") << Ask(inputPath.string()) << "\n";
+            if (!outputPath.empty())
+                std::cout << Hint("Output Path:\n") << Ask(outputPath.string()) << "\n";
+            std::cout << Hint("Input Length: [") << Ask(std::to_string(inputLength)) << Hint("]") << std::endl;
+            std::cout << Hint("Output Length: [") << Ask(std::to_string(resultCode)) << Hint("]") << std::endl;
+        }
+        else
+            std::cout << Ask(std::string(reinterpret_cast<char*>(outputBuffer.data()))) << std::endl;
     }
 
-    std::cout << Mark(display + " Action Completed!") << std::endl;
+    if (!IsRowData)
+        std::cout << Mark(display + " Action Completed!") << std::endl;
     buffer.clear();
 }
 
@@ -111,6 +116,7 @@ void encoder_execute::SetInput(Command& cmd, size_t& size, std::vector<unsigned 
 
     size = file.tellg();
     file.seekg(0, std::ios::beg);
+    buffer.clear();
     buffer.resize(size);
     if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
         std::cerr << Error("Failed to read file: " + cmd.input) << std::endl;

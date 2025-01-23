@@ -119,11 +119,17 @@ void des_execute::EndHandling(std::vector<unsigned char>& result, Des& des) {
 	std::string mode = DesDisplay[des.Mode];
 	std::string crypt = CryptDisplay[des.Crypt];
 	std::string result_str = des.Output;
-	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
-	cryptography_libary::ValueEncode(des.output_option, result, result_str);
-	std::cout << Ask(result_str) << std::endl;
-	std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
-	std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
+		cryptography_libary::ValueEncode(des.output_option, result, result_str);
+		std::cout << Ask(result_str) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
+	}
+	else {
+		cryptography_libary::ValueEncode(des.output_option, result, result_str);
+		std::cout << Ask(result_str) << std::endl;
+	}
 }
 
 void des_execute::DesStart(Des& des) {

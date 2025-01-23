@@ -156,11 +156,17 @@ void aes_execute::EndHandling(std::vector<unsigned char>& result, Aes& aes) {
 	std::string mode = AesDisplay[aes.Mode];
 	std::string crypt = CryptDisplay[aes.Crypt];
 	std::string result_str = aes.Output;
-	std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
-	cryptography_libary::ValueEncode(aes.output_option, result, result_str);
-	std::cout << Ask(result_str) << std::endl;
-	std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
-	std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
+	if (!IsRowData) {
+		std::cout << Hint("<" + algorithm + " " + mode + " " + crypt + ">") << std::endl;
+		cryptography_libary::ValueEncode(aes.output_option, result, result_str);
+		std::cout << Ask(result_str) << std::endl;
+		std::cout << Hint("Data Length: [") << Ask(std::to_string(result.size())) << Hint("]") << std::endl;
+		std::cout << Hint("Output Length: [") << Ask(std::to_string(result_str.size())) << Hint("]") << std::endl;
+	}
+	else {
+		cryptography_libary::ValueEncode(aes.output_option, result, result_str);
+		std::cout << Ask(result_str) << std::endl;
+	}
 }
 
 void aes_execute::AesStart(Aes& aes) {

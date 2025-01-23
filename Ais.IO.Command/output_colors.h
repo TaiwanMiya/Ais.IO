@@ -21,6 +21,7 @@ enum TERMINAL_STYLE {
 };
 
 extern bool IsRedirects;
+extern bool IsRowData;
 
 bool CheckRedirects();
 void MoveCursorUp(int lines);

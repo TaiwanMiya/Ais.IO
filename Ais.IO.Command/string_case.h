@@ -13,4 +13,5 @@
 std::string ECL ToLetter(std::string str);
 std::string ECL ToLower(std::string str);
 std::string ECL ToUpper(std::string str);
+char* ECL Trim(char* str);
 bool ECL IsULong(const std::string& str);

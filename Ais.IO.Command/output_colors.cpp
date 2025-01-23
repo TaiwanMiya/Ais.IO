@@ -23,6 +23,7 @@ void EnableVirtualTerminalProcessing() {
 #endif
 
 bool IsRedirects = false;
+bool IsRowData = false;
 
 bool CheckRedirects() {
 #ifdef _WIN32
