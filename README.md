@@ -1103,13 +1103,19 @@ For example, creating symmetric encryption keys, initialization vectors, etc...
 1. Check System Environment Variables / System Environment Paths
 2. Generate Random Bytes
 3. Convert Bytes
+4. Raw Data Output
+5. Pipe Symbol Input / Output
+6. Output Oriented
 
 ### Other Introduction
-| Features                 | Introduction    | Demand Introduction                  | Use
-|--------------------------|-----------------|--------------------------------------|---------------------------------------------------------------------------------------
-| **`Check Environment`**  | `--path`        | `<filename>`                         | Check whether a file or executable file is in the system environment variable.
-| **`Generate Bytes`**     | `-gen`          | `<bytes-size>` `-out [--way]`        | Create random bytes, usually used to generate asymmetric encryption keys, IVs, Nonce, etc...
-| **`Convert Bytes`**      | `-conv`         | `[--way]` `<value>` `-out [--way]`   | Can convert from different text, Base encoding text, files to another text, Base encoding text, files.
+| Features                 | Introduction             | Demand Introduction                  | Use
+|--------------------------|--------------------------|--------------------------------------|---------------------------------------------------------------------------------------
+| **`Check Environment`**  | `--path`                 | `<filename>`                         | Check whether a file or executable file is in the system environment variable.
+| **`Generate Bytes`**     | `-gen`                   | `<bytes-size>` `-out [--way]`        | Create random bytes, usually used to generate asymmetric encryption keys, IVs, Nonce, etc...
+| **`Convert Bytes`**      | `-conv`                  | `[--way]` `<value>` `-out [--way]`   | Can convert from different text, Base encoding text, files to another text, Base encoding text, files.
+| **`Raw Data Output`**    | `-raw`                   |                                      | Output will only send raw data, without headers or other identifying content.
+| **`Pipe Symbol`**        | `|`                      |                                      | The pipe symbol can be used as a command output or as a command reception. Each command receives different parameters of the pipe symbol.
+| **`Output Oriented`**    | `> <path>` `>> <path>`   |                                      | The output will be directed to another file, `>` means writing, `>>` means adding at the end, and the color code output has been removed.
 
    - `<filename>` in `--path` is the file you want to check.
    - `-gen` of `<bytes-size>` is the length you want to generate, and `-out [--way]` is the content you want to output.
@@ -1400,6 +1406,16 @@ echo "Base91 to Base85..."
 
 # Base91 to File
 ./aisio -conv -base91 'nX,<:WRT$F,ue9QUz\"?^kLIaDgZ' -out -file Base91.bin
+
+# Raw Data Output
+./aisio -conv -base10 "2069674681361121962739586083753722882580376703970708894006" -out -base16 -raw
+
+# Raw Data + Pipe Symbol
+./aisio -gen 32 -out -b16 -raw | ./aisio --base16 -d
+
+# Raw Data + Pipe Symbol + Output Oriented
+./aisio --base16 -e "This is the aes ctr plain-text." -raw | ./aisio -aes -ctr -e -pt -b16 -key "Key length must be 128, 192, 256" -count 25 -out -b16 -raw > output
+./aisio -conv -f output -raw | ./aisio -aes -ctr -d -ct -b16 -key "Key length must be 128, 192, 256" -count 25
 ```
 
 ---

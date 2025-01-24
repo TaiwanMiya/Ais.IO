@@ -270,7 +270,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
     }
 
     for (int i = 1; i < argc; ++i) {
-        if (ToLower(std::string(argv[i])) == "-row") {
+        if (ToLower(std::string(argv[i])) == "-raw") {
             IsRowData = true;
             break;
         }
@@ -290,7 +290,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
-            if (ToLower(arg) == "-row")
+            if (ToLower(arg) == "-raw")
                 continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
@@ -320,7 +320,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         int start = option == CRYPT_OPTIONS::OPTION_TEXT ? 3 : 4;
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
-            if (ToLower(arg) == "-row")
+            if (ToLower(arg) == "-raw")
                 continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
@@ -361,7 +361,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         for (int i = 3; i < argc; ++i) {
             std::string arg = argv[i];
             std::string arg2 = argv[i + 1];
-            if (ToLower(arg) == "-row" || ToLower(arg2) == "-row")
+            if (ToLower(arg) == "-raw" || ToLower(arg2) == "-raw")
                 continue;
             if (validOptions.count(ToLower(arg))) {
                 if (!cmd.type.empty()) {
@@ -402,7 +402,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         for (int i = start; i < argc; ++i) {
             std::string arg = argv[i];
             std::replace(arg.begin(), arg.end(), ' ', '\0');
-            if (ToLower(arg) == "-row")
+            if (ToLower(arg) == "-raw")
                 continue;
             if (arg.find('~') != std::string::npos) {
                 size_t pos = arg.find('~');
@@ -523,7 +523,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
             if (abbreviationIoOptions.count(arg)) {
                 arg = abbreviationIoOptions[arg];
             }
-            if (ToLower(arg) == "-row")
+            if (ToLower(arg) == "-raw")
                 continue;
             if (arg == "-file") {
                 if (i + 1 >= argc) {

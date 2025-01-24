@@ -89,6 +89,17 @@ void usage_libary::ShowUsage() {
     std::cout << Hint("    Convert Bytes:") << std::endl;
     std::cout << Info("        [-conv | --convert] [--way] <value> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    Tip:") << std::endl;
+    std::cout << "        " << Mark("1") << ". " << Hint("Output Only Raw Data (Just Add It After Any Command.):") << std::endl;
+    std::cout << Info("            -raw") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "        " << Mark("2") << ". " << Hint("Output Directed to File (Just Add It After Any Command.):") << std::endl;
+    std::cout << Info("            [> <path> | >> <path>]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "        " << Mark("3") << ". " << Hint("Pipe Symbol Receiving (Can Be Added Between Any Two Instructions.):") << std::endl;
+    std::cout << Info("            <first-command> | <second-command>") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
 }
