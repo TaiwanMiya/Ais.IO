@@ -1114,7 +1114,7 @@ For example, creating symmetric encryption keys, initialization vectors, etc...
 | **`Generate Bytes`**     | `-gen`                   | `<bytes-size>` `-out [--way]`        | Create random bytes, usually used to generate asymmetric encryption keys, IVs, Nonce, etc...
 | **`Convert Bytes`**      | `-conv`                  | `[--way]` `<value>` `-out [--way]`   | Can convert from different text, Base encoding text, files to another text, Base encoding text, files.
 | **`Raw Data Output`**    | `-raw`                   |                                      | Output will only send raw data, without headers or other identifying content.
-| **`Pipe Symbol`**        | `|`                      |                                      | The pipe symbol can be used as a command output or as a command reception. Each command receives different parameters of the pipe symbol.
+| **`Pipe Symbol`**        | `\|`                     |                                      | The pipe symbol can be used as a command output or as a command reception. Each command receives different parameters of the pipe symbol.
 | **`Output Oriented`**    | `> <path>` `>> <path>`   |                                      | The output will be directed to another file, `>` means writing, `>>` means adding at the end, and the color code output has been removed.
 
    - `<filename>` in `--path` is the file you want to check.
