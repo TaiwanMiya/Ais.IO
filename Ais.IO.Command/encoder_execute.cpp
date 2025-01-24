@@ -36,7 +36,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
     std::string display = ToLetter(mode.substr(2)) + " " + ToLetter(cmd.type.substr(1));
 
-    if (encodeType.ends_with("-decode") && buffer.size() > 0) {
+    if (encodeType.size() >= 7 && encodeType.substr(encodeType.size() - 7) == "-decode" && buffer.size() > 0) {
         buffer.erase(std::remove(buffer.begin(), buffer.end(), '\0'), buffer.end());
         inputLength = buffer.size();
         outputLength = cryptography_libary::CalculateEncodeLength(mode, inputLength);
