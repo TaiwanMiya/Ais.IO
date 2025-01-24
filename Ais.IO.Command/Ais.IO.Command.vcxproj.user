@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>aisio -b16 -e "Test" | -h -h</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-b64 -d "VGhpcyBpcyB0aGUgQmFzZTY0IEVuY29kaW5nL0RlY29kaW5nIFRlc3Rpbmcu"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>

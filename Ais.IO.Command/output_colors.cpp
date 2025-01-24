@@ -48,10 +48,13 @@ bool CheckInput() {
             InputContent += input + "\n";
 #endif
         }
-        if (!InputContent.empty() && InputContent.back() == '\n')
-            InputContent.pop_back();
-        if (!InputContent.empty() && InputContent.back() == '\r')
-            InputContent.pop_back();
+        while ((!InputContent.empty() && InputContent.back() == '\n') ||
+               (!InputContent.empty() && InputContent.back() == '\r')) {
+            if (!InputContent.empty() && InputContent.back() == '\n')
+                InputContent.pop_back();
+            if (!InputContent.empty() && InputContent.back() == '\r')
+                InputContent.pop_back();
+        }
     }
     return IsInput;
 }

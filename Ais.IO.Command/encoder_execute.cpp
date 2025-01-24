@@ -36,6 +36,12 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
     std::string display = ToLetter(mode.substr(2)) + " " + ToLetter(cmd.type.substr(1));
 
+    if (encodeType.ends_with("-decode") && buffer.size() > 0) {
+        buffer.erase(std::remove(buffer.begin(), buffer.end(), '\0'), buffer.end());
+        inputLength = buffer.size();
+        outputLength = cryptography_libary::CalculateEncodeLength(mode, inputLength);
+        outputBuffer.resize(outputLength);
+    }
     const unsigned char* inputData = buffer.data() ? buffer.data() : reinterpret_cast<const unsigned char*>(cmd.value.c_str());
 
     if (encodeType == "-base10-encode")
@@ -124,6 +130,23 @@ void encoder_execute::SetInput(Command& cmd, size_t& size, std::vector<unsigned 
         std::cerr << Error("Failed to read file: " + cmd.input) << std::endl;
         buffer.clear();
     }
+    while ((!buffer.empty() && buffer.back() == '\n') ||
+           (!buffer.empty() && buffer.back() == '\r') ||
+           (!buffer.empty() && buffer.back() == '\0')) {
+        if (!buffer.empty() && buffer.back() == '\0')
+            buffer.pop_back();
+        if (!buffer.empty() && buffer.back() == '\n')
+            buffer.pop_back();
+        if (!buffer.empty() && buffer.back() == '\r')
+            buffer.pop_back();
+    }
+    if (buffer.size() >= 2 && buffer[0] == 0xFF && buffer[1] == 0xFE)
+        buffer.erase(buffer.begin(), buffer.begin() + 2);
+    else if (buffer.size() >= 2 && buffer[0] == 0xFE && buffer[1] == 0xFF)
+        buffer.erase(buffer.begin(), buffer.begin() + 2);
+    else if (buffer.size() >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
+        buffer.erase(buffer.begin(), buffer.begin() + 3);
+    size = buffer.size();
     file.close();
 }
 

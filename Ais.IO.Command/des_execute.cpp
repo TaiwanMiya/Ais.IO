@@ -62,14 +62,16 @@ void des_execute::ParseParameters(int argc, char* argv[], Des& des) {
 		case hash("-plain-text"):
 		case hash("-pt"):
 			des.plaintext_option = cryptography_libary::GetOption(i, argv);
-			des.PlainText = argv[i + 1];
-			i++;
+			des.PlainText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case hash("-cipher-text"):
 		case hash("-ct"):
 			des.ciphertext_option = cryptography_libary::GetOption(i, argv);
-			des.CipherText = argv[i + 1];
-			i++;
+			des.CipherText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case hash("-output"):
 		case hash("-out"):

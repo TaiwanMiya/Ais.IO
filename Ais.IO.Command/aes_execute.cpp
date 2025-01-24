@@ -67,14 +67,16 @@ void aes_execute::ParseParameters(int argc, char* argv[], Aes& aes) {
 		case hash("-plain-text"):
 		case hash("-pt"):
 			aes.plaintext_option = cryptography_libary::GetOption(i, argv);
-			aes.PlainText = argv[i + 1];
-			i++;
+			aes.PlainText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case hash("-cipher-text"):
 		case hash("-ct"):
 			aes.ciphertext_option = cryptography_libary::GetOption(i, argv);
-			aes.CipherText = argv[i + 1];
-			i++;
+			aes.CipherText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case hash("-output"):
 		case hash("-out"):

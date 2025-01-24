@@ -614,9 +614,9 @@ Unlike RSA, DSA is specifically optimized for signing rather than encryption.
 | **`Private to Public Key`** | `-ext`    | `-priv [--keys-way]`                                                           | Extract the public key from the private key.                                         |
 | **`Keys to Parameters`**    | `-ext`    | `-param` `-pub [--keys-way]` `-priv [--keys-way]`                              | Extract parameters from public and private keys.                                     |
 | **`Parameters to Keys`**    | `-ext`    | `-key` `-param [--keys-way]`                                                   | Extract public and private keys from parameters.                                     |
-| **`Check Public Key`**      | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Rsa Public Key is Valid.                                                |
-| **`Check Private Key`**     | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Rsa Private Key is Valid.                                               |
-| **`Check Parameters`**      | `-chk`    | `-param [--keys-way]`                                                          | Check if the Rsa Parameters is Valid.                                                |
+| **`Check Public Key`**      | `-chk`    | `-pub [--keys-way]`                                                            | Check if the Dsa Public Key is Valid.                                                |
+| **`Check Private Key`**     | `-chk`    | `-priv [--keys-way]` `-pass <password>`                                        | Check if the Dsa Private Key is Valid.                                               |
+| **`Check Parameters`**      | `-chk`    | `-param [--keys-way]`                                                          | Check if the Dsa Parameters is Valid.                                                |
 | **`Signed`**                | `-sign`   | `-priv [--keys-way]` `-pass <password>` `-data [--way]` `-hash [--hash-type]`  | Generates a digital signature for the given plaintext using a private key.           |
 | **`Verify`**                | `-ver`    | `-pub [--keys-way]` `-data [--way]` `-sg [--way]` `-hash [--hash-type]`        | Verifies a digital signature using the corresponding public key.                     |
 

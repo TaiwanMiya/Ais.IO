@@ -103,8 +103,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				dsa.Mode = DSA_MODE::DSA_CHECK_PUBLIC;
 				i++;
 				dsa.publickey_option = asymmetric_libary::GetOption(dsa.KeyFormat, i, argv);
-				dsa.PublicKey = argv[i + 1];
-				i++;
+				dsa.PublicKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
 				break;
 			case dsa_execute::hash("-priv"):
 			case dsa_execute::hash("-private"):
@@ -112,8 +113,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				dsa.Mode = DSA_MODE::DSA_CHECK_PRIVATE;
 				i++;
 				dsa.privatekey_option = asymmetric_libary::GetOption(dsa.KeyFormat, i, argv);
-				dsa.PrivateKey = argv[i + 1];
-				i++;
+				dsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
 				break;
 			case dsa_execute::hash("-param"):
 			case dsa_execute::hash("-params"):
@@ -122,8 +124,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				dsa.Mode = DSA_MODE::DSA_CHECK_PARAMETER;
 				i++;
 				dsa.param_option = asymmetric_libary::GetOption(dsa.KeyFormat, i, argv);
-				dsa.Params = argv[i + 1];
-				i++;
+				dsa.Params = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
 				break;
 			}
 			break;
@@ -231,8 +234,9 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 		case dsa_execute::hash("-dat"):
 		case dsa_execute::hash("-data"):
 			dsa.data_option = cryptography_libary::GetOption(i, argv);
-			dsa.Data = argv[i + 1];
-			i++;
+			dsa.Data = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case dsa_execute::hash("-out"):
 		case dsa_execute::hash("-output"):

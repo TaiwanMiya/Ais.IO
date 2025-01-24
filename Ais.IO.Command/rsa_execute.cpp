@@ -81,8 +81,9 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				rsa.Mode = RSA_MODE::RSA_CHECK_PUBLIC;
 				i++;
 				rsa.publickey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
-				rsa.PublicKey = argv[i + 1];
-				i++;
+				rsa.PublicKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
 				break;
 			case rsa_execute::hash("-priv"):
 			case rsa_execute::hash("-private"):
@@ -90,8 +91,9 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				rsa.Mode = RSA_MODE::RSA_CHECK_PRIVATE;
 				i++;
 				rsa.privatekey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
-				rsa.PrivateKey = argv[i + 1];
-				i++;
+				rsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
 				break;
 			}
 			break;
@@ -224,20 +226,23 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-pt"):
 		case rsa_execute::hash("-plain-text"):
 			rsa.plaintext_option = cryptography_libary::GetOption(i, argv);
-			rsa.PlainText = argv[i + 1];
-			i++;
+			rsa.PlainText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case rsa_execute::hash("-ct"):
 		case rsa_execute::hash("-cipher-text"):
 			rsa.ciphertext_option = cryptography_libary::GetOption(i, argv);
-			rsa.CipherText = argv[i + 1];
-			i++;
+			rsa.CipherText = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case rsa_execute::hash("-dat"):
 		case rsa_execute::hash("-data"):
 			rsa.data_option = cryptography_libary::GetOption(i, argv);
-			rsa.Data = argv[i + 1];
-			i++;
+			rsa.Data = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case rsa_execute::hash("-out"):
 		case rsa_execute::hash("-output"):

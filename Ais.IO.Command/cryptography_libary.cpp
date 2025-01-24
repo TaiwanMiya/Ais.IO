@@ -291,6 +291,22 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 			std::cerr << Error("Failed to read file: " + input) << std::endl;
 			output.clear();
 		}
+		while ((!output.empty() && output.back() == '\n') ||
+			(!output.empty() && output.back() == '\r') ||
+			(!output.empty() && output.back() == '\0')) {
+			if (!output.empty() && output.back() == '\0')
+				output.pop_back();
+			if (!output.empty() && output.back() == '\n')
+				output.pop_back();
+			if (!output.empty() && output.back() == '\r')
+				output.pop_back();
+		}
+		if (output.size() >= 2 && output[0] == 0xFF && output[1] == 0xFE)
+			output.erase(output.begin(), output.begin() + 2);
+		else if (output.size() >= 2 && output[0] == 0xFE && output[1] == 0xFF)
+			output.erase(output.begin(), output.begin() + 2);
+		else if (output.size() >= 3 && output[0] == 0xEF && output[1] == 0xBB && output[2] == 0xBF)
+			output.erase(output.begin(), output.begin() + 3);
 		file.close();
 		break;
 	}
