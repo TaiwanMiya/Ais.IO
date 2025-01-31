@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-b64 -d "VGhpcyBpcyB0aGUgQmFzZTY0IEVuY29kaW5nL0RlY29kaW5nIFRlc3Rpbmcu"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-ecc -exp -key -param -f param.bin -out -pem</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>

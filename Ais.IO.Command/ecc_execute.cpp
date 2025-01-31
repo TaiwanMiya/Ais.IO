@@ -1,0 +1,554 @@
+#include "ecc_execute.h"
+#include "string_case.h"
+#include "output_colors.h"
+#include "cryptography_libary.h"
+#include "asymmetric_libary.h"
+
+constexpr size_t ecc_execute::hash(const char* str) {
+	size_t hash = 0;
+	while (*str)
+		hash = hash * 31 + *str++;
+	return hash;
+}
+
+size_t ecc_execute::set_hash(const char* str) {
+	size_t hash = 0;
+	while (*str)
+		hash = hash * 31 + *str++;
+	return hash;
+}
+
+std::string ecc_execute::ParseEccCurve(Ecc& ecc, bool isGetName) {
+	std::string curve_name = EccCurveName[ecc.Curve];
+	std::string curve_info = EccCurveDisplay[ecc.Curve];
+	return isGetName
+		? curve_name
+		: curve_info;
+}
+
+void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
+	for (int i = 0; i < argc; ++i) {
+		std::string arg = ToLower(argv[i]);
+		switch (set_hash(arg.c_str())) {
+		case ecc_execute::hash("-list"):
+			ecc.Mode = ECC_MODE::ECC_LIST_CURVE;
+			break;
+		case ecc_execute::hash("-gen"):
+		case ecc_execute::hash("-generate"):
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
+			case ecc_execute::hash("-key"):
+			case ecc_execute::hash("-keys"):
+				ecc.Mode = ECC_MODE::ECC_GENERATE_KEYS;
+				i++;
+				if (IsULong(argv[i + 1])) {
+					ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
+					i++;
+				}
+				else {
+					ecc.Curve = EccCurve[ToLower(argv[i + 1])];
+					i++;
+				}
+				break;
+			case ecc_execute::hash("-param"):
+			case ecc_execute::hash("-params"):
+			case ecc_execute::hash("-parameter"):
+			case ecc_execute::hash("-parameters"):
+				ecc.Mode = ECC_MODE::ECC_GENERATE_PARAMS;
+				i++;
+				if (IsULong(argv[i + 1])) {
+					ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
+					i++;
+				}
+				else {
+					ecc.Curve = EccCurve[ToLower(argv[i + 1])];
+					i++;
+				}
+				break;
+			default:
+				continue;
+			}
+			break;
+		case ecc_execute::hash("-exp"):
+		case ecc_execute::hash("-export"):
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
+			case ecc_execute::hash("-key"):
+			case ecc_execute::hash("-keys"):
+				ecc.Mode = ECC_MODE::ECC_EXPORT_KEYS;
+				i++;
+				break;
+			case ecc_execute::hash("-param"):
+			case ecc_execute::hash("-params"):
+			case ecc_execute::hash("-parameter"):
+			case ecc_execute::hash("-parameters"):
+				ecc.Mode = ECC_MODE::ECC_EXPORT_PARAMS;
+				i++;
+				break;
+			default:
+				continue;
+			}
+			break;
+		case ecc_execute::hash("-pub"):
+		case ecc_execute::hash("-public"):
+		case ecc_execute::hash("-public-key"):
+			ecc.publickey_option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+			ecc.PublicKey = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-priv"):
+		case ecc_execute::hash("-private"):
+		case ecc_execute::hash("-private-key"):
+			ecc.privatekey_option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+			ecc.PrivateKey = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-pwd"):
+		case ecc_execute::hash("-pass"):
+		case ecc_execute::hash("-password"):
+			ecc.password_option = cryptography_libary::GetOption(i, argv);
+			ecc.Password = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-sg"):
+		case ecc_execute::hash("-signature"):
+			ecc.signature_option = cryptography_libary::GetOption(i, argv);
+			ecc.Signature = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-hash"): {
+			std::string hashmode = ToLower(argv[i + 1]);
+			if (HashMode.find(hashmode) != HashMode.end()) {
+				ecc.Hash = HashMode[hashmode];
+				i++;
+			}
+			break;
+		}
+		case ecc_execute::hash("-alg"):
+		case ecc_execute::hash("-algorithm"):
+			asymmetric_libary::ParseAlgorithm(i, argv, ecc.Algorithm, ecc.AlgorithmSize, ecc.Segment);
+			break;
+		case ecc_execute::hash("-param"):
+		case ecc_execute::hash("-params"):
+		case ecc_execute::hash("-parameter"):
+		case ecc_execute::hash("-parameters"):
+			ecc.param_option = cryptography_libary::GetOption(i, argv);
+			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+				ecc.Params = argv[i + 1];
+				i++;
+			}
+			break;
+		case ecc_execute::hash("-curve"):
+			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			if (IsULong(argv[i + 1])) {
+				ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
+				i++;
+			}
+			else {
+				ecc.Curve = EccCurve[ToLower(argv[i + 1])];
+				i++;
+			}
+			break;
+		case ecc_execute::hash("-x"):
+		case ecc_execute::hash("-public-x"):
+			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			ecc.X = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-y"):
+		case ecc_execute::hash("-public-y"):
+			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			ecc.Y = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-p"):
+		case ecc_execute::hash("-private-exp"):
+			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE)
+				continue;
+			ecc.EXP = argv[i + 1];
+			i++;
+			break;
+		case ecc_execute::hash("-out"):
+		case ecc_execute::hash("-output"):
+			if (ecc.Mode == ECC_MODE::ECC_GENERATE_KEYS || ecc.Mode == ECC_MODE::ECC_EXPORT_KEYS) {
+				CRYPT_OPTIONS option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+				ecc.publickey_option = option;
+				ecc.privatekey_option = option;
+				if (ecc.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						ecc.PublicKey = argv[i + 1];
+					else
+						ecc.PublicKey = ecc.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-pub.der"
+						: std::string(argv[i + 1]) + "-pub.pem";
+				}
+				if (ecc.privatekey_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-priv.der|\-priv.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						ecc.PrivateKey = argv[i + 1];
+					else
+						ecc.PrivateKey = ecc.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-priv.der"
+						: std::string(argv[i + 1]) + "-priv.pem";
+				}
+			}
+			else if (ecc.Mode == ECC_MODE::ECC_GENERATE_PARAMS || ecc.Mode == ECC_MODE::ECC_EXPORT_PARAMS) {
+				ecc.param_option = cryptography_libary::GetOption(i, argv);
+				if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+					ecc.Params = argv[i + 1];
+					i++;
+				}
+			}
+			else {
+				ecc.output_option = cryptography_libary::GetOption(i, argv);
+				if (ecc.output_option == CRYPT_OPTIONS::OPTION_FILE) {
+					ecc.Output = argv[i + 1];
+					i++;
+				}
+			}
+			i++;
+			break;
+		}
+	}
+}
+
+void ecc_execute::EccStart(Ecc& ecc) {
+	switch (ecc.Mode) {
+	case ECC_MODE::ECC_LIST_CURVE:
+		ListEccCurve(ecc);
+		break;
+	case ECC_MODE::ECC_GENERATE_PARAMS:
+		GenerateParameters(ecc);
+		break;
+	case ECC_MODE::ECC_GENERATE_KEYS:
+		GenerateKeys(ecc);
+		break;
+	case ECC_MODE::ECC_EXPORT_PARAMS:
+		ExportParamters(ecc);
+		break;
+	case ECC_MODE::ECC_EXPORT_KEYS:
+		ExportKeys(ecc);
+		break;
+	}
+}
+
+void ecc_execute::ListEccCurve(Ecc& ecc) {
+	int count = 1;
+	for (const auto& pair : EccCurveDisplay) {
+		std::string name = EccCurveName[pair.first];
+		std::string fullString = pair.second;
+		size_t pos = fullString.find(" : ");
+
+		if (pos != std::string::npos) {
+			std::string command = fullString.substr(0, pos);
+			std::string description = fullString.substr(pos + 3);
+			std::cout << Mark(std::to_string(count)) << ". " << Info(name) << " <" << Hint(command) << ">" << " : " << Ask(description) << std::endl;
+		}
+		count++;
+	}
+}
+
+void ecc_execute::GenerateParameters(Ecc& ecc) {
+	ECC_PARAMETERS paramters = {
+		ecc.Curve,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0,
+		0,
+	};
+	int result_code = ((EccGetParametersLength)EccFunctions.at("-param-length"))(&paramters);
+	if (result_code < 0) {
+		paramters.X_LENGTH = 0;
+		paramters.Y_LENGTH = 0;
+		paramters.EXP_LENGTH = 0;
+	}
+	paramters.X = new unsigned char[paramters.X_LENGTH];
+	paramters.Y = new unsigned char[paramters.Y_LENGTH];
+	paramters.EXP = new unsigned char[paramters.EXP_LENGTH];
+	result_code = ((EccGenerateParameters)EccFunctions.at("-param-gen"))(&paramters);
+	if (result_code < 0) {
+		paramters.Y = new unsigned char[0];
+		paramters.X = new unsigned char[0];
+		paramters.EXP = new unsigned char[0];
+		paramters.X_LENGTH = 0;
+		paramters.Y_LENGTH = 0;
+		paramters.EXP_LENGTH = 0;
+	}
+	std::vector<unsigned char> x, y, exp;
+	std::string y_str = ecc.Params;
+	std::string x_str = ecc.Params;
+	std::string exp_str = ecc.Params;
+	y.assign(paramters.Y, paramters.Y + paramters.Y_LENGTH);
+	x.assign(paramters.X, paramters.X + paramters.X_LENGTH);
+	exp.assign(paramters.EXP, paramters.EXP + paramters.EXP_LENGTH);
+	if (ecc.param_option != CRYPT_OPTIONS::OPTION_FILE) {
+		cryptography_libary::ValueEncode(ecc.param_option, y, y_str);
+		cryptography_libary::ValueEncode(ecc.param_option, x, x_str);
+		cryptography_libary::ValueEncode(ecc.param_option, exp, exp_str);
+	}
+	else {
+		if (std::filesystem::exists(ecc.Params.c_str()))
+			std::filesystem::remove_all(ecc.Params.c_str());
+		void* appender = ((CreateBinaryAppender)AppendFunctions["-create"])(ecc.Params.c_str());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x01);
+		((AppendInt)AppendFunctions["-int"])(appender, ecc.Curve);
+		((AppendInt)AppendFunctions["-int"])(appender, 0x02);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, x.data(), x.size());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x04);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, y.data(), y.size());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x08);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, exp.data(), exp.size());
+		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
+		y_str = x_str = exp_str = std::filesystem::absolute(ecc.Params.c_str()).string();
+	}
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Parameters Generate>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+		std::cout << Mark("Private Key Coordinate (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
+		std::cout << Mark("Public Key Coordinate (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
+		std::cout << Mark("Private Exponent  (EXP) [") << Ask(std::to_string(paramters.EXP_LENGTH)) << Mark("]:\n") << Ask(exp_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(x_str) << std::endl;
+		std::cout << Ask(y_str) << std::endl;
+		std::cout << Ask(exp_str) << std::endl;
+	}
+}
+
+void ecc_execute::GenerateKeys(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> password;
+	publicKey.resize(1024);
+	privateKey.resize(1024);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, password);
+	if (ecc.password_option)
+		password.push_back('\0');
+	ECC_KEY_PAIR keypair = {
+		ecc.Curve,
+		ecc.KeyFormat,
+		publicKey.data(),
+		privateKey.data(),
+		password.data(),
+		publicKey.size(),
+		privateKey.size(),
+		password.size(),
+		ecc.Algorithm,
+		ecc.AlgorithmSize,
+		ecc.Segment
+	};
+	int result_code = ((EccGenerateKeys)EccFunctions.at("-key-gen"))(&keypair);
+	if (result_code < 0) {
+		keypair.PUBLIC_KEY_LENGTH = 0;
+		keypair.PRIVATE_KEY_LENGTH = 0;
+	}
+	publicKey.resize(keypair.PUBLIC_KEY_LENGTH);
+	privateKey.resize(keypair.PRIVATE_KEY_LENGTH);
+
+	std::string publicKey_str = ecc.PublicKey;
+	std::string privateKey_str = ecc.PrivateKey;
+	cryptography_libary::ValueEncode(ecc.publickey_option, publicKey, publicKey_str);
+	cryptography_libary::ValueEncode(ecc.privatekey_option, privateKey, privateKey_str);
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Keys Generate>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+		std::cout << Mark("Public Key [") << Ask(std::to_string(keypair.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(keypair.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
+}
+
+void ecc_execute::ExportParamters(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> password;
+	publicKey.resize(ecc.PublicKey.size());
+	privateKey.resize(ecc.PrivateKey.size());
+	cryptography_libary::ValueDecode(ecc.publickey_option, ecc.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(ecc.privatekey_option, ecc.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, password);
+	if (ecc.password_option)
+		password.push_back('\0');
+	ECC_KEY_PAIR keyLength = {
+		ecc.Curve,
+		ecc.KeyFormat,
+		publicKey.data(),
+		privateKey.data(),
+		password.data(),
+		publicKey.size(),
+		privateKey.size(),
+		password.size(),
+		ecc.Algorithm,
+		ecc.AlgorithmSize,
+		ecc.Segment
+	};
+	((EccGetKeyLength)EccFunctions.at("-key-length"))(&keyLength);
+	ecc.Curve = keyLength.CURVE_NID;
+	ECC_PARAMETERS paramLength = {
+		ecc.Curve,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0,
+		0,
+	};
+	((EccGetParametersLength)EccFunctions.at("-param-length"))(&paramLength);
+	ECC_EXPORT paramters = {
+		ecc.Curve,
+		ecc.KeyFormat,
+		new unsigned char[paramLength.X_LENGTH],
+		new unsigned char[paramLength.Y_LENGTH],
+		new unsigned char[paramLength.EXP_LENGTH],
+		paramLength.X_LENGTH,
+		paramLength.Y_LENGTH,
+		paramLength.EXP_LENGTH,
+		publicKey.data(),
+		privateKey.data(),
+		password.data(),
+		publicKey.size(),
+		privateKey.size(),
+		password.size()
+	};
+	((EccExportParameters)EccFunctions.at("-param-export"))(&paramters);
+	std::vector<unsigned char> x, y, exp;
+	std::string x_str = ecc.Params;
+	std::string y_str = ecc.Params;
+	std::string exp_str = ecc.Params;
+	x.assign(paramters.X, paramters.X + paramters.X_LENGTH);
+	y.assign(paramters.Y, paramters.Y + paramters.Y_LENGTH);
+	exp.assign(paramters.EXP, paramters.EXP + paramters.EXP_LENGTH);
+	if (ecc.param_option != CRYPT_OPTIONS::OPTION_FILE) {
+		cryptography_libary::ValueEncode(ecc.param_option, x, x_str);
+		cryptography_libary::ValueEncode(ecc.param_option, y, y_str);
+		cryptography_libary::ValueEncode(ecc.param_option, exp, exp_str);
+	}
+	else {
+		if (std::filesystem::exists(ecc.Params.c_str()))
+			std::filesystem::remove_all(ecc.Params.c_str());
+		void* appender = ((CreateBinaryAppender)AppendFunctions["-create"])(ecc.Params.c_str());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x01);
+		((AppendInt)AppendFunctions["-int"])(appender, ecc.Curve);
+		((AppendInt)AppendFunctions["-int"])(appender, 0x02);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, x.data(), x.size());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x04);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, y.data(), y.size());
+		((AppendInt)AppendFunctions["-int"])(appender, 0x08);
+		((AppendBytes)AppendFunctions["-bytes"])(appender, exp.data(), exp.size());
+		((DestroyBinaryAppender)AppendFunctions["-destory"])(appender);
+		y_str = x_str = exp_str = std::filesystem::absolute(ecc.Params.c_str()).string();
+	}
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Parameters Export>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+		std::cout << Mark("Private Key Coordinate (X) [") << Ask(std::to_string(paramters.X_LENGTH)) << Mark("]:\n") << Ask(x_str) << std::endl;
+		std::cout << Mark("Public Key Coordinate (Y) [") << Ask(std::to_string(paramters.Y_LENGTH)) << Mark("]:\n") << Ask(y_str) << std::endl;
+		std::cout << Mark("Private Exponent  (EXP) [") << Ask(std::to_string(paramters.EXP_LENGTH)) << Mark("]:\n") << Ask(exp_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(x_str) << std::endl;
+		std::cout << Ask(y_str) << std::endl;
+		std::cout << Ask(exp_str) << std::endl;
+	}
+}
+
+void ecc_execute::ExportKeys(Ecc& ecc) {
+	std::vector<unsigned char> x, y, exp;
+	if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE) {
+		void* reader = ((CreateBinaryReader)ReadFunctions["-create"])(ecc.Params.c_str());
+
+		while (((GetReaderPosition)ReadFunctions["-position"])(reader) < ((GetReaderLength)ReadFunctions["-length"])(reader)) {
+			uint64_t position = ((GetReaderPosition)ReadFunctions["-position"])(reader);
+			BINARYIO_TYPE type = ((ReadType)ReadFunctions["-type"])(reader);
+			if (type == BINARYIO_TYPE::TYPE_INT) {
+				int param_type = ((ReadInt)ReadFunctions.at("-int"))(reader, -1);
+				uint64_t length = ((NextLength)ReadFunctions.at("-next-length"))(reader);
+				switch (param_type)
+				{
+				case 0x01: {
+					int value = ((ReadInt)ReadFunctions.at("-int"))(reader, position);
+					position = ((GetReaderPosition)ReadFunctions["-position"])(reader);
+					value = ((ReadInt)ReadFunctions.at("-int"))(reader, position);
+					ecc.Curve = static_cast<ECC_CURVE>(value);
+					break;
+				}
+				case 0x02:
+					x.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, x.data(), x.size(), -1);
+					break;
+				case 0x04:
+					y.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, y.data(), y.size(), -1);
+					break;
+				case 0x08:
+					exp.resize(length);
+					((ReadBytes)ReadFunctions.at("-bytes"))(reader, exp.data(), exp.size(), -1);
+					break;
+				default:break;
+				}
+			}
+		}
+		((DestroyBinaryReader)ReadFunctions["-destory"])(reader);
+	}
+	else {
+		cryptography_libary::ValueDecode(ecc.param_option, ecc.X, x);
+		cryptography_libary::ValueDecode(ecc.param_option, ecc.Y, y);
+		cryptography_libary::ValueDecode(ecc.param_option, ecc.EXP, exp);
+	}
+
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> password;
+	publicKey.resize(1024);
+	privateKey.resize(1024);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, password);
+
+	ECC_EXPORT paramters = {
+		ecc.Curve,
+		ecc.KeyFormat,
+		x.data(),
+		y.data(),
+		exp.data(),
+		x.size(),
+		y.size(),
+		exp.size(),
+		publicKey.data(),
+		privateKey.data(),
+		password.data(),
+		publicKey.size(),
+		privateKey.size(),
+		password.size()
+	};
+	((EccExportKeys)EccFunctions.at("-key-export"))(&paramters);
+	publicKey.resize(paramters.PUBLIC_KEY_LENGTH);
+	privateKey.resize(paramters.PRIVATE_KEY_LENGTH);
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Keys Export>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+		std::string publicKey_str = ecc.PublicKey;
+		std::string privateKey_str = ecc.PrivateKey;
+		cryptography_libary::ValueEncode(ecc.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(ecc.privatekey_option, privateKey, privateKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(paramters.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(paramters.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = ecc.PublicKey;
+		std::string privateKey_str = ecc.PrivateKey;
+		cryptography_libary::ValueEncode(ecc.publickey_option, publicKey, publicKey_str);
+		cryptography_libary::ValueEncode(ecc.privatekey_option, privateKey, privateKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
+}

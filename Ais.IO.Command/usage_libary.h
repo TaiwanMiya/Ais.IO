@@ -12,6 +12,7 @@ public:
 	static void ShowHashUsage();
 	static void ShowDsaUsage();
 	static void ShowRsaUsage();
+	static void ShowEccUsage();
 private:
 	static void ShowWayUsage();
 	static void ShowKeysWayUsage();

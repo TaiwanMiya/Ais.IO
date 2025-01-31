@@ -69,6 +69,9 @@
     <ClCompile Include="mapping_libary.cpp">
       <Filter>來源檔案\Libary</Filter>
     </ClCompile>
+    <ClCompile Include="ecc_execute.cpp">
+      <Filter>來源檔案\Execute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -112,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="mapping_libary.h">
       <Filter>標頭檔\Libary</Filter>
+    </ClInclude>
+    <ClInclude Include="ecc_execute.h">
+      <Filter>標頭檔\Execute</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

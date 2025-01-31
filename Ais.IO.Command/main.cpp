@@ -11,8 +11,9 @@
 #include "des_execute.h"
 #include "hash_execute.h"
 #include "usage_libary.h"
-#include "rsa_execute.h"
 #include "dsa_execute.h"
+#include "rsa_execute.h"
+#include "ecc_execute.h"
 
 #ifdef _WIN32
 #define LOAD_LIBRARY(Lib) LoadLibraryA(Lib)
@@ -37,6 +38,7 @@ std::unordered_map<std::string, void*> DesFunctions;
 std::unordered_map<std::string, void*> HashFunctions;
 std::unordered_map<std::string, void*> DsaFunctions;
 std::unordered_map<std::string, void*> RsaFunctions;
+std::unordered_map<std::string, void*> EccFunctions;
 std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay = {
     { CRYPT_TYPE::CRYPTION_NULL, "Unknown" },
     { CRYPT_TYPE::CRYPTION_ENCRYPT, "Encrypt" },
@@ -137,6 +139,258 @@ std::unordered_map<HASH_TYPE, std::string> HashDisplay = {
     { HASH_TYPE::HASH_SM3, "SM3"},
     { HASH_TYPE::HASH_RIPEMD160, "RIPEMD160"},
 };
+std::unordered_map<std::string, ECC_CURVE> EccCurve = {
+    { "-prime192v1", ECC_CURVE::ECC_PRIME_192_V1 },
+    { "-prime192v2", ECC_CURVE::ECC_PRIME_192_V2 },
+    { "-prime192v3", ECC_CURVE::ECC_PRIME_192_V3 },
+    { "-prime239v1", ECC_CURVE::ECC_PRIME_239_V1 },
+    { "-prime239v2", ECC_CURVE::ECC_PRIME_239_V2 },
+    { "-prime239v3", ECC_CURVE::ECC_PRIME_239_V3 },
+    { "-prime256v1", ECC_CURVE::ECC_PRIME_256_V1 },
+    { "-c2pnb163v1", ECC_CURVE::ECC_C2PNB_163_V1 },
+    { "-c2pnb163v2", ECC_CURVE::ECC_C2PNB_163_V2 },
+    { "-c2pnb163v3", ECC_CURVE::ECC_C2PNB_163_V3 },
+    { "-c2pnb176v1", ECC_CURVE::ECC_C2PNB_176_V1 },
+    { "-c2tnb191v1", ECC_CURVE::ECC_C2TNB_191_V1 },
+    { "-c2tnb191v2", ECC_CURVE::ECC_C2TNB_191_V2 },
+    { "-c2tnb191v3", ECC_CURVE::ECC_C2TNB_191_V3 },
+    { "-c2pnb208w1", ECC_CURVE::ECC_C2PNB_208_W1 },
+    { "-c2tnb239v1", ECC_CURVE::ECC_C2TNB_239_V1 },
+    { "-c2tnb239v2", ECC_CURVE::ECC_C2TNB_239_V2 },
+    { "-c2tnb239v3", ECC_CURVE::ECC_C2TNB_239_V3 },
+    { "-c2pnb272w1", ECC_CURVE::ECC_C2PNB_272_W1 },
+    { "-c2pnb304w1", ECC_CURVE::ECC_C2PNB_304_W1 },
+    { "-c2tnb359v1", ECC_CURVE::ECC_C2TNB_359_V1 },
+    { "-c2pnb368w1", ECC_CURVE::ECC_C2PNB_368_W1 },
+    { "-c2tnb431r1", ECC_CURVE::ECC_C2TNB_431_R1 },
+    { "-secp112r1", ECC_CURVE::ECC_SECP_112_R1 },
+    { "-secp112r2", ECC_CURVE::ECC_SECP_112_R2 },
+    { "-secp128r1", ECC_CURVE::ECC_SECP_128_R1 },
+    { "-secp128r2", ECC_CURVE::ECC_SECP_128_R2 },
+    { "-secp160k1", ECC_CURVE::ECC_SECP_160_K1 },
+    { "-secp160r1", ECC_CURVE::ECC_SECP_160_R1 },
+    { "-secp160r2", ECC_CURVE::ECC_SECP_160_R2 },
+    { "-secp192k1", ECC_CURVE::ECC_SECP_192_K1 },
+    { "-secp224k1", ECC_CURVE::ECC_SECP_224_K1 },
+    { "-secp224r1", ECC_CURVE::ECC_SECP_224_R1 },
+    { "-secp256k1", ECC_CURVE::ECC_SECP_256_K1 },
+    { "-secp384r1", ECC_CURVE::ECC_SECP_384_R1 },
+    { "-secp521r1", ECC_CURVE::ECC_SECP_521_R1 },
+    { "-sect113r1", ECC_CURVE::ECC_SECT_113_R1 },
+    { "-sect113r2", ECC_CURVE::ECC_SECT_113_R2 },
+    { "-sect131r1", ECC_CURVE::ECC_SECT_131_R1 },
+    { "-sect131r2", ECC_CURVE::ECC_SECT_131_R2 },
+    { "-sect163k1", ECC_CURVE::ECC_SECT_163_K1 },
+    { "-sect163r1", ECC_CURVE::ECC_SECT_163_R1 },
+    { "-sect163r2", ECC_CURVE::ECC_SECT_163_R2 },
+    { "-sect193r1", ECC_CURVE::ECC_SECT_193_R1 },
+    { "-sect193r2", ECC_CURVE::ECC_SECT_193_R2 },
+    { "-sect233k1", ECC_CURVE::ECC_SECT_233_K1 },
+    { "-sect233r1", ECC_CURVE::ECC_SECT_233_R1 },
+    { "-sect239k1", ECC_CURVE::ECC_SECT_239_K1 },
+    { "-sect283k1", ECC_CURVE::ECC_SECT_283_K1 },
+    { "-sect283r1", ECC_CURVE::ECC_SECT_283_R1 },
+    { "-sect409k1", ECC_CURVE::ECC_SECT_409_K1 },
+    { "-sect409r1", ECC_CURVE::ECC_SECT_409_R1 },
+    { "-sect571k1", ECC_CURVE::ECC_SECT_571_K1 },
+    { "-sect571r1", ECC_CURVE::ECC_SECT_571_R1 },
+    { "-wtls1", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS1 },
+    { "-wtls3", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS3 },
+    { "-wtls4", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS4 },
+    { "-wtls5", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS5 },
+    { "-wtls6", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS6 },
+    { "-wtls7", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS7 },
+    { "-wtls8", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS8 },
+    { "-wtls9", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS9 },
+    { "-wtls10", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS10 },
+    { "-wtls11", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS11 },
+    { "-wtls12", ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS12 },
+    { "-ipsec3", ECC_CURVE::ECC_OAKLEY_EC2N_3 },
+    { "-ipsec4", ECC_CURVE::ECC_OAKLEY_EC2N_4 },
+    { "-brainpool160r1", ECC_CURVE::ECC_BRAINPOOL_P160_R1 },
+    { "-brainpool160t1", ECC_CURVE::ECC_BRAINPOOL_P160_T1 },
+    { "-brainpool192r1", ECC_CURVE::ECC_BRAINPOOL_P192_R1 },
+    { "-brainpool192t1", ECC_CURVE::ECC_BRAINPOOL_P192_T1 },
+    { "-brainpool224r1", ECC_CURVE::ECC_BRAINPOOL_P224_R1 },
+    { "-brainpool224t1", ECC_CURVE::ECC_BRAINPOOL_P224_T1 },
+    { "-brainpool256r1", ECC_CURVE::ECC_BRAINPOOL_P256_R1 },
+    { "-brainpool256t1", ECC_CURVE::ECC_BRAINPOOL_P256_T1 },
+    { "-brainpool320r1", ECC_CURVE::ECC_BRAINPOOL_P320_R1 },
+    { "-brainpool320t1", ECC_CURVE::ECC_BRAINPOOL_P320_T1 },
+    { "-brainpool384r1", ECC_CURVE::ECC_BRAINPOOL_P384_R1 },
+    { "-brainpool384t1", ECC_CURVE::ECC_BRAINPOOL_P384_T1 },
+    { "-brainpool512r1", ECC_CURVE::ECC_BRAINPOOL_P512_R1 },
+    { "-brainpool512t1", ECC_CURVE::ECC_BRAINPOOL_P512_T1 },
+    { "-sm2", ECC_CURVE::ECC_SM2 },
+};
+std::map<ECC_CURVE, std::string> EccCurveName = {
+    { ECC_CURVE::ECC_PRIME_192_V1, "prime192v1" },
+    { ECC_CURVE::ECC_PRIME_192_V2, "prime192v2" },
+    { ECC_CURVE::ECC_PRIME_192_V3, "prime192v3" },
+    { ECC_CURVE::ECC_PRIME_239_V1, "prime239v1" },
+    { ECC_CURVE::ECC_PRIME_239_V2, "prime239v2" },
+    { ECC_CURVE::ECC_PRIME_239_V3, "prime239v3" },
+    { ECC_CURVE::ECC_PRIME_256_V1, "prime256v1" },
+    { ECC_CURVE::ECC_C2PNB_163_V1, "c2pnb163v1" },
+    { ECC_CURVE::ECC_C2PNB_163_V2, "c2pnb163v2" },
+    { ECC_CURVE::ECC_C2PNB_163_V3, "c2pnb163v3" },
+    { ECC_CURVE::ECC_C2PNB_176_V1, "c2pnb176v1" },
+    { ECC_CURVE::ECC_C2TNB_191_V1, "c2tnb191v1" },
+    { ECC_CURVE::ECC_C2TNB_191_V2, "c2tnb191v2" },
+    { ECC_CURVE::ECC_C2TNB_191_V3, "c2tnb191v3" },
+    { ECC_CURVE::ECC_C2PNB_208_W1, "c2pnb208w1" },
+    { ECC_CURVE::ECC_C2TNB_239_V1, "c2tnb239v1" },
+    { ECC_CURVE::ECC_C2TNB_239_V2, "c2tnb239v2" },
+    { ECC_CURVE::ECC_C2TNB_239_V3, "c2tnb239v3" },
+    { ECC_CURVE::ECC_C2PNB_272_W1, "c2pnb272w1" },
+    { ECC_CURVE::ECC_C2PNB_304_W1, "c2pnb304w1" },
+    { ECC_CURVE::ECC_C2TNB_359_V1, "c2tnb359v1" },
+    { ECC_CURVE::ECC_C2PNB_368_W1, "c2pnb368w1" },
+    { ECC_CURVE::ECC_C2TNB_431_R1, "c2tnb431r1" },
+    { ECC_CURVE::ECC_SECP_112_R1, "secp112r1" },
+    { ECC_CURVE::ECC_SECP_112_R2, "secp112r2" },
+    { ECC_CURVE::ECC_SECP_128_R1, "secp128r1" },
+    { ECC_CURVE::ECC_SECP_128_R2, "secp128r2" },
+    { ECC_CURVE::ECC_SECP_160_K1, "secp160k1" },
+    { ECC_CURVE::ECC_SECP_160_R1, "secp160r1" },
+    { ECC_CURVE::ECC_SECP_160_R2, "secp160r2" },
+    { ECC_CURVE::ECC_SECP_192_K1, "secp192k1" },
+    { ECC_CURVE::ECC_SECP_224_K1, "secp224k1" },
+    { ECC_CURVE::ECC_SECP_224_R1, "secp224r1" },
+    { ECC_CURVE::ECC_SECP_256_K1, "secp256k1" },
+    { ECC_CURVE::ECC_SECP_384_R1, "secp384r1" },
+    { ECC_CURVE::ECC_SECP_521_R1, "secp521r1" },
+    { ECC_CURVE::ECC_SECT_113_R1, "sect113r1" },
+    { ECC_CURVE::ECC_SECT_113_R2, "sect113r2" },
+    { ECC_CURVE::ECC_SECT_131_R1, "sect131r1" },
+    { ECC_CURVE::ECC_SECT_131_R2, "sect131r2" },
+    { ECC_CURVE::ECC_SECT_163_K1, "sect163k1" },
+    { ECC_CURVE::ECC_SECT_163_R1, "sect163r1" },
+    { ECC_CURVE::ECC_SECT_163_R2, "sect163r2" },
+    { ECC_CURVE::ECC_SECT_193_R1, "sect193r1" },
+    { ECC_CURVE::ECC_SECT_193_R2, "sect193r2" },
+    { ECC_CURVE::ECC_SECT_233_K1, "sect233k1" },
+    { ECC_CURVE::ECC_SECT_233_R1, "sect233r1" },
+    { ECC_CURVE::ECC_SECT_239_K1, "sect239k1" },
+    { ECC_CURVE::ECC_SECT_283_K1, "sect283k1" },
+    { ECC_CURVE::ECC_SECT_283_R1, "sect283r1" },
+    { ECC_CURVE::ECC_SECT_409_K1, "sect409k1" },
+    { ECC_CURVE::ECC_SECT_409_R1, "sect409r1" },
+    { ECC_CURVE::ECC_SECT_571_K1, "sect571k1" },
+    { ECC_CURVE::ECC_SECT_571_R1, "sect571r1" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS1, "wap-wsg-idm-ecid-wtls1" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS3, "wap-wsg-idm-ecid-wtls3" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS4, "wap-wsg-idm-ecid-wtls4" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS5, "wap-wsg-idm-ecid-wtls5" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS6, "wap-wsg-idm-ecid-wtls6" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS7, "wap-wsg-idm-ecid-wtls7" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS8, "wap-wsg-idm-ecid-wtls8" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS9, "wap-wsg-idm-ecid-wtls9" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS10, "wap-wsg-idm-ecid-wtls10" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS11, "wap-wsg-idm-ecid-wtls11" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS12, "wap-wsg-idm-ecid-wtls12" },
+    { ECC_CURVE::ECC_OAKLEY_EC2N_3, "oakley-ec2n-3" },
+    { ECC_CURVE::ECC_OAKLEY_EC2N_4, "oakley-ec2n-4" },
+    { ECC_CURVE::ECC_BRAINPOOL_P160_R1, "brainpoolP160r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P160_T1, "brainpoolP160t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P192_R1, "brainpoolP192r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P192_T1, "brainpoolP192t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P224_R1, "brainpoolP224r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P224_T1, "brainpoolP224t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P256_R1, "brainpoolP256r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P256_T1, "brainpoolP256t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P320_R1, "brainpoolP320r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P320_T1, "brainpoolP320t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P384_R1, "brainpoolP384r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P384_T1, "brainpoolP384t1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P512_R1, "brainpoolP512r1" },
+    { ECC_CURVE::ECC_BRAINPOOL_P512_T1, "brainpoolP512t1" },
+    { ECC_CURVE::ECC_SM2, "sm2" },
+};
+std::map<ECC_CURVE, std::string> EccCurveDisplay = {
+    { ECC_CURVE::ECC_PRIME_192_V1, "-prime192v1 : NIST/X9.62/SECG curve over a 192 bit prime field. (NID:409)" },
+    { ECC_CURVE::ECC_PRIME_192_V2, "-prime192v2 : X9.62 curve over a 192 bit prime field. (NID:410)" },
+    { ECC_CURVE::ECC_PRIME_192_V3, "-prime192v3 : X9.62 curve over a 192 bit prime field. (NID:411)" },
+    { ECC_CURVE::ECC_PRIME_239_V1, "-prime239v1 : X9.62 curve over a 239 bit prime field. (NID:412)" },
+    { ECC_CURVE::ECC_PRIME_239_V2, "-prime239v2 : X9.62 curve over a 239 bit prime field. (NID:413)" },
+    { ECC_CURVE::ECC_PRIME_239_V3, "-prime239v3 : X9.62 curve over a 239 bit prime field. (NID:414)" },
+    { ECC_CURVE::ECC_PRIME_256_V1, "-prime256v1 : X9.62/SECG curve over a 256 bit prime field. (NID:415)" },
+    { ECC_CURVE::ECC_C2PNB_163_V1, "-c2pnb163v1 : X9.62 curve over a 163 bit binary field. (NID:684)" },
+    { ECC_CURVE::ECC_C2PNB_163_V2, "-c2pnb163v2 : X9.62 curve over a 163 bit binary field. (NID:685)" },
+    { ECC_CURVE::ECC_C2PNB_163_V3, "-c2pnb163v3 : X9.62 curve over a 163 bit binary field. (NID:686)" },
+    { ECC_CURVE::ECC_C2PNB_176_V1, "-c2pnb176v1 : X9.62 curve over a 176 bit binary field. (NID:687)" },
+    { ECC_CURVE::ECC_C2TNB_191_V1, "-c2tnb191v1 : X9.62 curve over a 191 bit binary field. (NID:688)" },
+    { ECC_CURVE::ECC_C2TNB_191_V2, "-c2tnb191v2 : X9.62 curve over a 191 bit binary field. (NID:689)" },
+    { ECC_CURVE::ECC_C2TNB_191_V3, "-c2tnb191v3 : X9.62 curve over a 191 bit binary field. (NID:690)" },
+    { ECC_CURVE::ECC_C2PNB_208_W1, "-c2pnb208w1 : X9.62 curve over a 208 bit binary field. (NID:693)" },
+    { ECC_CURVE::ECC_C2TNB_239_V1, "-c2tnb239v1 : X9.62 curve over a 239 bit binary field. (NID:694)" },
+    { ECC_CURVE::ECC_C2TNB_239_V2, "-c2tnb239v2 : X9.62 curve over a 239 bit binary field. (NID:695)" },
+    { ECC_CURVE::ECC_C2TNB_239_V3, "-c2tnb239v3 : X9.62 curve over a 239 bit binary field. (NID:696)" },
+    { ECC_CURVE::ECC_C2PNB_272_W1, "-c2pnb272w1 : X9.62 curve over a 272 bit binary field. (NID:699)" },
+    { ECC_CURVE::ECC_C2PNB_304_W1, "-c2pnb304w1 : X9.62 curve over a 304 bit binary field. (NID:700)" },
+    { ECC_CURVE::ECC_C2TNB_359_V1, "-c2tnb359v1 : X9.62 curve over a 359 bit binary field. (NID:701)" },
+    { ECC_CURVE::ECC_C2PNB_368_W1, "-c2pnb368w1 : X9.62 curve over a 368 bit binary field. (NID:702)" },
+    { ECC_CURVE::ECC_C2TNB_431_R1, "-c2tnb431r1 : X9.62 curve over a 431 bit binary field. (NID:703)" },
+    { ECC_CURVE::ECC_SECP_112_R1, "-secp112r1 : SECG/WTLS curve over a 112 bit prime field. (NID:704)" },
+    { ECC_CURVE::ECC_SECP_112_R2, "-secp112r2 : SECG curve over a 112 bit prime field. (NID:705)" },
+    { ECC_CURVE::ECC_SECP_128_R1, "-secp128r1 : SECG curve over a 128 bit prime field. (NID:706)" },
+    { ECC_CURVE::ECC_SECP_128_R2, "-secp128r2 : SECG curve over a 128 bit prime field. (NID:707)" },
+    { ECC_CURVE::ECC_SECP_160_K1, "-secp160k1 : SECG curve over a 160 bit prime field. (NID:708)" },
+    { ECC_CURVE::ECC_SECP_160_R1, "-secp160r1 : SECG curve over a 160 bit prime field. (NID:709)" },
+    { ECC_CURVE::ECC_SECP_160_R2, "-secp160r2 : SECG/WTLS curve over a 160 bit prime field. (NID:710)" },
+    { ECC_CURVE::ECC_SECP_192_K1, "-secp192k1 : SECG curve over a 192 bit prime field. (NID:711)" },
+    { ECC_CURVE::ECC_SECP_224_K1, "-secp224k1 : SECG curve over a 224 bit prime field. (NID:712)" },
+    { ECC_CURVE::ECC_SECP_224_R1, "-secp224r1 : NIST/SECG curve over a 224 bit prime field. (NID:713)" },
+    { ECC_CURVE::ECC_SECP_256_K1, "-secp256k1 : SECG curve over a 256 bit prime field. (NID:714)" },
+    { ECC_CURVE::ECC_SECP_384_R1, "-secp384r1 : NIST/SECG curve over a 384 bit prime field. (NID:715)" },
+    { ECC_CURVE::ECC_SECP_521_R1, "-secp521r1 : NIST/SECG curve over a 521 bit prime field. (NID:716)" },
+    { ECC_CURVE::ECC_SECT_113_R1, "-sect113r1 : SECG curve over a 113 bit binary field. (NID:717)" },
+    { ECC_CURVE::ECC_SECT_113_R2, "-sect113r2 : SECG curve over a 113 bit binary field. (NID:718)" },
+    { ECC_CURVE::ECC_SECT_131_R1, "-sect131r1 : SECG/WTLS curve over a 131 bit binary field. (NID:719)" },
+    { ECC_CURVE::ECC_SECT_131_R2, "-sect131r2 : SECG curve over a 131 bit binary field. (NID:720)" },
+    { ECC_CURVE::ECC_SECT_163_K1, "-sect163k1 : NIST/SECG/WTLS curve over a 163 bit binary field. (NID:721)" },
+    { ECC_CURVE::ECC_SECT_163_R1, "-sect163r1 : SECG curve over a 163 bit binary field. (NID:722)" },
+    { ECC_CURVE::ECC_SECT_163_R2, "-sect163r2 : NIST/SECG curve over a 163 bit binary field. (NID:723)" },
+    { ECC_CURVE::ECC_SECT_193_R1, "-sect193r1 : SECG curve over a 193 bit binary field. (NID:724)" },
+    { ECC_CURVE::ECC_SECT_193_R2, "-sect193r2 : SECG curve over a 193 bit binary field. (NID:725)" },
+    { ECC_CURVE::ECC_SECT_233_K1, "-sect233k1 : NIST/SECG/WTLS curve over a 233 bit binary field. (NID:726)" },
+    { ECC_CURVE::ECC_SECT_233_R1, "-sect233r1 : NIST/SECG/WTLS curve over a 233 bit binary field. (NID:727)" },
+    { ECC_CURVE::ECC_SECT_239_K1, "-sect239k1 : SECG curve over a 239 bit binary field. (NID:728)" },
+    { ECC_CURVE::ECC_SECT_283_K1, "-sect283k1 : NIST/SECG curve over a 283 bit binary field. (NID:729)" },
+    { ECC_CURVE::ECC_SECT_283_R1, "-sect283r1 : NIST/SECG curve over a 283 bit binary field. (NID:730)" },
+    { ECC_CURVE::ECC_SECT_409_K1, "-sect409k1 : NIST/SECG curve over a 409 bit binary field. (NID:731)" },
+    { ECC_CURVE::ECC_SECT_409_R1, "-sect409r1 : NIST/SECG curve over a 409 bit binary field. (NID:732)" },
+    { ECC_CURVE::ECC_SECT_571_K1, "-sect571k1 : NIST/SECG curve over a 571 bit binary field. (NID:733)" },
+    { ECC_CURVE::ECC_SECT_571_R1, "-sect571r1 : NIST/SECG curve over a 571 bit binary field. (NID:734)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS1, "-wtls1 : WTLS curve over a 113 bit binary field. (NID:735)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS3, "-wtls3 : NIST/SECG/WTLS curve over a 163 bit binary field. (NID:736)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS4, "-wtls4 : SECG curve over a 113 bit binary field. (NID:737)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS5, "-wtls5 : X9.62 curve over a 163 bit binary field. (NID:738)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS6, "-wtls6 : SECG/WTLS curve over a 112 bit prime field. (NID:739)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS7, "-wtls7 : SECG/WTLS curve over a 160 bit prime field. (NID:740)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS8, "-wtls8 : WTLS curve over a 112 bit prime field. (NID:741)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS9, "-wtls9 : WTLS curve over a 160 bit prime field. (NID:742)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS10, "-wtls10 : NIST/SECG/WTLS curve over a 233 bit binary field. (NID:743)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS11, "-wtls11 : NIST/SECG/WTLS curve over a 233 bit binary field. (NID:744)" },
+    { ECC_CURVE::ECC_WAP_WSG_IDM_ECID_WTLS12, "-wtls12 : WTLS curve over a 224 bit prime field. (NID:745)" },
+    { ECC_CURVE::ECC_OAKLEY_EC2N_3, "-ipsec3 : IPSec/IKE/Oakley curve #3 over a 155 bit binary field. (NID:749)\n\tNot suitable for ECDSA.\n\tQuestionable extension field!" },
+    { ECC_CURVE::ECC_OAKLEY_EC2N_4, "-ipsec4 : IPSec/IKE/Oakley curve #4 over a 185 bit binary field. (NID:750)\n\tNot suitable for ECDSA.\n\tQuestionable extension field!" },
+    { ECC_CURVE::ECC_BRAINPOOL_P160_R1, "-brainpool160r1 : RFC 5639 curve over a 160 bit prime field. (NID:921)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P160_T1, "-brainpool160t1 : RFC 5639 curve over a 160 bit prime field. (NID:922)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P192_R1, "-brainpool192r1 : RFC 5639 curve over a 192 bit prime field. (NID:923)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P192_T1, "-brainpool192t1 : RFC 5639 curve over a 192 bit prime field. (NID:924)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P224_R1, "-brainpool224r1 : RFC 5639 curve over a 224 bit prime field. (NID:925)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P224_T1, "-brainpool224t1 : RFC 5639 curve over a 224 bit prime field. (NID:926)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P256_R1, "-brainpool256r1 : RFC 5639 curve over a 256 bit prime field. (NID:927)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P256_T1, "-brainpool256t1 : RFC 5639 curve over a 256 bit prime field. (NID:928)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P320_R1, "-brainpool320r1 : RFC 5639 curve over a 320 bit prime field. (NID:929)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P320_T1, "-brainpool320t1 : RFC 5639 curve over a 320 bit prime field. (NID:930)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P384_R1, "-brainpool384r1 : RFC 5639 curve over a 384 bit prime field. (NID:931)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P384_T1, "-brainpool384t1 : RFC 5639 curve over a 384 bit prime field. (NID:932)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P512_R1, "-brainpool512r1 : RFC 5639 curve over a 512 bit prime field. (NID:933)" },
+    { ECC_CURVE::ECC_BRAINPOOL_P512_T1, "-brainpool512t1 : RFC 5639 curve over a 512 bit prime field. (NID:934)" },
+    { ECC_CURVE::ECC_SM2, "-sm2 : SM2 curve over a 256 bit prime field. (NID:1172)" },
+};
 
 void PutBaseOptions(char* argv[], std::unordered_map<std::string, std::string> abbreviationValidBytesOptions, std::string& filePath, CRYPT_OPTIONS& option) {
     std::string byte_option = ToLower(argv[2]);
@@ -176,7 +430,7 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         "--map",
         "--indexes", "--read-all", "--read", "--write", "--append", "--insert", "--remove", "--remove-index", "--read-index",
         "--base10", "--base16", "--base32", "--base58", "--base62", "--base64", "--base85", "--base91",
-        "--generate", "--convert", "--aes", "--des", "--hash", "--dsa", "--rsa"
+        "--generate", "--convert", "--aes", "--des", "--hash", "--dsa", "--rsa", "--ecc"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidMode = {
@@ -184,15 +438,15 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
         {"-m", "--map"},
         {"-id", "--indexes"}, {"-rl", "--read-all"}, {"-r", "--read"}, {"-w", "--write"}, {"-a", "--append"}, {"-i", "--insert"}, {"-rm", "--remove"}, {"-rs", "--remove-index"}, {"-ri", "--read-index"},
         {"-b10", "--base10"}, {"-b16", "--base16"}, {"-b32", "--base32"}, {"-b58", "--base58"}, {"-b62", "--base62"}, {"-b64", "--base64"}, {"-b85", "--base85"}, {"-b91", "--base91"},
-        {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-dsa", "--dsa"}, {"-rsa", "--rsa"}
+        {"-gen", "--generate"}, {"-conv", "--convert"}, {"-aes", "--aes"}, {"-des", "--des"}, {"-hash", "--hash"}, {"-dsa", "--dsa"}, {"-rsa", "--rsa"}, {"-ecc", "--ecc"}
     };
 
     std::unordered_set<std::string> validHelper = {
-        "-binary", "-base", "-aes", "-des", "-hash", "-dsa", "-rsa"
+        "-binary", "-base", "-aes", "-des", "-hash", "-dsa", "-rsa", "-ecc"
     };
 
     std::unordered_map<std::string, std::string> abbreviationValidHelper = {
-        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-h", "-hash"}, {"-ds", "-dsa"}, {"-r", "-rsa"}
+        {"-bin", "-binary"}, {"-b", "-base"}, {"-a", "-aes"}, {"-d", "-des"}, {"-h", "-hash"}, {"-ds", "-dsa"}, {"-r", "-rsa"}, {"-e", "-ecc"}
     };
 
     std::unordered_set<std::string> validBytesOptions = {
@@ -261,6 +515,8 @@ bool ParseArguments(int argc, char* argv[], std::string& mode, std::string& file
                 usage_libary::ShowDsaUsage();
             if (helper == "-rsa")
                 usage_libary::ShowRsaUsage();
+            if (helper == "-ecc")
+                usage_libary::ShowEccUsage();
             exit(0);
         }
         else {
@@ -714,6 +970,13 @@ void LoadFunctions() {
     RsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "RsaSigned");
     RsaFunctions["-verify"] = GET_PROC_ADDRESS(Lib, "RsaVerify");
 
+    EccFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "EccGetParametersLength");
+    EccFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "EccGetKeyLength");
+    EccFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "EccGenerateParameters");
+    EccFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "EccGenerateKeys");
+    EccFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "EccExportParameters");
+    EccFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "EccExportKeys");
+
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");
 }
@@ -991,6 +1254,11 @@ int main(int argc, char* argv[]) {
         Rsa rsa;
         rsa_execute::ParseParameters(argc, argv, rsa);
         rsa_execute::RsaStart(rsa);
+    }
+    else if (mode == "--ecc") {
+        Ecc ecc;
+        ecc_execute::ParseParameters(argc, argv, ecc);
+        ecc_execute::EccStart(ecc);
     }
     else if (mode == "--generate" || mode == "--convert") {
         Rand rand;

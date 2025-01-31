@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <functional>
 #include <cstdlib>
+#include <map>
 
 enum BINARYIO_TYPE : unsigned char {
     TYPE_BOOLEAN = 1,
@@ -141,6 +142,14 @@ enum RSA_MODE : unsigned long long {
     RSA_VERIFICATION = 10,
 };
 
+enum ECC_MODE : unsigned long long {
+    ECC_LIST_CURVE = 0,
+    ECC_GENERATE_PARAMS = 1,
+    ECC_GENERATE_KEYS = 2,
+    ECC_EXPORT_PARAMS = 3,
+    ECC_EXPORT_KEYS = 4,
+};
+
 enum SYMMETRY_CRYPTER {
     SYMMETRY_NULL = 0,
     SYMMETRY_AES_CTR = 1,
@@ -178,6 +187,91 @@ enum SALT_SEQUENCE {
 enum ASYMMETRIC_KEY_FORMAT {
     ASYMMETRIC_KEY_PEM = 0,
     ASYMMETRIC_KEY_DER = 1,
+};
+
+enum ECC_CURVE : int {
+    ECC_PRIME_192_V1 = 409,
+    ECC_PRIME_192_V2 = 410,
+    ECC_PRIME_192_V3 = 411,
+    ECC_PRIME_239_V1 = 412,
+    ECC_PRIME_239_V2 = 413,
+    ECC_PRIME_239_V3 = 414,
+    ECC_PRIME_256_V1 = 415,
+    ECC_C2PNB_163_V1 = 684,
+    ECC_C2PNB_163_V2 = 685,
+    ECC_C2PNB_163_V3 = 686,
+    ECC_C2PNB_176_V1 = 687,
+    ECC_C2TNB_191_V1 = 688,
+    ECC_C2TNB_191_V2 = 689,
+    ECC_C2TNB_191_V3 = 690,
+    ECC_C2PNB_208_W1 = 693,
+    ECC_C2TNB_239_V1 = 694,
+    ECC_C2TNB_239_V2 = 695,
+    ECC_C2TNB_239_V3 = 696,
+    ECC_C2PNB_272_W1 = 699,
+    ECC_C2PNB_304_W1 = 700,
+    ECC_C2TNB_359_V1 = 701,
+    ECC_C2PNB_368_W1 = 702,
+    ECC_C2TNB_431_R1 = 703,
+    ECC_SECP_112_R1 = 704,
+    ECC_SECP_112_R2 = 705,
+    ECC_SECP_128_R1 = 706,
+    ECC_SECP_128_R2 = 707,
+    ECC_SECP_160_K1 = 708,
+    ECC_SECP_160_R1 = 709,
+    ECC_SECP_160_R2 = 710,
+    ECC_SECP_192_K1 = 711,
+    ECC_SECP_224_K1 = 712,
+    ECC_SECP_224_R1 = 713,
+    ECC_SECP_256_K1 = 714,
+    ECC_SECP_384_R1 = 715,
+    ECC_SECP_521_R1 = 716,
+    ECC_SECT_113_R1 = 717,
+    ECC_SECT_113_R2 = 718,
+    ECC_SECT_131_R1 = 719,
+    ECC_SECT_131_R2 = 720,
+    ECC_SECT_163_K1 = 721,
+    ECC_SECT_163_R1 = 722,
+    ECC_SECT_163_R2 = 723,
+    ECC_SECT_193_R1 = 724,
+    ECC_SECT_193_R2 = 725,
+    ECC_SECT_233_K1 = 726,
+    ECC_SECT_233_R1 = 727,
+    ECC_SECT_239_K1 = 728,
+    ECC_SECT_283_K1 = 729,
+    ECC_SECT_283_R1 = 730,
+    ECC_SECT_409_K1 = 731,
+    ECC_SECT_409_R1 = 732,
+    ECC_SECT_571_K1 = 733,
+    ECC_SECT_571_R1 = 734,
+    ECC_WAP_WSG_IDM_ECID_WTLS1 = 735,
+    ECC_WAP_WSG_IDM_ECID_WTLS3 = 736,
+    ECC_WAP_WSG_IDM_ECID_WTLS4 = 737,
+    ECC_WAP_WSG_IDM_ECID_WTLS5 = 738,
+    ECC_WAP_WSG_IDM_ECID_WTLS6 = 739,
+    ECC_WAP_WSG_IDM_ECID_WTLS7 = 740,
+    ECC_WAP_WSG_IDM_ECID_WTLS8 = 741,
+    ECC_WAP_WSG_IDM_ECID_WTLS9 = 742,
+    ECC_WAP_WSG_IDM_ECID_WTLS10 = 743,
+    ECC_WAP_WSG_IDM_ECID_WTLS11 = 744,
+    ECC_WAP_WSG_IDM_ECID_WTLS12 = 745,
+    ECC_OAKLEY_EC2N_3 = 749,
+    ECC_OAKLEY_EC2N_4 = 750,
+    ECC_BRAINPOOL_P160_R1 = 921,
+    ECC_BRAINPOOL_P160_T1 = 922,
+    ECC_BRAINPOOL_P192_R1 = 923,
+    ECC_BRAINPOOL_P192_T1 = 924,
+    ECC_BRAINPOOL_P224_R1 = 925,
+    ECC_BRAINPOOL_P224_T1 = 926,
+    ECC_BRAINPOOL_P256_R1 = 927,
+    ECC_BRAINPOOL_P256_T1 = 928,
+    ECC_BRAINPOOL_P320_R1 = 929,
+    ECC_BRAINPOOL_P320_T1 = 930,
+    ECC_BRAINPOOL_P384_R1 = 931,
+    ECC_BRAINPOOL_P384_T1 = 932,
+    ECC_BRAINPOOL_P512_R1 = 933,
+    ECC_BRAINPOOL_P512_T1 = 934,
+    ECC_SM2 = 1172,
 };
 
 struct Command {
@@ -327,6 +421,36 @@ struct Rsa {
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS data_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS signature_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
+
+    ASYMMETRIC_KEY_FORMAT KeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    ASYMMETRIC_KEY_FORMAT ExtractKeyFormat = ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM;
+    SYMMETRY_CRYPTER Algorithm = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
+    int AlgorithmSize = 256;
+    SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
+    HASH_TYPE Hash = HASH_TYPE::HASH_SHA2_256;
+};
+
+struct Ecc {
+    ECC_MODE Mode;
+    std::string X;
+    std::string Y;
+    std::string EXP;
+    std::string Params;
+    std::string PublicKey;
+    std::string PrivateKey;
+    std::string Password;
+    std::string Data;
+    std::string Signature;
+    std::string Output;
+    ECC_CURVE Curve = ECC_CURVE::ECC_PRIME_256_V1;
+
+    CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS data_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS signature_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
@@ -940,6 +1064,47 @@ struct RSA_VERIFY {
     bool IS_VALID;
 };
 
+struct ECC_PARAMETERS {
+    ECC_CURVE CURVE_NID;
+    unsigned char* X;
+    unsigned char* Y;
+    unsigned char* EXP;
+    size_t X_LENGTH;
+    size_t Y_LENGTH;
+    size_t EXP_LENGTH;
+};
+
+struct ECC_KEY_PAIR {
+    ECC_CURVE CURVE_NID;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct ECC_EXPORT {
+    ECC_CURVE CURVE_NID;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* X;
+    unsigned char* Y;
+    unsigned char* EXP;
+    size_t X_LENGTH;
+    size_t Y_LENGTH;
+    size_t EXP_LENGTH;
+    unsigned char* PUBLIC_KEY;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -1141,6 +1306,16 @@ typedef int (*RsaSigned)(RSA_SIGNED*);
 typedef int (*RsaVerify)(RSA_VERIFY*);
 #pragma endregion
 
+#pragma region EccIO
+typedef int (*EccGetParametersLength)(ECC_PARAMETERS*);
+typedef int (*EccGetKeyLength)(ECC_KEY_PAIR*);
+typedef int (*EccGenerateParameters)(ECC_PARAMETERS*);
+typedef int (*EccGenerateKeys)(ECC_KEY_PAIR*);
+typedef int (*EccExportParameters)(ECC_EXPORT*);
+typedef int (*EccExportKeys)(ECC_EXPORT*);
+#pragma endregion
+
+
 extern std::unordered_map<std::string, void*> ReadFunctions;
 extern std::unordered_map<std::string, void*> WriteFunctions;
 extern std::unordered_map<std::string, void*> AppendFunctions;
@@ -1152,6 +1327,7 @@ extern std::unordered_map<std::string, void*> DesFunctions;
 extern std::unordered_map<std::string, void*> HashFunctions;
 extern std::unordered_map<std::string, void*> DsaFunctions;
 extern std::unordered_map<std::string, void*> RsaFunctions;
+extern std::unordered_map<std::string, void*> EccFunctions;
 
 extern std::unordered_map<CRYPT_TYPE, std::string> CryptDisplay;
 extern std::unordered_map<std::string, AES_MODE> AesMode;
@@ -1160,3 +1336,6 @@ extern std::unordered_map<std::string, DES_MODE> DesMode;
 extern std::unordered_map<DES_MODE, std::string> DesDisplay;
 extern std::unordered_map<std::string, HASH_TYPE> HashMode;
 extern std::unordered_map<HASH_TYPE, std::string> HashDisplay;
+extern std::unordered_map<std::string, ECC_CURVE> EccCurve;
+extern std::map<ECC_CURVE, std::string> EccCurveName;
+extern std::map<ECC_CURVE, std::string> EccCurveDisplay;

@@ -484,3 +484,7 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Calculation.") << std::endl;
 
 }
+
+void usage_libary::ShowEccUsage() {
+
+}

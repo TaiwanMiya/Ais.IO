@@ -64,7 +64,7 @@ $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(
 			$(AISO_DIR)/SymmetryIO.cpp $(AISO_DIR)/AsymmetricIO.cpp \
 			$(AISO_DIR)/AesIO.cpp $(AISO_DIR)/DesIO.cpp \
 			$(AISO_DIR)/HashIO.cpp \
-			$(AISO_DIR)/RsaIO.cpp $(AISO_DIR)/DsaIO.cpp
+			$(AISO_DIR)/DsaIO.cpp $(AISO_DIR)/RsaIO.cpp $(AISO_DIR)/EccIO.cpp
 	@echo "Compiling shared library file Ais.IO.so..."
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -I$(AISO_DIR)/include -o $@ $(LIBS)
@@ -75,7 +75,7 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 			$(AISO_CMD_DIR)/asymmetric_libary.cpp \
 			$(AISO_CMD_DIR)/aes_execute.cpp $(AISO_CMD_DIR)/des_execute.cpp \
 			$(AISO_CMD_DIR)/hash_execute.cpp \
-			$(AISO_CMD_DIR)/rsa_execute.cpp $(AISO_CMD_DIR)/dsa_execute.cpp \
+			$(AISO_CMD_DIR)/dsa_execute.cpp $(AISO_CMD_DIR)/rsa_execute.cpp $(AISO_CMD_DIR)/ecc_execute.cpp \
 			$(AISO_CMD_DIR)/cryptography_libary.cpp
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl

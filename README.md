@@ -821,7 +821,7 @@ DSA_G="2440B7E035C8CA465690A389AB6EE9E44507402EC0C5B5C9DA165E35820E8D8BF8565634E
 ./aisio -dsa -check -param -der -file "$DER_ROOT_FILE"-param.der
 
 # DSA Signed (PEM)
-RESULT=$(./aisio -dsa -signed -priv -pem "$DSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<DSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -dsa -signed -priv -pem "$DSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # DSA Verify (PEM)
@@ -834,7 +834,7 @@ echo "$RESULT"
 ./aisio -dsa -verify -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -hash -sha3-512 -data "This is Signed/Verify Data by DSA PEM 2048 Key." -signature -file "$SIGNATURE_FILE"
 
 # DSA Signed (DER)
-RESULT=$(./aisio -dsa -signed -priv -der "$BASE" "$DSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<DSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -dsa -signed -priv -der "$BASE" "$DSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by DSA DER 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # DSA Verify (DER)
@@ -1041,7 +1041,7 @@ RSA_QI="539ABF6CFEF34FC1CD48176B679CD6960608B9177BA9C3256FB2E8395B7D96C57C11ED6B
 ./aisio -rsa -check -priv -der -file "$DER_ROOT_FILE"-priv.der
 
 # RSA Encryption (PEM)
-RESULT=$(./aisio -rsa -encrypt -pub -pem "$RSA_PEM_PUB" -plain-text "This is Encryption/Decryption by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -encrypt -pub -pem "$RSA_PEM_PUB" -plain-text "This is Encryption/Decryption by RSA PEM 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # RSA Decryption (PEM)
@@ -1054,7 +1054,7 @@ echo "$RESULT"
 ./aisio -rsa -decrypt -priv -pem -file "$PEM_ROOT_FILE"-priv.pem -cipher-text -file "$RESULT_FILE"
 
 # RSA Encryption (DER)
-RESULT=$(./aisio -rsa -encrypt -pub -der "$BASE" "$RSA_DER_PUB" -plain-text "This is Encryption/Decryption by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Encrypt>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -encrypt -pub -der "$BASE" "$RSA_DER_PUB" -plain-text "This is Encryption/Decryption by RSA DER 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # RSA Decryption (DER)
@@ -1067,7 +1067,7 @@ echo "$RESULT"
 ./aisio -rsa -decrypt -priv -der -file "$DER_ROOT_FILE"-priv.der -cipher-text -file "$RESULT_FILE"
 
 # RSA Signed (PEM)
-RESULT=$(./aisio -rsa -signed -priv -pem "$RSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -signed -priv -pem "$RSA_PEM_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # RSA Verify (PEM)
@@ -1080,7 +1080,7 @@ echo "$RESULT"
 ./aisio -rsa -verify -pub -pem -file "$PEM_ROOT_FILE"-pub.pem -hash -sha3-512 -data "This is Signed/Verify Data by RSA PEM 2048 Key." -signature -file "$SIGNATURE_FILE"
 
 # RSA Signed (DER)
-RESULT=$(./aisio -rsa -signed -priv -der "$BASE" "$RSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -out "$BASE" | grep -Pzo '(?<=<RSA Signed>\n)(.*?)(?=\nData Length:)\n' | tr -d '\0')
+RESULT=$(./aisio -rsa -signed -priv -der "$BASE" "$RSA_DER_PRIV" -hash -sha3-512 -data "This is Signed/Verify Data by RSA DER 2048 Key." -out "$BASE" -raw)
 echo "$RESULT"
 
 # RSA Verify (DER)

@@ -8,6 +8,9 @@
 #define MyAppURL "https://github.com/TaiwanMiya/Ais.IO"
 #define MyAppExeName "aisio.exe"
 #define MyAppDll "Ais.IO.dll"
+#define MyAppLib "Ais.IO.lib"
+#define MyLibssl "libssl-3-x64.dll"
+#define MyLibcrypto "libcrypto-3-x64.dll"
 #define AppImage "C:\Users\User\Documents\Ais.IO\Installer\AisIO.bmp"
 
 [Setup]
@@ -86,6 +89,9 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 [Files]
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppDll}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppLib}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibssl}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibcrypto}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

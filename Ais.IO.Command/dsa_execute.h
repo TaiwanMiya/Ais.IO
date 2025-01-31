@@ -22,4 +22,3 @@ private:
 	static void Signed(Dsa& dsa);
 	static void Verify(Dsa& dsa);
 };
-
