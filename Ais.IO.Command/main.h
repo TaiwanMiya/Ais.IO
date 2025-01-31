@@ -148,6 +148,9 @@ enum ECC_MODE : unsigned long long {
     ECC_GENERATE_KEYS = 2,
     ECC_EXPORT_PARAMS = 3,
     ECC_EXPORT_KEYS = 4,
+    ECC_EXTRACT_PUBLIC = 5,
+    ECC_CHECK_PUBLIC = 6,
+    ECC_CHECK_PRIVATE = 7,
 };
 
 enum SYMMETRY_CRYPTER {
@@ -1105,6 +1108,35 @@ struct ECC_EXPORT {
     size_t PEM_PASSWORD_LENGTH;
 };
 
+struct ECC_EXTRACT_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;
+    unsigned char* PUBLIC_KEY;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
+struct ECC_CHECK_PUBLIC_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    size_t PUBLIC_KEY_LENGTH;
+    bool IS_KEY_OK;
+    ECC_CURVE CURVE_NID;
+};
+
+struct ECC_CHECK_PRIVATE_KEY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    const unsigned char* PEM_PASSWORD;
+    size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    ECC_CURVE CURVE_NID;
+};
+
 // Define function pointer types for all APIs
 #pragma region BinaryIO
 typedef uint64_t(*NextLength)(void*);
@@ -1313,6 +1345,9 @@ typedef int (*EccGenerateParameters)(ECC_PARAMETERS*);
 typedef int (*EccGenerateKeys)(ECC_KEY_PAIR*);
 typedef int (*EccExportParameters)(ECC_EXPORT*);
 typedef int (*EccExportKeys)(ECC_EXPORT*);
+typedef int (*EccExtractPublicKey)(ECC_EXTRACT_PUBLIC_KEY*);
+typedef int (*EccCheckPublicKey)(ECC_CHECK_PUBLIC_KEY*);
+typedef int (*EccCheckPrivateKey)(ECC_CHECK_PRIVATE_KEY*);
 #pragma endregion
 
 

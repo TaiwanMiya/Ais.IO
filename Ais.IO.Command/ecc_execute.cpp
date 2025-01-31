@@ -87,6 +87,35 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 				continue;
 			}
 			break;
+		case ecc_execute::hash("-ext"):
+		case ecc_execute::hash("-extract"):
+			ecc.Mode = ECC_MODE::ECC_EXTRACT_PUBLIC;
+			break;
+		case ecc_execute::hash("-chk"):
+		case ecc_execute::hash("-check"):
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
+			case ecc_execute::hash("-pub"):
+			case ecc_execute::hash("-public"):
+			case ecc_execute::hash("-public-key"):
+				ecc.Mode = ECC_MODE::ECC_CHECK_PUBLIC;
+				i++;
+				ecc.publickey_option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+				ecc.PublicKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
+				break;
+			case ecc_execute::hash("-priv"):
+			case ecc_execute::hash("-private"):
+			case ecc_execute::hash("-private-key"):
+				ecc.Mode = ECC_MODE::ECC_CHECK_PRIVATE;
+				i++;
+				ecc.privatekey_option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+				ecc.PrivateKey = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
+				break;
+			}
+			break;
 		case ecc_execute::hash("-pub"):
 		case ecc_execute::hash("-public"):
 		case ecc_execute::hash("-public-key"):
@@ -230,6 +259,15 @@ void ecc_execute::EccStart(Ecc& ecc) {
 		break;
 	case ECC_MODE::ECC_EXPORT_KEYS:
 		ExportKeys(ecc);
+		break;
+	case ECC_MODE::ECC_EXTRACT_PUBLIC:
+		ExtractPublicKey(ecc);
+		break;
+	case ECC_MODE::ECC_CHECK_PUBLIC:
+		CheckPublicKey(ecc);
+		break;
+	case ECC_MODE::ECC_CHECK_PRIVATE:
+		CheckPrivateKey(ecc);
 		break;
 	}
 }
@@ -551,4 +589,101 @@ void ecc_execute::ExportKeys(Ecc& ecc) {
 		std::cout << Ask(publicKey_str) << std::endl;
 		std::cout << Ask(privateKey_str) << std::endl;
 	}
+}
+
+void ecc_execute::ExtractPublicKey(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(ecc.privatekey_option, ecc.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, pemPass);
+	pemPass.push_back('\0');
+
+	ECC_CHECK_PRIVATE_KEY priv = {
+		ecc.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	int result_code = ((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
+
+	publicKey.resize(result_code < 0 ? 0 : 1024);
+
+	ECC_EXTRACT_PUBLIC_KEY pub = {
+		ecc.ExtractKeyFormat,
+		ecc.KeyFormat,
+		publicKey.data(),
+		privateKey.data(),
+		pemPass.data(),
+		publicKey.size(),
+		privateKey.size(),
+		pemPass.size()
+	};
+	result_code = ((EccExtractPublicKey)EccFunctions.at("-key-extract"))(&pub);
+
+	publicKey.resize(result_code < 0 ? 0 : pub.PUBLIC_KEY_LENGTH);
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Extract Public Key>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+		std::string publicKey_str = ecc.PublicKey;
+		cryptography_libary::ValueEncode(ecc.publickey_option, publicKey, publicKey_str);
+		std::cout << Mark("Public Key [") << Ask(std::to_string(pub.PUBLIC_KEY_LENGTH)) << Mark("]:\n") << Ask(publicKey_str) << std::endl;
+	}
+	else {
+		std::string publicKey_str = ecc.PublicKey;
+		cryptography_libary::ValueEncode(ecc.publickey_option, publicKey, publicKey_str);
+		std::cout << Ask(publicKey_str) << std::endl;
+	}
+}
+
+void ecc_execute::CheckPublicKey(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	cryptography_libary::ValueDecode(ecc.publickey_option, ecc.PublicKey, publicKey);
+	ECC_CHECK_PUBLIC_KEY pub = {
+		ecc.KeyFormat,
+		publicKey.data(),
+		publicKey.size()
+	};
+	((EccCheckPublicKey)EccFunctions.at("-pub-check"))(&pub);
+	ecc.Curve = pub.CURVE_NID;
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Public Key Check>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+	}
+	else
+		std::cout << Ask(ParseEccCurve(ecc, true)) << std::endl;
+	if (pub.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Ecc Public Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Ecc Public Key Check Falture.") << std::endl;
+}
+
+void ecc_execute::CheckPrivateKey(Ecc& ecc) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(ecc.privatekey_option, ecc.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, pemPass);
+	ECC_CHECK_PRIVATE_KEY priv = {
+		ecc.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
+	ecc.Curve = priv.CURVE_NID;
+	if (!IsRowData) {
+		std::cout << Hint("<ECC Private Key Check>") << std::endl;
+		std::cout << Mark("Curve : ") << Ask(ParseEccCurve(ecc, true)) << std::endl;
+		std::cout << Mark("Curve Info : ") << Ask(ParseEccCurve(ecc, false)) << std::endl;
+	}
+	else
+		std::cout << Ask(ParseEccCurve(ecc, true)) << std::endl;
+	if (priv.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Ecc Private Key Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Ecc Private Key Check Falture.") << std::endl;
 }

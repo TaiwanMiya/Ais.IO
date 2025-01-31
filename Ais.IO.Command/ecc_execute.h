@@ -15,4 +15,7 @@ private:
 	static void GenerateKeys(Ecc& ecc);
 	static void ExportParamters(Ecc& ecc);
 	static void ExportKeys(Ecc& ecc);
+	static void ExtractPublicKey(Ecc& ecc);
+	static void CheckPublicKey(Ecc& ecc);
+	static void CheckPrivateKey(Ecc& ecc);
 };

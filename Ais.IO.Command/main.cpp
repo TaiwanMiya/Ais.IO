@@ -976,6 +976,9 @@ void LoadFunctions() {
     EccFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "EccGenerateKeys");
     EccFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "EccExportParameters");
     EccFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "EccExportKeys");
+    EccFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "EccExtractPublicKey");
+    EccFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "EccCheckPublicKey");
+    EccFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "EccCheckPrivateKey");
 
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");

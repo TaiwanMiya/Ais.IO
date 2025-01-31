@@ -362,3 +362,167 @@ int EccExportKeys(ECC_EXPORT* params) {
     EVP_PKEY_free(pkey);
     return 0;
 }
+
+int EccExtractPublicKey(ECC_EXTRACT_PUBLIC_KEY* params) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
+    if (!priv_bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
+
+    switch (params->PRIVATE_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        break;
+
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(priv_bio, &pkey);
+        break;
+
+    default:
+        BIO_free(priv_bio);
+        return handleErrors_asymmetric("Invalid private key format.", NULL);
+    }
+
+    BIO_free(priv_bio);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", NULL);
+
+    if (EVP_PKEY_base_id(pkey) != EVP_PKEY_EC) {
+        EVP_PKEY_free(pkey);
+        return handleErrors_asymmetric("Key is not an ECC key.", NULL);
+    }
+
+    BIO* pub_bio = BIO_new(BIO_s_mem());
+    if (!pub_bio) {
+        EVP_PKEY_free(pkey);
+        return handleErrors_asymmetric("Failed to create BIO for public key.", NULL);
+    }
+
+    switch (params->PUBLIC_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (PEM_write_bio_PUBKEY(pub_bio, pkey) != 1) {
+            BIO_free(pub_bio);
+            EVP_PKEY_free(pkey);
+            return handleErrors_asymmetric("Failed to write public key in PEM format.", NULL);
+        }
+        break;
+
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (i2d_PUBKEY_bio(pub_bio, pkey) != 1) {
+            BIO_free(pub_bio);
+            EVP_PKEY_free(pkey);
+            return handleErrors_asymmetric("Failed to write public key in DER format.", NULL);
+        }
+        break;
+
+    default:
+        BIO_free(pub_bio);
+        EVP_PKEY_free(pkey);
+        return handleErrors_asymmetric("Invalid public key format.", NULL);
+    }
+
+    size_t pub_len = BIO_pending(pub_bio);
+    if (params->PUBLIC_KEY == nullptr || params->PUBLIC_KEY_LENGTH < pub_len) {
+        params->PUBLIC_KEY = new unsigned char[pub_len];
+    }
+
+    BIO_read(pub_bio, params->PUBLIC_KEY, pub_len);
+    params->PUBLIC_KEY_LENGTH = pub_len;
+
+    BIO_free(pub_bio);
+    EVP_PKEY_free(pkey);
+
+    return 0;
+}
+
+int EccCheckPublicKey(ECC_CHECK_PUBLIC_KEY* check) {
+    ERR_clear_error();
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(check->PUBLIC_KEY, static_cast<int>(check->PUBLIC_KEY_LENGTH));
+
+    switch (check->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(bio, &pkey);
+        break;
+    default:
+        return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public key.", bio, NULL, pkey);
+
+    int key_type = EVP_PKEY_base_id(pkey);
+    if (key_type != EVP_PKEY_EC)
+        return handleErrors_asymmetric("Key is not an ECC key.", bio, NULL, pkey);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
+
+    char curve_name[128] = { 0 };
+    size_t curve_name_len = sizeof(curve_name);
+    if (EVP_PKEY_get_utf8_string_param(pkey, OSSL_PKEY_PARAM_GROUP_NAME, curve_name, curve_name_len, &curve_name_len) <= 0)
+        return handleErrors_asymmetric("Failed to retrieve ECC curve name.", bio, NULL, pkey);
+    int curve_nid = OBJ_sn2nid(curve_name);
+    check->CURVE_NID = static_cast<ECC_CURVE>(curve_nid);
+
+    check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
+
+    BIO_free(bio);
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
+int EccCheckPrivateKey(ECC_CHECK_PRIVATE_KEY* check) {
+    ERR_clear_error();
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(check->PRIVATE_KEY, static_cast<int>(check->PRIVATE_KEY_LENGTH));
+
+    switch (check->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (check->PEM_PASSWORD == NULL || check->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(check->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:
+        return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", bio, NULL, pkey);
+
+    int key_type = EVP_PKEY_base_id(pkey);
+    if (key_type != EVP_PKEY_EC)
+        return handleErrors_asymmetric("Key is not an ECC key.", bio, NULL, pkey);
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context.", bio, NULL, pkey);
+
+    char curve_name[128] = { 0 };
+    size_t curve_name_len = sizeof(curve_name);
+    if (EVP_PKEY_get_utf8_string_param(pkey, OSSL_PKEY_PARAM_GROUP_NAME, curve_name, curve_name_len, &curve_name_len) <= 0)
+        return handleErrors_asymmetric("Failed to retrieve ECC curve name.", bio, NULL, pkey);
+    int curve_nid = OBJ_sn2nid(curve_name);
+    check->CURVE_NID = static_cast<ECC_CURVE>(curve_nid);
+
+    check->IS_KEY_OK = EVP_PKEY_private_check(ctx) > 0;
+
+    BIO_free(bio);
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
