@@ -1030,273 +1030,289 @@ bool FindFileInEnvPath(const std::string& filename, std::string& resolvedPath) {
 }
 
 int main(int argc, char* args[]) {
-    std::string mode;
-    std::string filePath;
-    CRYPT_OPTIONS binary_bytes_option = CRYPT_OPTIONS::OPTION_TEXT;
-    std::vector<Command> commands;
+    try {
+        std::string mode;
+        std::string filePath;
+        CRYPT_OPTIONS binary_bytes_option = CRYPT_OPTIONS::OPTION_TEXT;
+        std::vector<Command> commands;
 
-    CheckRedirects();
-    CheckInput();
+        CheckRedirects();
+        CheckInput();
 
 #if _WIN32
-    EnableVirtualTerminalProcessing();
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    
-    std::vector<char*> new_argv;
-    for (int i = 0; i < argc; ++i) {
-        std::string utf8_str = ConvertToUTF8(args[i]);
+        EnableVirtualTerminalProcessing();
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
 
-        // 動態分配內存並複製轉換後的字符串
-        char* utf8_cstr = new char[utf8_str.size() + 1];
-        std::copy(utf8_str.begin(), utf8_str.end(), utf8_cstr);
-        utf8_cstr[utf8_str.size()] = '\0'; // 確保以 '\0' 結尾
+        std::vector<char*> new_argv;
+        for (int i = 0; i < argc; ++i) {
+            std::string utf8_str = ConvertToUTF8(args[i]);
 
-        new_argv.push_back(utf8_cstr);
-    }
+            char* utf8_cstr = new char[utf8_str.size() + 1];
+            std::copy(utf8_str.begin(), utf8_str.end(), utf8_cstr);
+            utf8_cstr[utf8_str.size()] = '\0';
 
-    char** argv = new char* [new_argv.size() + 1];
-    for (size_t i = 0; i < new_argv.size(); ++i) {
-        argv[i] = new_argv[i];
-    }
-    argv[new_argv.size()] = nullptr;
+            new_argv.push_back(utf8_cstr);
+        }
+
+        char** argv = new char* [new_argv.size() + 1];
+        for (size_t i = 0; i < new_argv.size(); ++i) {
+            argv[i] = new_argv[i];
+        }
+        argv[new_argv.size()] = nullptr;
 #else
-    char** argv = new char* [sizeof(args)];
-    argv = args;
+        char** argv = args;
 #endif
 
-    if (argc == 3 && std::string(argv[1]) == "--path") {
-        std::string resolvedPath = "";
-        bool is_resolved = FindFileInEnvPath(argv[2], resolvedPath);
-        if (is_resolved)
-            std::cout << Hint("File found at: ") << Ask(resolvedPath) << std::endl;
-        else
-            std::cout << Error("File not found in PATH directories.") << std::endl;
+        if (argc == 3 && std::string(argv[1]) == "--path") {
+            std::string resolvedPath = "";
+            bool is_resolved = FindFileInEnvPath(argv[2], resolvedPath);
+            if (is_resolved)
+                std::cout << Hint("File found at: ") << Ask(resolvedPath) << std::endl;
+            else
+                std::cout << Error("File not found in PATH directories.") << std::endl;
+            return 0;
+        }
+
+        if (argc == 2 && std::string(argv[1]) == "--colors") {
+            ListColorTable();
+            return 0;
+        }
+
+        if (argc >= 2 && std::string(argv[1]) == "--bar") {
+            const int total = 100;
+            int width = argc > 2 && IsULong(argv[2]) ? std::stoi(argv[2]) : 100;
+            char strip = argc > 3 ? argv[3][0] : '=';
+            bool show_current = argc > 4 && std::string(argv[4]) == "true" ? true : false;
+
+            std::cout << "Start Progress Bar Running...\n" << std::endl;
+            for (int i = 0; i <= total; ++i) {
+                MoveCursorUp(1);
+                ClearLine();
+                std::cout << "Test:" << i << std::endl;
+                ShowProgressBar(i, total, width, strip, show_current);
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+
+            std::cout << std::endl;
+            return 0;
+        }
+
+        if (!ParseArguments(argc, argv, mode, filePath, binary_bytes_option, commands)) {
+            usage_libary::ShowUsage();
+            return 1;
+        }
+
+        auto timeStart = std::chrono::high_resolution_clock::now();
+
+        if (!Lib) {
+            std::cerr << Error("Failed to load Ais.IO library\n");
+            return 1;
+        }
+
+        LoadFunctions();
+
+        if (mode == "--map") {
+            mapping_libary::ShowHexEditor(filePath.c_str());
+        }
+        else if (mode == "--read") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader) {
+                std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteRead(reader, commands, binary_bytes_option);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            if (!IsRowData)
+                std::cout << Mark("Read Action Completed!") << std::endl;
+        }
+        else if (mode == "--write") {
+            void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(Lib, "CreateBinaryWriter"))(filePath.c_str());
+            if (!writer) {
+                std::cerr << Error("Failed to create binary writer for file: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteWrite(writer, commands, binary_bytes_option);
+            ((DestroyBinaryWriter)GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter"))(writer);
+            if (!IsRowData)
+                std::cout << Mark("Write Action Completed!") << std::endl;
+        }
+        else if (mode == "--append") {
+            void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(Lib, "CreateBinaryAppender"))(filePath.c_str());
+            if (!appender) {
+                std::cerr << Error("Failed to create binary appender for file: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteAppend(appender, commands, binary_bytes_option);
+            ((DestroyBinaryAppender)GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender"))(appender);
+            if (!IsRowData)
+                std::cout << Mark("Append Action Completed!") << std::endl;
+        }
+        else if (mode == "--insert") {
+            void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(Lib, "CreateBinaryInserter"))(filePath.c_str());
+            if (!inserter) {
+                std::cerr << Error("Failed to create binary inserter for file: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteInsert(inserter, commands, binary_bytes_option);
+            ((DestroyBinaryInserter)GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter"))(inserter);
+            if (!IsRowData)
+                std::cout << Mark("Insert Action Completed!") << std::endl;
+        }
+        else if (mode == "--remove") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader) {
+                std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteRemove(reader, filePath, commands);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            if (!IsRowData)
+                std::cout << Mark("Remove Action Completed!") << std::endl;
+        }
+        else if (mode == "--remove-index") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            void* remover = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader || !remover) {
+                std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::ExecuteRemoveIndex(reader, remover, filePath, commands);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(remover);
+            if (!IsRowData)
+                std::cout << Mark("Remove Action Completed!") << std::endl;
+        }
+        else if (mode == "--read-all") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader) {
+                std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            uint64_t count = 0;
+            std::string message = "";
+            while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
+                BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
+                binary_execute::ReadToType(reader, type, count, message, binary_bytes_option);
+            }
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            message.erase(message.find_last_not_of("\n") + 1);
+            std::cout << message << std::endl;
+            if (!IsRowData)
+                std::cout << Mark("Read All Action Completed!") << std::endl;
+        }
+        else if (mode == "--read-index") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            void* index_reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader) {
+                std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            std::string message = "";
+            binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message, binary_bytes_option);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            message.erase(message.find_last_not_of("\n") + 1);
+            std::cout << message << std::endl;
+            if (!IsRowData)
+                std::cout << Mark("Read Action Completed!") << std::endl;
+        }
+        else if (mode == "--indexes") {
+            void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
+            if (!reader) {
+                std::cerr << Error("Failed to create binary reader indexes for file: ") << Ask(filePath) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            binary_execute::GetIndexes(reader);
+            ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
+            if (!IsRowData)
+                std::cout << Mark("Indexes Action Completed!") << std::endl;
+        }
+        else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
+            mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
+            Command cmd = commands[0];
+            std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
+            if (commands.empty()) {
+                std::cerr << Error("No encoding or decoding command provided.\n");
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            if (EncodeFunctions.find(encodeType) == EncodeFunctions.end()) {
+                std::cerr << Error("Unsupported encode/decode operation: ") << Ask(cmd.type) << "\n";
+                UNLOAD_LIBRARY(Lib);
+                return 1;
+            }
+            encoder_execute::ExecuteEncoder(mode, cmd);
+        }
+        else if (mode == "--aes") {
+            Aes aes;
+            aes_execute::ParseParameters(argc, argv, aes);
+            aes_execute::AesStart(aes);
+        }
+        else if (mode == "--des") {
+            Des des;
+            des_execute::ParseParameters(argc, argv, des);
+            des_execute::DesStart(des);
+        }
+        else if (mode == "--hash") {
+            Hashes hash;
+            hash_execute::ParseParameters(argc, argv, hash);
+            hash_execute::HashStart(hash);
+        }
+        else if (mode == "--dsa") {
+            Dsa dsa;
+            dsa_execute::ParseParameters(argc, argv, dsa);
+            dsa_execute::DsaStart(dsa);
+        }
+        else if (mode == "--rsa") {
+            Rsa rsa;
+            rsa_execute::ParseParameters(argc, argv, rsa);
+            rsa_execute::RsaStart(rsa);
+        }
+        else if (mode == "--ecc") {
+            Ecc ecc;
+            ecc_execute::ParseParameters(argc, argv, ecc);
+            ecc_execute::EccStart(ecc);
+        }
+        else if (mode == "--generate" || mode == "--convert") {
+            Rand rand;
+            cryptography_libary::ParseParameters(argc, argv, rand);
+            cryptography_libary::RandStart(rand);
+        }
+
+        UNLOAD_LIBRARY(Lib);
+        if (IsRowData)
+            return 0;
+        auto timeEnd = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> seconds = timeEnd - timeStart;
+        std::ostringstream oss;
+        oss.precision(16);
+        oss << std::defaultfloat << seconds.count();
+        std::cout << Any("Elapsed time: " + oss.str() + " Seconds", TERMINAL_STYLE::STYLE_UNDERLINE, 33) << std::endl;
         return 0;
     }
-
-    if (argc == 2 && std::string(argv[1]) == "--colors") {
-        ListColorTable();
-        return 0;
+    catch (const std::runtime_error& e) {
+        // Runtime errors
+        std::cerr << Error("Runtime Error: ") << Error(e.what()) << std::endl;
     }
-
-    if (argc >= 2 && std::string(argv[1]) == "--bar") {
-        const int total = 100;
-        int width = argc > 2 && IsULong(argv[2]) ? std::stoi(argv[2]) : 100;
-        char strip = argc > 3 ? argv[3][0] : '=';
-        bool show_current = argc > 4 && std::string(argv[4]) == "true" ? true: false;
-
-        std::cout << "Start Progress Bar Running...\n" << std::endl;
-        for (int i = 0; i <= total; ++i) {
-            MoveCursorUp(1);
-            ClearLine();
-            std::cout << "Test:" << i << std::endl;
-            ShowProgressBar(i, total, width, strip, show_current);
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-
-        std::cout << std::endl;
-        return 0;
+    catch (const std::out_of_range& e) {
+        // Value out of range errors
+        std::cerr << Error("Out of Range Error: ") << Error(e.what()) << std::endl;
     }
-
-    if (!ParseArguments(argc, argv, mode, filePath, binary_bytes_option, commands)) {
-        usage_libary::ShowUsage();
-        return 1;
+    catch (const std::bad_alloc& e) {
+        // Memory allocation failed
+        std::cerr << Error("Memory Allocation Error: ") << Error(e.what()) << std::endl;
     }
-
-    auto timeStart = std::chrono::high_resolution_clock::now();
-
-    if (!Lib) {
-        std::cerr << Error("Failed to load Ais.IO library\n");
-        return 1;
+    catch (const std::exception& e) {
+        // Other unknown errors
+        std::cerr << Error("Unknown Error Occurred: ") << Error(e.what()) << std::endl;
     }
-
-    LoadFunctions();
-
-    if (mode == "--map") {
-        mapping_libary::ShowHexEditor(filePath.c_str());
-    }
-    else if (mode == "--read") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader) {
-            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteRead(reader, commands, binary_bytes_option);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        if (!IsRowData)
-            std::cout << Mark("Read Action Completed!") << std::endl;
-    }
-    else if (mode == "--write") {
-        void* writer = ((CreateBinaryWriter)GET_PROC_ADDRESS(Lib, "CreateBinaryWriter"))(filePath.c_str());
-        if (!writer) {
-            std::cerr << Error("Failed to create binary writer for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteWrite(writer, commands, binary_bytes_option);
-        ((DestroyBinaryWriter)GET_PROC_ADDRESS(Lib, "DestroyBinaryWriter"))(writer);
-        if (!IsRowData)
-            std::cout << Mark("Write Action Completed!") << std::endl;
-    }
-    else if (mode == "--append") {
-        void* appender = ((CreateBinaryAppender)GET_PROC_ADDRESS(Lib, "CreateBinaryAppender"))(filePath.c_str());
-        if (!appender) {
-            std::cerr << Error("Failed to create binary appender for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteAppend(appender, commands, binary_bytes_option);
-        ((DestroyBinaryAppender)GET_PROC_ADDRESS(Lib, "DestroyBinaryAppender"))(appender);
-        if (!IsRowData)
-            std::cout << Mark("Append Action Completed!") << std::endl;
-    }
-    else if (mode == "--insert") {
-        void* inserter = ((CreateBinaryInserter)GET_PROC_ADDRESS(Lib, "CreateBinaryInserter"))(filePath.c_str());
-        if (!inserter) {
-            std::cerr << Error("Failed to create binary inserter for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteInsert(inserter, commands, binary_bytes_option);
-        ((DestroyBinaryInserter)GET_PROC_ADDRESS(Lib, "DestroyBinaryInserter"))(inserter);
-        if (!IsRowData)
-            std::cout << Mark("Insert Action Completed!") << std::endl;
-    }
-    else if (mode == "--remove") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader) {
-            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteRemove(reader, filePath, commands);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        if (!IsRowData)
-            std::cout << Mark("Remove Action Completed!") << std::endl;
-    }
-    else if (mode == "--remove-index") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        void* remover = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader || !remover) {
-            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::ExecuteRemoveIndex(reader, remover, filePath, commands);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(remover);
-        if (!IsRowData)
-            std::cout << Mark("Remove Action Completed!") << std::endl;
-    }
-    else if (mode == "--read-all") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader) {
-            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        uint64_t count = 0;
-        std::string message = "";
-        while (((GetReaderPosition)GET_PROC_ADDRESS(Lib, "GetReaderPosition"))(reader) < ((GetReaderLength)GET_PROC_ADDRESS(Lib, "GetReaderLength"))(reader)) {
-            BINARYIO_TYPE type = ((ReadType)GET_PROC_ADDRESS(Lib, "ReadType"))(reader);
-            binary_execute::ReadToType(reader, type, count, message, binary_bytes_option);
-        }
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        message.erase(message.find_last_not_of("\n") + 1);
-        std::cout << message << std::endl;
-        if (!IsRowData)
-            std::cout << Mark("Read All Action Completed!") << std::endl;
-    }
-    else if (mode == "--read-index") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        void* index_reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader) {
-            std::cerr << Error("Failed to create binary reader for: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        std::string message = "";
-        binary_execute::ExecuteReadIndex(reader, index_reader, filePath, commands, message, binary_bytes_option);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        message.erase(message.find_last_not_of("\n") + 1);
-        std::cout << message << std::endl;
-        if (!IsRowData)
-            std::cout << Mark("Read Action Completed!") << std::endl;
-    }
-    else if (mode == "--indexes") {
-        void* reader = ((CreateBinaryReader)GET_PROC_ADDRESS(Lib, "CreateBinaryReader"))(filePath.c_str());
-        if (!reader) {
-            std::cerr << Error("Failed to create binary reader indexes for file: ") << Ask(filePath) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        binary_execute::GetIndexes(reader);
-        ((DestroyBinaryReader)GET_PROC_ADDRESS(Lib, "DestroyBinaryReader"))(reader);
-        if (!IsRowData)
-            std::cout << Mark("Indexes Action Completed!") << std::endl;
-    }
-    else if (mode == "--base10" || mode == "--base16" || mode == "--base32" || mode == "--base58" ||
-             mode == "--base62" || mode == "--base64" || mode == "--base85" || mode == "--base91") {
-        Command cmd = commands[0];
-        std::string encodeType = mode.substr(1) + "-" + cmd.type.substr(1);
-        if (commands.empty()) {
-            std::cerr << Error("No encoding or decoding command provided.\n");
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        if (EncodeFunctions.find(encodeType) == EncodeFunctions.end()) {
-            std::cerr << Error("Unsupported encode/decode operation: ") << Ask(cmd.type) << "\n";
-            UNLOAD_LIBRARY(Lib);
-            return 1;
-        }
-        encoder_execute::ExecuteEncoder(mode, cmd);
-    }
-    else if (mode == "--aes") {
-        Aes aes;
-        aes_execute::ParseParameters(argc, argv, aes);
-        aes_execute::AesStart(aes);
-    }
-    else if (mode == "--des") {
-        Des des;
-        des_execute::ParseParameters(argc, argv, des);
-        des_execute::DesStart(des);
-    }
-    else if (mode == "--hash") {
-        Hashes hash;
-        hash_execute::ParseParameters(argc, argv, hash);
-        hash_execute::HashStart(hash);
-    }
-    else if (mode == "--dsa") {
-        Dsa dsa;
-        dsa_execute::ParseParameters(argc, argv, dsa);
-        dsa_execute::DsaStart(dsa);
-    }
-    else if (mode == "--rsa") {
-        Rsa rsa;
-        rsa_execute::ParseParameters(argc, argv, rsa);
-        rsa_execute::RsaStart(rsa);
-    }
-    else if (mode == "--ecc") {
-        Ecc ecc;
-        ecc_execute::ParseParameters(argc, argv, ecc);
-        ecc_execute::EccStart(ecc);
-    }
-    else if (mode == "--generate" || mode == "--convert") {
-        Rand rand;
-        cryptography_libary::ParseParameters(argc, argv, rand);
-        cryptography_libary::RandStart(rand);
-    }
-
-    UNLOAD_LIBRARY(Lib);
-    if (IsRowData)
-        return 0;
-    auto timeEnd = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> seconds = timeEnd - timeStart;
-    std::ostringstream oss;
-    oss.precision(16);
-    oss << std::defaultfloat << seconds.count();
-    std::cout << Any("Elapsed time: " + oss.str() + " Seconds", TERMINAL_STYLE::STYLE_UNDERLINE, 33) << std::endl;
-    return 0;
 }

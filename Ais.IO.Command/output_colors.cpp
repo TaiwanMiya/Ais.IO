@@ -24,7 +24,7 @@ void EnableVirtualTerminalProcessing() {
 std::string ConvertToUTF8(const char* str) {
     int len = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
     if (len == 0) {
-        return NULL;
+        return "";
     }
 
     std::wstring wideStr(len, 0);
@@ -32,7 +32,7 @@ std::string ConvertToUTF8(const char* str) {
 
     len = WideCharToMultiByte(CP_UTF8, 0, wideStr.c_str(), -1, NULL, 0, NULL, NULL);
     if (len == 0) {
-        return NULL;
+        return "";
     }
 
     std::string utf8Str(len, 0);
