@@ -8,6 +8,7 @@
 
 #if _WIN32
 void EnableVirtualTerminalProcessing();
+std::string ConvertToUTF8(const char* str);
 #endif
 
 enum TERMINAL_STYLE {

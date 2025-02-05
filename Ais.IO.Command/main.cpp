@@ -1029,7 +1029,7 @@ bool FindFileInEnvPath(const std::string& filename, std::string& resolvedPath) {
 #endif
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* args[]) {
     std::string mode;
     std::string filePath;
     CRYPT_OPTIONS binary_bytes_option = CRYPT_OPTIONS::OPTION_TEXT;
@@ -1040,6 +1040,29 @@ int main(int argc, char* argv[]) {
 
 #if _WIN32
     EnableVirtualTerminalProcessing();
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    
+    std::vector<char*> new_argv;
+    for (int i = 0; i < argc; ++i) {
+        std::string utf8_str = ConvertToUTF8(args[i]);
+
+        // 動態分配內存並複製轉換後的字符串
+        char* utf8_cstr = new char[utf8_str.size() + 1];
+        std::copy(utf8_str.begin(), utf8_str.end(), utf8_cstr);
+        utf8_cstr[utf8_str.size()] = '\0'; // 確保以 '\0' 結尾
+
+        new_argv.push_back(utf8_cstr);
+    }
+
+    char** argv = new char* [new_argv.size() + 1];
+    for (size_t i = 0; i < new_argv.size(); ++i) {
+        argv[i] = new_argv[i];
+    }
+    argv[new_argv.size()] = nullptr;
+#else
+    char** argv = new char* [sizeof(args)];
+    argv = args;
 #endif
 
     if (argc == 3 && std::string(argv[1]) == "--path") {

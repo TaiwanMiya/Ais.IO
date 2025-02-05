@@ -20,6 +20,25 @@ void EnableVirtualTerminalProcessing() {
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
 }
+
+std::string ConvertToUTF8(const char* str) {
+    int len = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
+    if (len == 0) {
+        return NULL;
+    }
+
+    std::wstring wideStr(len, 0);
+    MultiByteToWideChar(CP_ACP, 0, str, -1, &wideStr[0], len);
+
+    len = WideCharToMultiByte(CP_UTF8, 0, wideStr.c_str(), -1, NULL, 0, NULL, NULL);
+    if (len == 0) {
+        return NULL;
+    }
+
+    std::string utf8Str(len, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wideStr.c_str(), -1, &utf8Str[0], len, NULL, NULL);
+    return utf8Str;
+}
 #else
 #include <fcntl.h>
 #include <unistd.h>
