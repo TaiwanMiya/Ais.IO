@@ -120,7 +120,6 @@ enum ECC_CURVE : int {
     ECC_BRAINPOOL_P384_T1 = NID_brainpoolP384t1,                // 932
     ECC_BRAINPOOL_P512_R1 = NID_brainpoolP512r1,                // 933
     ECC_BRAINPOOL_P512_T1 = NID_brainpoolP512t1,                // 934
-    ECC_SM2 = NID_sm2,                                          // 1172
 };
 
 struct ECC_PARAMETERS {

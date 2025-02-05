@@ -274,7 +274,6 @@ enum ECC_CURVE : int {
     ECC_BRAINPOOL_P384_T1 = 932,
     ECC_BRAINPOOL_P512_R1 = 933,
     ECC_BRAINPOOL_P512_T1 = 934,
-    ECC_SM2 = 1172,
 };
 
 struct Command {

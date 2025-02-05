@@ -221,7 +221,6 @@ std::unordered_map<std::string, ECC_CURVE> EccCurve = {
     { "-brainpool384t1", ECC_CURVE::ECC_BRAINPOOL_P384_T1 },
     { "-brainpool512r1", ECC_CURVE::ECC_BRAINPOOL_P512_R1 },
     { "-brainpool512t1", ECC_CURVE::ECC_BRAINPOOL_P512_T1 },
-    { "-sm2", ECC_CURVE::ECC_SM2 },
 };
 std::map<ECC_CURVE, std::string> EccCurveName = {
     { ECC_CURVE::ECC_PRIME_192_V1, "prime192v1" },
@@ -305,7 +304,6 @@ std::map<ECC_CURVE, std::string> EccCurveName = {
     { ECC_CURVE::ECC_BRAINPOOL_P384_T1, "brainpoolP384t1" },
     { ECC_CURVE::ECC_BRAINPOOL_P512_R1, "brainpoolP512r1" },
     { ECC_CURVE::ECC_BRAINPOOL_P512_T1, "brainpoolP512t1" },
-    { ECC_CURVE::ECC_SM2, "sm2" },
 };
 std::map<ECC_CURVE, std::string> EccCurveDisplay = {
     { ECC_CURVE::ECC_PRIME_192_V1, "-prime192v1 : NIST/X9.62/SECG curve over a 192 bit prime field. (NID:409)" },
@@ -389,7 +387,6 @@ std::map<ECC_CURVE, std::string> EccCurveDisplay = {
     { ECC_CURVE::ECC_BRAINPOOL_P384_T1, "-brainpool384t1 : RFC 5639 curve over a 384 bit prime field. (NID:932)" },
     { ECC_CURVE::ECC_BRAINPOOL_P512_R1, "-brainpool512r1 : RFC 5639 curve over a 512 bit prime field. (NID:933)" },
     { ECC_CURVE::ECC_BRAINPOOL_P512_T1, "-brainpool512t1 : RFC 5639 curve over a 512 bit prime field. (NID:934)" },
-    { ECC_CURVE::ECC_SM2, "-sm2 : SM2 curve over a 256 bit prime field. (NID:1172)" },
 };
 
 void PutBaseOptions(char* argv[], std::unordered_map<std::string, std::string> abbreviationValidBytesOptions, std::string& filePath, CRYPT_OPTIONS& option) {

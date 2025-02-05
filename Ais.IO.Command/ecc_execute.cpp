@@ -607,6 +607,7 @@ void ecc_execute::ExtractPublicKey(Ecc& ecc) {
 		pemPass.size(),
 	};
 	int result_code = ((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
+	ecc.Curve = priv.CURVE_NID;
 
 	publicKey.resize(result_code < 0 ? 0 : 1024);
 
