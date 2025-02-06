@@ -16,5 +16,6 @@ public:
 private:
 	static void ShowWayUsage();
 	static void ShowKeysWayUsage();
+	static void ShowHashTypeUsage();
 };
 

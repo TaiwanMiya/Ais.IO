@@ -108,6 +108,10 @@ void ClearLine() {
     std::cout << "\033[2K"; // 清除當前行
 }
 
+void ClearTerminal() {
+    std::cout << "\033[2J"; // 清除整個終端
+}
+
 void ShowProgressBar(int progress, int total, int width, char strip, bool show_current) {
     float percentage = static_cast<float>(progress) / total;
     int pos = width * percentage;

@@ -33,6 +33,29 @@ void usage_libary::ShowKeysWayUsage() {
     std::cout << "" << std::endl;
 }
 
+void usage_libary::ShowHashTypeUsage() {
+    std::cout << Hint("    Supported [--hash-type]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-md5") << Warn("                                     -> Hash MD5 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-md5-sha1") << Warn("                                -> Hash MD5-SHA1 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-sha1") << Warn("                                    -> Hash SHA1 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-sha224 | -sha2-224]") << Warn("                    -> Hash SHA2-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-sha256 | -sha2-256]") << Warn("                    -> Hash SHA2-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("[-sha384 | -sha2-384]") << Warn("                    -> Hash SHA2-384 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("[-sha512 | -sha2-512]") << Warn("                    -> Hash SHA2-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("[-sha512-224 | -sha2-512-224]") << Warn("            -> Hash SHA2-512-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark(" 9") << ". " << Info("[-sha512-256 | -sha2-512-256]") << Warn("            -> Hash SHA2-512-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("10") << ". " << Info("-sha3-224") << Warn("                                -> Hash SHA3-224 Calculation.") << std::endl;
+    std::cout << "        " << Mark("11") << ". " << Info("-sha3-256") << Warn("                                -> Hash SHA3-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("12") << ". " << Info("-sha3-384") << Warn("                                -> Hash SHA3-384 Calculation.") << std::endl;
+    std::cout << "        " << Mark("13") << ". " << Info("-sha3-512") << Warn("                                -> Hash SHA3-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark("14") << ". " << Info("[-shake128 | -sha3-ke-128]") << Warn("               -> Hash SHA3-KE-128 Calculation.") << std::endl;
+    std::cout << "        " << Mark("15") << ". " << Info("[-shake256 | -sha3-ke-256]") << Warn("               -> Hash SHA3-KE-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("16") << ". " << Info("[-blake2s | -blake256 | -blake2s-256]") << Warn("    -> Hash BLAKE2S-256 Calculation.") << std::endl;
+    std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512]") << Warn("    -> Hash BLAKE2B-512 Calculation.") << std::endl;
+    std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Calculation.") << std::endl;
+    std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Calculation.") << std::endl;
+}
+
 void usage_libary::ShowUsage() {
     std::cout << Any("                                                                                            ", TERMINAL_STYLE::STYLE_FLASHING, 30) << std::endl;
     std::cout << Any("               AAA                 iiii                        IIIIIIIIII     OOOOOOOOO     ", TERMINAL_STYLE::STYLE_FLASHING, 31) << std::endl;
@@ -76,6 +99,9 @@ void usage_libary::ShowUsage() {
     std::cout << "" << std::endl;
     std::cout << Hint("    7. Helper by Rsa:") << std::endl;
     std::cout << Info("        [-h | -help | --help] [-r | -rsa]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << Hint("    8. Helper by Ecc:") << std::endl;
+    std::cout << Info("        [-h | -help | --help] [-e | -ecc]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << Hint("    Show Colors:") << std::endl;
     std::cout << Info("        --colors") << std::endl;
@@ -377,7 +403,7 @@ void usage_libary::ShowDsaUsage() {
     std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 4") << ". " << Hint("DSA Export Public Key & Private Key from Parameters:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--rsa-parameters-list] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--dsa-parameters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 5") << ". " << Hint("DSA Extract Public Key from Private Key:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
@@ -397,10 +423,26 @@ void usage_libary::ShowDsaUsage() {
     std::cout << "    " << Mark("10") << ". " << Hint("DSA Confirms Whether the Parameters is Valid:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-param | -params | -parameter | -parameters] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("DSA Signed Data:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("12") << ". " << Hint("DSA Verify Data:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
 
     usage_libary::ShowKeysWayUsage();
+
+    std::cout << Hint("    Supported [--dsa-parameters-list]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("[-y | -public-param]") << Warn("                     -> Public Key data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-x | -private-param]") << Warn("                    -> Private Key data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-p | -prime | -modulus | -prime-modulus]") << Warn("-> Prime Modulus data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-q | -subprime]") << Warn("                         -> Subprime data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-g | -generator]") << Warn("                        -> Generator data by [--way].") << std::endl;
+    std::cout << "" << std::endl;
+
+    usage_libary::ShowHashTypeUsage();
 }
 
 void usage_libary::ShowRsaUsage() {
@@ -462,29 +504,54 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "        " << Mark(" 8") << ". " << Info("[-qi | -coefficient | -crt-coefficient]") << Warn("  -> CRT Coefficient data by [--way].") << std::endl;
     std::cout << "" << std::endl;
 
-    std::cout << Hint("    Supported [--hash-type]:\n");
-    std::cout << "        " << Mark(" 1") << ". " << Info("-md5") << Warn("                                     -> Hash MD5 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 2") << ". " << Info("-md5-sha1") << Warn("                                -> Hash MD5-SHA1 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 3") << ". " << Info("-sha1") << Warn("                                    -> Hash SHA1 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 4") << ". " << Info("[-sha224 | -sha2-224]") << Warn("                    -> Hash SHA2-224 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 5") << ". " << Info("[-sha256 | -sha2-256]") << Warn("                    -> Hash SHA2-256 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 6") << ". " << Info("[-sha384 | -sha2-384]") << Warn("                    -> Hash SHA2-384 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 7") << ". " << Info("[-sha512 | -sha2-512]") << Warn("                    -> Hash SHA2-512 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 8") << ". " << Info("[-sha512-224 | -sha2-512-224]") << Warn("            -> Hash SHA2-512-224 Calculation.") << std::endl;
-    std::cout << "        " << Mark(" 9") << ". " << Info("[-sha512-256 | -sha2-512-256]") << Warn("            -> Hash SHA2-512-256 Calculation.") << std::endl;
-    std::cout << "        " << Mark("10") << ". " << Info("-sha3-224") << Warn("                                -> Hash SHA3-224 Calculation.") << std::endl;
-    std::cout << "        " << Mark("11") << ". " << Info("-sha3-256") << Warn("                                -> Hash SHA3-256 Calculation.") << std::endl;
-    std::cout << "        " << Mark("12") << ". " << Info("-sha3-384") << Warn("                                -> Hash SHA3-384 Calculation.") << std::endl;
-    std::cout << "        " << Mark("13") << ". " << Info("-sha3-512") << Warn("                                -> Hash SHA3-512 Calculation.") << std::endl;
-    std::cout << "        " << Mark("14") << ". " << Info("[-shake128 | -sha3-ke-128]") << Warn("               -> Hash SHA3-KE-128 Calculation.") << std::endl;
-    std::cout << "        " << Mark("15") << ". " << Info("[-shake256 | -sha3-ke-256]") << Warn("               -> Hash SHA3-KE-256 Calculation.") << std::endl;
-    std::cout << "        " << Mark("16") << ". " << Info("[-blake2s | -blake256 | -blake2s-256]") << Warn("    -> Hash BLAKE2S-256 Calculation.") << std::endl;
-    std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512]") << Warn("    -> Hash BLAKE2B-512 Calculation.") << std::endl;
-    std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Calculation.") << std::endl;
-    std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Calculation.") << std::endl;
-
+    usage_libary::ShowHashTypeUsage();
 }
 
 void usage_libary::ShowEccUsage() {
+    std::cout << Info("      ::::::::::") << Common("      ::::::::") << Warn("      ::::::::") << std::endl;
+    std::cout << Info("     :+:        ") << Common("    :+:    :+:") << Warn("    :+:    :+:") << std::endl;
+    std::cout << Info("    +:+         ") << Common("   +:+        ") << Warn("   +:+        ") << std::endl;
+    std::cout << Info("   +#++:++#     ") << Common("  +#+         ") << Warn("  +#+         ") << std::endl;
+    std::cout << Info("  +#+           ") << Common(" +#+          ") << Warn(" +#+          ") << std::endl;
+    std::cout << Info(" #+#            ") << Common("#+#    #+#    ") << Warn("#+#    #+#    ") << std::endl;
+    std::cout << Info("##########      ") << Common("########      ") << Warn("########      ") << std::endl;
+    std::cout << Mark("Ecc Cryptography Usage") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 1") << ". " << Hint("ECC Curve List:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] -list") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 2") << ". " << Hint("ECC Generate Parameters:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-gen | -generate] [-param | -params | -parameter | -parameters] <curve | nid> [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("ECC Generate Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-gen | -generate] [-key | -keys] <curve | nid> [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("ECC Export Parameters from Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("ECC Export Public Key & Private Key from Parameters:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--ecc-parameters-list] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("ECC Extract Public Key from Private Key:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("ECC Confirms Whether the Public Key is Valid:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("ECC Confirms Whether the Private Key is Valid:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way]") << std::endl;
+    std::cout << "" << std::endl;
 
+    usage_libary::ShowWayUsage();
+
+    usage_libary::ShowKeysWayUsage();
+
+    std::cout << Hint("    Supported [--ecc-parameters-list]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-curve") << Warn("                                   -> Curve data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-x | -public-x]") << Warn("                         -> Public Key X Coordinate data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-y | -public-y]") << Warn("                         -> Public Key Y Coordinate data by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-p | -private-exp]") << Warn("                      -> Private Exponent data by [--way].") << std::endl;
+    std::cout << "" << std::endl;
+
+    usage_libary::ShowHashTypeUsage();
 }

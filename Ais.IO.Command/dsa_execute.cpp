@@ -195,14 +195,14 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 			}
 			break;
 		case dsa_execute::hash("-y"):
-		case dsa_execute::hash("-public-Key"):
+		case dsa_execute::hash("-public-param"):
 			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
 				continue;
 			dsa.Y = argv[i + 1];
 			i++;
 			break;
 		case dsa_execute::hash("-x"):
-		case dsa_execute::hash("-private-Key"):
+		case dsa_execute::hash("-private-param"):
 			if (dsa.param_option == CRYPT_OPTIONS::OPTION_FILE)
 				continue;
 			dsa.X = argv[i + 1];

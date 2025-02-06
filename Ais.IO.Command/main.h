@@ -1108,8 +1108,8 @@ struct ECC_EXPORT {
 };
 
 struct ECC_EXTRACT_PUBLIC_KEY {
-    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
     const ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
     unsigned char* PUBLIC_KEY;
     const unsigned char* PRIVATE_KEY;
     const unsigned char* PEM_PASSWORD;
