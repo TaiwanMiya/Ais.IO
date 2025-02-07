@@ -83,7 +83,6 @@ curves=(
 "-brainpool384t1"
 "-brainpool512r1"
 "-brainpool512t1"
-"-sm2"
 )
 
 mkdir -p Curves

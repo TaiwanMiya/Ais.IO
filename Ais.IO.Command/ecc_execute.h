@@ -18,4 +18,7 @@ private:
 	static void ExtractPublicKey(Ecc& ecc);
 	static void CheckPublicKey(Ecc& ecc);
 	static void CheckPrivateKey(Ecc& ecc);
+	static void Signed(Ecc& ecc);
+	static void Verify(Ecc& ecc);
+	static void KeyDerive(Ecc& ecc);
 };

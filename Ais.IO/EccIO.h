@@ -192,6 +192,44 @@ struct ECC_CHECK_PRIVATE_KEY {
     ECC_CURVE CURVE_NID;
 };
 
+struct ECC_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct ECC_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
+struct ECC_KEY_DERIVE {
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PEER_PUBLIC_KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* PEER_PUBLIC_KEY;
+    unsigned char* DERIVED_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t PEER_PUBLIC_KEY_LENGTH;
+    size_t DERIVED_KEY_LENGTH;
+};
+
 EXT ECCIO_API int EccGetParametersLength(ECC_PARAMETERS* params);
 EXT ECCIO_API int EccGetKeyLength(ECC_KEY_PAIR* params);
 EXT ECCIO_API int EccGenerateParameters(ECC_PARAMETERS* params);
@@ -201,3 +239,6 @@ EXT ECCIO_API int EccExportKeys(ECC_EXPORT* params);
 EXT ECCIO_API int EccExtractPublicKey(ECC_EXTRACT_PUBLIC_KEY* params);
 EXT ECCIO_API int EccCheckPublicKey(ECC_CHECK_PUBLIC_KEY* check);
 EXT ECCIO_API int EccCheckPrivateKey(ECC_CHECK_PRIVATE_KEY* check);
+EXT ECCIO_API int EccSigned(ECC_SIGNED* sign);
+EXT ECCIO_API int EccVerify(ECC_VERIFY* verify);
+EXT ECCIO_API int EccKeyDerive(ECC_KEY_DERIVE* params);

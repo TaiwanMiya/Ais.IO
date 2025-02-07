@@ -541,6 +541,15 @@ void usage_libary::ShowEccUsage() {
     std::cout << "    " << Mark(" 8") << ". " << Hint("ECC Confirms Whether the Private Key is Valid:") << std::endl;
     std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way]") << std::endl;
     std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("ECC Signed Data:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("ECC Verify Data:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("ECC Key Derive:") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-dv | -derive | -key-derive] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
 
     usage_libary::ShowWayUsage();
 

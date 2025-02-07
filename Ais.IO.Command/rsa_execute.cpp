@@ -857,7 +857,8 @@ void rsa_execute::Encrypt(Rsa& rsa) {
 	if (pub.IS_KEY_OK)
 		ciphertext.resize(pub.KEY_LENGTH);
 	else {
-		std::cout << Hint("<RSA Encrypt>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Encrypt>") << std::endl;
 		std::cout << Error("Rsa get public key failed.") << std::endl;
 	}
 
@@ -911,7 +912,8 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 	if (priv.IS_KEY_OK)
 		plaintext.resize(priv.KEY_LENGTH);
 	else {
-		std::cout << Hint("<RSA Decrypt>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Decrypt>") << std::endl;
 		std::cout << Error("Rsa get private key failed.") << std::endl;
 	}
 
@@ -967,7 +969,8 @@ void rsa_execute::Signed(Rsa& rsa) {
 	if (priv.IS_KEY_OK)
 		signature.resize(priv.KEY_LENGTH);
 	else {
-		std::cout << Hint("<RSA Signed>") << std::endl;
+		if (!IsRowData)
+			std::cout << Hint("<RSA Signed>") << std::endl;
 		std::cout << Error("Rsa get private key failed.") << std::endl;
 	}
 
@@ -984,12 +987,12 @@ void rsa_execute::Signed(Rsa& rsa) {
 	};
 	int result_size = ((RsaSigned)RsaFunctions.at("-signed"))(&sign);
 	if (result_size != -1) {
-		signature.resize(result_size);
+		signature.resize(sign.SIGNATURE_LENGTH);
 		if (!IsRowData) {
 			std::cout << Hint("<RSA Signed>") << std::endl;
 			cryptography_libary::ValueEncode(rsa.output_option, signature, rsa.Output);
 			std::cout << Ask(rsa.Output) << std::endl;
-			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(sign.SIGNATURE_LENGTH)) << Hint("]") << std::endl;
 			std::cout << Hint("Output Length: [") << Ask(std::to_string(rsa.Output.size())) << Hint("]") << std::endl;
 		}
 		else {

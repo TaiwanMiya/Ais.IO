@@ -730,6 +730,10 @@ int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check) {
     if (!pkey)
         return handleErrors_asymmetric("Failed to parse public key.", bio, NULL, pkey);
 
+    int key_type = EVP_PKEY_base_id(pkey);
+    if (key_type != EVP_PKEY_RSA)
+        return handleErrors_asymmetric("Key is not a RSA key.", bio, NULL, pkey);
+
     if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
         return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);
 
@@ -763,6 +767,10 @@ int RsaCheckPrivateKey(RSA_CHECK_PRIVATE_KEY* check) {
 
     if (!pkey)
         return handleErrors_asymmetric("Failed to parse public key.", bio, NULL, pkey);
+
+    int key_type = EVP_PKEY_base_id(pkey);
+    if (key_type != EVP_PKEY_RSA)
+        return handleErrors_asymmetric("Key is not a RSA key.", bio, NULL, pkey);
 
     if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
         return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);
@@ -932,6 +940,8 @@ int RsaSigned(RSA_SIGNED* sign) {
 
     EVP_PKEY* pkey = nullptr;
     BIO* bio = BIO_new_mem_buf(sign->PRIVATE_KEY, static_cast<int>(sign->PRIVATE_KEY_LENGTH));
+    if (!bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
 
     switch (sign->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
@@ -945,6 +955,14 @@ int RsaSigned(RSA_SIGNED* sign) {
         break;
     default:return handleErrors_asymmetric("Invalid private key format.", bio, NULL, pkey);
     }
+
+    BIO_free(bio);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", NULL);
+
+    int type = EVP_PKEY_base_id(pkey);
+    if (type != EVP_PKEY_RSA)
+        return handleErrors_asymmetric("Key is not a RSA key.", bio, NULL, pkey);
 
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx)
@@ -967,8 +985,11 @@ int RsaSigned(RSA_SIGNED* sign) {
         return handleErrors_asymmetric("Failed to generate signature.", bio, NULL, pkey);
     }
 
+    sign->SIGNATURE_LENGTH = siglen;
+
     EVP_MD_CTX_free(ctx);
-    return static_cast<int>(siglen);
+    EVP_PKEY_free(pkey);
+    return 0;
 }
 
 int RsaVerify(RSA_VERIFY* verify) {
@@ -987,6 +1008,14 @@ int RsaVerify(RSA_VERIFY* verify) {
     default:return handleErrors_asymmetric("Invalid public key format.", bio, NULL, pkey);
     }
 
+    BIO_free(bio);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public key.", NULL, bio, NULL);
+
+    int type = EVP_PKEY_base_id(pkey);
+    if (type != EVP_PKEY_RSA)
+        return handleErrors_asymmetric("Key is not a RSA key.", bio, NULL, pkey);
+
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx)
         return handleErrors_asymmetric("Failed to create digest context.", bio, NULL, pkey);
@@ -1000,5 +1029,6 @@ int RsaVerify(RSA_VERIFY* verify) {
     int result = EVP_DigestVerify(ctx, verify->SIGNATURE, verify->SIGNATURE_LENGTH, verify->DATA, verify->DATA_LENGTH);
     verify->IS_VALID = result == 1;
     EVP_MD_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
     return 0;
 }

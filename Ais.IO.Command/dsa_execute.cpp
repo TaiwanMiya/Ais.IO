@@ -931,12 +931,12 @@ void dsa_execute::Signed(Dsa& dsa) {
 	};
 	int result_size = ((DsaSigned)DsaFunctions.at("-signed"))(&sign);
 	if (result_size != -1) {
-		signature.resize(result_size);
+		signature.resize(sign.SIGNATURE_LENGTH);
 		if (!IsRowData) {
 			std::cout << Hint("<DSA Signed>") << std::endl;
 			cryptography_libary::ValueEncode(dsa.output_option, signature, dsa.Output);
 			std::cout << Ask(dsa.Output) << std::endl;
-			std::cout << Hint("Data Length: [") << Ask(std::to_string(result_size)) << Hint("]") << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(sign.SIGNATURE_LENGTH)) << Hint("]") << std::endl;
 			std::cout << Hint("Output Length: [") << Ask(std::to_string(dsa.Output.size())) << Hint("]") << std::endl;
 		}
 		else {

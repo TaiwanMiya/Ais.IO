@@ -151,6 +151,9 @@ enum ECC_MODE : unsigned long long {
     ECC_EXTRACT_PUBLIC = 5,
     ECC_CHECK_PUBLIC = 6,
     ECC_CHECK_PRIVATE = 7,
+    ECC_SIGNATURE = 8,
+    ECC_VERIFICATION = 9,
+    ECC_KEYDERIVE = 10,
 };
 
 enum SYMMETRY_CRYPTER {
@@ -917,6 +920,7 @@ struct DSA_SIGNED {
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
 };
 
@@ -1051,6 +1055,7 @@ struct RSA_SIGNED {
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
 };
 
@@ -1134,6 +1139,64 @@ struct ECC_CHECK_PRIVATE_KEY {
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     ECC_CURVE CURVE_NID;
+};
+
+struct ECC_ENCRYPT {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* PLAIN_TEXT;
+    unsigned char* CIPHER_TEXT;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t PLAIN_TEXT_LENGTH;
+};
+
+struct ECC_DECRYPT {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* CIPHER_TEXT;
+    unsigned char* PLAIN_TEXT;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t CIPHER_TEXT_LENGTH;
+};
+
+struct ECC_SIGNED {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* DATA;
+    unsigned char* SIGNATURE;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+};
+
+struct ECC_VERIFY {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    const unsigned char* PUBLIC_KEY;
+    const unsigned char* DATA;
+    const unsigned char* SIGNATURE;
+    size_t PUBLIC_KEY_LENGTH;
+    size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    bool IS_VALID;
+};
+
+struct ECC_KEY_DERIVE {
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PEER_PUBLIC_KEY_FORMAT;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    const unsigned char* PEER_PUBLIC_KEY;
+    unsigned char* DERIVED_KEY;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t PEER_PUBLIC_KEY_LENGTH;
+    size_t DERIVED_KEY_LENGTH;
 };
 
 // Define function pointer types for all APIs
@@ -1347,8 +1410,10 @@ typedef int (*EccExportKeys)(ECC_EXPORT*);
 typedef int (*EccExtractPublicKey)(ECC_EXTRACT_PUBLIC_KEY*);
 typedef int (*EccCheckPublicKey)(ECC_CHECK_PUBLIC_KEY*);
 typedef int (*EccCheckPrivateKey)(ECC_CHECK_PRIVATE_KEY*);
+typedef int (*EccSigned)(ECC_SIGNED*);
+typedef int (*EccVerify)(ECC_VERIFY*);
+typedef int (*EccKeyDerive)(ECC_KEY_DERIVE*);
 #pragma endregion
-
 
 extern std::unordered_map<std::string, void*> ReadFunctions;
 extern std::unordered_map<std::string, void*> WriteFunctions;

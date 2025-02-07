@@ -526,3 +526,168 @@ int EccCheckPrivateKey(ECC_CHECK_PRIVATE_KEY* check) {
     EVP_PKEY_free(pkey);
     return 0;
 }
+
+int EccSigned(ECC_SIGNED* sign) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(sign->PRIVATE_KEY, static_cast<int>(sign->PRIVATE_KEY_LENGTH));
+    if (!bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
+
+    switch (sign->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (sign->PEM_PASSWORD == NULL || sign->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(sign->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid private key format.", bio, NULL, pkey);
+    }
+
+    BIO_free(bio);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", NULL);
+
+    int type = EVP_PKEY_base_id(pkey);
+    if (type != EVP_PKEY_EC)
+        return handleErrors_asymmetric("Key is not an ECC key.", bio, NULL, pkey);
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create digest context.", bio, NULL, pkey);
+
+    const EVP_MD* md = GetHashCrypter(sign->HASH_ALGORITHM);
+    if (EVP_DigestSignInit(ctx, NULL, md, NULL, pkey) <= 0) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to initialize signing.", bio, NULL, pkey);
+    }
+
+    size_t siglen = 0;
+    if (EVP_DigestSign(ctx, NULL, &siglen, sign->DATA, sign->DATA_LENGTH) <= 0) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to determine signature length.", bio, NULL, pkey);
+    }
+
+    if (EVP_DigestSign(ctx, sign->SIGNATURE, &siglen, sign->DATA, sign->DATA_LENGTH) <= 0) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to generate signature.", bio, NULL, pkey);
+    }
+
+    sign->SIGNATURE_LENGTH = siglen;
+
+    EVP_MD_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
+int EccVerify(ECC_VERIFY* verify) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(verify->PUBLIC_KEY, static_cast<int>(verify->PUBLIC_KEY_LENGTH));
+
+    switch (verify->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid public key format.", bio, NULL, pkey);
+    }
+
+    BIO_free(bio);
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse public key.", NULL, bio, NULL);
+
+    int type = EVP_PKEY_base_id(pkey);
+    if (type != EVP_PKEY_EC)
+        return handleErrors_asymmetric("Key is not an ECC key.", bio, NULL, pkey);
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx)
+        return handleErrors_asymmetric("Failed to create digest context.", bio, NULL, pkey);
+
+    const EVP_MD* md = GetHashCrypter(verify->HASH_ALGORITHM);
+    if (EVP_DigestVerifyInit(ctx, NULL, md, NULL, pkey) <= 0) {
+        EVP_MD_CTX_free(ctx);
+        return handleErrors_asymmetric("Failed to initialize verification.", bio, NULL, pkey);
+    }
+
+    int result = EVP_DigestVerify(ctx, verify->SIGNATURE, verify->SIGNATURE_LENGTH, verify->DATA, verify->DATA_LENGTH);
+    verify->IS_VALID = result == 1;
+    EVP_MD_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
+int EccKeyDerive(ECC_KEY_DERIVE* params) {
+    ERR_clear_error();
+
+    EVP_PKEY* local_pkey = nullptr;
+    BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
+    if (!priv_bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
+
+    switch (params->PRIVATE_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(priv_bio, &local_pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(priv_bio, &local_pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(priv_bio, &local_pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid private key format.", NULL, priv_bio, NULL);
+    }
+
+    BIO_free(priv_bio);
+    if (!local_pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", NULL);
+
+    EVP_PKEY* peer_pkey = nullptr;
+    BIO* peer_bio = BIO_new_mem_buf(params->PEER_PUBLIC_KEY, static_cast<int>(params->PEER_PUBLIC_KEY_LENGTH));
+    if (!peer_bio)
+        return handleErrors_asymmetric("Failed to create BIO for peer public key.", NULL);
+
+    switch (params->PEER_PUBLIC_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PUBKEY(peer_bio, &peer_pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PUBKEY_bio(peer_bio, &peer_pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid peer public key format.", NULL, peer_bio, NULL, local_pkey, NULL);
+    }
+
+    BIO_free(peer_bio);
+    if (!peer_pkey)
+        return handleErrors_asymmetric("Failed to parse peer public key.", NULL, NULL, local_pkey);
+
+    EVP_PKEY_CTX* derive_ctx = EVP_PKEY_CTX_new(local_pkey, NULL);
+    if (!derive_ctx)
+        return handleErrors_asymmetric("Failed to create PKEY context for key derivation.", NULL, NULL, local_pkey, peer_pkey);
+
+    if (EVP_PKEY_derive_init(derive_ctx) <= 0 || EVP_PKEY_derive_set_peer(derive_ctx, peer_pkey) <= 0)
+        return handleErrors_asymmetric("Failed to initialize key derivation.", derive_ctx, NULL, NULL, local_pkey, peer_pkey);
+
+    size_t derived_len = 0;
+    if (EVP_PKEY_derive(derive_ctx, NULL, &derived_len) <= 0)
+        return handleErrors_asymmetric("Failed to determine derived key length.", derive_ctx, NULL, NULL, local_pkey, peer_pkey);
+
+    if (EVP_PKEY_derive(derive_ctx, params->DERIVED_KEY, &derived_len) <= 0)
+        return handleErrors_asymmetric("Failed to derive shared key.", derive_ctx, NULL, NULL, local_pkey, peer_pkey);
+
+    params->DERIVED_KEY_LENGTH = derived_len;
+
+    EVP_PKEY_CTX_free(derive_ctx);
+    EVP_PKEY_free(local_pkey);
+    EVP_PKEY_free(peer_pkey);
+
+    return 0;
+}

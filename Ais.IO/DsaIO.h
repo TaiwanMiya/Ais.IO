@@ -155,6 +155,7 @@ struct DSA_SIGNED {
     size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     size_t DATA_LENGTH;
+    size_t SIGNATURE_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
 };
 

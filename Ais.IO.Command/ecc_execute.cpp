@@ -116,10 +116,25 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 				break;
 			}
 			break;
+		case ecc_execute::hash("-sign"):
+		case ecc_execute::hash("-signed"):
+			ecc.Mode = ECC_MODE::ECC_SIGNATURE;
+			break;
+		case ecc_execute::hash("-ver"):
+		case ecc_execute::hash("-verify"):
+			ecc.Mode = ECC_MODE::ECC_VERIFICATION;
+			break;
+		case ecc_execute::hash("-dv"):
+		case ecc_execute::hash("-derive"):
+		case ecc_execute::hash("-key-derive"):
+			ecc.Mode = ECC_MODE::ECC_KEYDERIVE;
+			break;
 		case ecc_execute::hash("-pub"):
 		case ecc_execute::hash("-public"):
 		case ecc_execute::hash("-public-key"):
-			ecc.publickey_option = asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
+			ecc.publickey_option = ecc.Mode == ECC_MODE::ECC_KEYDERIVE
+				? asymmetric_libary::GetOption(ecc.ExtractKeyFormat, i, argv)
+				: asymmetric_libary::GetOption(ecc.KeyFormat, i, argv);
 			ecc.PublicKey = argv[i + 1];
 			i++;
 			break;
@@ -197,6 +212,13 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 				continue;
 			ecc.EXP = argv[i + 1];
 			i++;
+			break;
+		case ecc_execute::hash("-dat"):
+		case ecc_execute::hash("-data"):
+			ecc.data_option = cryptography_libary::GetOption(i, argv);
+			ecc.Data = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
 			break;
 		case ecc_execute::hash("-out"):
 		case ecc_execute::hash("-output"):
@@ -280,6 +302,15 @@ void ecc_execute::EccStart(Ecc& ecc) {
 		break;
 	case ECC_MODE::ECC_CHECK_PRIVATE:
 		CheckPrivateKey(ecc);
+		break;
+	case ECC_MODE::ECC_SIGNATURE:
+		Signed(ecc);
+		break;
+	case ECC_MODE::ECC_VERIFICATION:
+		Verify(ecc);
+		break;
+	case ECC_MODE::ECC_KEYDERIVE:
+		KeyDerive(ecc);
 		break;
 	}
 }
@@ -699,4 +730,166 @@ void ecc_execute::CheckPrivateKey(Ecc& ecc) {
 		std::cout << Hint(IsRowData ? "Success" : "Ecc Private Key Check Success.") << std::endl;
 	else
 		std::cout << Error(IsRowData ? "Falture" : "Ecc Private Key Check Falture.") << std::endl;
+}
+
+void ecc_execute::Signed(Ecc& ecc) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(ecc.privatekey_option, ecc.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, pemPass);
+	cryptography_libary::ValueDecode(ecc.data_option, ecc.Data, data);
+
+	ECC_CHECK_PRIVATE_KEY priv = {
+		ecc.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
+	if (priv.IS_KEY_OK)
+		signature.resize(1024);
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Signed>") << std::endl;
+		std::cout << Error("Ecc get private key failed.") << std::endl;
+	}
+
+	ECC_SIGNED sign = {
+		ecc.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		data.data(),
+		signature.data(),
+		privateKey.size(),
+		pemPass.size(),
+		data.size(),
+		ecc.Hash
+	};
+	int result_size = ((EccSigned)EccFunctions.at("-signed"))(&sign);
+	if (result_size != -1) {
+		signature.resize(sign.SIGNATURE_LENGTH);
+		if (!IsRowData) {
+			std::cout << Hint("<ECC Signed>") << std::endl;
+			cryptography_libary::ValueEncode(ecc.output_option, signature, ecc.Output);
+			std::cout << Ask(ecc.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(sign.SIGNATURE_LENGTH)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(ecc.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(ecc.output_option, signature, ecc.Output);
+			std::cout << Ask(ecc.Output) << std::endl;
+		}
+	}
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Signed>") << std::endl;
+		std::cout << Error("Ecc sign failed.") << std::endl;
+	}
+}
+
+void ecc_execute::Verify(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> data;
+	std::vector<unsigned char> signature;
+	cryptography_libary::ValueDecode(ecc.publickey_option, ecc.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(ecc.data_option, ecc.Data, data);
+	cryptography_libary::ValueDecode(ecc.signature_option, ecc.Signature, signature);
+
+	ECC_VERIFY verify = {
+		ecc.KeyFormat,
+		publicKey.data(),
+		data.data(),
+		signature.data(),
+		publicKey.size(),
+		data.size(),
+		signature.size(),
+		ecc.Hash
+	};
+	((EccVerify)EccFunctions.at("-verify"))(&verify);
+	if (verify.IS_VALID) {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Verify>") << std::endl;
+		std::cout << Ask(IsRowData ? "Success" : "Verification Success!") << std::endl;
+	}
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Verify>") << std::endl;
+		std::cout << Error(IsRowData ? "Falture" : "Verification Failure!") << std::endl;
+	}
+}
+
+void ecc_execute::KeyDerive(Ecc& ecc) {
+	std::vector<unsigned char> publicKey;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> deriveKey;
+	cryptography_libary::ValueDecode(ecc.publickey_option, ecc.PublicKey, publicKey);
+	cryptography_libary::ValueDecode(ecc.privatekey_option, ecc.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(ecc.password_option, ecc.Password, pemPass);
+
+	ECC_CHECK_PRIVATE_KEY priv = {
+		ecc.KeyFormat,
+		privateKey.data(),
+		privateKey.size(),
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
+	if (priv.IS_KEY_OK)
+		deriveKey.resize(1024);
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Key Derive>") << std::endl;
+		std::cout << Error("Ecc get private key failed.") << std::endl;
+	}
+
+	ECC_CHECK_PUBLIC_KEY pub = {
+		ecc.ExtractKeyFormat,
+		publicKey.data(),
+		publicKey.size()
+	};
+	((EccCheckPublicKey)EccFunctions.at("-pub-check"))(&pub);
+	if (pub.IS_KEY_OK)
+		deriveKey.resize(1024);
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Key Derive>") << std::endl;
+		std::cout << Error("Ecc get public key failed.") << std::endl;
+	}
+
+	ECC_KEY_DERIVE derive = {
+		ecc.KeyFormat,
+		ecc.ExtractKeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		publicKey.data(),
+		deriveKey.data(),
+		privateKey.size(),
+		pemPass.size(),
+		publicKey.size(),
+		deriveKey.size(),
+	};
+	int result = ((EccKeyDerive)EccFunctions.at("-derive"))(&derive);
+	if (result != -1) {
+		deriveKey.resize(derive.DERIVED_KEY_LENGTH);
+		if (!IsRowData) {
+			std::cout << Hint("<ECC Key Derive>") << std::endl;
+			cryptography_libary::ValueEncode(ecc.output_option, deriveKey, ecc.Output);
+			std::cout << Ask(ecc.Output) << std::endl;
+			std::cout << Hint("Data Length: [") << Ask(std::to_string(derive.DERIVED_KEY_LENGTH)) << Hint("]") << std::endl;
+			std::cout << Hint("Output Length: [") << Ask(std::to_string(ecc.Output.size())) << Hint("]") << std::endl;
+		}
+		else {
+			cryptography_libary::ValueEncode(ecc.output_option, deriveKey, ecc.Output);
+			std::cout << Ask(ecc.Output) << std::endl;
+		}
+	}
+	else {
+		if (!IsRowData)
+			std::cout << Hint("<ECC Key Derive>") << std::endl;
+		std::cout << Error("Ecc key derive failed.") << std::endl;
+	}
 }
