@@ -259,7 +259,7 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 					if (std::regex_search(argv[i + 1], pattern))
 						ecc.PublicKey = argv[i + 1];
 					else
-						ecc.PublicKey = ecc.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						ecc.PublicKey = ecc.ExtractKeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
 						? std::string(argv[i + 1]) + "-pub.der"
 						: std::string(argv[i + 1]) + "-pub.pem";
 				}

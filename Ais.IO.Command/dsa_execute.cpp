@@ -289,7 +289,7 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 					if (std::regex_search(argv[i + 1], pattern))
 						dsa.Params = argv[i + 1];
 					else
-						dsa.Params = dsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						dsa.Params = dsa.ExtractKeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
 						? std::string(argv[i + 1]) + "-param.der"
 						: std::string(argv[i + 1]) + "-param.pem";
 				}

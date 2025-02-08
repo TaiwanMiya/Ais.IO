@@ -133,6 +133,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base10Encode)EncodeFunctions.at("-base10-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base10 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -142,6 +147,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base16Encode)EncodeFunctions.at("-base16-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base16 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -151,6 +161,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base32Encode)EncodeFunctions.at("-base32-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base32 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -160,6 +175,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base58Encode)EncodeFunctions.at("-base58-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base58 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -169,6 +189,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base62Encode)EncodeFunctions.at("-base62-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base62 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -178,6 +203,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base64Encode)EncodeFunctions.at("-base64-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base64 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -187,6 +217,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base85Encode)EncodeFunctions.at("-base85-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base85 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -196,6 +231,11 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		resultCode = ((Base91Encode)EncodeFunctions.at("-base91-encode"))(input.data(), input.size(), result.data(), length);
 		if (resultCode > 0)
 			result.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base91 Encode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		input.clear();
 		output.assign(result.begin(), result.end());
 		break;
@@ -212,6 +252,7 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string input, std::vector<unsigned char>& output) {
 	size_t length;
 	int resultCode;
+	std::cout << "Length: " << std::to_string(input.size()) << "\tContent: " << input << std::endl;
 	switch (option) {
 	case CRYPT_OPTIONS::OPTION_TEXT:
 		output.clear();
@@ -224,6 +265,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base10Decode)EncodeFunctions.at("-base10-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base10 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE16:
 		length = cryptography_libary::CalculateDecodeLength("--base16", input.size());
@@ -232,6 +278,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base16Decode)EncodeFunctions.at("-base16-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base16 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE32:
 		length = cryptography_libary::CalculateDecodeLength("--base32", input.size());
@@ -240,6 +291,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base32Decode)EncodeFunctions.at("-base32-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base32 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE58:
 		length = cryptography_libary::CalculateDecodeLength("--base58", input.size());
@@ -248,6 +304,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base58Decode)EncodeFunctions.at("-base58-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base58 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE62:
 		length = cryptography_libary::CalculateDecodeLength("--base62", input.size());
@@ -256,6 +317,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base62Decode)EncodeFunctions.at("-base62-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base62 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE64:
 		length = cryptography_libary::CalculateDecodeLength("--base64", input.size());
@@ -264,6 +330,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base64Decode)EncodeFunctions.at("-base64-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base64 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE85:
 		length = cryptography_libary::CalculateDecodeLength("--base85", input.size());
@@ -272,6 +343,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base85Decode)EncodeFunctions.at("-base85-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base85 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_BASE91:
 		length = cryptography_libary::CalculateDecodeLength("--base91", input.size());
@@ -280,6 +356,11 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		resultCode = ((Base91Decode)EncodeFunctions.at("-base91-decode"))(input.c_str(), input.size(), output.data(), length);
 		if (resultCode > 0)
 			output.resize(resultCode);
+		else {
+			std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+			std::cerr << Error("Base91 Decode Error: " + error_message) << std::endl;
+			output.resize(0);
+		}
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
 		std::ifstream file(input, std::ios::in | std::ios::binary | std::ios::ate);
@@ -309,6 +390,16 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 			output.erase(output.begin(), output.begin() + 3);
 		file.close();
 		break;
+	}
+}
+
+std::string cryptography_libary::GetBaseErrorCode(int result_code) {
+	switch (result_code) {
+	case -1:return "Input or Output is Empty.";
+	case -2:return "Output buffer insufficient.";
+	case -3:return "The input data length is illegal during decoding.";
+	case -4:return "Illegal characters occurred during decoding.";
+	default:return "";
 	}
 }
 

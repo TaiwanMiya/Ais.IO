@@ -29,15 +29,15 @@ size_t Base85Length(const size_t inputSize, bool isEncode) {
 }
 
 size_t Base58Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(58)) + 1 : std::floor(inputSize * std::log2(58) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(58)) + 1 : std::floor(inputSize * std::log2(58) / 8) + 1;
 }
 
 size_t Base62Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(62)) + 1 : std::floor(inputSize * std::log2(62) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(62)) + 1 : std::floor(inputSize * std::log2(62) / 8) + 1;
 }
 
 size_t Base91Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(91)) + 1 : std::floor(inputSize * std::log2(91) / 8);
+    return isEncode ? std::ceil((inputSize * 8) / std::log2(91)) + 1 : std::floor(inputSize * std::log2(91) / 8) + 1;
 }
 
 int Base10Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
@@ -302,7 +302,7 @@ int Base58Decode(const char* input, const size_t inputSize, unsigned char* outpu
 
     // 初始化解碼緩衝區
     const size_t bufferSize = inputSize * 2;
-    unsigned long long* buffer = new unsigned long long[bufferSize];
+    unsigned char* buffer = new unsigned char[bufferSize];
     size_t bufferLen = 0;
 
     // 解碼過程
@@ -352,7 +352,7 @@ int Base62Encode(const unsigned char* input, const size_t inputSize, char* outpu
 
     // 初始化固定大小的緩衝區
     const size_t bufferSize = inputSize * 2;
-    uint8_t* buffer = new uint8_t[bufferSize];
+    unsigned char* buffer = new unsigned char[bufferSize];
     size_t bufferLen = 0;
 
     // 初始化數據
@@ -399,7 +399,7 @@ int Base62Decode(const char* input, const size_t inputSize, unsigned char* outpu
 
     // 初始化解碼緩衝區
     const size_t bufferSize = inputSize * 2;
-    unsigned long long* buffer = new unsigned long long[bufferSize];
+    unsigned char* buffer = new unsigned char[bufferSize];
     size_t bufferLen = 0;
 
     // 解碼過程
@@ -596,8 +596,7 @@ int Base91Encode(const unsigned char* input, const size_t inputSize, char* outpu
 
     // 計算輸出所需的大小
     size_t requiredSize = static_cast<size_t>(std::ceil((inputSize * 8) / std::log2(91.0))) + 1;
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
+    if (outputSize < requiredSize) return -3; // 輸出緩衝區不足
 
     uint32_t value = 0; // 暫存值
     int bits = 0;       // 暫存的位數
@@ -644,7 +643,6 @@ int Base91Encode(const unsigned char* input, const size_t inputSize, char* outpu
         }
     }
 
-    output[outputIndex] = '\0'; // 添加結束符
     return static_cast<int>(outputIndex);
 }
 
@@ -653,10 +651,9 @@ int Base91Decode(const char* input, const size_t inputSize, unsigned char* outpu
 
     // 計算輸出所需的大小
     size_t requiredSize = static_cast<size_t>(std::floor(inputSize * std::log2(91.0) / 8));
-    if (outputSize < requiredSize)
-        return -3; // 輸出緩衝區不足
+    if (outputSize < requiredSize) return -3; // 輸出緩衝區不足
 
-    uint32_t value = 0; // 暫存值
+    unsigned int value = 0; // 暫存值
     int bits = 0;       // 暫存的位數
     size_t outputIndex = 0;
     int decoded = -1;
@@ -665,9 +662,8 @@ int Base91Decode(const char* input, const size_t inputSize, unsigned char* outpu
         int index = Base91_Lookup[static_cast<unsigned char>(input[i])];
         if (index == -1) continue; // 跳過無效字符
 
-        if (decoded == -1) {
+        if (decoded == -1)
             decoded = index;
-        }
         else {
             decoded += index * 91;
             value |= decoded << bits;

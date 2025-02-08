@@ -284,7 +284,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 					if (std::regex_search(argv[i + 1], pattern))
 						rsa.PublicKey = argv[i + 1];
 					else
-						rsa.PublicKey = rsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						rsa.PublicKey = rsa.ExtractKeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
 						? std::string(argv[i + 1]) + "-pub.der"
 						: std::string(argv[i + 1]) + "-pub.pem";
 				}
