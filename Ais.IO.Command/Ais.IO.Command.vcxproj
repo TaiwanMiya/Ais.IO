@@ -182,9 +182,13 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="mapping_libary.h" />
     <ClInclude Include="output_colors.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="rsa_execute.h" />
     <ClInclude Include="string_case.h" />
     <ClInclude Include="usage_libary.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Ais.IO.Command1.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

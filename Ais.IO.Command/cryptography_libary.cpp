@@ -252,7 +252,6 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string input, std::vector<unsigned char>& output) {
 	size_t length;
 	int resultCode;
-	std::cout << "Length: " << std::to_string(input.size()) << "\tContent: " << input << std::endl;
 	switch (option) {
 	case CRYPT_OPTIONS::OPTION_TEXT:
 		output.clear();
