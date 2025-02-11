@@ -78,8 +78,11 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
     if (encodeType == "-base91-decode")
         resultCode = ((Base91Decode)EncodeFunctions.at(encodeType))(reinterpret_cast<const char*>(inputData), inputLength, outputBuffer.data(), outputLength);
 
-    if (resultCode < 0)
+    if (resultCode < 0) {
         std::cerr << Error("Encoding/Decoding failed for ") << Ask(mode) << Error(" with code: ") << Ask(std::to_string(resultCode)) << "\n";
+        std::string error_message = cryptography_libary::GetBaseErrorCode(resultCode);
+        std::cerr << Error(display + " Error: " + error_message) << std::endl;
+    }
     else {
         if (!cmd.output.empty()) {
             if (resultCode > outputBuffer.size()) {
