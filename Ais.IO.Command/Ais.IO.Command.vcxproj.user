@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments> -conv -b85 "Fn0n00R$kj)bND}_m)i_;&amp;j=wwH@|ubVN7~1VH;O=_?l}EDUR)3I+%&amp;hDgpm0|5u2L&lt;2$q1cuNjf58fadaH`&gt;ZA`B&gt;uD?haUafic9;rSmqqqGE4G}(%Wz&amp;&amp;7Jsg{sI&lt;&gt;NrYs_eb#&amp;75hgM*$F%H96%S^xk5" -out -b16</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-conv -b91 OGWEZEm41XIUUZgA8M]uJB8FTX$ApI#D:C`*&amp;o(mx7@f%xU2\"u$P#{v};&lt;Xec%,_I$Xb.p?p.G2&amp;ht/xhenA -out -b16</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>

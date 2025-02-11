@@ -53,7 +53,7 @@ bool CheckInput() {
 #if _WIN32
     int isa_tty = _isatty(_fileno(stdin));
 #else
-    int isa_tty = _isatty(_fileno(stdin));
+    int isa_tty = isatty(fileno(stdin));
 #endif
     if (isa_tty)
         IsInput = false;

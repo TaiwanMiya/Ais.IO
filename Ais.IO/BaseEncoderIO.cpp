@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "BaseEncoderIO.h"
+#include <iostream>
 
 static int HexCharToValue(char c) {
     if (c >= '0' && c <= '9') return c - '0';
@@ -606,9 +607,9 @@ int Base91Encode(const unsigned char* input, const size_t inputSize, char* outpu
         value |= input[i] << bits; // 添加字節到暫存值
         bits += 8;                 // 更新位數
 
-        while (bits >= 13) {
+        if (bits > 13) {
             if (outputIndex + 2 > outputSize) return -2; // 輸出緩衝區不足
-            uint32_t encoded = value & 8191;
+            unsigned int encoded = value & 8191;
             if (encoded > 88) {
                 value >>= 13;
                 bits -= 13;
@@ -618,16 +619,13 @@ int Base91Encode(const unsigned char* input, const size_t inputSize, char* outpu
                 value >>= 14;
                 bits -= 14;
             }
-            if ((encoded / 91) < 91) {
-                int mod91 = encoded % 91;
-                int div91 = encoded / 91;
 
-                if (mod91 < 91 && div91 < 91) {
-                    output[outputIndex++] = Base91_Chars[mod91];
-                    output[outputIndex++] = Base91_Chars[div91];
-                }
-                else
-                    return -4; // 無效的數據，防止越界
+            int mod91 = encoded % 91;
+            int div91 = encoded / 91;
+
+            if (mod91 < 91 && div91 < 91) {
+                output[outputIndex++] = Base91_Chars[mod91];
+                output[outputIndex++] = Base91_Chars[div91];
             }
             else
                 return -4; // 無效的數據，防止越界
@@ -656,7 +654,7 @@ int Base91Decode(const char* input, const size_t inputSize, unsigned char* outpu
     unsigned int value = 0; // 暫存值
     long long bits = 0;       // 暫存的位數
     size_t outputIndex = 0;
-    int decoded = -1;
+    unsigned int decoded = -1;
 
     for (size_t i = 0; i < inputSize; ++i) {
         int index = Base91_Lookup[static_cast<unsigned char>(input[i])];
@@ -669,12 +667,14 @@ int Base91Decode(const char* input, const size_t inputSize, unsigned char* outpu
             value |= decoded << bits;
             bits += (decoded & 8191) > 88 ? 13 : 14;
 
-            while (bits >= 8) {
+            // 提取字節，當 queue 中的位數超過 8 位時
+            for (bool ok = true; ok; ok = (bits > 7)) {
                 if (outputIndex >= outputSize) return -2; // 輸出緩衝區不足
-                output[outputIndex++] = static_cast<unsigned char>(value & 0xFF);
-                value >>= 8;
+                output[outputIndex++] = static_cast<unsigned char>(value & 0xFF); // 提取最低 8 位
+                value >>= 8; // 更新 value
                 bits -= 8;
             }
+
             decoded = -1;
         }
     }
