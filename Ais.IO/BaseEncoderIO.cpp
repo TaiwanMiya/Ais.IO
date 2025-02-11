@@ -20,20 +20,20 @@ size_t Base32Length(const size_t inputSize, bool isEncode) {
     return isEncode ? ((inputSize + 4) / 5) * 8 + 1 : (inputSize / 8) * 5;
 }
 
-size_t Base64Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? ((inputSize + 2) / 3) * 4 + 1 : (inputSize / 4) * 3;
-}
-
-size_t Base85Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? ((inputSize + 3) / 4) * 5 + 1 : (inputSize / 5) * 4;
-}
-
 size_t Base58Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(58)) + 1 : std::floor(inputSize * std::log2(58) / 8) + 1;
 }
 
 size_t Base62Length(const size_t inputSize, bool isEncode) {
     return isEncode ? std::ceil((inputSize * 8) / std::log2(62)) + 1 : std::floor(inputSize * std::log2(62) / 8) + 1;
+}
+
+size_t Base64Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? ((inputSize + 2) / 3) * 4 + 1 : (inputSize / 4) * 3;
+}
+
+size_t Base85Length(const size_t inputSize, bool isEncode) {
+    return isEncode ? ((inputSize + 3) / 4) * 5 + 1 : (inputSize / 5) * 4;
 }
 
 size_t Base91Length(const size_t inputSize, bool isEncode) {
@@ -654,7 +654,7 @@ int Base91Decode(const char* input, const size_t inputSize, unsigned char* outpu
     if (outputSize < requiredSize) return -3; // 輸出緩衝區不足
 
     unsigned int value = 0; // 暫存值
-    int bits = 0;       // 暫存的位數
+    long long bits = 0;       // 暫存的位數
     size_t outputIndex = 0;
     int decoded = -1;
 

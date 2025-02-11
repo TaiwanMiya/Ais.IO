@@ -51,11 +51,12 @@ std::string InputContent = "";
 
 bool CheckInput() {
 #if _WIN32
-    if (_isatty(_fileno(stdin))) {
+    int isa_tty = _isatty(_fileno(stdin));
 #else
-    if (isatty(fileno(stdin))) {
+    int isa_tty = _isatty(_fileno(stdin));
 #endif
-    }
+    if (isa_tty)
+        IsInput = false;
     else {
         std::string input;
         IsInput = true;
