@@ -211,60 +211,7 @@ int RsaGenerateKeys(RSA_KEY_PAIR* generate) {
     return 0;
 }
 
-int RsaGeneratePKCS8(RSA_PKCS8_KEY* generate) {
-    ERR_clear_error();
-
-    BIO* pub_bio = BIO_new(BIO_s_mem());
-    BIO* priv_bio = BIO_new(BIO_s_mem());
-
-    EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
-    if (!pkey)
-        return handleErrors_asymmetric("RSA PKCS#8 key generate failed.", NULL);
-
-    const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
-
-    switch (generate->KEY_FORMAT) {
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
-        if (1 != PEM_write_bio_PUBKEY(pub_bio, pkey))
-            return handleErrors_asymmetric("Unable to write public key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
-        if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0) {
-            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
-                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
-        }
-        else {
-            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
-                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", pub_bio, priv_bio, pkey);
-        }
-        break;
-    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
-        if (1 != i2d_PUBKEY_bio(pub_bio, pkey))
-            return handleErrors_asymmetric("Unable to write public key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
-        if (1 != i2d_PrivateKey_bio(priv_bio, pkey))
-            return handleErrors_asymmetric("Unable to write private key in PKCS#8 DER format to memory.", pub_bio, priv_bio, pkey);
-        break;
-    default:return handleErrors_asymmetric("Invalid asymmetric key format.", pub_bio, priv_bio, pkey);
-    }
-
-    size_t pub_len = BIO_pending(pub_bio);
-    size_t priv_len = BIO_pending(priv_bio);
-    if (generate->PUBLIC_KEY == nullptr || generate->PRIVATE_KEY == nullptr || generate->PUBLIC_KEY_LENGTH < pub_len || generate->PRIVATE_KEY_LENGTH < priv_len) {
-        generate->PUBLIC_KEY = new unsigned char[pub_len];
-        generate->PRIVATE_KEY = new unsigned char[priv_len];
-    }
-
-    BIO_read(pub_bio, generate->PUBLIC_KEY, pub_len);
-    BIO_read(priv_bio, generate->PRIVATE_KEY, priv_len);
-
-    generate->PUBLIC_KEY_LENGTH = pub_len;
-    generate->PRIVATE_KEY_LENGTH = priv_len;
-
-    BIO_free_all(pub_bio);
-    BIO_free_all(priv_bio);
-    EVP_PKEY_free(pkey);
-    return 0;
-}
-
-int RsaGeneratePKCS10(RSA_PKCS10_CSR* generate) {
+int RsaGenerateCSR(RSA_CSR* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());
@@ -325,7 +272,7 @@ int RsaGeneratePKCS10(RSA_PKCS10_CSR* generate) {
     return 0;
 }
 
-int RsaGeneratePKCS12(RSA_PKCS12_CERTIFICATE_KEY* generate) {
+int RsaGenerateP12(RSA_P12* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());

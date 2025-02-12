@@ -40,14 +40,10 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 			case ecc_execute::hash("-keys"):
 				ecc.Mode = ECC_MODE::ECC_GENERATE_KEYS;
 				i++;
-				if (IsULong(argv[i + 1])) {
-					ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
-					i++;
-				}
-				else {
-					ecc.Curve = EccCurve[ToLower(argv[i + 1])];
-					i++;
-				}
+				ecc.Curve = IsULong(argv[i + 1])
+					? (ECC_CURVE)std::stoi(argv[i + 1])
+					: EccCurve[ToLower(argv[i + 1])];
+				i++;
 				break;
 			case ecc_execute::hash("-param"):
 			case ecc_execute::hash("-params"):
@@ -55,14 +51,10 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 			case ecc_execute::hash("-parameters"):
 				ecc.Mode = ECC_MODE::ECC_GENERATE_PARAMS;
 				i++;
-				if (IsULong(argv[i + 1])) {
-					ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
-					i++;
-				}
-				else {
-					ecc.Curve = EccCurve[ToLower(argv[i + 1])];
-					i++;
-				}
+				ecc.Curve = IsULong(argv[i + 1])
+					? (ECC_CURVE)std::stoi(argv[i + 1])
+					: EccCurve[ToLower(argv[i + 1])];
+				i++;
 				break;
 			default:
 				continue;
@@ -183,14 +175,10 @@ void ecc_execute::ParseParameters(int argc, char* argv[], Ecc& ecc) {
 		case ecc_execute::hash("-curve"):
 			if (ecc.param_option == CRYPT_OPTIONS::OPTION_FILE)
 				continue;
-			if (IsULong(argv[i + 1])) {
-				ecc.Curve = (ECC_CURVE)std::stoi(argv[i + 1]);
-				i++;
-			}
-			else {
-				ecc.Curve = EccCurve[ToLower(argv[i + 1])];
-				i++;
-			}
+			ecc.Curve = IsULong(argv[i + 1])
+				? (ECC_CURVE)std::stoi(argv[i + 1])
+				: EccCurve[ToLower(argv[i + 1])];
+			i++;
 			break;
 		case ecc_execute::hash("-x"):
 		case ecc_execute::hash("-public-x"):
