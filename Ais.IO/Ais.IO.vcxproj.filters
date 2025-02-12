@@ -78,6 +78,9 @@
     <ClInclude Include="EccIO.h">
       <Filter>標頭檔\Cryptography</Filter>
     </ClInclude>
+    <ClInclude Include="ErrorCore.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -128,10 +131,18 @@
     <ClCompile Include="EccIO.cpp">
       <Filter>來源檔案\Cryptography</Filter>
     </ClCompile>
+    <ClCompile Include="ErrorCore.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Ais.IO.rc">
       <Filter>資源檔</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Ais.IO.def">
+      <Filter>來源檔案</Filter>
+    </None>
   </ItemGroup>
 </Project>
