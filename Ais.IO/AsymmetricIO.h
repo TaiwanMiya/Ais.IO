@@ -32,6 +32,16 @@ enum ASYMMETRIC_KEY_PKCS {
     ASYMMETRIC_KEY_PKCS12 = 2,
 };
 
+enum ASYMMETRIC_KEY_CSR_KEY_USAGE {
+    CSR_KEY_USAGE_NULL              = 0x0000,
+    CSR_KEY_USAGE_DIGITAL_SIGNATURE = 0x0001,
+    CSR_KEY_USAGE_KEY_ENCIPHERMENT  = 0x0002,
+    CSR_KEY_USAGE_DATA_ENCIPHERMENT = 0x0004,
+    CSR_KEY_USAGE_KEY_AGREEMENT     = 0x0008,
+    CSR_KEY_USAGE_CERT_SIGN         = 0x0010,
+    CSR_KEY_USAGE_CRL_SIGN          = 0x0020,
+};
+
 int PasswordCallback(char* buf, int size, int rwflag, void* userdata);
 int handleErrors_asymmetric(std::string message, EVP_PKEY_CTX* ctx);
 int handleErrors_asymmetric(std::string message, BIO* pub, BIO* priv, EVP_PKEY* pkey);

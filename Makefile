@@ -61,6 +61,7 @@ compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
 
 $(BIN_DIR)/Ais.IO.so: $(AISO_DIR)/BinaryIO.cpp $(AISO_DIR)/BinaryReaderIO.cpp $(AISO_DIR)/BinaryWriterIO.cpp \
 			$(AISO_DIR)/BinaryAppenderIO.cpp $(AISO_DIR)/BinaryInserterIO.cpp $(AISO_DIR)/BaseEncoderIO.cpp \
+			$(AISO_DIR)/CheckValid.cpp \
 			$(AISO_DIR)/SymmetryIO.cpp $(AISO_DIR)/AsymmetricIO.cpp \
 			$(AISO_DIR)/AesIO.cpp $(AISO_DIR)/DesIO.cpp \
 			$(AISO_DIR)/HashIO.cpp \

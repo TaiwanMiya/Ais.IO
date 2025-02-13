@@ -33,6 +33,7 @@ std::unordered_map<std::string, void*> AppendFunctions;
 std::unordered_map<std::string, void*> InsertFunctions;
 std::unordered_map<std::string, void*> EncodeFunctions;
 std::unordered_map<std::string, void*> SymmetryFunctions;
+std::unordered_map<std::string, void*> CheckValidFunctions;
 std::unordered_map<std::string, void*> AesFunctions;
 std::unordered_map<std::string, void*> DesFunctions;
 std::unordered_map<std::string, void*> HashFunctions;
@@ -957,6 +958,7 @@ void LoadFunctions() {
     RsaFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "RsaGetKeyLength");
     RsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
     RsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
+    RsaFunctions["-csr-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateCSR");
     RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
     RsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "RsaExtractPublicKey");
@@ -982,6 +984,12 @@ void LoadFunctions() {
 
     SymmetryFunctions["-generate"] = GET_PROC_ADDRESS(Lib, "Generate");
     SymmetryFunctions["-convert"] = GET_PROC_ADDRESS(Lib, "Import");
+
+    CheckValidFunctions["-dns"] = GET_PROC_ADDRESS(Lib, "IsValidDNS");
+    CheckValidFunctions["-ipv4"] = GET_PROC_ADDRESS(Lib, "IsValidIPv4");
+    CheckValidFunctions["-ipv6"] = GET_PROC_ADDRESS(Lib, "IsValidIPv6");
+    CheckValidFunctions["-email"] = GET_PROC_ADDRESS(Lib, "IsValidEmail");
+    CheckValidFunctions["-uri"] = GET_PROC_ADDRESS(Lib, "IsValidURI");
 }
 
 bool FindFileInEnvPath(const std::string& filename, std::string& resolvedPath) {

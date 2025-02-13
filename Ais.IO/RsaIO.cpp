@@ -218,11 +218,12 @@ int RsaGenerateCSR(RSA_CSR* generate) {
 
     EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
     if (!pkey)
-        return handleErrors_asymmetric("RSA PKCS#10 certificate generate failed.", NULL);
+        return handleErrors_asymmetric("RSA CSR certificate generate failed.", NULL);
 
     X509_REQ* req = X509_REQ_new();
     X509_NAME* name = X509_NAME_new();
 
+    //X509_NAME_add_entry_by_NID(name, NID_organizationName)
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
     if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
@@ -241,6 +242,54 @@ int RsaGenerateCSR(RSA_CSR* generate) {
     const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
     if (!X509_REQ_set_pubkey(req, pkey))
         return handleErrors_asymmetric("Failed to set public key.", NULL);
+
+#pragma region Add Extensions To CSR
+
+    STACK_OF(X509_EXTENSION)* exts = sk_X509_EXTENSION_new_null();
+    if (!exts)
+        return handleErrors_asymmetric("Failed to create extension stack.", NULL);
+
+    // Add Subject Alternative Name
+    // DNS:www.example.com,IP:192.168.1.1,email:user@example.com,URI:https://example.com
+    if (generate->SUBJECT_ALTERNATIVE_NAME && !std::string(generate->SUBJECT_ALTERNATIVE_NAME).empty()) {
+        X509_EXTENSION* ext_SAN = X509V3_EXT_conf_nid(NULL, NULL, NID_subject_alt_name, generate->SUBJECT_ALTERNATIVE_NAME);
+        if (!ext_SAN) {
+            sk_X509_EXTENSION_free(exts);
+            return handleErrors_asymmetric("Failed to create SAN extension.", NULL);
+        }
+        sk_X509_EXTENSION_push(exts, ext_SAN);
+    }
+
+    // Add Key Usage
+    std::string usage;
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DIGITAL_SIGNATURE) usage += "digitalSignature, ";
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_ENCIPHERMENT)  usage += "keyEncipherment, ";
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DATA_ENCIPHERMENT) usage += "dataEncipherment, ";
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_AGREEMENT)     usage += "keyAgreement, ";
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN)         usage += "keyCertSign, ";
+    if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN)          usage += "cRLSign, ";
+    if (!usage.empty()) {
+        usage.pop_back();
+        usage.pop_back();
+    }
+
+    if (!usage.empty()) {
+        X509_EXTENSION* ext_KU = X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, usage.c_str());
+        if (!ext_KU) {
+            sk_X509_EXTENSION_free(exts);
+            return handleErrors_asymmetric("Failed to create Key Usage extension.", NULL);
+        }
+        sk_X509_EXTENSION_push(exts, ext_KU);
+    }
+
+    if (!X509_REQ_add_extensions(req, exts)) {
+        sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+        return handleErrors_asymmetric("Failed to add extensions to CSR.", NULL);
+    }
+
+    sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+#pragma endregion
+
     if (!X509_REQ_sign(req, pkey, md))
         return handleErrors_asymmetric("Failed to sign the request.", NULL);
 

@@ -1,5 +1,6 @@
 #include "asymmetric_libary.h"
 #include "string_case.h"
+#include "cryptography_libary.h"
 
 constexpr size_t asymmetric_libary::hash(const char* str) {
 	size_t hash = 0;
@@ -347,5 +348,99 @@ void asymmetric_libary::ParseAlgorithm(int& i, char* argv[], SYMMETRY_CRYPTER& c
 		}
 		break;
 	default:break;
+	}
+}
+
+void asymmetric_libary::GetCsrSAN(int& i, char* argv[], int argc, std::string& san) {
+	for (i; i + 1< argc; ++i) {
+		CRYPT_OPTIONS option = CRYPT_OPTIONS::OPTION_TEXT;
+		bool isValid = false;
+		std::vector<unsigned char> output;
+		std::string arg_option = ToLower(argv[i + 1]);
+		switch (asymmetric_libary::set_hash(arg_option.c_str())) {
+		case hash("-dns"):
+			i++;
+			option = cryptography_libary::GetOption(i, argv);
+			cryptography_libary::ValueDecode(option, std::string(argv[i + 1]), output);
+			output.push_back('\0');
+			isValid = ((IsValidDNS)CheckValidFunctions.at("-dns"))(reinterpret_cast<const char*>(output.data()));
+			san += "DNS:";
+			break;
+		case hash("-ip"):
+			i++;
+			option = cryptography_libary::GetOption(i, argv);
+			cryptography_libary::ValueDecode(option, std::string(argv[i + 1]), output);
+			output.push_back('\0');
+			isValid = ((IsValidIPv4)CheckValidFunctions.at("-ipv4"))(reinterpret_cast<const char*>(output.data())) ||
+					  ((IsValidIPv6)CheckValidFunctions.at("-ipv6"))(reinterpret_cast<const char*>(output.data()));
+			san += "IP:";
+			break;
+		case hash("-mail"):
+		case hash("-email"):
+			i++;
+			option = cryptography_libary::GetOption(i, argv);
+			cryptography_libary::ValueDecode(option, std::string(argv[i + 1]), output);
+			output.push_back('\0');
+			isValid = ((IsValidEmail)CheckValidFunctions.at("-email"))(reinterpret_cast<const char*>(output.data()));
+			san += "email:";
+			break;
+		case hash("-uri"):
+		case hash("-url"):
+			i++;
+			option = cryptography_libary::GetOption(i, argv);
+			cryptography_libary::ValueDecode(option, std::string(argv[i + 1]), output);
+			output.push_back('\0');
+			isValid = ((IsValidURI)CheckValidFunctions.at("-uri"))(reinterpret_cast<const char*>(output.data()));
+			san += "URI:";
+			break;
+		default:isValid = false;
+		}
+		if (isValid) {
+			san += reinterpret_cast<const char*>(output.data());
+			san += ",";
+		}
+		else
+			break;
+	}
+	if (!san.empty() && san.back() == ',')
+		san.pop_back();
+}
+
+void asymmetric_libary::GetCsrKeyUsage(int& i, char* argv[], int argc, ASYMMETRIC_KEY_CSR_KEY_USAGE& usage) {
+	for (i; i < argc; ++i) {
+		std::string arg_option = ToLower(argv[i + 1]);
+		switch (asymmetric_libary::set_hash(arg_option.c_str())) {
+		case hash("-ds"):
+		case hash("-digital-signature"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DIGITAL_SIGNATURE);
+			i++;
+			break;
+		case hash("-ke"):
+		case hash("-key-encipherment"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_ENCIPHERMENT);
+			i++;
+			break;
+		case hash("-de"):
+		case hash("-data-encipherment"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DATA_ENCIPHERMENT);
+			i++;
+			break;
+		case hash("-ka"):
+		case hash("-key-agreement"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_AGREEMENT);
+			i++;
+			break;
+		case hash("-kc"):
+		case hash("-key-cert-sign"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN);
+			i++;
+			break;
+		case hash("-cs"):
+		case hash("-crl-sign"):
+			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN);
+			i++;
+			break;
+		default:return;
+		}
 	}
 }

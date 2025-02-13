@@ -19,6 +19,7 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <openssl/bn.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
@@ -78,6 +79,8 @@ struct RSA_CSR {
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
     const unsigned char* COMMON_NAME;
+    const char* SUBJECT_ALTERNATIVE_NAME;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
 };
 
 struct RSA_P12 {

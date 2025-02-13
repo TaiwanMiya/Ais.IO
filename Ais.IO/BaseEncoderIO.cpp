@@ -589,6 +589,9 @@ int Base85Decode(const char* input, const size_t inputSize, unsigned char* outpu
         j += 4;
     }
 
+    while (j > 0 && output[j - 1] == '\0')
+        --j;
+
     return j;
 }
 

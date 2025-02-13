@@ -25,69 +25,69 @@
 #include <map>
 
 enum BINARYIO_TYPE : unsigned char {
-    TYPE_BOOLEAN = 1,
-    TYPE_BYTE = 2,
-    TYPE_SBYTE = 3,
-    TYPE_SHORT = 4,
-    TYPE_USHORT = 5,
-    TYPE_INT = 6,
-    TYPE_UINT = 7,
-    TYPE_LONG = 8,
-    TYPE_ULONG = 9,
-    TYPE_FLOAT = 10,
-    TYPE_DOUBLE = 11,
-    TYPE_BYTES = 12,
-    TYPE_STRING = 13,
+    TYPE_BOOLEAN    = 1,
+    TYPE_BYTE       = 2,
+    TYPE_SBYTE      = 3,
+    TYPE_SHORT      = 4,
+    TYPE_USHORT     = 5,
+    TYPE_INT        = 6,
+    TYPE_UINT       = 7,
+    TYPE_LONG       = 8,
+    TYPE_ULONG      = 9,
+    TYPE_FLOAT      = 10,
+    TYPE_DOUBLE     = 11,
+    TYPE_BYTES      = 12,
+    TYPE_STRING     = 13,
 };
 
 enum CRYPT_OPTIONS : unsigned char {
-    OPTION_TEXT = 0,
-    OPTION_BASE10 = 1,
-    OPTION_BASE16 = 2,
-    OPTION_BASE32 = 3,
-    OPTION_BASE58 = 4,
-    OPTION_BASE62 = 5,
-    OPTION_BASE64 = 6,
-    OPTION_BASE85 = 7,
-    OPTION_BASE91 = 8,
-    OPTION_FILE = 9,
+    OPTION_TEXT     = 0,
+    OPTION_BASE10   = 1,
+    OPTION_BASE16   = 2,
+    OPTION_BASE32   = 3,
+    OPTION_BASE58   = 4,
+    OPTION_BASE62   = 5,
+    OPTION_BASE64   = 6,
+    OPTION_BASE85   = 7,
+    OPTION_BASE91   = 8,
+    OPTION_FILE     = 9,
 };
 
 enum RAND_TYPE : unsigned char {
-    RAND_GENERATE = 0,
-    RAND_IMPORT = 1,
+    RAND_GENERATE   = 0,
+    RAND_IMPORT     = 1,
 };
 
 enum CRYPT_TYPE : unsigned char {
-    CRYPTION_NULL = 0,
-    CRYPTION_ENCRYPT = 1,
-    CRYPTION_DECRYPT = 2,
-    CRYPTION_SIGNED = 3,
-    CRYPTION_VERIFY = 4,
-    CRYPTION_DERIVE = 5,
+    CRYPTION_NULL       = 0,
+    CRYPTION_ENCRYPT    = 1,
+    CRYPTION_DECRYPT    = 2,
+    CRYPTION_SIGNED     = 3,
+    CRYPTION_VERIFY     = 4,
+    CRYPTION_DERIVE     = 5,
 };
 
 enum AES_MODE : unsigned long long {
-    AES_NULL = 0,
-    AES_CTR = 1,
-    AES_CBC = 2,
-    AES_CFB = 3,
-    AES_OFB = 4,
-    AES_ECB = 5,
-    AES_GCM = 6,
-    AES_CCM = 7,
-    AES_XTS = 8,
-    AES_OCB = 9,
-    AES_WRAP = 10,
+    AES_NULL    = 0,
+    AES_CTR     = 1,
+    AES_CBC     = 2,
+    AES_CFB     = 3,
+    AES_OFB     = 4,
+    AES_ECB     = 5,
+    AES_GCM     = 6,
+    AES_CCM     = 7,
+    AES_XTS     = 8,
+    AES_OCB     = 9,
+    AES_WRAP    = 10,
 };
 
 enum DES_MODE : unsigned long long {
-    DES_NULL = 0,
-    DES_CBC = 1,
-    DES_CFB = 2,
-    DES_OFB = 3,
-    DES_ECB = 4,
-    DES_WRAP = 5,
+    DES_NULL    = 0,
+    DES_CBC     = 1,
+    DES_CFB     = 2,
+    DES_OFB     = 3,
+    DES_ECB     = 4,
+    DES_WRAP    = 5,
 };
 
 enum HASH_TYPE {
@@ -114,79 +114,80 @@ enum HASH_TYPE {
 };
 
 enum DSA_MODE : unsigned long long {
-    DSA_GENERATE_PARAMS = 0,
-    DSA_GENERATE_KEYS = 1,
-    DSA_EXPORT_PARAMS = 2,
-    DSA_EXPORT_KEYS = 3,
-    DSA_EXTRACT_PUBLIC = 4,
-    DSA_EXTRACT_PARAMETERS = 5,
-    DSA_EXTRACT_KEYS = 6,
-    DSA_CHECK_PUBLIC = 7,
-    DSA_CHECK_PRIVATE = 8,
-    DSA_CHECK_PARAMETER = 9,
-    DSA_SIGNATURE = 10,
-    DSA_VERIFICATION = 11,
+    DSA_GENERATE_PARAMS     = 0,
+    DSA_GENERATE_KEYS       = 1,
+    DSA_EXPORT_PARAMS       = 2,
+    DSA_EXPORT_KEYS         = 3,
+    DSA_EXTRACT_PUBLIC      = 4,
+    DSA_EXTRACT_PARAMETERS  = 5,
+    DSA_EXTRACT_KEYS        = 6,
+    DSA_CHECK_PUBLIC        = 7,
+    DSA_CHECK_PRIVATE       = 8,
+    DSA_CHECK_PARAMETER     = 9,
+    DSA_SIGNATURE           = 10,
+    DSA_VERIFICATION        = 11,
 };
 
 enum RSA_MODE : unsigned long long {
     RSA_GENERATE_PARAMS = 0,
-    RSA_GENERATE_KEYS = 1,
-    RSA_EXPORT_PARAMS = 2,
-    RSA_EXPORT_KEYS = 3,
-    RSA_EXTRACT_PUBLIC = 4,
-    RSA_CHECK_PUBLIC = 5,
-    RSA_CHECK_PRIVATE = 6,
-    RSA_ENCRPTION = 7,
-    RSA_DECRPTION = 8,
-    RSA_SIGNATURE = 9,
-    RSA_VERIFICATION = 10,
+    RSA_GENERATE_KEYS   = 1,
+    RSA_GENERATE_CSR    = 2,
+    RSA_EXPORT_PARAMS   = 3,
+    RSA_EXPORT_KEYS     = 4,
+    RSA_EXTRACT_PUBLIC  = 5,
+    RSA_CHECK_PUBLIC    = 6,
+    RSA_CHECK_PRIVATE   = 7,
+    RSA_ENCRPTION       = 8,
+    RSA_DECRPTION       = 9,
+    RSA_SIGNATURE       = 10,
+    RSA_VERIFICATION    = 11,
 };
 
 enum ECC_MODE : unsigned long long {
-    ECC_LIST_CURVE = 0,
+    ECC_LIST_CURVE      = 0,
     ECC_GENERATE_PARAMS = 1,
-    ECC_GENERATE_KEYS = 2,
-    ECC_EXPORT_PARAMS = 3,
-    ECC_EXPORT_KEYS = 4,
-    ECC_EXTRACT_PUBLIC = 5,
-    ECC_CHECK_PUBLIC = 6,
-    ECC_CHECK_PRIVATE = 7,
-    ECC_SIGNATURE = 8,
-    ECC_VERIFICATION = 9,
-    ECC_KEYDERIVE = 10,
+    ECC_GENERATE_KEYS   = 2,
+    ECC_EXPORT_PARAMS   = 3,
+    ECC_EXPORT_KEYS     = 4,
+    ECC_EXTRACT_PUBLIC  = 5,
+    ECC_CHECK_PUBLIC    = 6,
+    ECC_CHECK_PRIVATE   = 7,
+    ECC_SIGNATURE       = 8,
+    ECC_VERIFICATION    = 9,
+    ECC_KEYDERIVE       = 10,
 };
 
 enum SYMMETRY_CRYPTER {
-    SYMMETRY_NULL = 0,
-    SYMMETRY_AES_CTR = 1,
-    SYMMETRY_AES_CBC = 2,
-    SYMMETRY_AES_CFB = 3,
-    SYMMETRY_AES_OFB = 4,
-    SYMMETRY_AES_ECB = 5,
-    SYMMETRY_AES_GCM = 6,
-    SYMMETRY_AES_CCM = 7,
-    SYMMETRY_AES_XTS = 8,
-    SYMMETRY_AES_OCB = 9,
-    SYMMETRY_AES_WRAP = 10,
-    SYMMETRY_DES_CBC = 11,
-    SYMMETRY_DES_CFB = 12,
-    SYMMETRY_DES_OFB = 13,
-    SYMMETRY_DES_ECB = 14,
-    SYMMETRY_DES_WRAP = 15,
+    SYMMETRY_NULL       = 0,
+    SYMMETRY_AES_CTR    = 1,
+    SYMMETRY_AES_CBC    = 2,
+    SYMMETRY_AES_CFB    = 3,
+    SYMMETRY_AES_OFB    = 4,
+    SYMMETRY_AES_ECB    = 5,
+    SYMMETRY_AES_GCM    = 6,
+    SYMMETRY_AES_CCM    = 7,
+    SYMMETRY_AES_XTS    = 8,
+    SYMMETRY_AES_OCB    = 9,
+    SYMMETRY_AES_WRAP   = 10,
+    SYMMETRY_DES_CBC    = 11,
+    SYMMETRY_DES_CFB    = 12,
+    SYMMETRY_DES_OFB    = 13,
+    SYMMETRY_DES_ECB    = 14,
+    SYMMETRY_DES_WRAP   = 15,
 };
 
 enum SEGMENT_SIZE_OPTION {
-    SEGMENT_NULL = 0,
-    SEGMENT_1_BIT = 1,
-    SEGMENT_8_BIT = 8,
-    SEGMENT_64_BIT = 64,
+    SEGMENT_NULL    = 0,
+    SEGMENT_1_BIT   = 1,
+    SEGMENT_8_BIT   = 8,
+    SEGMENT_64_BIT  = 64,
     SEGMENT_128_BIT = 128,
 };
 
 enum SALT_SEQUENCE {
-    SALT_NULL = 0,
-    SALT_FIRST = 1 << 0,
-    SALT_LAST = 1 << 1,
+    SALT_NULL   = 0,
+    SALT_FIRST  = 1 << 0,
+    SALT_LAST   = 1 << 1,
     SALT_MIDDLE = 1 << 2,
 };
 
@@ -195,88 +196,98 @@ enum ASYMMETRIC_KEY_FORMAT {
     ASYMMETRIC_KEY_DER = 1,
 };
 
+enum ASYMMETRIC_KEY_CSR_KEY_USAGE {
+    CSR_KEY_USAGE_NULL              = 0x0000,
+    CSR_KEY_USAGE_DIGITAL_SIGNATURE = 0x0001,
+    CSR_KEY_USAGE_KEY_ENCIPHERMENT  = 0x0002,
+    CSR_KEY_USAGE_DATA_ENCIPHERMENT = 0x0004,
+    CSR_KEY_USAGE_KEY_AGREEMENT     = 0x0008,
+    CSR_KEY_USAGE_CERT_SIGN         = 0x0010,
+    CSR_KEY_USAGE_CRL_SIGN          = 0x0020,
+};
+
 enum ECC_CURVE : int {
-    ECC_PRIME_192_V1 = 409,
-    ECC_PRIME_192_V2 = 410,
-    ECC_PRIME_192_V3 = 411,
-    ECC_PRIME_239_V1 = 412,
-    ECC_PRIME_239_V2 = 413,
-    ECC_PRIME_239_V3 = 414,
-    ECC_PRIME_256_V1 = 415,
-    ECC_C2PNB_163_V1 = 684,
-    ECC_C2PNB_163_V2 = 685,
-    ECC_C2PNB_163_V3 = 686,
-    ECC_C2PNB_176_V1 = 687,
-    ECC_C2TNB_191_V1 = 688,
-    ECC_C2TNB_191_V2 = 689,
-    ECC_C2TNB_191_V3 = 690,
-    ECC_C2PNB_208_W1 = 693,
-    ECC_C2TNB_239_V1 = 694,
-    ECC_C2TNB_239_V2 = 695,
-    ECC_C2TNB_239_V3 = 696,
-    ECC_C2PNB_272_W1 = 699,
-    ECC_C2PNB_304_W1 = 700,
-    ECC_C2TNB_359_V1 = 701,
-    ECC_C2PNB_368_W1 = 702,
-    ECC_C2TNB_431_R1 = 703,
-    ECC_SECP_112_R1 = 704,
-    ECC_SECP_112_R2 = 705,
-    ECC_SECP_128_R1 = 706,
-    ECC_SECP_128_R2 = 707,
-    ECC_SECP_160_K1 = 708,
-    ECC_SECP_160_R1 = 709,
-    ECC_SECP_160_R2 = 710,
-    ECC_SECP_192_K1 = 711,
-    ECC_SECP_224_K1 = 712,
-    ECC_SECP_224_R1 = 713,
-    ECC_SECP_256_K1 = 714,
-    ECC_SECP_384_R1 = 715,
-    ECC_SECP_521_R1 = 716,
-    ECC_SECT_113_R1 = 717,
-    ECC_SECT_113_R2 = 718,
-    ECC_SECT_131_R1 = 719,
-    ECC_SECT_131_R2 = 720,
-    ECC_SECT_163_K1 = 721,
-    ECC_SECT_163_R1 = 722,
-    ECC_SECT_163_R2 = 723,
-    ECC_SECT_193_R1 = 724,
-    ECC_SECT_193_R2 = 725,
-    ECC_SECT_233_K1 = 726,
-    ECC_SECT_233_R1 = 727,
-    ECC_SECT_239_K1 = 728,
-    ECC_SECT_283_K1 = 729,
-    ECC_SECT_283_R1 = 730,
-    ECC_SECT_409_K1 = 731,
-    ECC_SECT_409_R1 = 732,
-    ECC_SECT_571_K1 = 733,
-    ECC_SECT_571_R1 = 734,
-    ECC_WAP_WSG_IDM_ECID_WTLS1 = 735,
-    ECC_WAP_WSG_IDM_ECID_WTLS3 = 736,
-    ECC_WAP_WSG_IDM_ECID_WTLS4 = 737,
-    ECC_WAP_WSG_IDM_ECID_WTLS5 = 738,
-    ECC_WAP_WSG_IDM_ECID_WTLS6 = 739,
-    ECC_WAP_WSG_IDM_ECID_WTLS7 = 740,
-    ECC_WAP_WSG_IDM_ECID_WTLS8 = 741,
-    ECC_WAP_WSG_IDM_ECID_WTLS9 = 742,
+    ECC_PRIME_192_V1            = 409,
+    ECC_PRIME_192_V2            = 410,
+    ECC_PRIME_192_V3            = 411,
+    ECC_PRIME_239_V1            = 412,
+    ECC_PRIME_239_V2            = 413,
+    ECC_PRIME_239_V3            = 414,
+    ECC_PRIME_256_V1            = 415,
+    ECC_C2PNB_163_V1            = 684,
+    ECC_C2PNB_163_V2            = 685,
+    ECC_C2PNB_163_V3            = 686,
+    ECC_C2PNB_176_V1            = 687,
+    ECC_C2TNB_191_V1            = 688,
+    ECC_C2TNB_191_V2            = 689,
+    ECC_C2TNB_191_V3            = 690,
+    ECC_C2PNB_208_W1            = 693,
+    ECC_C2TNB_239_V1            = 694,
+    ECC_C2TNB_239_V2            = 695,
+    ECC_C2TNB_239_V3            = 696,
+    ECC_C2PNB_272_W1            = 699,
+    ECC_C2PNB_304_W1            = 700,
+    ECC_C2TNB_359_V1            = 701,
+    ECC_C2PNB_368_W1            = 702,
+    ECC_C2TNB_431_R1            = 703,
+    ECC_SECP_112_R1             = 704,
+    ECC_SECP_112_R2             = 705,
+    ECC_SECP_128_R1             = 706,
+    ECC_SECP_128_R2             = 707,
+    ECC_SECP_160_K1             = 708,
+    ECC_SECP_160_R1             = 709,
+    ECC_SECP_160_R2             = 710,
+    ECC_SECP_192_K1             = 711,
+    ECC_SECP_224_K1             = 712,
+    ECC_SECP_224_R1             = 713,
+    ECC_SECP_256_K1             = 714,
+    ECC_SECP_384_R1             = 715,
+    ECC_SECP_521_R1             = 716,
+    ECC_SECT_113_R1             = 717,
+    ECC_SECT_113_R2             = 718,
+    ECC_SECT_131_R1             = 719,
+    ECC_SECT_131_R2             = 720,
+    ECC_SECT_163_K1             = 721,
+    ECC_SECT_163_R1             = 722,
+    ECC_SECT_163_R2             = 723,
+    ECC_SECT_193_R1             = 724,
+    ECC_SECT_193_R2             = 725,
+    ECC_SECT_233_K1             = 726,
+    ECC_SECT_233_R1             = 727,
+    ECC_SECT_239_K1             = 728,
+    ECC_SECT_283_K1             = 729,
+    ECC_SECT_283_R1             = 730,
+    ECC_SECT_409_K1             = 731,
+    ECC_SECT_409_R1             = 732,
+    ECC_SECT_571_K1             = 733,
+    ECC_SECT_571_R1             = 734,
+    ECC_WAP_WSG_IDM_ECID_WTLS1  = 735,
+    ECC_WAP_WSG_IDM_ECID_WTLS3  = 736,
+    ECC_WAP_WSG_IDM_ECID_WTLS4  = 737,
+    ECC_WAP_WSG_IDM_ECID_WTLS5  = 738,
+    ECC_WAP_WSG_IDM_ECID_WTLS6  = 739,
+    ECC_WAP_WSG_IDM_ECID_WTLS7  = 740,
+    ECC_WAP_WSG_IDM_ECID_WTLS8  = 741,
+    ECC_WAP_WSG_IDM_ECID_WTLS9  = 742,
     ECC_WAP_WSG_IDM_ECID_WTLS10 = 743,
     ECC_WAP_WSG_IDM_ECID_WTLS11 = 744,
     ECC_WAP_WSG_IDM_ECID_WTLS12 = 745,
-    ECC_OAKLEY_EC2N_3 = 749,
-    ECC_OAKLEY_EC2N_4 = 750,
-    ECC_BRAINPOOL_P160_R1 = 921,
-    ECC_BRAINPOOL_P160_T1 = 922,
-    ECC_BRAINPOOL_P192_R1 = 923,
-    ECC_BRAINPOOL_P192_T1 = 924,
-    ECC_BRAINPOOL_P224_R1 = 925,
-    ECC_BRAINPOOL_P224_T1 = 926,
-    ECC_BRAINPOOL_P256_R1 = 927,
-    ECC_BRAINPOOL_P256_T1 = 928,
-    ECC_BRAINPOOL_P320_R1 = 929,
-    ECC_BRAINPOOL_P320_T1 = 930,
-    ECC_BRAINPOOL_P384_R1 = 931,
-    ECC_BRAINPOOL_P384_T1 = 932,
-    ECC_BRAINPOOL_P512_R1 = 933,
-    ECC_BRAINPOOL_P512_T1 = 934,
+    ECC_OAKLEY_EC2N_3           = 749,
+    ECC_OAKLEY_EC2N_4           = 750,
+    ECC_BRAINPOOL_P160_R1       = 921,
+    ECC_BRAINPOOL_P160_T1       = 922,
+    ECC_BRAINPOOL_P192_R1       = 923,
+    ECC_BRAINPOOL_P192_T1       = 924,
+    ECC_BRAINPOOL_P224_R1       = 925,
+    ECC_BRAINPOOL_P224_T1       = 926,
+    ECC_BRAINPOOL_P256_R1       = 927,
+    ECC_BRAINPOOL_P256_T1       = 928,
+    ECC_BRAINPOOL_P320_R1       = 929,
+    ECC_BRAINPOOL_P320_T1       = 930,
+    ECC_BRAINPOOL_P384_R1       = 931,
+    ECC_BRAINPOOL_P384_T1       = 932,
+    ECC_BRAINPOOL_P512_R1       = 933,
+    ECC_BRAINPOOL_P512_T1       = 934,
 };
 
 struct Command {
@@ -412,9 +423,15 @@ struct Rsa {
     std::string Params;
     std::string PublicKey;
     std::string PrivateKey;
+    std::string CSR;
     std::string Password;
     std::string PlainText;
     std::string CipherText;
+    std::string Certificate_Country;
+    std::string Certificate_Organization;
+    std::string Certificate_Organization_Unit;
+    std::string Certificate_Common_Name;
+    std::string Subject_Alternative_Name;
     std::string Data;
     std::string Signature;
     std::string Output;
@@ -423,9 +440,14 @@ struct Rsa {
     CRYPT_OPTIONS param_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS csr_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS certificate_country_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS certificate_organization_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS certificate_organization_unit_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS certificate_common_name_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS data_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS signature_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS output_option = CRYPT_OPTIONS::OPTION_TEXT;
@@ -436,6 +458,7 @@ struct Rsa {
     int AlgorithmSize = 256;
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
     HASH_TYPE Hash = HASH_TYPE::HASH_SHA2_256;
+    ASYMMETRIC_KEY_CSR_KEY_USAGE Key_Usage = ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_NULL;
 };
 
 struct Ecc {
@@ -970,6 +993,20 @@ struct RSA_KEY_PAIR {
     const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
 };
 
+struct RSA_CSR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    unsigned char* CSR;
+    size_t CSR_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const unsigned char* COMMON_NAME;
+    const char* SUBJECT_ALTERNATIVE_NAME;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
+};
+
 struct RSA_EXPORT {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -1325,6 +1362,14 @@ typedef int (*Generate)(unsigned char*, size_t);
 typedef int (*Import)(const unsigned char*, size_t, unsigned char*, size_t);
 #pragma endregion
 
+#pragma region CheckValid
+typedef bool (*IsValidDNS)(const char*);
+typedef bool (*IsValidIPv4)(const char*);
+typedef bool (*IsValidIPv6)(const char*);
+typedef bool (*IsValidEmail)(const char*);
+typedef bool (*IsValidURI)(const char*);
+#pragma endregion
+
 #pragma region AesIO
 typedef int (*AesCtrEncrypt)(AES_CTR_ENCRYPT*);
 typedef int (*AesCtrDecrypt)(AES_CTR_DECRYPT*);
@@ -1383,12 +1428,12 @@ typedef int (*DsaSigned)(DSA_SIGNED*);
 typedef int (*DsaVerify)(DSA_VERIFY*);
 #pragma endregion
 
-
 #pragma region RsaIO
 typedef int (*RsaGetParametersLength)(RSA_PARAMETERS*);
 typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
+typedef int (*RsaGenerateCSR)(RSA_CSR*);
 typedef int (*RsaExportParameters)(RSA_EXPORT*);
 typedef int (*RsaExportKeys)(RSA_EXPORT*);
 typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
@@ -1421,6 +1466,7 @@ extern std::unordered_map<std::string, void*> AppendFunctions;
 extern std::unordered_map<std::string, void*> InsertFunctions;
 extern std::unordered_map<std::string, void*> EncodeFunctions;
 extern std::unordered_map<std::string, void*> SymmetryFunctions;
+extern std::unordered_map<std::string, void*> CheckValidFunctions;
 extern std::unordered_map<std::string, void*> AesFunctions;
 extern std::unordered_map<std::string, void*> DesFunctions;
 extern std::unordered_map<std::string, void*> HashFunctions;

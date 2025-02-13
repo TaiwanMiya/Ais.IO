@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-conv -b91 OGWEZEm41XIUUZgA8M]uJB8FTX$ApI#D:C`*&amp;o(mx7@f%xU2\"u$P#{v};&lt;Xec%,_I$Xb.p?p.G2&amp;ht/xhenA -out -b16</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-rsa -gen -csr 2048 -c -b16 "5457" -o -b16 "4675636B" -ou -b16 "4675636B20596F752042616279" -cn -b85 "OJQ$lb7^&amp;MX8-^I" -san -dns "www.bunn.com" -dns "buun.com.tw"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
