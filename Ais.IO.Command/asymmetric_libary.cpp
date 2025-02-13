@@ -1,6 +1,7 @@
 #include "asymmetric_libary.h"
 #include "string_case.h"
 #include "cryptography_libary.h"
+#include "output_colors.h"
 
 constexpr size_t asymmetric_libary::hash(const char* str) {
 	size_t hash = 0;
@@ -407,40 +408,71 @@ void asymmetric_libary::GetCsrSAN(int& i, char* argv[], int argc, std::string& s
 }
 
 void asymmetric_libary::GetCsrKeyUsage(int& i, char* argv[], int argc, ASYMMETRIC_KEY_CSR_KEY_USAGE& usage) {
-	for (i; i < argc; ++i) {
+	for (i; i + 1 < argc; ++i) {
 		std::string arg_option = ToLower(argv[i + 1]);
 		switch (asymmetric_libary::set_hash(arg_option.c_str())) {
 		case hash("-ds"):
 		case hash("-digital-signature"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DIGITAL_SIGNATURE);
-			i++;
 			break;
 		case hash("-ke"):
 		case hash("-key-encipherment"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_ENCIPHERMENT);
-			i++;
 			break;
 		case hash("-de"):
 		case hash("-data-encipherment"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DATA_ENCIPHERMENT);
-			i++;
 			break;
 		case hash("-ka"):
 		case hash("-key-agreement"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_AGREEMENT);
-			i++;
 			break;
 		case hash("-kc"):
 		case hash("-key-cert-sign"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN);
-			i++;
 			break;
 		case hash("-cs"):
 		case hash("-crl-sign"):
 			usage = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(usage | ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN);
-			i++;
 			break;
 		default:return;
 		}
 	}
+}
+
+void asymmetric_libary::PrintCsrSAN(std::string san) {
+	if (!IsRowData)
+		std::cout << Hint("<RSA CSR Subject Alternative Name (SAN)>") << std::endl;
+	std::string tab = IsRowData ? "" : "\t";
+	std::string mark_symbol = IsRowData ? ":" : " -> ";
+	std::stringstream ss(san);
+	std::string token;
+	while (std::getline(ss, token, ',')) {
+		size_t pos = token.find(':');
+		if (pos != std::string::npos) {
+			std::string first = token.substr(0, pos);
+			std::string second = token.substr(pos + 1);
+			std::cout << tab << Mark(first) << mark_symbol << Ask(second) << std::endl;
+		}
+		else
+			std::cout << tab << Ask(token) << std::endl;
+	}
+}
+
+void asymmetric_libary::PrintCsrKeyUsage(ASYMMETRIC_KEY_CSR_KEY_USAGE usage) {
+	if (!IsRowData)
+		std::cout << Hint("<RSA CSR Key Usage (KU)>") << std::endl;
+	std::string tab = IsRowData ? "" : "\t";
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DIGITAL_SIGNATURE)
+		std::cout << tab << Info("Digital Signature") << std::endl;
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_ENCIPHERMENT)
+		std::cout << tab << Info("Key Encipherment") << std::endl;
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DATA_ENCIPHERMENT)
+		std::cout << tab << Info("Data Encipherment") << std::endl;
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_AGREEMENT)
+		std::cout << tab << Info("Key Agreement") << std::endl;
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN)
+		std::cout << tab << Info("Certificate Sign") << std::endl;
+	if (usage & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN)
+		std::cout << tab << Info("CRL Sign") << std::endl;
 }

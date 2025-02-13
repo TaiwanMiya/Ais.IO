@@ -224,14 +224,14 @@ int RsaGenerateCSR(RSA_CSR* generate) {
     X509_NAME* name = X509_NAME_new();
 
     //X509_NAME_add_entry_by_NID(name, NID_organizationName)
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
     if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
     if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
-    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
         X509_NAME_free(name);
@@ -345,14 +345,14 @@ int RsaGenerateP12(RSA_P12* generate) {
 
     // 設置主題信息
     X509_NAME* name = X509_get_subject_name(x509);
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
+        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
     if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
     if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
-    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
 
     const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
     const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
@@ -801,6 +801,107 @@ int RsaCheckCSR(RSA_CHECK_CSR* check) {
     pkey = X509_REQ_get_pubkey(req);
     if (!pkey)
         return handleErrors_asymmetric("Failed to parse public or private key.", bio, NULL, pkey);
+
+    if (X509_REQ_verify(req, pkey) != 1)
+        return handleErrors_asymmetric("CSR signature verification failed.", bio, NULL, pkey);
+
+    X509_NAME* name = X509_REQ_get_subject_name(req);
+    if (!name)
+        return handleErrors_asymmetric("Failed to get subject name from CSR.", bio, NULL, pkey);
+
+    check->COMMON_NAME_LENGTH = X509_NAME_get_text_by_NID(name, NID_commonName, reinterpret_cast<char*>(check->COMMON_NAME), check->COMMON_NAME_LENGTH);
+    check->COUNTRY_LENGTH = X509_NAME_get_text_by_NID(name, NID_countryName, reinterpret_cast<char*>(check->COUNTRY), check->COUNTRY_LENGTH);
+    check->ORGANIZETION_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationName, reinterpret_cast<char*>(check->ORGANIZETION), check->ORGANIZETION_LENGTH);
+    check->ORGANIZETION_UNIT_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationalUnitName, reinterpret_cast<char*>(check->ORGANIZETION_UNIT), check->ORGANIZETION_UNIT_LENGTH);
+
+#pragma region Check Extensions To CSR
+
+    STACK_OF(X509_EXTENSION)* exts = X509_REQ_get_extensions(req);
+    if (exts) {
+        for (int i = 0; i < sk_X509_EXTENSION_num(exts); i++) {
+            X509_EXTENSION* ext = sk_X509_EXTENSION_value(exts, i);
+            ASN1_OBJECT* obj = X509_EXTENSION_get_object(ext);
+            char buf[256] = { 0 };
+            OBJ_obj2txt(buf, sizeof(buf), obj, 1);
+
+            // **Check Key Usage**
+            if (OBJ_txt2nid(buf) == NID_key_usage) {
+                ASN1_BIT_STRING* bit_str = (ASN1_BIT_STRING*)X509_EXTENSION_get_data(ext);
+                if (!bit_str)
+                    continue;
+
+                int usage_flags = 0;
+                for (int j = 0; j < bit_str->length; j++)
+                    usage_flags = (usage_flags << 8) | bit_str->data[j];
+
+                if (usage_flags & 0x0080) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_DIGITAL_SIGNATURE);
+                if (usage_flags & 0x0020) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_KEY_ENCIPHERMENT);
+                if (usage_flags & 0x0010) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_DATA_ENCIPHERMENT);
+                if (usage_flags & 0x0008) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_KEY_AGREEMENT);
+                if (usage_flags & 0x0004) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_CERT_SIGN);
+                if (usage_flags & 0x0002) check->KEY_USAGE = static_cast<ASYMMETRIC_KEY_CSR_KEY_USAGE>(check->KEY_USAGE | CSR_KEY_USAGE_CRL_SIGN);
+            }
+
+            // **Check Subject Alternative Name (SAN)**
+            if (OBJ_txt2nid(buf) == NID_subject_alt_name) {
+                GENERAL_NAMES* san_names = (GENERAL_NAMES*)X509V3_EXT_d2i(ext);
+                if (san_names) {
+                    std::string san_list;
+                    for (int j = 0; j < sk_GENERAL_NAME_num(san_names); j++) {
+                        GENERAL_NAME* san = sk_GENERAL_NAME_value(san_names, j);
+                        if (san->type == GEN_DNS) {
+                            char* dns_name = (char*)ASN1_STRING_get0_data(san->d.dNSName);
+                            if (dns_name)
+                                san_list += "DNS:" + std::string(dns_name) + ",";
+                        }
+                        else if (san->type == GEN_IPADD) {
+                            unsigned char* ip_data = (unsigned char*)ASN1_STRING_get0_data(san->d.iPAddress);
+                            int ip_len = san->d.iPAddress->length;
+
+                            if (!ip_data || ip_len == 0)
+                                continue;
+
+                            std::ostringstream ip_str;
+                            if (ip_len == 4) {  // IPv4
+                                for (int j = 0; j < ip_len; j++) {
+                                    if (j > 0) ip_str << ".";
+                                    ip_str << static_cast<int>(ip_data[j]);
+                                }
+                                san_list += "IP:" + ip_str.str() + ",";
+                            }
+                            else if (ip_len == 16) {  // IPv6
+                                for (int j = 0; j < ip_len; j += 2) {
+                                    if (j > 0) ip_str << ":";
+                                    ip_str << std::hex << std::setw(2) << std::setfill('0')
+                                        << static_cast<int>(ip_data[j]) << static_cast<int>(ip_data[j + 1]);
+                                }
+                                san_list += "IP:" + ip_str.str() + ",";
+                            }
+                        }
+                        else if (san->type == GEN_EMAIL) {
+                            char* email = (char*)ASN1_STRING_get0_data(san->d.rfc822Name);
+                            if (email)
+                                san_list += "email:" + std::string(email) + ",";
+                        }
+                        else if (san->type == GEN_URI) {
+                            char* uri = (char*)ASN1_STRING_get0_data(san->d.uniformResourceIdentifier);
+                            if (uri)
+                                san_list += "URI:" + std::string(uri) + ",";
+                        }
+                    }
+                    if (!san_list.empty()) {
+                        san_list.pop_back();
+                        std::memcpy(check->SUBJECT_ALTERNATIVE_NAME, san_list.c_str(), san_list.size());
+                        check->SUBJECT_ALTERNATIVE_NAME_LENGTH = san_list.size();
+                    }
+                    GENERAL_NAMES_free(san_names);
+                }
+            }
+        }
+        sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+    }
+
+#pragma endregion
 
     if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH))
         return handleErrors_asymmetric("Get Bits (bits) failed.", bio, NULL, pkey);

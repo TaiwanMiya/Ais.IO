@@ -31,6 +31,8 @@
 #include <ctime>
 #include <algorithm>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include "AsymmetricIO.h"
 #include "SymmetryIO.h"
 #include "HashIO.h"
@@ -75,10 +77,10 @@ struct RSA_CSR {
     unsigned char* CSR;
     size_t CSR_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
     const unsigned char* COUNTRY;
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
-    const unsigned char* COMMON_NAME;
     const char* SUBJECT_ALTERNATIVE_NAME;
     const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
 };
@@ -98,10 +100,10 @@ struct RSA_P12 {
     const HASH_TYPE HASH_ALGORITHM;
     const char* PKCS12_NAME;
     const char* PKCS12_PASSWORD;
+    const unsigned char* COMMON_NAME;
     const unsigned char* COUNTRY;
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
-    const unsigned char* COMMON_NAME;
     const unsigned long VALIDITY_DAYS;
 };
 
@@ -165,6 +167,17 @@ struct RSA_CHECK_CSR {
     const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
     const unsigned char* CSR;
     size_t CSR_LENGTH;
+    unsigned char* COMMON_NAME;
+    unsigned char* COUNTRY;
+    unsigned char* ORGANIZETION;
+    unsigned char* ORGANIZETION_UNIT;
+    char* SUBJECT_ALTERNATIVE_NAME;
+    size_t COMMON_NAME_LENGTH;
+    size_t COUNTRY_LENGTH;
+    size_t ORGANIZETION_LENGTH;
+    size_t ORGANIZETION_UNIT_LENGTH;
+    size_t SUBJECT_ALTERNATIVE_NAME_LENGTH;
+    ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
 };

@@ -103,6 +103,14 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				if (!IsInput)
 					i++;
 				break;
+			case rsa_execute::hash("-csr"):
+				rsa.Mode = RSA_MODE::RSA_CHECK_REQ_CSR;
+				i++;
+				rsa.csr_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
+				rsa.CSR = IsInput ? InputContent : argv[i + 1];
+				if (!IsInput)
+					i++;
+				break;
 			}
 			break;
 		case rsa_execute::hash("-en"):
@@ -251,6 +259,11 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			if (!IsInput)
 				i++;
 			break;
+		case rsa_execute::hash("-cn"):
+			rsa.certificate_common_name_option = cryptography_libary::GetOption(i, argv);
+			rsa.Certificate_Common_Name = argv[i + 1];
+			i++;
+			break;
 		case rsa_execute::hash("-c"):
 			rsa.certificate_country_option = cryptography_libary::GetOption(i, argv);
 			rsa.Certificate_Country = argv[i + 1];
@@ -264,11 +277,6 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-ou"):
 			rsa.certificate_organization_unit_option = cryptography_libary::GetOption(i, argv);
 			rsa.Certificate_Organization_Unit = argv[i + 1];
-			i++;
-			break;
-		case rsa_execute::hash("-cn"):
-			rsa.certificate_common_name_option = cryptography_libary::GetOption(i, argv);
-			rsa.Certificate_Common_Name = argv[i + 1];
 			i++;
 			break;
 		case rsa_execute::hash("-san"):
@@ -372,6 +380,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_CHECK_PRIVATE:
 		CheckPrivateKey(rsa);
+		break;
+	case RSA_MODE::RSA_CHECK_REQ_CSR:
+		CheckCSR(rsa);
 		break;
 	case RSA_MODE::RSA_EXTRACT_PUBLIC:
 		ExtractPublicKey(rsa);
@@ -539,18 +550,18 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 
 void rsa_execute::GenerateCSR(Rsa& rsa) {
 	std::vector<unsigned char> csr;
+	std::vector<unsigned char> cn;
 	std::vector<unsigned char> c;
 	std::vector<unsigned char> o;
 	std::vector<unsigned char> ou;
-	std::vector<unsigned char> cn;
+	cryptography_libary::ValueDecode(rsa.certificate_common_name_option, rsa.Certificate_Common_Name, cn);
 	cryptography_libary::ValueDecode(rsa.certificate_country_option, rsa.Certificate_Country, c);
 	cryptography_libary::ValueDecode(rsa.certificate_organization_option, rsa.Certificate_Organization, o);
 	cryptography_libary::ValueDecode(rsa.certificate_organization_unit_option, rsa.Certificate_Organization_Unit, ou);
-	cryptography_libary::ValueDecode(rsa.certificate_common_name_option, rsa.Certificate_Common_Name, cn);
+	if (!cn.empty()) cn.push_back('\0');
 	if (!c.empty()) c.push_back('\0');
 	if (!o.empty()) o.push_back('\0');
 	if (!ou.empty()) ou.push_back('\0');
-	if (!cn.empty()) cn.push_back('\0');
 	csr.resize(rsa.KeyLength);
 	RSA_CSR generate = {
 		rsa.KeyLength,
@@ -558,16 +569,16 @@ void rsa_execute::GenerateCSR(Rsa& rsa) {
 		csr.data(),
 		csr.size(),
 		rsa.Hash,
+		cn.data(),
 		c.data(),
 		o.data(),
 		ou.data(),
-		cn.data(),
 		rsa.Subject_Alternative_Name.data(),
 		rsa.Key_Usage,
 	};
 	((RsaGenerateCSR)RsaFunctions.at("-csr-gen"))(&generate);
 	csr.resize(generate.CSR_LENGTH);
-	std::string csr_str = rsa.PublicKey;
+	std::string csr_str = rsa.CSR;
 	cryptography_libary::ValueEncode(rsa.csr_option, csr, csr_str);
 	if (!IsRowData) {
 		std::cout << Hint("<RSA CSR Generate>") << std::endl;
@@ -931,6 +942,71 @@ void rsa_execute::CheckPrivateKey(Rsa& rsa) {
 		std::cout << Hint(IsRowData ? "Success" : "Rsa Private Key Check Success.") << std::endl;
 	else
 		std::cout << Error(IsRowData ? "Falture" : "Rsa Private Key Check Falture.") << std::endl;
+}
+
+void rsa_execute::CheckCSR(Rsa& rsa) {
+	std::vector<unsigned char> csr;
+	std::vector<unsigned char> cn;
+	std::vector<unsigned char> c;
+	std::vector<unsigned char> o;
+	std::vector<unsigned char> ou;
+	std::vector<char> san;
+	cryptography_libary::ValueDecode(rsa.csr_option, rsa.CSR, csr);
+	cn.resize(256);
+	c.resize(3);
+	o.resize(256);
+	ou.resize(256);
+	san.resize(4096);
+	RSA_CHECK_CSR req_csr = {
+		rsa.KeyFormat,
+		csr.data(),
+		csr.size(),
+		cn.data(),
+		c.data(),
+		o.data(),
+		ou.data(),
+		san.data(),
+		cn.size(),
+		c.size(),
+		o.size(),
+		ou.size(),
+		san.size(),
+		rsa.Key_Usage,
+	};
+	((RsaCheckCSR)RsaFunctions.at("-csr-check"))(&req_csr);
+	std::string cn_str = reinterpret_cast<char*>(req_csr.COMMON_NAME);
+	std::string c_str = reinterpret_cast<char*>(req_csr.COUNTRY);
+	std::string o_str = reinterpret_cast<char*>(req_csr.ORGANIZETION);
+	std::string ou_str = reinterpret_cast<char*>(req_csr.ORGANIZETION_UNIT);
+	if (!IsRowData) {
+		std::cout << Hint("<RSA CSR Check>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(req_csr.KEY_LENGTH)) << std::endl;
+		if (!cn_str.empty())
+			std::cout << Mark("Common Name (CN)") << " = " << Ask(cn_str) << std::endl;
+		if (!c_str.empty())
+			std::cout << Mark("Country (C)") << " = " << Ask(c_str) << std::endl;
+		if (!o_str.empty())
+			std::cout << Mark("Organization (O)") << " = " << Ask(o_str) << std::endl;
+		if (!ou_str.empty())
+			std::cout << Mark("Organization Unit (OU)") << " = " << Ask(ou_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(std::to_string(req_csr.KEY_LENGTH)) << std::endl;
+		if (!cn_str.empty())
+			std::cout << Ask(cn_str) << std::endl;
+		if (!c_str.empty())
+			std::cout << Ask(c_str) << std::endl;
+		if (!o_str.empty())
+			std::cout << Ask(o_str) << std::endl;
+		if (!ou_str.empty())
+			std::cout << Ask(ou_str) << std::endl;
+	}
+	asymmetric_libary::PrintCsrSAN(san.data());
+	asymmetric_libary::PrintCsrKeyUsage(req_csr.KEY_USAGE);
+	if (req_csr.IS_KEY_OK)
+		std::cout << Hint(IsRowData ? "Success" : "Rsa CSR Check Success.") << std::endl;
+	else
+		std::cout << Error(IsRowData ? "Falture" : "Rsa CSR Check Falture.") << std::endl;
 }
 
 void rsa_execute::Encrypt(Rsa& rsa) {

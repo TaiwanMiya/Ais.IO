@@ -137,10 +137,11 @@ enum RSA_MODE : unsigned long long {
     RSA_EXTRACT_PUBLIC  = 5,
     RSA_CHECK_PUBLIC    = 6,
     RSA_CHECK_PRIVATE   = 7,
-    RSA_ENCRPTION       = 8,
-    RSA_DECRPTION       = 9,
-    RSA_SIGNATURE       = 10,
-    RSA_VERIFICATION    = 11,
+    RSA_CHECK_REQ_CSR   = 8,
+    RSA_ENCRPTION       = 9,
+    RSA_DECRPTION       = 10,
+    RSA_SIGNATURE       = 11,
+    RSA_VERIFICATION    = 12,
 };
 
 enum ECC_MODE : unsigned long long {
@@ -999,10 +1000,10 @@ struct RSA_CSR {
     unsigned char* CSR;
     size_t CSR_LENGTH;
     const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
     const unsigned char* COUNTRY;
     const unsigned char* ORGANIZETION;
     const unsigned char* ORGANIZETION_UNIT;
-    const unsigned char* COMMON_NAME;
     const char* SUBJECT_ALTERNATIVE_NAME;
     const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
 };
@@ -1059,6 +1060,25 @@ struct RSA_CHECK_PRIVATE_KEY {
     size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
     size_t PEM_PASSWORD_LENGTH;
+    bool IS_KEY_OK;
+    size_t KEY_LENGTH;
+};
+
+struct RSA_CHECK_CSR {
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    const unsigned char* CSR;
+    size_t CSR_LENGTH;
+    unsigned char* COMMON_NAME;
+    unsigned char* COUNTRY;
+    unsigned char* ORGANIZETION;
+    unsigned char* ORGANIZETION_UNIT;
+    char* SUBJECT_ALTERNATIVE_NAME;
+    size_t COMMON_NAME_LENGTH;
+    size_t COUNTRY_LENGTH;
+    size_t ORGANIZETION_LENGTH;
+    size_t ORGANIZETION_UNIT_LENGTH;
+    size_t SUBJECT_ALTERNATIVE_NAME_LENGTH;
+    ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
 };
@@ -1439,6 +1459,7 @@ typedef int (*RsaExportKeys)(RSA_EXPORT*);
 typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
 typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
 typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
+typedef int (*RsaCheckCSR)(RSA_CHECK_CSR*);
 typedef int (*RsaEncryption)(RSA_ENCRYPT*);
 typedef int (*RsaDecryption)(RSA_DECRYPT*);
 typedef int (*RsaSigned)(RSA_SIGNED*);

@@ -17,6 +17,7 @@ private:
 	static void ExtractPublicKey(Rsa& rsa);
 	static void CheckPublicKey(Rsa& rsa);
 	static void CheckPrivateKey(Rsa& rsa);
+	static void CheckCSR(Rsa& rsa);
 	static void Encrypt(Rsa& rsa);
 	static void Decrypt(Rsa& rsa);
 	static void Signed(Rsa& rsa);

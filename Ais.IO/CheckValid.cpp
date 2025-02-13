@@ -3,7 +3,7 @@
 
 bool IsValidDNS(const char* dns) {
     std::regex dns_regex(R"(^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z0-9]{2,63}\.?$)");
-    return std::regex_match(dns, dns_regex) && (strlen(dns) <= 253);
+    return std::regex_match(dns, dns_regex);
 }
 
 bool IsValidIPv4(const char* ip) {
