@@ -113,6 +113,22 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				break;
 			}
 			break;
+		case rsa_execute::hash("-lk"):
+		case rsa_execute::hash("-lock"):
+			rsa.Mode = RSA_MODE::RSA_PEM_PASS_LOCK;
+			rsa.privatekey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
+			rsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
+			break;
+		case rsa_execute::hash("-uk"):
+		case rsa_execute::hash("-unlock"):
+			rsa.Mode = RSA_MODE::RSA_PEM_PASS_UNLOCK;
+			rsa.privatekey_option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
+			rsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
+			break;
 		case rsa_execute::hash("-en"):
 		case rsa_execute::hash("-encrypt"):
 			rsa.Mode = RSA_MODE::RSA_ENCRPTION;
@@ -345,6 +361,19 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 						: std::string(argv[i + 1]) + "-pub.pem";
 				}
 			}
+			else if (rsa.Mode == RSA_MODE::RSA_PEM_PASS_LOCK || rsa.Mode == RSA_MODE::RSA_PEM_PASS_UNLOCK) {
+				rsa.output_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
+				if (rsa.output_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((\-priv.der|\-priv.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						rsa.Output = argv[i + 1];
+					else
+						rsa.Output = rsa.ExtractKeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+						? std::string(argv[i + 1]) + "-priv.der"
+						: std::string(argv[i + 1]) + "-priv.pem";
+					i++;
+				}
+			}
 			else {
 				rsa.output_option = cryptography_libary::GetOption(i, argv);
 				if (rsa.output_option == CRYPT_OPTIONS::OPTION_FILE) {
@@ -386,6 +415,12 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_EXTRACT_PUBLIC:
 		ExtractPublicKey(rsa);
+		break;
+	case RSA_MODE::RSA_PEM_PASS_LOCK:
+		PemLock(rsa);
+		break;
+	case RSA_MODE::RSA_PEM_PASS_UNLOCK:
+		PemUnlock(rsa);
 		break;
 	case RSA_MODE::RSA_ENCRPTION:
 		Encrypt(rsa);
@@ -961,6 +996,7 @@ void rsa_execute::CheckCSR(Rsa& rsa) {
 		rsa.KeyFormat,
 		csr.data(),
 		csr.size(),
+		rsa.Hash,
 		cn.data(),
 		c.data(),
 		o.data(),
@@ -981,6 +1017,7 @@ void rsa_execute::CheckCSR(Rsa& rsa) {
 	if (!IsRowData) {
 		std::cout << Hint("<RSA CSR Check>") << std::endl;
 		std::cout << Mark("Length : ") << Ask(std::to_string(req_csr.KEY_LENGTH)) << std::endl;
+		std::cout << Mark("Hash : ") << Ask(HashDisplay[req_csr.HASH_ALGORITHM]) << std::endl;
 		if (!cn_str.empty())
 			std::cout << Mark("Common Name (CN)") << " = " << Ask(cn_str) << std::endl;
 		if (!c_str.empty())
@@ -1007,6 +1044,103 @@ void rsa_execute::CheckCSR(Rsa& rsa) {
 		std::cout << Hint(IsRowData ? "Success" : "Rsa CSR Check Success.") << std::endl;
 	else
 		std::cout << Error(IsRowData ? "Falture" : "Rsa CSR Check Falture.") << std::endl;
+}
+
+void rsa_execute::PemLock(Rsa& rsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	pemPass.push_back('\0');
+	RSA_PEM_LOCK lock = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		privateKey.size(),
+		pemPass.size(),
+		rsa.Algorithm,
+		rsa.AlgorithmSize,
+		rsa.Segment,
+	};
+	((RsaPemLock)RsaFunctions.at("-pem-lock"))(&lock);
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+		lock.PRIVATE_KEY,
+		lock.PRIVATE_KEY_LENGTH,
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+
+	if (priv.IS_KEY_OK) {
+		privateKey.resize(lock.PRIVATE_KEY_LENGTH);
+		privateKey.assign(lock.PRIVATE_KEY, lock.PRIVATE_KEY + lock.PRIVATE_KEY_LENGTH);
+	}
+	else {
+		std::cout << Error("Invalid private key, or no passphrase specified.") << std::endl;
+		return;
+	}
+
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Lock Private Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string privateKey_str = rsa.Output;
+		cryptography_libary::ValueEncode(rsa.output_option, privateKey, privateKey_str);
+		std::cout << Mark("Private Key [") << Ask(std::to_string(lock.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string privateKey_str = rsa.Output;
+		cryptography_libary::ValueEncode(rsa.output_option, privateKey, privateKey_str);
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
+}
+
+void rsa_execute::PemUnlock(Rsa& rsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	pemPass.push_back('\0');
+	RSA_PEM_UNLOCK unlock = {
+		rsa.ExtractKeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		privateKey.size(),
+		pemPass.size(),
+	};
+	((RsaPemUnlock)RsaFunctions.at("-pem-unlock"))(&unlock);
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.ExtractKeyFormat,
+		unlock.PRIVATE_KEY,
+		unlock.PRIVATE_KEY_LENGTH,
+		pemPass.data(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+
+	if (priv.IS_KEY_OK) {
+		privateKey.resize(unlock.PRIVATE_KEY_LENGTH);
+		privateKey.assign(unlock.PRIVATE_KEY, unlock.PRIVATE_KEY + unlock.PRIVATE_KEY_LENGTH);
+	}
+	else {
+		std::cout << Error("Invalid private key, or no passphrase specified.") << std::endl;
+		return;
+	}
+
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Unlock Private Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string privateKey_str = rsa.Output;
+		cryptography_libary::ValueEncode(rsa.output_option, privateKey, privateKey_str);
+		std::cout << Mark("Private Key [") << Ask(std::to_string(unlock.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string privateKey_str = rsa.Output;
+		cryptography_libary::ValueEncode(rsa.output_option, privateKey, privateKey_str);
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void rsa_execute::Encrypt(Rsa& rsa) {

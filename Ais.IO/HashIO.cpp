@@ -29,6 +29,40 @@ const EVP_MD* GetHashCrypter(HASH_TYPE type) {
 	return md;
 }
 
+HASH_TYPE GetHashType(int nid) {
+	const char* sig_alg = OBJ_nid2ln(nid);
+	switch (nid) {
+	case NID_md5WithRSAEncryption:
+		return HASH_TYPE::HASH_MD5;
+	case NID_sha1WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA1;
+	case NID_sha224WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_224;
+	case NID_sha256WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_256;
+	case NID_sha384WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_384;
+	case NID_sha512WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_512;
+	case NID_sha512_224WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_512_224;
+	case NID_sha512_256WithRSAEncryption:
+		return HASH_TYPE::HASH_SHA2_512_256;
+	case NID_RSA_SHA3_224:
+		return HASH_TYPE::HASH_SHA3_224;
+	case NID_RSA_SHA3_256:
+		return HASH_TYPE::HASH_SHA3_256;
+	case NID_RSA_SHA3_384:
+		return HASH_TYPE::HASH_SHA3_384;
+	case NID_RSA_SHA3_512:
+		return HASH_TYPE::HASH_SHA3_512;
+	case NID_ripemd160WithRSA:
+		return HASH_TYPE::HASH_RIPEMD160;
+	default:
+		return HASH_TYPE::HASH_NULL;
+	}
+}
+
 int Hash(HASH_STRUCTURE* hash) {
 	ERR_clear_error();
 	EVP_MD_CTX* ctx = EVP_MD_CTX_new();

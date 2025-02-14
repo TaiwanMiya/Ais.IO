@@ -92,20 +92,6 @@ void asymmetric_libary::ParseAlgorithm(int& i, char* argv[], SYMMETRY_CRYPTER& c
 			return;
 		arg_option = ToLower(argv[i + 1]);
 		switch (asymmetric_libary::set_hash(ToLower(argv[i + 1]).c_str())) {
-		case hash("-ctr"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_CTR;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
 		case hash("-cbc"):
 			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_CBC;
 			i++;
@@ -169,76 +155,6 @@ void asymmetric_libary::ParseAlgorithm(int& i, char* argv[], SYMMETRY_CRYPTER& c
 			break;
 		case hash("-ecb"):
 			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_ECB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
-		case hash("-gcm"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_GCM;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
-		case hash("-ccm"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_CCM;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
-		case hash("-xts"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_XTS;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
-		case hash("-ocb"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_OCB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 256;
-			else {
-				size = 256;
-				i++;
-			}
-			break;
-		case hash("-wrap"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_AES_WRAP;
 			i++;
 			if (IsULong(argv[i + 1])) {
 				size = std::stoi(argv[i + 1]);
@@ -319,20 +235,6 @@ void asymmetric_libary::ParseAlgorithm(int& i, char* argv[], SYMMETRY_CRYPTER& c
 			break;
 		case hash("-ecb"):
 			crypter = SYMMETRY_CRYPTER::SYMMETRY_DES_ECB;
-			i++;
-			if (IsULong(argv[i + 1])) {
-				size = std::stoi(argv[i + 1]);
-				i++;
-			}
-			else if (argv[i + 1] == NULL)
-				size = 192;
-			else {
-				size = 192;
-				i++;
-			}
-			break;
-		case hash("-wrap"):
-			crypter = SYMMETRY_CRYPTER::SYMMETRY_DES_WRAP;
 			i++;
 			if (IsULong(argv[i + 1])) {
 				size = std::stoi(argv[i + 1]);

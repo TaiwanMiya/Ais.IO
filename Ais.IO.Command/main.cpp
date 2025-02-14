@@ -965,6 +965,8 @@ void LoadFunctions() {
     RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
     RsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
     RsaFunctions["-csr-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckCSR");
+    RsaFunctions["-pem-lock"] = GET_PROC_ADDRESS(Lib, "RsaPemLock");
+    RsaFunctions["-pem-unlock"] = GET_PROC_ADDRESS(Lib, "RsaPemUnlock");
     RsaFunctions["-encrypt"] = GET_PROC_ADDRESS(Lib, "RsaEncryption");
     RsaFunctions["-decrypt"] = GET_PROC_ADDRESS(Lib, "RsaDecryption");
     RsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "RsaSigned");

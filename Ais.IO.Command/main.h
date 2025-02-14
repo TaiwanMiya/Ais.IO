@@ -138,10 +138,12 @@ enum RSA_MODE : unsigned long long {
     RSA_CHECK_PUBLIC    = 6,
     RSA_CHECK_PRIVATE   = 7,
     RSA_CHECK_REQ_CSR   = 8,
-    RSA_ENCRPTION       = 9,
-    RSA_DECRPTION       = 10,
-    RSA_SIGNATURE       = 11,
-    RSA_VERIFICATION    = 12,
+    RSA_PEM_PASS_LOCK   = 9,
+    RSA_PEM_PASS_UNLOCK = 10,
+    RSA_ENCRPTION       = 11,
+    RSA_DECRPTION       = 12,
+    RSA_SIGNATURE       = 13,
+    RSA_VERIFICATION    = 14,
 };
 
 enum ECC_MODE : unsigned long long {
@@ -1068,6 +1070,7 @@ struct RSA_CHECK_CSR {
     const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
     const unsigned char* CSR;
     size_t CSR_LENGTH;
+    HASH_TYPE HASH_ALGORITHM;
     unsigned char* COMMON_NAME;
     unsigned char* COUNTRY;
     unsigned char* ORGANIZETION;
@@ -1081,6 +1084,25 @@ struct RSA_CHECK_CSR {
     ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
+};
+
+struct RSA_PEM_LOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct RSA_PEM_UNLOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
 };
 
 struct RSA_ENCRYPT {
@@ -1460,6 +1482,8 @@ typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
 typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
 typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
 typedef int (*RsaCheckCSR)(RSA_CHECK_CSR*);
+typedef int (*RsaPemLock)(RSA_PEM_LOCK*);
+typedef int (*RsaPemUnlock)(RSA_PEM_UNLOCK*);
 typedef int (*RsaEncryption)(RSA_ENCRYPT*);
 typedef int (*RsaDecryption)(RSA_DECRYPT*);
 typedef int (*RsaSigned)(RSA_SIGNED*);

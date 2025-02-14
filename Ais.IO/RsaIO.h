@@ -167,6 +167,7 @@ struct RSA_CHECK_CSR {
     const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
     const unsigned char* CSR;
     size_t CSR_LENGTH;
+    HASH_TYPE HASH_ALGORITHM;
     unsigned char* COMMON_NAME;
     unsigned char* COUNTRY;
     unsigned char* ORGANIZETION;
@@ -194,6 +195,25 @@ struct RSA_CHECK_CERTIFICATE {
     const char* PKCS12_PASSWORD;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
+};
+
+struct RSA_PEM_LOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct RSA_PEM_UNLOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
 };
 
 struct RSA_ENCRYPT {
@@ -254,6 +274,8 @@ EXT RSAIO_API int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check);
 EXT RSAIO_API int RsaCheckPrivateKey(RSA_CHECK_PRIVATE_KEY* check);
 EXT RSAIO_API int RsaCheckCSR(RSA_CHECK_CSR* check);
 EXT RSAIO_API int RsaCheckCertificate(RSA_CHECK_CERTIFICATE* check);
+EXT RSAIO_API int RsaPemLock(RSA_PEM_LOCK* pem);
+EXT RSAIO_API int RsaPemUnlock(RSA_PEM_UNLOCK* pem);
 EXT RSAIO_API int RsaEncryption(RSA_ENCRYPT* encrypt);
 EXT RSAIO_API int RsaDecryption(RSA_DECRYPT* decrypt);
 EXT RSAIO_API int RsaSigned(RSA_SIGNED* sign);

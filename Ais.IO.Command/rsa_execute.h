@@ -18,6 +18,8 @@ private:
 	static void CheckPublicKey(Rsa& rsa);
 	static void CheckPrivateKey(Rsa& rsa);
 	static void CheckCSR(Rsa& rsa);
+	static void PemLock(Rsa& rsa);
+	static void PemUnlock(Rsa& rsa);
 	static void Encrypt(Rsa& rsa);
 	static void Decrypt(Rsa& rsa);
 	static void Signed(Rsa& rsa);

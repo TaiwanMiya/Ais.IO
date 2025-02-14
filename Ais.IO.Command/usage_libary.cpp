@@ -54,6 +54,52 @@ void usage_libary::ShowHashTypeUsage() {
     std::cout << "        " << Mark("17") << ". " << Info("[-blake2b | -blake512 | -blake2b-512]") << Warn("    -> Hash BLAKE2B-512 Calculation.") << std::endl;
     std::cout << "        " << Mark("18") << ". " << Info("-sm3") << Warn("                                     -> Hash SM3 Calculation.") << std::endl;
     std::cout << "        " << Mark("19") << ". " << Info("-ripemd160") << Warn("                               -> Hash RIPEMD160 Calculation.") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowAlgorithm() {
+    std::cout << Hint("    Supported [--algorithm]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-alg -aes -cbc <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-alg -aes -cfb <size> <segment>") << Warn("          -> .") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-alg -aes -ofb <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-alg -aes -ecb <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("-alg -des -cbc <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("-alg -des -cfb <size> <segment>") << Warn("          -> .") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("-alg -des -ofb <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("-alg -des -ecb <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowSubject() {
+    std::cout << Hint("    Supported [--subject]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("-cn") << Warn("                                      -> Certificate Common Name (CN) Failed by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-c") << Warn("                                       -> Certificate Country (C) Failed by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-o") << Warn("                                       -> Certificate Organization (O) Failed by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-ou") << Warn("                                      -> Certificate Organization Unit (OU) Failed by [--way].") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowSubjectAlternativeName() {
+    std::cout << Hint("    Supported [--subject-alternative-name]:\n");
+    std::cout << "" << std::endl;
+    std::cout << Error("    ** The command must start with ") << Ask("-san") << Error(", this setting can be multiple. **\n");
+    std::cout << "" << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("-dns") << Warn("                                     -> Certificate Subject Alternative Name of DNS by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-ip") << Warn("                                      -> Certificate Subject Alternative Name of IP by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-mail | -email]") << Warn("                         -> Certificate Subject Alternative Name of Email by [--way].") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-uri | -url]") << Warn("                            -> Certificate Subject Alternative Name of URI / URL by [--way].") << std::endl;
+    std::cout << "" << std::endl;
+}
+
+void usage_libary::ShowKeyUsage() {
+    std::cout << Hint("    Supported [--key-usage]:\n");
+    std::cout << "        " << Mark(" 1") << ". " << Info("[-ds | -digital-signature]") << Warn("               -> Certificate Key Usage of Digital Signature.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("[-ke | -key-encipherment]") << Warn("                -> Certificate Key Usage of Key Encipherment.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("[-de | -data-encipherment]") << Warn("               -> Certificate Key Usage of Data Encipherment.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("[-ka | -key-agreement]") << Warn("                   -> Certificate Key Usage of Key Agreement.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("[-kc | -key-cert-sign]") << Warn("                   -> Certificate Key Usage of Certificate Sign.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("[-cs | -crl-sign]") << Warn("                        -> Certificate Key Usage of CRL Sign.") << std::endl;
+    std::cout << "" << std::endl;
 }
 
 void usage_libary::ShowUsage() {
@@ -397,7 +443,7 @@ void usage_libary::ShowDsaUsage() {
     std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-param | -params | -parameter | -parameters] <size> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 2") << ". " << Hint("DSA Generate Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-key | -keys] <size> [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-gen | -generate] [-key | -keys] <size> [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 3") << ". " << Hint("DSA Export Parameters from Public Key & Private Key:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-out | -output] [--way]") << std::endl;
@@ -406,10 +452,10 @@ void usage_libary::ShowDsaUsage() {
     std::cout << Info("        [-dsa | --dsa] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--dsa-parameters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 5") << ". " << Hint("DSA Extract Public Key from Private Key:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 6") << ". " << Hint("DSA Extract Parameters from Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 7") << ". " << Hint("DSA Extract Public Key & Private Key from Parameters:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-ext | -extract] [-key | -keys] [-param | -params | -parameter | -parameters] [--keys-way] [-out | -output] [--keys-way]") << std::endl;
@@ -418,13 +464,13 @@ void usage_libary::ShowDsaUsage() {
     std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 9") << ". " << Hint("DSA Confirms Whether the Private Key is Valid:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("10") << ". " << Hint("DSA Confirms Whether the Parameters is Valid:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-param | -params | -parameter | -parameters] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("11") << ". " << Hint("DSA Signed Data:") << std::endl;
-    std::cout << Info("        [-dsa | --dsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("12") << ". " << Hint("DSA Verify Data:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
@@ -443,6 +489,8 @@ void usage_libary::ShowDsaUsage() {
     std::cout << "" << std::endl;
 
     usage_libary::ShowHashTypeUsage();
+    
+    usage_libary::ShowAlgorithm();
 }
 
 void usage_libary::ShowRsaUsage() {
@@ -459,33 +507,45 @@ void usage_libary::ShowRsaUsage() {
     std::cout << Info("        [-rsa | --rsa] [-gen | -generate] [-param | -params | -parameter | -parameters] <size> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 2") << ". " << Hint("RSA Generate Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-gen | -generate] [-key | -keys] <size> [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-gen | -generate] [-key | -keys] <size> [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 3") << ". " << Hint("RSA Export Parameters from Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "    " << Mark(" 3") << ". " << Hint("RSA Generate X509-REQ CSR Certificate:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-gen | -generate] -csr <size> [--subject] -san [--subject-alternative-name] -ku [--key-usage] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 4") << ". " << Hint("RSA Export Public Key & Private Key from Parameters:") << std::endl;
+    std::cout << "    " << Mark(" 4") << ". " << Hint("RSA Export Parameters from Public Key & Private Key:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark(" 5") << ". " << Hint("RSA Export Public Key & Private Key from Parameters:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--rsa-parameters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 5") << ". " << Hint("RSA Extract Public Key from Private Key:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "    " << Mark(" 6") << ". " << Hint("RSA Extract Public Key from Private Key:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 6") << ". " << Hint("RSA Confirms Whether the Public Key is Valid:") << std::endl;
+    std::cout << "    " << Mark(" 7") << ". " << Hint("RSA Confirms Whether the Public Key is Valid:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 7") << ". " << Hint("RSA Confirms Whether the Private Key is Valid:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way]") << std::endl;
+    std::cout << "    " << Mark(" 8") << ". " << Hint("RSA Confirms Whether the Private Key is Valid:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 8") << ". " << Hint("RSA Encryption:") << std::endl;
+    std::cout << "    " << Mark(" 9") << ". " << Hint("RSA Confirms Whether the X509-REQ CSR Certificate is Valid:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-chk | -check] -csr [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("10") << ". " << Hint("RSA Private Key Add Password to PEM:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-lk | -lock] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [-pem | -pem -f <path>]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("RSA Private Key Remove Password from PEM:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-uk | -unlock] [-priv | -private | -private-key] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("12") << ". " << Hint("RSA Encryption:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-en | -encrypt] [-pub | -public | -public-key] [--keys-way] [-pt | -plain-text] [--way] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark(" 9") << ". " << Hint("RSA Decryption:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-de | -decrypt] [-priv | -private | -private-key] [--keys-way] [-ct | -cipher-text] [--way] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "    " << Mark("13") << ". " << Hint("RSA Decryption:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-de | -decrypt] [-priv | -private | -private-key] [--keys-way] [-ct | -cipher-text] [--way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark("10") << ". " << Hint("RSA Signed Data:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << "    " << Mark("14") << ". " << Hint("RSA Signed Data:") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark("11") << ". " << Hint("RSA Verify Data:") << std::endl;
+    std::cout << "    " << Mark("15") << ". " << Hint("RSA Verify Data:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
     std::cout << "" << std::endl;
 
@@ -505,6 +565,14 @@ void usage_libary::ShowRsaUsage() {
     std::cout << "" << std::endl;
 
     usage_libary::ShowHashTypeUsage();
+
+    usage_libary::ShowAlgorithm();
+
+    usage_libary::ShowSubject();
+
+    usage_libary::ShowSubjectAlternativeName();
+
+    usage_libary::ShowKeyUsage();
 }
 
 void usage_libary::ShowEccUsage() {
@@ -524,25 +592,25 @@ void usage_libary::ShowEccUsage() {
     std::cout << Info("        [-ecc | --ecc] [-gen | -generate] [-param | -params | -parameter | -parameters] <curve | nid> [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 3") << ". " << Hint("ECC Generate Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-ecc | --ecc] [-gen | -generate] [-key | -keys] <curve | nid> [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-gen | -generate] [-key | -keys] <curve | nid> [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 4") << ". " << Hint("ECC Export Parameters from Public Key & Private Key:") << std::endl;
-    std::cout << Info("        [-ecc | --ecc] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-exp | -export] [-param | -params | -parameter | -parameters] [-pub | -public | -public-key] [--keys-way] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 5") << ". " << Hint("ECC Export Public Key & Private Key from Parameters:") << std::endl;
     std::cout << Info("        [-ecc | --ecc] [-exp | -export] [-key | -keys] [-param | -params | -parameter | -parameters] [--way] [--ecc-parameters-list] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 6") << ". " << Hint("ECC Extract Public Key from Private Key:") << std::endl;
-    std::cout << Info("        [-ecc | --ecc] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-ext | -extract] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 7") << ". " << Hint("ECC Confirms Whether the Public Key is Valid:") << std::endl;
     std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-pub | -public | -public-key] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 8") << ". " << Hint("ECC Confirms Whether the Private Key is Valid:") << std::endl;
-    std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way]") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-chk | -check] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 9") << ". " << Hint("ECC Signed Data:") << std::endl;
-    std::cout << Info("        [-ecc | --ecc] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << Info("        [-ecc | --ecc] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("10") << ". " << Hint("ECC Verify Data:") << std::endl;
     std::cout << Info("        [-ecc | --ecc] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
@@ -563,4 +631,6 @@ void usage_libary::ShowEccUsage() {
     std::cout << "" << std::endl;
 
     usage_libary::ShowHashTypeUsage();
+
+    usage_libary::ShowAlgorithm();
 }

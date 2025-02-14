@@ -23,6 +23,7 @@
 #include <ctime>
 #include <algorithm>
 #include <string>
+#include <cstring>
 #include "SymmetryIO.h"
 
 enum SALT_SEQUENCE {
@@ -67,5 +68,6 @@ struct HASH_STRUCTURE {
 };
 
 const EVP_MD* GetHashCrypter(HASH_TYPE type);
+HASH_TYPE GetHashType(int nid);
 EXT HASHIO_API int Hash(HASH_STRUCTURE* hash);
 EXT HASHIO_API int GetHashLength(HASH_TYPE type);

@@ -17,5 +17,9 @@ private:
 	static void ShowWayUsage();
 	static void ShowKeysWayUsage();
 	static void ShowHashTypeUsage();
+	static void ShowAlgorithm();
+	static void ShowSubject();
+	static void ShowSubjectAlternativeName();
+	static void ShowKeyUsage();
 };
 
