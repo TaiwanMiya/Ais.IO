@@ -971,6 +971,7 @@ void LoadFunctions() {
     RsaFunctions["-decrypt"] = GET_PROC_ADDRESS(Lib, "RsaDecryption");
     RsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "RsaSigned");
     RsaFunctions["-verify"] = GET_PROC_ADDRESS(Lib, "RsaVerify");
+    RsaFunctions["-sign-cert"] = GET_PROC_ADDRESS(Lib, "RsaSignCertificate");
 
     EccFunctions["-param-length"] = GET_PROC_ADDRESS(Lib, "EccGetParametersLength");
     EccFunctions["-key-length"] = GET_PROC_ADDRESS(Lib, "EccGetKeyLength");

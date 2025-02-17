@@ -145,6 +145,10 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-verify"):
 			rsa.Mode = RSA_MODE::RSA_VERIFICATION;
 			break;
+		case rsa_execute::hash("-sc"):
+		case rsa_execute::hash("-sign-cert"):
+			rsa.Mode = RSA_MODE::RSA_SIGN_CERTIFICATE;
+			break;
 		case rsa_execute::hash("-pub"):
 		case rsa_execute::hash("-public"):
 		case rsa_execute::hash("-public-key"):
@@ -433,6 +437,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 			break;
 	case RSA_MODE::RSA_VERIFICATION:
 		Verify(rsa);
+		break;
+	case RSA_MODE::RSA_SIGN_CERTIFICATE:
+		SignCertificate(rsa);
 		break;
 	}
 }
@@ -898,8 +905,8 @@ void rsa_execute::ExtractPublicKey(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		rsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -962,8 +969,8 @@ void rsa_execute::CheckPrivateKey(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		rsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -1067,8 +1074,8 @@ void rsa_execute::PemLock(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
 		lock.PRIVATE_KEY,
-		lock.PRIVATE_KEY_LENGTH,
 		pemPass.data(),
+		lock.PRIVATE_KEY_LENGTH,
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -1114,8 +1121,8 @@ void rsa_execute::PemUnlock(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		rsa.ExtractKeyFormat,
 		unlock.PRIVATE_KEY,
-		unlock.PRIVATE_KEY_LENGTH,
 		pemPass.data(),
+		unlock.PRIVATE_KEY_LENGTH,
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -1206,8 +1213,8 @@ void rsa_execute::Decrypt(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		rsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -1263,8 +1270,8 @@ void rsa_execute::Signed(Rsa& rsa) {
 	RSA_CHECK_PRIVATE_KEY priv = {
 		rsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
@@ -1338,4 +1345,28 @@ void rsa_execute::Verify(Rsa& rsa) {
 			std::cout << Hint("<RSA Verify>") << std::endl;
 		std::cout << Error(IsRowData ? "Falture" : "Verification Failure!") << std::endl;
 	}
+}
+
+void rsa_execute::SignCertificate(Rsa& rsa) {
+	std::vector<unsigned char> csr;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> certificate;
+	cryptography_libary::ValueDecode(rsa.csr_option, rsa.CSR, csr);
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	RSA_SIGN_CSR p12 = {
+		0,
+		rsa.KeyFormat,
+		csr.data(),
+		privateKey.data(),
+		pemPass.data(),
+		certificate.data(),
+		csr.size(),
+		privateKey.size(),
+		pemPass.size(),
+		certificate.size(),
+		rsa.Hash,
+		0,
+	};
 }

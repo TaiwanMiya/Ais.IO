@@ -90,9 +90,9 @@ struct RSA_P12 {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* CERTIFICATE;
     unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
     size_t CERTIFICATE_LENGTH;
     size_t PRIVATE_KEY_LENGTH;
-    const unsigned char* PEM_PASSWORD;
     size_t PEM_PASSWORD_LENGTH;
     const SYMMETRY_CRYPTER PEM_CIPHER;
     const int PEM_CIPHER_SIZE;
@@ -156,8 +156,8 @@ struct RSA_CHECK_PUBLIC_KEY {
 struct RSA_CHECK_PRIVATE_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
@@ -261,6 +261,21 @@ struct RSA_VERIFY {
     bool IS_VALID;
 };
 
+struct RSA_SIGN_CSR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CSR;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    unsigned char* CERTIFICATE;
+    size_t CSR_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t CERTIFICATE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned long VALIDITY_DAYS;
+};
+
 EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
 EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params);
@@ -280,3 +295,4 @@ EXT RSAIO_API int RsaEncryption(RSA_ENCRYPT* encrypt);
 EXT RSAIO_API int RsaDecryption(RSA_DECRYPT* decrypt);
 EXT RSAIO_API int RsaSigned(RSA_SIGNED* sign);
 EXT RSAIO_API int RsaVerify(RSA_VERIFY* verify);
+EXT RSAIO_API int RsaSignCertificate(RSA_SIGN_CSR* sign);

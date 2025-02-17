@@ -633,8 +633,8 @@ void ecc_execute::ExtractPublicKey(Ecc& ecc) {
 	ECC_CHECK_PRIVATE_KEY priv = {
 		ecc.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	int result_code = ((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
@@ -701,8 +701,8 @@ void ecc_execute::CheckPrivateKey(Ecc& ecc) {
 	ECC_CHECK_PRIVATE_KEY priv = {
 		ecc.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
@@ -732,8 +732,8 @@ void ecc_execute::Signed(Ecc& ecc) {
 	ECC_CHECK_PRIVATE_KEY priv = {
 		ecc.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);
@@ -821,8 +821,8 @@ void ecc_execute::KeyDerive(Ecc& ecc) {
 	ECC_CHECK_PRIVATE_KEY priv = {
 		ecc.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((EccCheckPrivateKey)EccFunctions.at("-priv-check"))(&priv);

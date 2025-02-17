@@ -1208,3 +1208,117 @@ int RsaVerify(RSA_VERIFY* verify) {
     EVP_PKEY_free(pkey);
     return 0;
 }
+
+int RsaSignCertificate(RSA_SIGN_CSR* sign) {
+    ERR_clear_error();
+
+    BIO* req_bio = BIO_new_mem_buf(sign->CSR, static_cast<int>(sign->CSR_LENGTH));
+    BIO* ca_cert_bio = BIO_new_mem_buf(sign->PRIVATE_KEY, static_cast<int>(sign->PRIVATE_KEY_LENGTH));
+    if (!req_bio || !ca_cert_bio)
+        return handleErrors_asymmetric("Failed to create BIO for request and CA certificate.", NULL);
+
+    // 讀取 CSR 和 CA 證書
+    X509_REQ* req = PEM_read_bio_X509_REQ(req_bio, NULL, NULL, NULL);
+    X509* ca_cert = PEM_read_bio_X509(ca_cert_bio, NULL, NULL, NULL);
+    if (!req || !ca_cert)
+        return handleErrors_asymmetric("Failed to read CSR or CA certificate.", req_bio, ca_cert_bio, NULL);
+
+    // 讀取 CA 私鑰
+    EVP_PKEY* ca_key = EVP_PKEY_new();
+    BIO* ca_key_bio = BIO_new_mem_buf(sign->PRIVATE_KEY, static_cast<int>(sign->PRIVATE_KEY_LENGTH));
+    if (!ca_key_bio)
+        return handleErrors_asymmetric("Failed to create BIO for CA key.", req_bio, ca_cert_bio, NULL);
+
+    if (sign->PEM_PASSWORD == NULL || sign->PEM_PASSWORD_LENGTH <= 0)
+        PEM_read_bio_PrivateKey(ca_key_bio, &ca_key, NULL, NULL);
+    else
+        PEM_read_bio_PrivateKey(ca_key_bio, &ca_key, PasswordCallback, const_cast<void*>(static_cast<const void*>(sign->PEM_PASSWORD)));
+
+    if (!ca_key) {
+        BIO_free(ca_key_bio);
+        return handleErrors_asymmetric("Failed to read CA private key.", req_bio, ca_cert_bio, NULL);
+    }
+
+    // 創建新的 X.509 憑證
+    X509* x509 = X509_new();
+    if (!x509) {
+        BIO_free(ca_key_bio);
+        return handleErrors_asymmetric("Failed to create X.509 certificate.", req_bio, ca_cert_bio, ca_key);
+    }
+
+    // 設置證書序列號
+    ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
+
+    // 設置證書有效期
+    unsigned long validity_days = sign->VALIDITY_DAYS > 0 ? sign->VALIDITY_DAYS : 365;
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notAfter(x509), validity_days * 86400);
+
+    // 設置證書主題
+    X509_set_subject_name(x509, X509_REQ_get_subject_name(req));
+
+    // 設置 CA 為發行者
+    X509_set_issuer_name(x509, X509_get_subject_name(ca_cert));
+
+    // 設置公鑰
+    EVP_PKEY* req_pubkey = X509_REQ_get_pubkey(req);
+    X509_set_pubkey(x509, req_pubkey);
+    EVP_PKEY_free(req_pubkey);
+
+    // 簽名算法
+    const EVP_MD* md = GetHashCrypter(sign->HASH_ALGORITHM);
+    if (!md) {
+        BIO_free(ca_key_bio);
+        return handleErrors_asymmetric("Invalid or unsupported hash algorithm.", req_bio, ca_cert_bio, ca_key);
+    }
+
+    // 簽名憑證
+    if (!X509_sign(x509, ca_key, md)) {
+        X509_free(x509);
+        BIO_free(ca_key_bio);
+        return handleErrors_asymmetric("Failed to sign the certificate.", req_bio, ca_cert_bio, ca_key);
+    }
+
+    // 將簽發的證書寫入 PEM 或 DER 格式
+    BIO* cert_bio = BIO_new(BIO_s_mem());
+    switch (sign->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_X509(cert_bio, x509)) {
+            BIO_free(ca_key_bio);
+            BIO_free(ca_cert_bio);
+            return handleErrors_asymmetric("Failed to write signed certificate in PEM format.", cert_bio, req_bio, ca_key);
+        }
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_X509_bio(cert_bio, x509)) {
+            BIO_free(ca_key_bio);
+            BIO_free(ca_cert_bio);
+            return handleErrors_asymmetric("Failed to write signed certificate in DER format.", cert_bio, req_bio, ca_key);
+        }
+        break;
+    default:
+        BIO_free(ca_key_bio);
+        BIO_free(ca_cert_bio);
+        return handleErrors_asymmetric("Invalid certificate format.", cert_bio, req_bio, ca_key);
+    }
+
+    // 讀取生成的證書
+    size_t cert_len = BIO_pending(cert_bio);
+    if (sign->CERTIFICATE == nullptr || sign->CERTIFICATE_LENGTH < cert_len)
+        sign->CERTIFICATE = new unsigned char[cert_len];
+
+    BIO_read(cert_bio, sign->CERTIFICATE, cert_len);
+    sign->CERTIFICATE_LENGTH = cert_len;
+
+    // 釋放資源
+    BIO_free(cert_bio);
+    BIO_free(req_bio);
+    BIO_free(ca_cert_bio);
+    BIO_free(ca_key_bio);
+    X509_free(x509);
+    EVP_PKEY_free(ca_key);
+    X509_REQ_free(req);
+    X509_free(ca_cert);
+
+    return 0;
+}

@@ -685,8 +685,8 @@ void dsa_execute::ExtractPublicKey(Dsa& dsa) {
 	DSA_CHECK_PRIVATE_KEY priv = {
 		dsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
@@ -733,8 +733,8 @@ void dsa_execute::ExtractParametersByKeys(Dsa& dsa) {
 	DSA_CHECK_PRIVATE_KEY priv = {
 		dsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
@@ -855,8 +855,8 @@ void dsa_execute::CheckPrivateKey(Dsa& dsa) {
 	DSA_CHECK_PRIVATE_KEY priv = {
 		dsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
@@ -905,8 +905,8 @@ void dsa_execute::Signed(Dsa& dsa) {
 	DSA_CHECK_PRIVATE_KEY priv = {
 		dsa.KeyFormat,
 		privateKey.data(),
-		privateKey.size(),
 		pemPass.data(),
+		privateKey.size(),
 		pemPass.size(),
 	};
 	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);

@@ -129,21 +129,22 @@ enum DSA_MODE : unsigned long long {
 };
 
 enum RSA_MODE : unsigned long long {
-    RSA_GENERATE_PARAMS = 0,
-    RSA_GENERATE_KEYS   = 1,
-    RSA_GENERATE_CSR    = 2,
-    RSA_EXPORT_PARAMS   = 3,
-    RSA_EXPORT_KEYS     = 4,
-    RSA_EXTRACT_PUBLIC  = 5,
-    RSA_CHECK_PUBLIC    = 6,
-    RSA_CHECK_PRIVATE   = 7,
-    RSA_CHECK_REQ_CSR   = 8,
-    RSA_PEM_PASS_LOCK   = 9,
-    RSA_PEM_PASS_UNLOCK = 10,
-    RSA_ENCRPTION       = 11,
-    RSA_DECRPTION       = 12,
-    RSA_SIGNATURE       = 13,
-    RSA_VERIFICATION    = 14,
+    RSA_GENERATE_PARAMS     = 0,
+    RSA_GENERATE_KEYS       = 1,
+    RSA_GENERATE_CSR        = 2,
+    RSA_EXPORT_PARAMS       = 3,
+    RSA_EXPORT_KEYS         = 4,
+    RSA_EXTRACT_PUBLIC      = 5,
+    RSA_CHECK_PUBLIC        = 6,
+    RSA_CHECK_PRIVATE       = 7,
+    RSA_CHECK_REQ_CSR       = 8,
+    RSA_PEM_PASS_LOCK       = 9,
+    RSA_PEM_PASS_UNLOCK     = 10,
+    RSA_ENCRPTION           = 11,
+    RSA_DECRPTION           = 12,
+    RSA_SIGNATURE           = 13,
+    RSA_VERIFICATION        = 14,
+    RSA_SIGN_CERTIFICATE    = 15,
 };
 
 enum ECC_MODE : unsigned long long {
@@ -922,8 +923,8 @@ struct DSA_CHECK_PUBLIC_KEY {
 struct DSA_CHECK_PRIVATE_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
@@ -1059,8 +1060,8 @@ struct RSA_CHECK_PUBLIC_KEY {
 struct RSA_CHECK_PRIVATE_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     size_t KEY_LENGTH;
@@ -1150,6 +1151,21 @@ struct RSA_VERIFY {
     bool IS_VALID;
 };
 
+struct RSA_SIGN_CSR {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CSR;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    unsigned char* CERTIFICATE;
+    size_t CSR_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    size_t CERTIFICATE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned long VALIDITY_DAYS;
+};
+
 struct ECC_PARAMETERS {
     ECC_CURVE CURVE_NID;
     unsigned char* X;
@@ -1213,8 +1229,8 @@ struct ECC_CHECK_PUBLIC_KEY {
 struct ECC_CHECK_PRIVATE_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     ECC_CURVE CURVE_NID;
@@ -1488,6 +1504,7 @@ typedef int (*RsaEncryption)(RSA_ENCRYPT*);
 typedef int (*RsaDecryption)(RSA_DECRYPT*);
 typedef int (*RsaSigned)(RSA_SIGNED*);
 typedef int (*RsaVerify)(RSA_VERIFY*);
+typedef int (*RsaSignCertificate)(RSA_SIGN_CSR*);
 #pragma endregion
 
 #pragma region EccIO

@@ -185,8 +185,8 @@ struct ECC_CHECK_PUBLIC_KEY {
 struct ECC_CHECK_PRIVATE_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
-    size_t PRIVATE_KEY_LENGTH;
     const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
     size_t PEM_PASSWORD_LENGTH;
     bool IS_KEY_OK;
     ECC_CURVE CURVE_NID;

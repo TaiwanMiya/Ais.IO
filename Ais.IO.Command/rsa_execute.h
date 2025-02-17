@@ -24,4 +24,5 @@ private:
 	static void Decrypt(Rsa& rsa);
 	static void Signed(Rsa& rsa);
 	static void Verify(Rsa& rsa);
+	static void SignCertificate(Rsa& rsa);
 };
