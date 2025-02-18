@@ -12,6 +12,7 @@ private:
 	static void GenerateParameters(Rsa& rsa);
 	static void GenerateKeys(Rsa& rsa);
 	static void GenerateCSR(Rsa& rsa);
+	static void GenerateCA(Rsa& rsa);
 	static void ExportParamters(Rsa& rsa);
 	static void ExportKeys(Rsa& rsa);
 	static void ExtractPublicKey(Rsa& rsa);

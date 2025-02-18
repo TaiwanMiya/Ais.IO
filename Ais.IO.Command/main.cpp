@@ -959,6 +959,7 @@ void LoadFunctions() {
     RsaFunctions["-param-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateParameters");
     RsaFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateKeys");
     RsaFunctions["-csr-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateCSR");
+    RsaFunctions["-ca-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateCA");
     RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
     RsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "RsaExtractPublicKey");
@@ -1313,6 +1314,10 @@ int main(int argc, char* args[]) {
         oss << std::defaultfloat << seconds.count();
         std::cout << Any("Elapsed time: " + oss.str() + " Seconds", TERMINAL_STYLE::STYLE_UNDERLINE, 33) << std::endl;
         return 0;
+    }
+    catch (const std::ios_base::failure& e) {
+        // File opening or I/O related errors
+        std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
     }
     catch (const std::runtime_error& e) {
         // Runtime errors

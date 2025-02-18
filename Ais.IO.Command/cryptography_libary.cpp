@@ -241,6 +241,8 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
 		std::ofstream file(output, std::ios::out | std::ios::binary);
+		if (!file.is_open())
+			throw std::ios_base::failure("Failed to open the file, please check the path or input if it is wrong.");
 		file.write(reinterpret_cast<const char*>(input.data()), input.size());
 		input.clear();
 		file.close();
@@ -363,6 +365,8 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
 		std::ifstream file(input, std::ios::in | std::ios::binary | std::ios::ate);
+		if (!file.is_open())
+			throw std::ios_base::failure("Failed to open the file, please check the path or input if it is wrong.");
 		size_t size = file.tellg();
 		file.seekg(0, std::ios::beg);
 		output.clear();

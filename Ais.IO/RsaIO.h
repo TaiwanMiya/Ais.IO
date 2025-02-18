@@ -85,6 +85,21 @@ struct RSA_CSR {
     const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
 };
 
+struct RSA_CA {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CERTIFICATE;
+    size_t CERTIFICATE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZATION;
+    const unsigned char* ORGANIZATION_UNIT;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
+    const unsigned long long VALIDITY_DAYS;
+    const long long SERIAL_NUMBER;
+};
+
 struct RSA_P12 {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -281,6 +296,7 @@ EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
 EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params);
 EXT RSAIO_API int RsaGenerateKeys(RSA_KEY_PAIR* generate);
 EXT RSAIO_API int RsaGenerateCSR(RSA_CSR* generate);
+EXT RSAIO_API int RsaGenerateCA(RSA_CA* generate);
 EXT RSAIO_API int RsaGenerateP12(RSA_P12* generate);
 EXT RSAIO_API int RsaExportParameters(RSA_EXPORT* params);
 EXT RSAIO_API int RsaExportKeys(RSA_EXPORT* params);

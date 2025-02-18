@@ -212,6 +212,10 @@ void binary_execute::ExecuteRead(void* reader, const std::vector<Command>& comma
             }
             count++;
         }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
+        }
         catch (const std::runtime_error& e) {
             // Runtime errors
             std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
@@ -285,6 +289,10 @@ void binary_execute::ExecuteWrite(void* writer, const std::vector<Command>& comm
                 ((WriteBytes)WriteFunctions.at(cmd.type))(writer, result.data(), result.size());
             }
         }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
+        }
         catch (const std::runtime_error& e) {
             // Runtime errors
             std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
@@ -356,6 +364,10 @@ void binary_execute::ExecuteAppend(void* appender, const std::vector<Command>& c
                 cryptography_libary::ValueDecode(bytes_option, cmd.value, result);
                 ((AppendBytes)AppendFunctions.at(cmd.type))(appender, result.data(), result.size());
             }
+        }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
         }
         catch (const std::runtime_error& e) {
             // Runtime errors
@@ -429,6 +441,10 @@ void binary_execute::ExecuteInsert(void* inserter, const std::vector<Command>& c
                 ((InsertBytes)InsertFunctions.at(cmd.type))(inserter, result.data(), result.size(), cmd.position);
             }
         }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
+        }
         catch (const std::runtime_error& e) {
             // Runtime errors
             std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
@@ -487,6 +503,10 @@ void binary_execute::ExecuteRemove(void* remover, const std::string filePath, co
             index->LENGTH = cmd.length;
             ((RemoveIndex)ReadFunctions.at("-remove"))(remover, filePath.c_str(), index);
         }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
+        }
         catch (const std::runtime_error& e) {
             // Runtime errors
             std::cerr << Error("Runtime error while reading type ") << Ask(cmd.type)
@@ -519,6 +539,10 @@ void binary_execute::ExecuteRemoveIndex(void* reader, void* remover, const std::
                 continue;
             BINARYIO_INDICES* index = &indices[indexCount];
             ((RemoveIndex)ReadFunctions.at("-remove"))(remover, filePath.c_str(), index);
+        }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
         }
         catch (const std::runtime_error& e) {
             // Runtime errors
@@ -638,6 +662,10 @@ void binary_execute::ExecuteReadIndex(void* reader, void* index_reader, const st
                 break;
             }
             count++;
+        }
+        catch (const std::ios_base::failure& e) {
+            // File opening or I/O related errors
+            std::cerr << Error("File I/O Error: ") << Error(e.what()) << std::endl;
         }
         catch (const std::runtime_error& e) {
             // Runtime errors

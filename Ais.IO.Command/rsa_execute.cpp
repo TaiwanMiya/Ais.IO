@@ -53,6 +53,14 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 					i++;
 				}
 				break;
+			case rsa_execute::hash("-ca"):
+				rsa.Mode = RSA_MODE::RSA_GENERATE_CA;
+				i++;
+				if (IsULong(argv[i + 1])) {
+					rsa.KeyLength = std::stoll(argv[i + 1]);
+					i++;
+				}
+				break;
 			default:
 				continue;
 			}
@@ -306,6 +314,20 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 		case rsa_execute::hash("-key-usage"):
 			asymmetric_libary::GetCsrKeyUsage(i, argv, argc, rsa.Key_Usage);
 			break;
+		case rsa_execute::hash("-vd"):
+		case rsa_execute::hash("-valid-day"):
+			if (IsULong(argv[i + 1])) {
+				rsa.Valid_Days = std::stoull(argv[i + 1]);
+				i++;
+			}
+			break;
+		case rsa_execute::hash("-sn"):
+		case rsa_execute::hash("-serial-number"):
+			if (IsULong(argv[i + 1])) {
+				rsa.Serial_Number = std::stoull(argv[i + 1]);
+				i++;
+			}
+			break;
 		case rsa_execute::hash("-dat"):
 		case rsa_execute::hash("-data"):
 			rsa.data_option = cryptography_libary::GetOption(i, argv);
@@ -315,11 +337,12 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			break;
 		case rsa_execute::hash("-out"):
 		case rsa_execute::hash("-output"):
-			if (rsa.Mode == RSA_MODE::RSA_GENERATE_KEYS || rsa.Mode == RSA_MODE::RSA_GENERATE_CSR || rsa.Mode == RSA_MODE::RSA_EXPORT_KEYS) {
+			if (rsa.Mode == RSA_MODE::RSA_GENERATE_KEYS || rsa.Mode == RSA_MODE::RSA_GENERATE_CSR || rsa.Mode == RSA_MODE::RSA_GENERATE_CA || rsa.Mode == RSA_MODE::RSA_EXPORT_KEYS) {
 				CRYPT_OPTIONS option = asymmetric_libary::GetOption(rsa.KeyFormat, i, argv);
 				rsa.publickey_option = option;
 				rsa.privatekey_option = option;
 				rsa.csr_option = option;
+				rsa.ca_option = option;
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
 					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
 					if (std::regex_search(argv[i + 1], pattern))
@@ -339,10 +362,19 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 						: std::string(argv[i + 1]) + "-priv.pem";
 				}
 				if (rsa.csr_option == CRYPT_OPTIONS::OPTION_FILE) {
-					std::regex pattern(R"((\.csr|\.pem|\.req)$)");
+					std::regex pattern(R"((.csr|.pem|.req)$)");
 					rsa.CSR = std::regex_search(argv[i + 1], pattern)
 						? argv[i + 1]
 						: std::string(argv[i + 1]) + ".csr";
+				}
+				if (rsa.ca_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((.der|.pem)$)");
+					if (std::regex_search(argv[i + 1], pattern))
+						rsa.CA = argv[i + 1];
+					else
+						rsa.CA = rsa.KeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
+							? std::string(argv[i + 1]) + ".der"
+							: std::string(argv[i + 1]) + ".pem";
 				}
 			}
 			else if (rsa.Mode == RSA_MODE::RSA_GENERATE_PARAMS || rsa.Mode == RSA_MODE::RSA_EXPORT_PARAMS) {
@@ -401,6 +433,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_GENERATE_CSR:
 		GenerateCSR(rsa);
+		break;
+	case RSA_MODE::RSA_GENERATE_CA:
+		GenerateCA(rsa);
 		break;
 	case RSA_MODE::RSA_EXPORT_PARAMS:
 		ExportParamters(rsa);
@@ -629,6 +664,36 @@ void rsa_execute::GenerateCSR(Rsa& rsa) {
 	}
 	else
 		std::cout << Ask(csr_str) << std::endl;
+}
+
+void rsa_execute::GenerateCA(Rsa& rsa) {
+	std::vector<unsigned char> ca;
+	std::vector<unsigned char> cn;
+	std::vector<unsigned char> c;
+	std::vector<unsigned char> o;
+	std::vector<unsigned char> ou;
+	cryptography_libary::ValueDecode(rsa.certificate_common_name_option, rsa.Certificate_Common_Name, cn);
+	cryptography_libary::ValueDecode(rsa.certificate_country_option, rsa.Certificate_Country, c);
+	cryptography_libary::ValueDecode(rsa.certificate_organization_option, rsa.Certificate_Organization, o);
+	cryptography_libary::ValueDecode(rsa.certificate_organization_unit_option, rsa.Certificate_Organization_Unit, ou);
+	if (!cn.empty()) cn.push_back('\0');
+	if (!c.empty()) c.push_back('\0');
+	if (!o.empty()) o.push_back('\0');
+	if (!ou.empty()) ou.push_back('\0');
+	ca.resize(rsa.KeyLength);
+	RSA_CA generate = {
+		rsa.KeyLength,
+		rsa.KeyFormat,
+		ca.data(),
+		ca.size(),
+		rsa.Hash,
+		cn.data(),
+		c.data(),
+		o.data(),
+		ou.data(),
+		rsa.Key_Usage,
+	};
+	((RsaGenerateCA)RsaFunctions.at("-ca-gen"))(&generate);
 }
 
 void rsa_execute::ExportParamters(Rsa& rsa) {
@@ -1355,7 +1420,7 @@ void rsa_execute::SignCertificate(Rsa& rsa) {
 	cryptography_libary::ValueDecode(rsa.csr_option, rsa.CSR, csr);
 	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
 	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
-	RSA_SIGN_CSR p12 = {
+	RSA_SIGN_CSR sign = {
 		0,
 		rsa.KeyFormat,
 		csr.data(),
@@ -1369,4 +1434,5 @@ void rsa_execute::SignCertificate(Rsa& rsa) {
 		rsa.Hash,
 		0,
 	};
+	((RsaSignCertificate)RsaFunctions.at("-sign-cert"))(&sign);
 }

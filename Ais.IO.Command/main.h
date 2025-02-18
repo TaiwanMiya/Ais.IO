@@ -132,19 +132,20 @@ enum RSA_MODE : unsigned long long {
     RSA_GENERATE_PARAMS     = 0,
     RSA_GENERATE_KEYS       = 1,
     RSA_GENERATE_CSR        = 2,
-    RSA_EXPORT_PARAMS       = 3,
-    RSA_EXPORT_KEYS         = 4,
-    RSA_EXTRACT_PUBLIC      = 5,
-    RSA_CHECK_PUBLIC        = 6,
-    RSA_CHECK_PRIVATE       = 7,
-    RSA_CHECK_REQ_CSR       = 8,
-    RSA_PEM_PASS_LOCK       = 9,
-    RSA_PEM_PASS_UNLOCK     = 10,
-    RSA_ENCRPTION           = 11,
-    RSA_DECRPTION           = 12,
-    RSA_SIGNATURE           = 13,
-    RSA_VERIFICATION        = 14,
-    RSA_SIGN_CERTIFICATE    = 15,
+    RSA_GENERATE_CA         = 3,
+    RSA_EXPORT_PARAMS       = 4,
+    RSA_EXPORT_KEYS         = 5,
+    RSA_EXTRACT_PUBLIC      = 6,
+    RSA_CHECK_PUBLIC        = 7,
+    RSA_CHECK_PRIVATE       = 8,
+    RSA_CHECK_REQ_CSR       = 9,
+    RSA_PEM_PASS_LOCK       = 10,
+    RSA_PEM_PASS_UNLOCK     = 11,
+    RSA_ENCRPTION           = 12,
+    RSA_DECRPTION           = 13,
+    RSA_SIGNATURE           = 14,
+    RSA_VERIFICATION        = 15,
+    RSA_SIGN_CERTIFICATE    = 16,
 };
 
 enum ECC_MODE : unsigned long long {
@@ -428,6 +429,7 @@ struct Rsa {
     std::string PublicKey;
     std::string PrivateKey;
     std::string CSR;
+    std::string CA;
     std::string Password;
     std::string PlainText;
     std::string CipherText;
@@ -445,6 +447,7 @@ struct Rsa {
     CRYPT_OPTIONS publickey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS privatekey_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS csr_option = CRYPT_OPTIONS::OPTION_TEXT;
+    CRYPT_OPTIONS ca_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS password_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS plaintext_option = CRYPT_OPTIONS::OPTION_TEXT;
     CRYPT_OPTIONS ciphertext_option = CRYPT_OPTIONS::OPTION_TEXT;
@@ -463,6 +466,8 @@ struct Rsa {
     SEGMENT_SIZE_OPTION Segment = SEGMENT_SIZE_OPTION::SEGMENT_1_BIT;
     HASH_TYPE Hash = HASH_TYPE::HASH_SHA2_256;
     ASYMMETRIC_KEY_CSR_KEY_USAGE Key_Usage = ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_NULL;
+    unsigned long long Valid_Days = 365;
+    long long Serial_Number = 0;
 };
 
 struct Ecc {
@@ -1011,6 +1016,21 @@ struct RSA_CSR {
     const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
 };
 
+struct RSA_CA {
+    size_t KEY_LENGTH;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* CERTIFICATE;
+    size_t CERTIFICATE_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZATION;
+    const unsigned char* ORGANIZATION_UNIT;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
+    const unsigned long long VALIDITY_DAYS;
+    const long long SERIAL_NUMBER;
+};
+
 struct RSA_EXPORT {
     size_t KEY_LENGTH;
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
@@ -1492,6 +1512,7 @@ typedef int (*RsaGetKeyLength)(RSA_KEY_PAIR*);
 typedef int (*RsaGenerateParameters)(RSA_PARAMETERS*);
 typedef int (*RsaGenerateKeys)(RSA_KEY_PAIR*);
 typedef int (*RsaGenerateCSR)(RSA_CSR*);
+typedef int (*RsaGenerateCA)(RSA_CA*);
 typedef int (*RsaExportParameters)(RSA_EXPORT*);
 typedef int (*RsaExportKeys)(RSA_EXPORT*);
 typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
