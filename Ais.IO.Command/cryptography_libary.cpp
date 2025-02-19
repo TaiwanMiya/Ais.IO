@@ -385,12 +385,27 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 			if (!output.empty() && output.back() == '\r')
 				output.pop_back();
 		}
+
+		std::vector<unsigned char> cleaned_output;
 		if (output.size() >= 2 && output[0] == 0xFF && output[1] == 0xFE)
-			output.erase(output.begin(), output.begin() + 2);
+			output.erase(output.begin(), output.begin() + 2);	// UTF-16 LE BOM
 		else if (output.size() >= 2 && output[0] == 0xFE && output[1] == 0xFF)
-			output.erase(output.begin(), output.begin() + 2);
-		else if (output.size() >= 3 && output[0] == 0xEF && output[1] == 0xBB && output[2] == 0xBF)
-			output.erase(output.begin(), output.begin() + 3);
+			output.erase(output.begin(), output.begin() + 3);	// UTF-16 BE BOM
+		else if (output.size() >= 3 && output[0] == 0xEF && output[1] == 0xBB && output[2] == 0xBF) {
+			output.erase(output.begin(), output.begin() + 3);	// UTF-8 BOM
+			goto end;
+		}
+		else
+			goto end;
+
+		for (size_t i = 0; i < output.size(); ++i) {
+			if (output[i] == '\0' && i % 2 != 0)
+				continue;
+			cleaned_output.push_back(output[i]);
+		}
+		output = std::move(cleaned_output);
+
+end:
 		file.close();
 		break;
 	}

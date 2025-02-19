@@ -1004,9 +1004,16 @@ struct RSA_KEY_PAIR {
 
 struct RSA_CSR {
     size_t KEY_LENGTH;
-    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     unsigned char* CSR;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
     size_t CSR_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
     const HASH_TYPE HASH_ALGORITHM;
     const unsigned char* COMMON_NAME;
     const unsigned char* COUNTRY;

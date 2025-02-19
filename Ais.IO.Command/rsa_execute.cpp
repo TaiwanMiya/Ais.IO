@@ -627,6 +627,8 @@ void rsa_execute::GenerateKeys(Rsa& rsa) {
 
 void rsa_execute::GenerateCSR(Rsa& rsa) {
 	std::vector<unsigned char> csr;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> password;
 	std::vector<unsigned char> cn;
 	std::vector<unsigned char> c;
 	std::vector<unsigned char> o;
@@ -640,11 +642,22 @@ void rsa_execute::GenerateCSR(Rsa& rsa) {
 	if (!o.empty()) o.push_back('\0');
 	if (!ou.empty()) ou.push_back('\0');
 	csr.resize(rsa.KeyLength);
+	privateKey.resize(rsa.KeyLength);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, password);
+	if (rsa.password_option)
+		password.push_back('\0');
 	RSA_CSR generate = {
 		rsa.KeyLength,
 		rsa.KeyFormat,
 		csr.data(),
+		privateKey.data(),
+		password.data(),
 		csr.size(),
+		privateKey.size(),
+		password.size(),
+		rsa.Algorithm,
+		rsa.AlgorithmSize,
+		rsa.Segment,
 		rsa.Hash,
 		cn.data(),
 		c.data(),
@@ -655,15 +668,21 @@ void rsa_execute::GenerateCSR(Rsa& rsa) {
 	};
 	((RsaGenerateCSR)RsaFunctions.at("-csr-gen"))(&generate);
 	csr.resize(generate.CSR_LENGTH);
+	privateKey.resize(generate.PRIVATE_KEY_LENGTH);
 	std::string csr_str = rsa.CSR;
+	std::string privateKey_str = rsa.PrivateKey;
 	cryptography_libary::ValueEncode(rsa.csr_option, csr, csr_str);
+	cryptography_libary::ValueEncode(rsa.csr_option, privateKey, privateKey_str);
 	if (!IsRowData) {
 		std::cout << Hint("<RSA CSR Generate>") << std::endl;
 		std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
 		std::cout << Mark("Certificate Signing Request (CSR) [") << Ask(std::to_string(generate.CSR_LENGTH)) << Mark("]:\n") << Ask(csr_str) << std::endl;
+		std::cout << Mark("Private Key [") << Ask(std::to_string(generate.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
 	}
-	else
+	else {
 		std::cout << Ask(csr_str) << std::endl;
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void rsa_execute::GenerateCA(Rsa& rsa) {

@@ -215,6 +215,7 @@ int RsaGenerateCSR(RSA_CSR* generate) {
     ERR_clear_error();
 
     BIO* cert_bio = BIO_new(BIO_s_mem());
+    BIO* priv_bio = BIO_new(BIO_s_mem());
 
     EVP_PKEY* pkey = EVP_RSA_gen(generate->KEY_LENGTH);
     if (!pkey)
@@ -225,29 +226,29 @@ int RsaGenerateCSR(RSA_CSR* generate) {
 
     //X509_NAME_add_entry_by_NID(name, NID_organizationName)
     if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, priv_bio, pkey);
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, priv_bio, pkey);
     if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, priv_bio, pkey);
     if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
-        return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
+        return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, priv_bio, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
         X509_NAME_free(name);
         X509_REQ_free(req);
-        return handleErrors_asymmetric("Failed to set subject name.", NULL);
+        return handleErrors_asymmetric("Failed to set subject name.", cert_bio, priv_bio, pkey);
     }
 
     const EVP_MD* md = GetHashCrypter(generate->HASH_ALGORITHM);
     if (!X509_REQ_set_pubkey(req, pkey))
-        return handleErrors_asymmetric("Failed to set public key.", NULL);
+        return handleErrors_asymmetric("Failed to set public key.", cert_bio, priv_bio, pkey);
 
 #pragma region Add Extensions To CSR
 
     STACK_OF(X509_EXTENSION)* exts = sk_X509_EXTENSION_new_null();
     if (!exts)
-        return handleErrors_asymmetric("Failed to create extension stack.", NULL);
+        return handleErrors_asymmetric("Failed to create extension stack.", cert_bio, priv_bio, pkey);
 
     // Add Subject Alternative Name
     // DNS:www.example.com,IP:192.168.1.1,email:user@example.com,URI:https://example.com
@@ -255,7 +256,7 @@ int RsaGenerateCSR(RSA_CSR* generate) {
         X509_EXTENSION* ext_SAN = X509V3_EXT_conf_nid(NULL, NULL, NID_subject_alt_name, generate->SUBJECT_ALTERNATIVE_NAME);
         if (!ext_SAN) {
             sk_X509_EXTENSION_free(exts);
-            return handleErrors_asymmetric("Failed to create SAN extension.", NULL);
+            return handleErrors_asymmetric("Failed to create SAN extension.", cert_bio, priv_bio, pkey);
         }
         sk_X509_EXTENSION_push(exts, ext_SAN);
     }
@@ -277,46 +278,60 @@ int RsaGenerateCSR(RSA_CSR* generate) {
         X509_EXTENSION* ext_KU = X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, usage.c_str());
         if (!ext_KU) {
             sk_X509_EXTENSION_free(exts);
-            return handleErrors_asymmetric("Failed to create Key Usage extension.", NULL);
+            return handleErrors_asymmetric("Failed to create Key Usage extension.", cert_bio, priv_bio, pkey);
         }
         sk_X509_EXTENSION_push(exts, ext_KU);
     }
 
     if (!X509_REQ_add_extensions(req, exts)) {
         sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
-        return handleErrors_asymmetric("Failed to add extensions to CSR.", NULL);
+        return handleErrors_asymmetric("Failed to add extensions to CSR.", cert_bio, priv_bio, pkey);
     }
 
     sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
 #pragma endregion
 
     if (!X509_REQ_sign(req, pkey, md))
-        return handleErrors_asymmetric("Failed to sign the request.", NULL);
+        return handleErrors_asymmetric("Failed to sign the request.", cert_bio, priv_bio, pkey);
 
-    switch (generate->CSR_FORMAT) {
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
+    switch (generate->KEY_FORMAT) {
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
         if (1 != PEM_write_bio_X509_REQ(cert_bio, req))
-            return handleErrors_asymmetric("Unable to write CSR PEM to memory.", cert_bio, NULL, pkey);
+            return handleErrors_asymmetric("Unable to write CSR PEM to memory.", cert_bio, priv_bio, pkey);
+        if (cipher == NULL || generate->PEM_PASSWORD == NULL || generate->PEM_PASSWORD_LENGTH <= 0) {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", cert_bio, priv_bio, pkey);
+        }
+        else {
+            if (1 != PEM_write_bio_PrivateKey(priv_bio, pkey, cipher, generate->PEM_PASSWORD, generate->PEM_PASSWORD_LENGTH, NULL, NULL))
+                return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", cert_bio, priv_bio, pkey);
+        }
         break;
     case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
         if (1 != i2d_X509_REQ_bio(cert_bio, req))
-            return handleErrors_asymmetric("Unable to write CSR DER to memory.", cert_bio, NULL, pkey);
+            return handleErrors_asymmetric("Unable to write CSR DER to memory.", cert_bio, priv_bio, pkey);
         break;
-    default:return handleErrors_asymmetric("Invalid asymmetric key format.", cert_bio, NULL, pkey);
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", cert_bio, priv_bio, pkey);
     }
 
     size_t cert_len = BIO_pending(cert_bio);
+    size_t priv_len = BIO_pending(priv_bio);
     if (generate->CSR == nullptr || generate->CSR_LENGTH < cert_len) {
         generate->CSR = new unsigned char[cert_len];
+        generate->PRIVATE_KEY = new unsigned char[priv_len];
     }
 
     BIO_read(cert_bio, generate->CSR, cert_len);
+    BIO_read(priv_bio, generate->PRIVATE_KEY, priv_len);
 
     generate->CSR_LENGTH = cert_len;
+    generate->PRIVATE_KEY_LENGTH = priv_len;
 
     X509_REQ_free(req);
     X509_NAME_free(name);
     BIO_free_all(cert_bio);
+    BIO_free_all(priv_bio);
     EVP_PKEY_free(pkey);
     return 0;
 }

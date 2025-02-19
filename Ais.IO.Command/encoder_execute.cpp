@@ -143,12 +143,27 @@ void encoder_execute::SetInput(Command& cmd, size_t& size, std::vector<unsigned 
         if (!buffer.empty() && buffer.back() == '\r')
             buffer.pop_back();
     }
+
+    std::vector<unsigned char> cleaned_output;
     if (buffer.size() >= 2 && buffer[0] == 0xFF && buffer[1] == 0xFE)
-        buffer.erase(buffer.begin(), buffer.begin() + 2);
+        buffer.erase(buffer.begin(), buffer.begin() + 2);	// UTF-16 LE BOM
     else if (buffer.size() >= 2 && buffer[0] == 0xFE && buffer[1] == 0xFF)
-        buffer.erase(buffer.begin(), buffer.begin() + 2);
-    else if (buffer.size() >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
-        buffer.erase(buffer.begin(), buffer.begin() + 3);
+        buffer.erase(buffer.begin(), buffer.begin() + 3);	// UTF-16 BE BOM
+    else if (buffer.size() >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF) {
+        buffer.erase(buffer.begin(), buffer.begin() + 3);	// UTF-8 BOM
+        goto end;
+    }
+    else
+        goto end;
+
+    for (size_t i = 0; i < buffer.size(); ++i) {
+        if (buffer[i] == '\0' && i % 2 != 0)
+            continue;
+        cleaned_output.push_back(buffer[i]);
+    }
+    buffer = std::move(cleaned_output);
+
+end:
     size = buffer.size();
     file.close();
 }
