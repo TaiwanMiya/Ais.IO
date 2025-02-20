@@ -713,6 +713,7 @@ void rsa_execute::GenerateCA(Rsa& rsa) {
 		rsa.Key_Usage,
 	};
 	((RsaGenerateCA)RsaFunctions.at("-ca-gen"))(&generate);
+
 }
 
 void rsa_execute::ExportParamters(Rsa& rsa) {

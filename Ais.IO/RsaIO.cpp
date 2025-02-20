@@ -396,6 +396,12 @@ int RsaGenerateCA(RSA_CA* generate) {
     if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN)         usage += "keyCertSign, ";
     if (generate->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN)          usage += "cRLSign, ";
     if (!usage.empty()) {
+        size_t find_key_cert_sign = usage.find("keyCertSign");
+        size_t find_key_crl_sign = usage.find("cRLSign");
+        if (find_key_cert_sign == std::string::npos)
+            usage += "keyCertSign, ";
+        if (find_key_crl_sign == std::string::npos)
+            usage += "cRLSign, ";
         usage.pop_back();
         usage.pop_back();
     }
