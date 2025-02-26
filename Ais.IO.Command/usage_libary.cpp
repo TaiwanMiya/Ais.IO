@@ -59,14 +59,14 @@ void usage_libary::ShowHashTypeUsage() {
 
 void usage_libary::ShowAlgorithm() {
     std::cout << Hint("    Supported [--algorithm]:\n");
-    std::cout << "        " << Mark(" 1") << ". " << Info("-alg -aes -cbc <size>") << Warn("                    -> .") << std::endl;
-    std::cout << "        " << Mark(" 2") << ". " << Info("-alg -aes -cfb <size> <segment>") << Warn("          -> .") << std::endl;
-    std::cout << "        " << Mark(" 3") << ". " << Info("-alg -aes -ofb <size>") << Warn("                    -> .") << std::endl;
-    std::cout << "        " << Mark(" 4") << ". " << Info("-alg -aes -ecb <size>") << Warn("                    -> .") << std::endl;
-    std::cout << "        " << Mark(" 5") << ". " << Info("-alg -des -cbc <size>") << Warn("                    -> .") << std::endl;
-    std::cout << "        " << Mark(" 6") << ". " << Info("-alg -des -cfb <size> <segment>") << Warn("          -> .") << std::endl;
-    std::cout << "        " << Mark(" 7") << ". " << Info("-alg -des -ofb <size>") << Warn("                    -> .") << std::endl;
-    std::cout << "        " << Mark(" 8") << ". " << Info("-alg -des -ecb <size>") << Warn("                    -> .") << std::endl;
+    std::cout << "        " << Mark(" 1") << ". " << Info("-alg -aes -cbc <size>") << Warn("                    -> Use AES CBC algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 2") << ". " << Info("-alg -aes -cfb <size> <segment>") << Warn("          -> Use AES CFB algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 3") << ". " << Info("-alg -aes -ofb <size>") << Warn("                    -> Use AES OFB algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 4") << ". " << Info("-alg -aes -ecb <size>") << Warn("                    -> Use AES ECB algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 5") << ". " << Info("-alg -des -cbc <size>") << Warn("                    -> Use AES CBC algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 6") << ". " << Info("-alg -des -cfb <size> <segment>") << Warn("          -> Use AES CFB algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 7") << ". " << Info("-alg -des -ofb <size>") << Warn("                    -> Use DES OFB algorithm.") << std::endl;
+    std::cout << "        " << Mark(" 8") << ". " << Info("-alg -des -ecb <size>") << Warn("                    -> Use DES ECB algorithm.") << std::endl;
     std::cout << "" << std::endl;
 }
 
