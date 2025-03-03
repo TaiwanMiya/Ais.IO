@@ -1008,7 +1008,7 @@ void rsa_execute::ExtractPublicKey(Rsa& rsa) {
 		privateKey.size(),
 		pemPass.size()
 	};
-	((RsaExtractPublicKey)RsaFunctions.at("-key-extract"))(&pub);
+	((RsaExtractPublicKey)RsaFunctions.at("-key-extract-pub"))(&pub);
 
 	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
 	if (!IsRowData) {

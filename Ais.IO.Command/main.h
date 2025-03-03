@@ -1076,6 +1076,24 @@ struct RSA_EXTRACT_PUBLIC_KEY {
     size_t PEM_PASSWORD_LENGTH;
 };
 
+struct RSA_EXTRACT_CSR {
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    unsigned char* CSR;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t CSR_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const char* SUBJECT_ALTERNATIVE_NAME;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
+};
+
 struct RSA_CHECK_PUBLIC_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PUBLIC_KEY;
@@ -1523,6 +1541,7 @@ typedef int (*RsaGenerateCA)(RSA_CA*);
 typedef int (*RsaExportParameters)(RSA_EXPORT*);
 typedef int (*RsaExportKeys)(RSA_EXPORT*);
 typedef int (*RsaExtractPublicKey)(RSA_EXTRACT_PUBLIC_KEY*);
+typedef int (*RsaExtractCSR)(RSA_EXTRACT_CSR*);
 typedef int (*RsaCheckPublicKey)(RSA_CHECK_PUBLIC_KEY*);
 typedef int (*RsaCheckPrivateKey)(RSA_CHECK_PRIVATE_KEY*);
 typedef int (*RsaCheckCSR)(RSA_CHECK_CSR*);

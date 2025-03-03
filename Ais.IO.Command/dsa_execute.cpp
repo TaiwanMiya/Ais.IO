@@ -703,7 +703,7 @@ void dsa_execute::ExtractPublicKey(Dsa& dsa) {
 		privateKey.size(),
 		pemPass.size()
 	};
-	((DsaExtractPublicKey)DsaFunctions.at("-key-extract-pub"))(&pub);
+	((DsaExtractPublicKey)DsaFunctions.at("-pub-extract"))(&pub);
 
 	publicKey.resize(pub.PUBLIC_KEY_LENGTH);
 	if (!IsRowData) {
@@ -753,7 +753,7 @@ void dsa_execute::ExtractParametersByKeys(Dsa& dsa) {
 		privateKey.size(),
 		pemPass.size(),
 	};
-	((DsaExtractParametersByKeys)DsaFunctions.at("-key-extract-param"))(&param);
+	((DsaExtractParametersByKeys)DsaFunctions.at("-param-extract"))(&param);
 
 	parameters.resize(param.PARAMETERS_LENGTH);
 	if (!IsRowData) {

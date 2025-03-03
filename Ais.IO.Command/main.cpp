@@ -962,7 +962,8 @@ void LoadFunctions() {
     RsaFunctions["-ca-gen"] = GET_PROC_ADDRESS(Lib, "RsaGenerateCA");
     RsaFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "RsaExportParameters");
     RsaFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "RsaExportKeys");
-    RsaFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "RsaExtractPublicKey");
+    RsaFunctions["-key-extract-pub"] = GET_PROC_ADDRESS(Lib, "RsaExtractPublicKey");
+    RsaFunctions["-key-extract-csr"] = GET_PROC_ADDRESS(Lib, "RsaExtractCSR");
     RsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPublicKey");
     RsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckPrivateKey");
     RsaFunctions["-csr-check"] = GET_PROC_ADDRESS(Lib, "RsaCheckCSR");

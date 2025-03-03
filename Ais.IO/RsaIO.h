@@ -167,6 +167,24 @@ struct RSA_EXTRACT_PUBLIC_KEY {
     size_t PEM_PASSWORD_LENGTH;
 };
 
+struct RSA_EXTRACT_CSR {
+    const ASYMMETRIC_KEY_FORMAT CSR_FORMAT;
+    const ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;
+    unsigned char* CSR;
+    const unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t CSR_LENGTH;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const HASH_TYPE HASH_ALGORITHM;
+    const unsigned char* COMMON_NAME;
+    const unsigned char* COUNTRY;
+    const unsigned char* ORGANIZETION;
+    const unsigned char* ORGANIZETION_UNIT;
+    const char* SUBJECT_ALTERNATIVE_NAME;
+    const ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;
+};
+
 struct RSA_CHECK_PUBLIC_KEY {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PUBLIC_KEY;
@@ -308,6 +326,7 @@ EXT RSAIO_API int RsaGenerateP12(RSA_P12* generate);
 EXT RSAIO_API int RsaExportParameters(RSA_EXPORT* params);
 EXT RSAIO_API int RsaExportKeys(RSA_EXPORT* params);
 EXT RSAIO_API int RsaExtractPublicKey(RSA_EXTRACT_PUBLIC_KEY* params);
+EXT RSAIO_API int RsaExtractCSR(RSA_EXTRACT_CSR* params);
 EXT RSAIO_API int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check);
 EXT RSAIO_API int RsaCheckPrivateKey(RSA_CHECK_PRIVATE_KEY* check);
 EXT RSAIO_API int RsaCheckCSR(RSA_CHECK_CSR* check);

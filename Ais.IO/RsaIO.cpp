@@ -870,6 +870,156 @@ int RsaExtractPublicKey(RSA_EXTRACT_PUBLIC_KEY* params) {
     return 0;
 }
 
+int RsaExtractCSR(RSA_EXTRACT_CSR* params) {
+    ERR_clear_error();
+
+    BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
+    if (!priv_bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
+
+    EVP_PKEY* pkey = nullptr;
+
+    switch (params->PRIVATE_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(priv_bio, &pkey);
+        break;
+    default:
+        return handleErrors_asymmetric("Invalid private key format.", priv_bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", priv_bio, NULL, pkey);
+
+    BIO_free(priv_bio);
+
+    X509_REQ* req = X509_REQ_new();
+    if (!req)
+        return handleErrors_asymmetric("Failed to create CSR object.", NULL, NULL, pkey);
+
+    X509_NAME* name = X509_NAME_new();
+    if (!name) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to create X509_NAME.", NULL, NULL, pkey);
+    }
+
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set Common Name (CN).", NULL, NULL, pkey);
+    }
+    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set Country (C).", NULL, NULL, pkey);
+    }
+    if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set Organization (O).", NULL, NULL, pkey);
+    }
+    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set Organization Unit (OU).", NULL, NULL, pkey);
+    }
+
+    if (1 != X509_REQ_set_subject_name(req, name)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set subject name.", NULL, NULL, pkey);
+    }
+
+    if (!X509_REQ_set_pubkey(req, pkey)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to set public key.", NULL, NULL, pkey);
+    }
+
+    STACK_OF(X509_EXTENSION)* exts = sk_X509_EXTENSION_new_null();
+    if (!exts) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to create extension stack.", NULL, NULL, pkey);
+    }
+
+    if (params->SUBJECT_ALTERNATIVE_NAME && std::string(params->SUBJECT_ALTERNATIVE_NAME).length() > 0) {
+        X509_EXTENSION* ext_SAN = X509V3_EXT_conf_nid(NULL, NULL, NID_subject_alt_name, params->SUBJECT_ALTERNATIVE_NAME);
+        if (!ext_SAN) {
+            sk_X509_EXTENSION_free(exts);
+            X509_REQ_free(req);
+            return handleErrors_asymmetric("Failed to create SAN extension.", NULL, NULL, pkey);
+        }
+        sk_X509_EXTENSION_push(exts, ext_SAN);
+    }
+
+    std::string usage;
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DIGITAL_SIGNATURE) usage += "digitalSignature, ";
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_ENCIPHERMENT)  usage += "keyEncipherment, ";
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_DATA_ENCIPHERMENT) usage += "dataEncipherment, ";
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_KEY_AGREEMENT)     usage += "keyAgreement, ";
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CERT_SIGN)         usage += "keyCertSign, ";
+    if (params->KEY_USAGE & ASYMMETRIC_KEY_CSR_KEY_USAGE::CSR_KEY_USAGE_CRL_SIGN)          usage += "cRLSign, ";
+    if (!usage.empty()) {
+        usage.pop_back();
+        usage.pop_back();
+    }
+
+    if (!usage.empty()) {
+        X509_EXTENSION* ext_KU = X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, usage.c_str());
+        if (!ext_KU) {
+            sk_X509_EXTENSION_free(exts);
+            X509_REQ_free(req);
+            return handleErrors_asymmetric("Failed to create Key Usage extension.", NULL, NULL, pkey);
+        }
+        sk_X509_EXTENSION_push(exts, ext_KU);
+    }
+
+    if (!X509_REQ_add_extensions(req, exts)) {
+        sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to add extensions to CSR.", NULL, NULL, pkey);
+    }
+    sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+
+    const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
+    if (!X509_REQ_sign(req, pkey, md)) {
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Failed to sign CSR.", NULL, NULL, pkey);
+    }
+
+    BIO* csr_bio = BIO_new(BIO_s_mem());
+    switch (params->CSR_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_X509_REQ(csr_bio, req)) {
+            X509_REQ_free(req);
+            return handleErrors_asymmetric("Unable to write CSR PEM to memory.", csr_bio, NULL, pkey);
+        }
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_X509_REQ_bio(csr_bio, req)) {
+            X509_REQ_free(req);
+            return handleErrors_asymmetric("Unable to write CSR DER to memory.", csr_bio, NULL, pkey);
+        }
+        break;
+    default:
+        X509_REQ_free(req);
+        return handleErrors_asymmetric("Invalid CSR format.", csr_bio, NULL, pkey);
+    }
+
+    size_t csr_len = BIO_pending(csr_bio);
+    if (params->CSR == nullptr || params->CSR_LENGTH < csr_len)
+        params->CSR = new unsigned char[csr_len];
+
+    BIO_read(csr_bio, params->CSR, csr_len);
+    params->CSR_LENGTH = csr_len;
+
+    BIO_free_all(csr_bio);
+    X509_REQ_free(req);
+    X509_NAME_free(name);
+    EVP_PKEY_free(pkey);
+
+    return 0;
+}
+
 int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check) {
     ERR_clear_error();
     EVP_PKEY* pkey = nullptr;
