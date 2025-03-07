@@ -16,6 +16,7 @@ private:
 	static void ExportParamters(Rsa& rsa);
 	static void ExportKeys(Rsa& rsa);
 	static void ExtractPublicKey(Rsa& rsa);
+	static void ExtractCSR(Rsa& rsa);
 	static void CheckPublicKey(Rsa& rsa);
 	static void CheckPrivateKey(Rsa& rsa);
 	static void CheckCSR(Rsa& rsa);

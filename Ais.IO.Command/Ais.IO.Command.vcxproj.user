@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-rsa -gen -ca 2048 -out -pem</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-rsa -ext -csr -priv -pem -f pkey-priv.pem -cn "TEST" -o "Ais" -c "TW" -ou "Ais IO" -san -ip "192.168.40.138" -mail "8wubyq35@gmail.com" -ku -cs -de -kc -ka -ke -out -pem -f pkey.csr</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>

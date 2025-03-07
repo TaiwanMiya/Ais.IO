@@ -652,7 +652,7 @@ void ecc_execute::ExtractPublicKey(Ecc& ecc) {
 		privateKey.size(),
 		pemPass.size()
 	};
-	result_code = ((EccExtractPublicKey)EccFunctions.at("-key-extract"))(&pub);
+	result_code = ((EccExtractPublicKey)EccFunctions.at("-key-extract-pub"))(&pub);
 
 	publicKey.resize(result_code < 0 ? 0 : pub.PUBLIC_KEY_LENGTH);
 	if (!IsRowData) {

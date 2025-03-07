@@ -941,7 +941,7 @@ int RsaExtractCSR(RSA_EXTRACT_CSR* params) {
         return handleErrors_asymmetric("Failed to create extension stack.", NULL, NULL, pkey);
     }
 
-    if (params->SUBJECT_ALTERNATIVE_NAME && std::string(params->SUBJECT_ALTERNATIVE_NAME).length() > 0) {
+    if (params->SUBJECT_ALTERNATIVE_NAME && !std::string(params->SUBJECT_ALTERNATIVE_NAME).empty() && std::string(params->SUBJECT_ALTERNATIVE_NAME).length() > 0) {
         X509_EXTENSION* ext_SAN = X509V3_EXT_conf_nid(NULL, NULL, NID_subject_alt_name, params->SUBJECT_ALTERNATIVE_NAME);
         if (!ext_SAN) {
             sk_X509_EXTENSION_free(exts);

@@ -86,7 +86,21 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 			break;
 		case rsa_execute::hash("-ext"):
 		case rsa_execute::hash("-extract"):
-			rsa.Mode = RSA_MODE::RSA_EXTRACT_PUBLIC;
+			switch (set_hash(ToLower(argv[i + 1]).c_str())) {
+			case rsa_execute::hash("-pub"):
+			case rsa_execute::hash("-public"):
+			case rsa_execute::hash("-public-key"):
+				rsa.Mode = RSA_MODE::RSA_EXTRACT_PUBLIC;
+				i++;
+				break;
+			case rsa_execute::hash("-csr"):
+				rsa.Mode = RSA_MODE::RSA_EXTRACT_CERT_CSR;
+				i++;
+				break;
+			default:
+				rsa.Mode = RSA_MODE::RSA_EXTRACT_PUBLIC;
+				break;
+			}
 			break;
 		case rsa_execute::hash("-chk"):
 		case rsa_execute::hash("-check"):
@@ -385,7 +399,8 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 					i++;
 				}
 			}
-			else if (rsa.Mode == RSA_MODE::RSA_EXTRACT_PUBLIC) {
+			else if (rsa.Mode == RSA_MODE::RSA_EXTRACT_PUBLIC || rsa.Mode == RSA_MODE::RSA_EXTRACT_CERT_CSR) {
+				rsa.csr_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
 				rsa.publickey_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
 					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
@@ -395,6 +410,12 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 						rsa.PublicKey = rsa.ExtractKeyFormat == ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER
 						? std::string(argv[i + 1]) + "-pub.der"
 						: std::string(argv[i + 1]) + "-pub.pem";
+				}
+				else if (rsa.csr_option == CRYPT_OPTIONS::OPTION_FILE) {
+					std::regex pattern(R"((.csr|.pem|.req)$)");
+					rsa.CSR = std::regex_search(argv[i + 1], pattern)
+						? argv[i + 1]
+						: std::string(argv[i + 1]) + ".csr";
 				}
 			}
 			else if (rsa.Mode == RSA_MODE::RSA_PEM_PASS_LOCK || rsa.Mode == RSA_MODE::RSA_PEM_PASS_UNLOCK) {
@@ -454,6 +475,9 @@ void rsa_execute::RsaStart(Rsa& rsa) {
 		break;
 	case RSA_MODE::RSA_EXTRACT_PUBLIC:
 		ExtractPublicKey(rsa);
+		break;
+	case RSA_MODE::RSA_EXTRACT_CERT_CSR:
+		ExtractCSR(rsa);
 		break;
 	case RSA_MODE::RSA_PEM_PASS_LOCK:
 		PemLock(rsa);
@@ -1024,6 +1048,69 @@ void rsa_execute::ExtractPublicKey(Rsa& rsa) {
 		std::cout << Ask(publicKey_str) << std::endl;
 	}
 }
+
+void rsa_execute::ExtractCSR(Rsa& rsa) {
+	std::vector<unsigned char> csr;
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	std::vector<unsigned char> cn;
+	std::vector<unsigned char> c;
+	std::vector<unsigned char> o;
+	std::vector<unsigned char> ou;
+	cryptography_libary::ValueDecode(rsa.privatekey_option, rsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(rsa.password_option, rsa.Password, pemPass);
+	cryptography_libary::ValueDecode(rsa.certificate_common_name_option, rsa.Certificate_Common_Name, cn);
+	cryptography_libary::ValueDecode(rsa.certificate_country_option, rsa.Certificate_Country, c);
+	cryptography_libary::ValueDecode(rsa.certificate_organization_option, rsa.Certificate_Organization, o);
+	cryptography_libary::ValueDecode(rsa.certificate_organization_unit_option, rsa.Certificate_Organization_Unit, ou);
+	if (!cn.empty()) cn.push_back('\0');
+	if (!c.empty()) c.push_back('\0');
+	if (!o.empty()) o.push_back('\0');
+	if (!ou.empty()) ou.push_back('\0');
+	pemPass.push_back('\0');
+
+	RSA_CHECK_PRIVATE_KEY priv = {
+		rsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		privateKey.size(),
+		pemPass.size(),
+	};
+	((RsaCheckPrivateKey)RsaFunctions.at("-priv-check"))(&priv);
+
+	csr.resize(priv.KEY_LENGTH);
+
+	RSA_EXTRACT_CSR cert = {
+		rsa.ExtractKeyFormat,
+		rsa.KeyFormat,
+		csr.data(),
+		privateKey.data(),
+		pemPass.data(),
+		csr.size(),
+		privateKey.size(),
+		pemPass.size(),
+		rsa.Hash,
+		cn.data(),
+		c.data(),
+		o.data(),
+		ou.data(),
+		rsa.Subject_Alternative_Name.data(),
+		rsa.Key_Usage,
+	};
+	((RsaExtractCSR)RsaFunctions.at("-key-extract-csr"))(&cert);
+
+	csr.resize(cert.CSR_LENGTH);
+	std::string csr_str = rsa.CSR;
+	cryptography_libary::ValueEncode(rsa.csr_option, csr, csr_str);
+	if (!IsRowData) {
+		std::cout << Hint("<RSA Extract CSR>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::cout << Mark("Certificate Signing Request (CSR) [") << Ask(std::to_string(cert.CSR_LENGTH)) << Mark("]:\n") << Ask(csr_str) << std::endl;
+	}
+	else
+		std::cout << Ask(csr_str) << std::endl;
+}
+
 
 void rsa_execute::CheckPublicKey(Rsa& rsa) {
 	std::vector<unsigned char> publicKey;

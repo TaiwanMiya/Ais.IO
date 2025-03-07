@@ -981,7 +981,7 @@ void LoadFunctions() {
     EccFunctions["-key-gen"] = GET_PROC_ADDRESS(Lib, "EccGenerateKeys");
     EccFunctions["-param-export"] = GET_PROC_ADDRESS(Lib, "EccExportParameters");
     EccFunctions["-key-export"] = GET_PROC_ADDRESS(Lib, "EccExportKeys");
-    EccFunctions["-key-extract"] = GET_PROC_ADDRESS(Lib, "EccExtractPublicKey");
+    EccFunctions["-key-extract-pub"] = GET_PROC_ADDRESS(Lib, "EccExtractPublicKey");
     EccFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "EccCheckPublicKey");
     EccFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "EccCheckPrivateKey");
     EccFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "EccSigned");
