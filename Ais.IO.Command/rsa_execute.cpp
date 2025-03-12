@@ -400,8 +400,9 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 				}
 			}
 			else if (rsa.Mode == RSA_MODE::RSA_EXTRACT_PUBLIC || rsa.Mode == RSA_MODE::RSA_EXTRACT_CERT_CSR) {
-				rsa.csr_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
-				rsa.publickey_option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
+				CRYPT_OPTIONS option = asymmetric_libary::GetOption(rsa.ExtractKeyFormat, i, argv);
+				rsa.csr_option = option;
+				rsa.publickey_option = option;
 				if (rsa.publickey_option == CRYPT_OPTIONS::OPTION_FILE) {
 					std::regex pattern(R"((\-pub.der|\-pub.pem)$)");
 					if (std::regex_search(argv[i + 1], pattern))
@@ -411,7 +412,7 @@ void rsa_execute::ParseParameters(int argc, char* argv[], Rsa& rsa) {
 						? std::string(argv[i + 1]) + "-pub.der"
 						: std::string(argv[i + 1]) + "-pub.pem";
 				}
-				else if (rsa.csr_option == CRYPT_OPTIONS::OPTION_FILE) {
+				if (rsa.csr_option == CRYPT_OPTIONS::OPTION_FILE) {
 					std::regex pattern(R"((.csr|.pem|.req)$)");
 					rsa.CSR = std::regex_search(argv[i + 1], pattern)
 						? argv[i + 1]
