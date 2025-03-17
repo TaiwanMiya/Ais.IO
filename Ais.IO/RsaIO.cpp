@@ -229,9 +229,9 @@ int RsaGenerateCSR(RSA_CSR* generate) {
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, priv_bio, pkey);
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, priv_bio, pkey);
-    if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
+    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZATION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, priv_bio, pkey);
-    if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZATION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, priv_bio, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
@@ -511,9 +511,9 @@ int RsaGenerateP12(RSA_P12* generate) {
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
     if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZETION, -1, -1, 0))
+    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZATION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZETION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZATION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
 
     const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
@@ -916,11 +916,11 @@ int RsaExtractCSR(RSA_EXTRACT_CSR* params) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Country (C).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZETION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZETION, -1, -1, 0)) {
+    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZATION, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Organization (O).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZETION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZETION_UNIT, -1, -1, 0)) {
+    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZATION_UNIT, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Organization Unit (OU).", NULL, NULL, pkey);
     }
@@ -1015,6 +1015,148 @@ int RsaExtractCSR(RSA_EXTRACT_CSR* params) {
     BIO_free_all(csr_bio);
     X509_REQ_free(req);
     X509_NAME_free(name);
+    EVP_PKEY_free(pkey);
+
+    return 0;
+}
+
+int RsaExtractCA(RSA_EXTRACT_CA* params) {
+    ERR_clear_error();
+
+    BIO* priv_bio = BIO_new_mem_buf(params->PRIVATE_KEY, static_cast<int>(params->PRIVATE_KEY_LENGTH));
+    if (!priv_bio)
+        return handleErrors_asymmetric("Failed to create BIO for private key.", NULL);
+
+    EVP_PKEY* pkey = nullptr;
+
+    // **讀取私鑰**
+    switch (params->PRIVATE_KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (params->PEM_PASSWORD == NULL || params->PEM_PASSWORD_LENGTH <= 0)
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, NULL, NULL);
+        else
+            PEM_read_bio_PrivateKey(priv_bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(params->PEM_PASSWORD)));
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(priv_bio, &pkey);
+        break;
+    default:
+        return handleErrors_asymmetric("Invalid private key format.", priv_bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key.", priv_bio, NULL, pkey);
+
+    BIO_free(priv_bio);
+
+    // **創建 X.509 憑證**
+    X509* x509 = X509_new();
+    if (!x509)
+        return handleErrors_asymmetric("Failed to create X.509 certificate.", NULL, NULL, pkey);
+
+    // **設置證書序列號**
+    ASN1_INTEGER_set(X509_get_serialNumber(x509), params->SERIAL_NUMBER);
+
+    // **設置有效期**
+    unsigned long validity_days = params->VALIDITY_DAYS > 0 ? params->VALIDITY_DAYS : 365;
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notAfter(x509), validity_days * 86400);
+
+    // **設置主題資訊**
+    X509_NAME* name = X509_get_subject_name(x509);
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set Common Name (CN).", NULL, NULL, pkey);
+    }
+    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set Country (C).", NULL, NULL, pkey);
+    }
+    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZATION, -1, -1, 0)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set Organization (O).", NULL, NULL, pkey);
+    }
+    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZATION_UNIT, -1, -1, 0)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set Organization Unit (OU).", NULL, NULL, pkey);
+    }
+
+    // **設置 CA 為發行者 (自簽)**
+    if (!X509_set_issuer_name(x509, name)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set issuer name.", NULL, NULL, pkey);
+    }
+
+    if (!X509_set_pubkey(x509, pkey)) {
+        X509_free(x509);
+        return handleErrors_asymmetric("Failed to set public key.", NULL, NULL, pkey);
+    }
+
+    // **設置 Basic Constraints (CA:TRUE)**
+    X509_EXTENSION* ext_bc = X509V3_EXT_conf_nid(NULL, NULL, NID_basic_constraints, "critical,CA:TRUE");
+    if (!ext_bc || !X509_add_ext(x509, ext_bc, -1)) {
+        X509_free(x509);
+        X509_EXTENSION_free(ext_bc);
+        return handleErrors_asymmetric("Failed to add Basic Constraints extension.", NULL);
+    }
+    X509_EXTENSION_free(ext_bc);
+
+    // **設置 Key Usage**
+    std::string usage = "critical, keyCertSign, cRLSign";
+    X509_EXTENSION* ext_ku = X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, usage.c_str());
+    if (!ext_ku || !X509_add_ext(x509, ext_ku, -1)) {
+        X509_EXTENSION_free(ext_ku);
+        return handleErrors_asymmetric("Failed to add Key Usage extension.", NULL);
+    }
+    X509_EXTENSION_free(ext_ku);
+
+    // **設置 Subject Key Identifier (SKI)**
+    X509_EXTENSION* ext_ski = X509V3_EXT_conf_nid(NULL, NULL, NID_subject_key_identifier, "hash");
+    if (!ext_ski || !X509_add_ext(x509, ext_ski, -1)) {
+        X509_EXTENSION_free(ext_ski);
+        return handleErrors_asymmetric("Failed to add Subject Key Identifier extension.", NULL);
+    }
+    X509_EXTENSION_free(ext_ski);
+
+    // **簽名憑證**
+    const EVP_MD* md = GetHashCrypter(params->HASH_ALGORITHM);
+    if (!md)
+        return handleErrors_asymmetric("Invalid or unsupported hash algorithm.", NULL);
+
+    if (!X509_sign(x509, pkey, md))
+        return handleErrors_asymmetric("Failed to sign the certificate.", NULL);
+
+    // **輸出憑證**
+    BIO* cert_bio = BIO_new(BIO_s_mem());
+    switch (params->CERTIFICATE_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_X509(cert_bio, x509)) {
+            X509_free(x509);
+            return handleErrors_asymmetric("Failed to write CA certificate in PEM format.", cert_bio, NULL, pkey);
+        }
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_X509_bio(cert_bio, x509)) {
+            X509_free(x509);
+            return handleErrors_asymmetric("Failed to write CA certificate in DER format.", cert_bio, NULL, pkey);
+        }
+        break;
+    default:
+        X509_free(x509);
+        return handleErrors_asymmetric("Invalid certificate format.", cert_bio, NULL, pkey);
+    }
+
+    // **存儲憑證**
+    size_t cert_len = BIO_pending(cert_bio);
+    if (params->CERTIFICATE == nullptr || params->CERTIFICATE_LENGTH < cert_len)
+        params->CERTIFICATE = new unsigned char[cert_len];
+
+    BIO_read(cert_bio, params->CERTIFICATE, cert_len);
+    params->CERTIFICATE_LENGTH = cert_len;
+
+    // **釋放資源**
+    BIO_free(cert_bio);
+    X509_free(x509);
     EVP_PKEY_free(pkey);
 
     return 0;
@@ -1126,8 +1268,8 @@ int RsaCheckCSR(RSA_CHECK_CSR* check) {
 
     check->COMMON_NAME_LENGTH = X509_NAME_get_text_by_NID(name, NID_commonName, reinterpret_cast<char*>(check->COMMON_NAME), check->COMMON_NAME_LENGTH);
     check->COUNTRY_LENGTH = X509_NAME_get_text_by_NID(name, NID_countryName, reinterpret_cast<char*>(check->COUNTRY), check->COUNTRY_LENGTH);
-    check->ORGANIZETION_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationName, reinterpret_cast<char*>(check->ORGANIZETION), check->ORGANIZETION_LENGTH);
-    check->ORGANIZETION_UNIT_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationalUnitName, reinterpret_cast<char*>(check->ORGANIZETION_UNIT), check->ORGANIZETION_UNIT_LENGTH);
+    check->ORGANIZATION_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationName, reinterpret_cast<char*>(check->ORGANIZATION), check->ORGANIZATION_LENGTH);
+    check->ORGANIZATION_UNIT_LENGTH = X509_NAME_get_text_by_NID(name, NID_organizationalUnitName, reinterpret_cast<char*>(check->ORGANIZATION_UNIT), check->ORGANIZATION_UNIT_LENGTH);
 
 #pragma region Check Extensions To CSR
 
@@ -1228,6 +1370,93 @@ int RsaCheckCSR(RSA_CHECK_CSR* check) {
 
     BIO_free(bio);
     EVP_PKEY_CTX_free(ctx);
+    return 0;
+}
+
+int RsaCheckCA(RSA_CHECK_CA* check) {
+    ERR_clear_error();
+    X509* cert = nullptr;
+    EVP_PKEY* pkey = nullptr;
+    BIO* cert_bio = BIO_new_mem_buf(check->CERTIFICATE, static_cast<int>(check->CERTIFICATE_LENGTH));
+
+    // 讀取 CA 憑證
+    switch (check->CERTIFICATE_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_X509(cert_bio, &cert, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_X509_bio(cert_bio, &cert);
+        break;
+    default:
+        X509_free(cert);
+        return handleErrors_asymmetric("Invalid certificate format.", cert_bio, NULL, NULL);
+    }
+
+    if (!cert) {
+        X509_free(cert);
+        return handleErrors_asymmetric("Failed to parse CA certificate.", cert_bio, NULL, NULL);
+    }
+
+    // 檢查 CA 憑證是否為 CA
+    X509_EXTENSION* ext_bc = (X509_EXTENSION*)X509_get_ext_d2i(cert, NID_basic_constraints, NULL, NULL);
+    if (!ext_bc) {
+        X509_free(cert);
+        return handleErrors_asymmetric("CA certificate is missing Basic Constraints extension.", cert_bio, NULL, NULL);
+    }
+
+    BASIC_CONSTRAINTS* bc = (BASIC_CONSTRAINTS*)ext_bc;
+    if (!bc->ca) {
+        X509_free(cert);
+        return handleErrors_asymmetric("CA certificate does not have CA:TRUE.", cert_bio, NULL, NULL);
+    }
+
+    BASIC_CONSTRAINTS_free(bc);
+
+    // 檢查 Key Usage 是否包含 keyCertSign
+    ASN1_BIT_STRING* key_usage = (ASN1_BIT_STRING*)X509_get_ext_d2i(cert, NID_key_usage, NULL, NULL);
+    if (key_usage) {
+        int usage_flags = 0;
+        for (int i = 0; i < key_usage->length; i++)
+            usage_flags = (usage_flags << 8) | key_usage->data[i];
+
+        if (!(usage_flags & 0x0004)) { // 0x0004 = KeyCertSign
+            X509_free(cert);
+            return handleErrors_asymmetric("CA certificate is missing keyCertSign permission.", cert_bio, NULL, NULL);
+        }
+        ASN1_BIT_STRING_free(key_usage);
+    }
+    else {
+        X509_free(cert);
+        return handleErrors_asymmetric("CA certificate does not contain Key Usage extension.", cert_bio, NULL, NULL);
+    }
+
+    // 取得公鑰並檢查其有效性
+    pkey = X509_get_pubkey(cert);
+    if (!pkey) {
+        X509_free(cert);
+        return handleErrors_asymmetric("Failed to extract public key from CA certificate.", cert_bio, NULL, NULL);
+    }
+
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx) {
+        X509_free(cert);
+        return handleErrors_asymmetric("Failed to create PKEY context.", cert_bio, NULL, NULL, pkey);
+    }
+
+    check->IS_KEY_OK = EVP_PKEY_public_check(ctx) > 0;
+
+    // 取得憑證的 Key 長度
+    if (1 != EVP_PKEY_get_size_t_param(pkey, OSSL_PKEY_PARAM_RSA_BITS, &check->KEY_LENGTH)) {
+        X509_free(cert);
+        return handleErrors_asymmetric("Failed to get RSA key length from CA certificate.", cert_bio, NULL, NULL, pkey);
+    }
+
+    // 清理資源
+    BIO_free(cert_bio);
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
+    X509_free(cert);
+
     return 0;
 }
 

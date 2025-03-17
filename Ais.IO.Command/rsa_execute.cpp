@@ -1192,8 +1192,8 @@ void rsa_execute::CheckCSR(Rsa& rsa) {
 	((RsaCheckCSR)RsaFunctions.at("-csr-check"))(&req_csr);
 	std::string cn_str = reinterpret_cast<char*>(req_csr.COMMON_NAME);
 	std::string c_str = reinterpret_cast<char*>(req_csr.COUNTRY);
-	std::string o_str = reinterpret_cast<char*>(req_csr.ORGANIZETION);
-	std::string ou_str = reinterpret_cast<char*>(req_csr.ORGANIZETION_UNIT);
+	std::string o_str = reinterpret_cast<char*>(req_csr.ORGANIZATION);
+	std::string ou_str = reinterpret_cast<char*>(req_csr.ORGANIZATION_UNIT);
 	if (!IsRowData) {
 		std::cout << Hint("<RSA CSR Check>") << std::endl;
 		std::cout << Mark("Length : ") << Ask(std::to_string(req_csr.KEY_LENGTH)) << std::endl;
