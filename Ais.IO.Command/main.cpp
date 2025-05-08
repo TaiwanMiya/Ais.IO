@@ -951,6 +951,8 @@ void LoadFunctions() {
     DsaFunctions["-pub-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPublicKey");
     DsaFunctions["-priv-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckPrivateKey");
     DsaFunctions["-param-check"] = GET_PROC_ADDRESS(Lib, "DsaCheckParameters");
+    DsaFunctions["-pem-lock"] = GET_PROC_ADDRESS(Lib, "DsaPemLock");
+    DsaFunctions["-pem-unlock"] = GET_PROC_ADDRESS(Lib, "DsaPemUnlock");
     DsaFunctions["-signed"] = GET_PROC_ADDRESS(Lib, "DsaSigned");
     DsaFunctions["-verify"] = GET_PROC_ADDRESS(Lib, "DsaVerify");
 

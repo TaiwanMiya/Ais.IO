@@ -469,10 +469,16 @@ void usage_libary::ShowDsaUsage() {
     std::cout << "    " << Mark("10") << ". " << Hint("DSA Confirms Whether the Parameters is Valid:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-chk | -check] [-param | -params | -parameter | -parameters] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark("11") << ". " << Hint("DSA Signed Data:") << std::endl;
+    std::cout << "    " << Mark("11") << ". " << Hint("DSA Private Key Add Password to PEM:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-lk | -lock] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [-pem | -pem -f <path>]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("12") << ". " << Hint("DSA Private Key Remove Password from PEM:") << std::endl;
+    std::cout << Info("        [-dsa | --dsa] [-uk | -unlock] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << "" << std::endl;
+    std::cout << "    " << Mark("13") << ". " << Hint("DSA Signed Data:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-sign | -signed] [-priv | -private | -private-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
-    std::cout << "    " << Mark("12") << ". " << Hint("DSA Verify Data:") << std::endl;
+    std::cout << "    " << Mark("14") << ". " << Hint("DSA Verify Data:") << std::endl;
     std::cout << Info("        [-dsa | --dsa] [-ver | -verify] [-pub | -public | -public-key] [--keys-way] [-dat | -data] [--way] [--hash-type] [-sg | -signature] [--way]") << std::endl;
     std::cout << "" << std::endl;
 
@@ -531,10 +537,10 @@ void usage_libary::ShowRsaUsage() {
     std::cout << Info("        [-rsa | --rsa] [-chk | -check] -csr [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("10") << ". " << Hint("RSA Private Key Add Password to PEM:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-lk | -lock] [-priv | -private | -private-key] [--keys-way] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [-pem | -pem -f <path>]") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-lk | -lock] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [-pem | -pem -f <path>]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("11") << ". " << Hint("RSA Private Key Remove Password from PEM:") << std::endl;
-    std::cout << Info("        [-rsa | --rsa] [-uk | -unlock] [-priv | -private | -private-key] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
+    std::cout << Info("        [-rsa | --rsa] [-uk | -unlock] [-pem <value> | -pem -f <path>] [-pwd | -pass | null] [--way] [--algorithm | null] [-out | -output] [--keys-way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark("12") << ". " << Hint("RSA Encryption:") << std::endl;
     std::cout << Info("        [-rsa | --rsa] [-en | -encrypt] [-pub | -public | -public-key] [--keys-way] [-pt | -plain-text] [--way] [-out | -output] [--way]") << std::endl;

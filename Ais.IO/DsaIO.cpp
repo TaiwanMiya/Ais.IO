@@ -724,6 +724,82 @@ int DsaCheckParameters(DSA_CHECK_PARAMETERS* check) {
     return 0;
 }
 
+int DsaPemLock(DSA_PEM_LOCK* pem) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(pem->PRIVATE_KEY, static_cast<int>(pem->PRIVATE_KEY_LENGTH));
+
+    switch (pem->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        d2i_PrivateKey_bio(bio, &pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric private key format.", bio, NULL, pkey);
+    }
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key, Please confirm whether the key is in PEM format or the input content is a private key.", bio, NULL, NULL);
+
+    bio = BIO_new(BIO_s_mem());
+    const EVP_CIPHER* cipher = GetSymmetryCrypter(pem->PEM_CIPHER, pem->PEM_CIPHER_SIZE, pem->PEM_CIPHER_SEGMENT);
+    if (1 != PEM_write_bio_PrivateKey(bio, pkey, cipher, pem->PEM_PASSWORD, pem->PEM_PASSWORD_LENGTH, NULL, NULL))
+        return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", bio, NULL, NULL);
+
+    size_t len = BIO_pending(bio);
+    if (pem->PRIVATE_KEY == nullptr || pem->PRIVATE_KEY_LENGTH < len)
+        pem->PRIVATE_KEY = new unsigned char[len];
+
+    BIO_read(bio, pem->PRIVATE_KEY, len);
+
+    pem->PRIVATE_KEY_LENGTH = len;
+
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
+int DsaPemUnlock(DSA_PEM_UNLOCK* pem) {
+    ERR_clear_error();
+
+    EVP_PKEY* pkey = nullptr;
+    BIO* bio = BIO_new_mem_buf(pem->PRIVATE_KEY, static_cast<int>(pem->PRIVATE_KEY_LENGTH));
+
+    PEM_read_bio_PrivateKey(bio, &pkey, PasswordCallback, const_cast<void*>(static_cast<const void*>(pem->PEM_PASSWORD)));
+
+    if (!pkey)
+        return handleErrors_asymmetric("Failed to parse private key, Please confirm whether the key is in PEM format or the input content is a private key.", bio, NULL, NULL);
+
+    BIO_free(bio);
+
+    bio = BIO_new(BIO_s_mem());
+    switch (pem->KEY_FORMAT) {
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM:
+        if (1 != PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, NULL, NULL))
+            return handleErrors_asymmetric("Unable to write private key in PKCS#8 PEM format to memory.", bio, NULL, pkey);
+        break;
+    case ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_DER:
+        if (1 != i2d_PrivateKey_bio(bio, pkey))
+            return handleErrors_asymmetric("Unable to write private key in PKCS#8 DER format to memory.", bio, NULL, pkey);
+        break;
+    default:return handleErrors_asymmetric("Invalid asymmetric key format.", bio, NULL, pkey);
+    }
+
+    size_t len = BIO_pending(bio);
+    if (pem->PRIVATE_KEY == nullptr || pem->PRIVATE_KEY_LENGTH < len)
+        pem->PRIVATE_KEY = new unsigned char[len];
+
+    BIO_read(bio, pem->PRIVATE_KEY, len);
+
+    pem->PRIVATE_KEY_LENGTH = len;
+
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    return 0;
+}
+
 int DsaSigned(DSA_SIGNED* sign) {
     ERR_clear_error();
 

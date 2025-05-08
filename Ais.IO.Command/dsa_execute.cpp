@@ -130,6 +130,22 @@ void dsa_execute::ParseParameters(int argc, char* argv[], Dsa& dsa) {
 				break;
 			}
 			break;
+		case dsa_execute::hash("-lk"):
+		case dsa_execute::hash("-lock"):
+			dsa.Mode = DSA_MODE::DSA_PEM_PASS_LOCK;
+			dsa.privatekey_option = asymmetric_libary::GetOption(dsa.KeyFormat, i, argv);
+			dsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
+			break;
+		case dsa_execute::hash("-uk"):
+		case dsa_execute::hash("-unlock"):
+			dsa.Mode = DSA_MODE::DSA_PEM_PASS_UNLOCK;
+			dsa.privatekey_option = asymmetric_libary::GetOption(dsa.KeyFormat, i, argv);
+			dsa.PrivateKey = IsInput ? InputContent : argv[i + 1];
+			if (!IsInput)
+				i++;
+			break;
 		case dsa_execute::hash("-sign"):
 		case dsa_execute::hash("-signed"):
 			dsa.Mode = DSA_MODE::DSA_SIGNATURE;
@@ -338,6 +354,12 @@ void dsa_execute::DsaStart(Dsa& dsa) {
 		break;
 	case DSA_MODE::DSA_CHECK_PARAMETER:
 		CheckParameters(dsa);
+		break;
+	case DSA_MODE::DSA_PEM_PASS_LOCK:
+		PemLock(dsa);
+		break;
+	case DSA_MODE::DSA_PEM_PASS_UNLOCK:
+		PemUnlock(dsa);
 		break;
 	case DSA_MODE::DSA_SIGNATURE:
 		Signed(dsa);
@@ -891,6 +913,103 @@ void dsa_execute::CheckParameters(Dsa& dsa) {
 		std::cout << Hint(IsRowData ? "Success" : "Dsa Parameters Check Success.") << std::endl;
 	else
 		std::cout << Error(IsRowData ? "Falture" : "Dsa Parameters Check Falture.") << std::endl;
+}
+
+void dsa_execute::PemLock(Dsa& dsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(dsa.privatekey_option, dsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, pemPass);
+	pemPass.push_back('\0');
+	DSA_PEM_LOCK lock = {
+		dsa.KeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		privateKey.size(),
+		pemPass.size(),
+		dsa.Algorithm,
+		dsa.AlgorithmSize,
+		dsa.Segment,
+	};
+	((DsaPemLock)DsaFunctions.at("-pem-lock"))(&lock);
+
+	DSA_CHECK_PRIVATE_KEY priv = {
+		ASYMMETRIC_KEY_FORMAT::ASYMMETRIC_KEY_PEM,
+		lock.PRIVATE_KEY,
+		pemPass.data(),
+		lock.PRIVATE_KEY_LENGTH,
+		pemPass.size(),
+	};
+	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
+
+	if (priv.IS_KEY_OK) {
+		privateKey.resize(lock.PRIVATE_KEY_LENGTH);
+		privateKey.assign(lock.PRIVATE_KEY, lock.PRIVATE_KEY + lock.PRIVATE_KEY_LENGTH);
+	}
+	else {
+		std::cout << Error("Invalid private key, or no passphrase specified.") << std::endl;
+		return;
+	}
+
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Lock Private Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string privateKey_str = dsa.Output;
+		cryptography_libary::ValueEncode(dsa.output_option, privateKey, privateKey_str);
+		std::cout << Mark("Private Key [") << Ask(std::to_string(lock.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string privateKey_str = dsa.Output;
+		cryptography_libary::ValueEncode(dsa.output_option, privateKey, privateKey_str);
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
+}
+
+void dsa_execute::PemUnlock(Dsa& dsa) {
+	std::vector<unsigned char> privateKey;
+	std::vector<unsigned char> pemPass;
+	cryptography_libary::ValueDecode(dsa.privatekey_option, dsa.PrivateKey, privateKey);
+	cryptography_libary::ValueDecode(dsa.password_option, dsa.Password, pemPass);
+	pemPass.push_back('\0');
+	DSA_PEM_UNLOCK unlock = {
+		dsa.ExtractKeyFormat,
+		privateKey.data(),
+		pemPass.data(),
+		privateKey.size(),
+		pemPass.size(),
+	};
+	((DsaPemUnlock)DsaFunctions.at("-pem-unlock"))(&unlock);
+
+	DSA_CHECK_PRIVATE_KEY priv = {
+		dsa.ExtractKeyFormat,
+		unlock.PRIVATE_KEY,
+		pemPass.data(),
+		unlock.PRIVATE_KEY_LENGTH,
+		pemPass.size(),
+	};
+	((DsaCheckPrivateKey)DsaFunctions.at("-priv-check"))(&priv);
+
+	if (priv.IS_KEY_OK) {
+		privateKey.resize(unlock.PRIVATE_KEY_LENGTH);
+		privateKey.assign(unlock.PRIVATE_KEY, unlock.PRIVATE_KEY + unlock.PRIVATE_KEY_LENGTH);
+	}
+	else {
+		std::cout << Error("Invalid private key, or no passphrase specified.") << std::endl;
+		return;
+	}
+
+	if (!IsRowData) {
+		std::cout << Hint("<DSA Unlock Private Key>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(priv.KEY_LENGTH)) << std::endl;
+		std::string privateKey_str = dsa.Output;
+		cryptography_libary::ValueEncode(dsa.output_option, privateKey, privateKey_str);
+		std::cout << Mark("Private Key [") << Ask(std::to_string(unlock.PRIVATE_KEY_LENGTH)) << Mark("]:\n") << Ask(privateKey_str) << std::endl;
+	}
+	else {
+		std::string privateKey_str = dsa.Output;
+		cryptography_libary::ValueEncode(dsa.output_option, privateKey, privateKey_str);
+		std::cout << Ask(privateKey_str) << std::endl;
+	}
 }
 
 void dsa_execute::Signed(Dsa& dsa) {

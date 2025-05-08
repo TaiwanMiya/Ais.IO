@@ -146,6 +146,25 @@ struct DSA_CHECK_PARAMETERS {
     size_t KEY_LENGTH;
 };
 
+struct DSA_PEM_LOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+    const SYMMETRY_CRYPTER PEM_CIPHER;
+    const int PEM_CIPHER_SIZE;
+    const SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;
+};
+
+struct DSA_PEM_UNLOCK {
+    const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
+    unsigned char* PRIVATE_KEY;
+    const unsigned char* PEM_PASSWORD;
+    size_t PRIVATE_KEY_LENGTH;
+    size_t PEM_PASSWORD_LENGTH;
+};
+
 struct DSA_SIGNED {
     const ASYMMETRIC_KEY_FORMAT KEY_FORMAT;
     const unsigned char* PRIVATE_KEY;
@@ -183,5 +202,7 @@ EXT DSAIO_API int DsaExtractKeysByParameters(DSA_EXTRACT_KEYS_PARAMETERS* params
 EXT DSAIO_API int DsaCheckPublicKey(DSA_CHECK_PUBLIC_KEY* check);
 EXT DSAIO_API int DsaCheckPrivateKey(DSA_CHECK_PRIVATE_KEY* check);
 EXT DSAIO_API int DsaCheckParameters(DSA_CHECK_PARAMETERS* check);
+EXT DSAIO_API int DsaPemLock(DSA_PEM_LOCK* pem);
+EXT DSAIO_API int DsaPemUnlock(DSA_PEM_UNLOCK* pem);
 EXT DSAIO_API int DsaSigned(DSA_SIGNED* sign);
 EXT DSAIO_API int DsaVerify(DSA_VERIFY* verify);
