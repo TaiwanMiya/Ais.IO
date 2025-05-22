@@ -9,7 +9,11 @@ namespace Ais.IO.Csharp
 {
     public static class EncoderIOInterop
     {
+#if DEBUG
         private const string DllName = "..\\Ais.IO.dll";
+#else
+        private const string DllName = "Ais.IO.dll";
+#endif
 
         #region EncoderIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

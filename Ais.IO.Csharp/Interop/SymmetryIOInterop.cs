@@ -9,7 +9,11 @@ namespace Ais.IO.Csharp
 {
     public static class SymmetryIOInterop
     {
+#if DEBUG
         private const string DllName = "..\\Ais.IO.dll";
+#else
+        private const string DllName = "Ais.IO.dll";
+#endif
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Generate(byte[] content, long length);
