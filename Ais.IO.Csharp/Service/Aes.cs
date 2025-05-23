@@ -12,11 +12,13 @@ namespace Ais.IO.Csharp
     {
         public Aes() { }
 
-        public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0)
+        public byte[] CtrEncrypt(byte[] plainText, byte[] key, long counter = 0, byte[] iv = null)
         {
             byte[] cipherText = new byte[plainText.Length];
+            iv = iv == null ? new byte[16] : iv;
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
 
@@ -27,6 +29,7 @@ namespace Ais.IO.Csharp
                     KEY = keyHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
+                    IV = iv == null ? IntPtr.Zero : ivHandle.AddrOfPinnedObject(),
                     COUNTER = counter,
                     KEY_LENGTH = (UIntPtr)key.Length,
                     PLAIN_TEXT_LENGTH = (UIntPtr)plainText.Length,
@@ -53,15 +56,18 @@ namespace Ais.IO.Csharp
             {
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
             }
         }
 
-        public byte[] CtrDecrypt(byte[] cipherText, byte[] key, long counter = 0)
+        public byte[] CtrDecrypt(byte[] cipherText, byte[] key, long counter = 0, byte[] iv = null)
         {
             byte[] plainText = new byte[cipherText.Length];
+            iv = iv == null ? new byte[16] : iv;
 
             GCHandle keyHandle = GCHandle.Alloc(key, GCHandleType.Pinned);
+            GCHandle ivHandle = GCHandle.Alloc(iv, GCHandleType.Pinned);
             GCHandle cipherTextHandle = GCHandle.Alloc(cipherText, GCHandleType.Pinned);
             GCHandle plainTextHandle = GCHandle.Alloc(plainText, GCHandleType.Pinned);
 
@@ -72,6 +78,7 @@ namespace Ais.IO.Csharp
                     KEY = keyHandle.AddrOfPinnedObject(),
                     CIPHER_TEXT = cipherTextHandle.AddrOfPinnedObject(),
                     PLAIN_TEXT = plainTextHandle.AddrOfPinnedObject(),
+                    IV = iv == null ? IntPtr.Zero : ivHandle.AddrOfPinnedObject(),
                     COUNTER = counter,
                     KEY_LENGTH = (UIntPtr)key.Length,
                     CIPHER_TEXT_LENGTH = (UIntPtr)cipherText.Length,
@@ -97,6 +104,7 @@ namespace Ais.IO.Csharp
             {
                 if (cipherTextHandle.IsAllocated) cipherTextHandle.Free();
                 if (keyHandle.IsAllocated) keyHandle.Free();
+                if (ivHandle.IsAllocated) ivHandle.Free();
                 if (plainTextHandle.IsAllocated) plainTextHandle.Free();
             }
         }

@@ -290,7 +290,7 @@ void usage_libary::ShowAesUsage() {
     std::cout << Mark("Aes Cryptography Usage") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 1") << ". " << Hint("AES CTR Encrypt/Decrypt:") << std::endl;
-    std::cout << Info("        [-aes | --aes] -ctr [-e | -encrypt | -d | -decrypt] -key [--way] [-count | -counter] <counter> [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
+    std::cout << Info("        [-aes | --aes] -ctr [-e | -encrypt | -d | -decrypt] -key [--way] [-count | -counter] <counter> -iv [--way] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;
     std::cout << "" << std::endl;
     std::cout << "    " << Mark(" 2") << ". " << Hint("AES CBC Encrypt/Decrypt:") << std::endl;
     std::cout << Info("        [-aes | --aes] -cbc [-e | -encrypt | -d | -decrypt] -key [--way] -iv [--way] [-pad | -padding] [-pt | -plain-text | -ct | -cipher-text] [--way] [-out | -output] [--way]") << std::endl;

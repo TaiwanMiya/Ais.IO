@@ -38,7 +38,7 @@ namespace Ais.IO.Csharp.Command
                 Console.WriteLine("Generated IV from Input (256 bits): " + BitConverter.ToString(inputIVBuffer).Replace("-", ""));
         }
 
-        public static void CTR(string text, string key, long counter)
+        public static void CTR(string text, string key, long counter = 0, string? iv = null)
         {
             try
             {
@@ -47,11 +47,12 @@ namespace Ais.IO.Csharp.Command
                 BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
                 Aes aes = new Aes();
                 byte[] keyResult = aes.Import(key);
-                byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter);
+                byte[] ivResult = iv == null ? new byte[16] : aes.Import(iv);
+                byte[] cipherText = aes.CtrEncrypt(plainText, keyResult, counter, ivResult);
 
                 Console.WriteLine(encoder.Encode(cipherText));
 
-                plainText = aes.CtrDecrypt(cipherText, keyResult, counter);
+                plainText = aes.CtrDecrypt(cipherText, keyResult, counter, ivResult);
 
                 Console.WriteLine(Encoding.UTF8.GetString(plainText));
             }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-dsa -lk -pem -f dsa-priv.pem -pwd "s1229abcdb2" -out -pem</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-aes -ctr -d -key 0123456789ABCDEF -iv 0123456789abcdef -ct -b16 7E896FF561683404CCB5B8DF53</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>

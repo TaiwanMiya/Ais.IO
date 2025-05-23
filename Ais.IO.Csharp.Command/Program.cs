@@ -15,17 +15,17 @@ namespace Ais.IO.Csharp.Command
                 Stopwatch sw = new Stopwatch();
 
                 sw.Start();
-                BinaryIO.WriteRelease();
-                BinaryIO.AppendRelease();
-                BinaryIO.InsertRelease();
-                BinaryIO.GetIndex();
+                //BinaryIO.WriteRelease();
+                //BinaryIO.AppendRelease();
+                //BinaryIO.InsertRelease();
+                //BinaryIO.GetIndex();
                 //BinaryIO.ReadRelease();
                 //EncoderIO.BaseEncode(out string b10, out string b16, out string b32, out string b58, out string b62, out string b64, out string b85, out string b91);
                 //EncoderIO.BaseDecode(b10, b16, b32, b58, b62, b64, b85, b91);
 
                 //AesIO.Generate();
 
-                //StartAes(1);
+                StartAes(1);
 
                 //StartDes(1);
 
@@ -59,7 +59,7 @@ namespace Ais.IO.Csharp.Command
             for (int i = 0; i < range; i++)
             {
                 text = "This is AES CTR Encryption/Decryption.";
-                AesIO.CTR(text, key, 1);
+                AesIO.CTR(text, key, 1, null);
 
                 text = "This is AES CBC Encryption/Decryption.";
                 AesIO.CBC(text, key, iv, true);

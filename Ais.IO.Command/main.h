@@ -515,6 +515,7 @@ struct AES_CTR_ENCRYPT {
     const unsigned char* KEY;
     const unsigned char* PLAIN_TEXT;
     unsigned char* CIPHER_TEXT;
+    const unsigned char* IV;
     const long long COUNTER;
     size_t KEY_LENGTH;
     size_t PLAIN_TEXT_LENGTH;
@@ -524,6 +525,7 @@ struct AES_CTR_DECRYPT {
     const unsigned char* KEY;
     const unsigned char* CIPHER_TEXT;
     unsigned char* PLAIN_TEXT;
+    const unsigned char* IV;
     long long COUNTER;
     size_t KEY_LENGTH;
     size_t CIPHER_TEXT_LENGTH;

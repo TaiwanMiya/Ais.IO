@@ -14,6 +14,7 @@ namespace Ais.IO.Csharp
         public IntPtr KEY;                          // 指向密鑰
         public IntPtr PLAIN_TEXT;                   // 指向明文數據
         public IntPtr CIPHER_TEXT;                  // 指向密文輸出數據
+        public IntPtr IV;                           // 指向 IV
         public long COUNTER;                        // 計數器
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr PLAIN_TEXT_LENGTH;           // 明文長度
@@ -26,6 +27,7 @@ namespace Ais.IO.Csharp
         public IntPtr KEY;                          // 指向密鑰
         public IntPtr CIPHER_TEXT;                  // 指向密文數據
         public IntPtr PLAIN_TEXT;                   // 指向明文輸出數據
+        public IntPtr IV;                           // 指向 IV
         public long COUNTER;                        // 計數器
         public UIntPtr KEY_LENGTH;                  // 密鑰長度
         public UIntPtr CIPHER_TEXT_LENGTH;          // 密文長度

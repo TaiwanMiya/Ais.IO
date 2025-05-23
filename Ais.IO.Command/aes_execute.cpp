@@ -255,15 +255,18 @@ void aes_execute::AesStart(Aes& aes) {
 #pragma region Functionality
 void aes_execute::CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
 	std::vector<unsigned char> plaintext;
 	std::vector<unsigned char> ciphertext;
 	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
 	cryptography_libary::ValueDecode(aes.plaintext_option, aes.PlainText, plaintext);
 	ciphertext.resize(plaintext.size());
 	AES_CTR_ENCRYPT encryption = {
 		key.data(),
 		plaintext.data(),
 		ciphertext.data(),
+		iv.data(),
 		aes.Counter,
 		key.size(),
 		plaintext.size(),
@@ -280,15 +283,18 @@ void aes_execute::CtrEncrypt(std::vector<unsigned char>& result, Aes& aes) {
 
 void aes_execute::CtrDecrypt(std::vector<unsigned char>& result, Aes& aes) {
 	std::vector<unsigned char> key;
+	std::vector<unsigned char> iv;
 	std::vector<unsigned char> ciphertext;
 	std::vector<unsigned char> plaintext;
 	cryptography_libary::ValueDecode(aes.key_option, aes.Key, key);
+	cryptography_libary::ValueDecode(aes.iv_option, aes.IV, iv);
 	cryptography_libary::ValueDecode(aes.ciphertext_option, aes.CipherText, ciphertext);
 	plaintext.resize(ciphertext.size());
 	AES_CTR_DECRYPT decryption = {
 			key.data(),
 			ciphertext.data(),
 			plaintext.data(),
+			iv.data(),
 			aes.Counter,
 			key.size(),
 			ciphertext.size(),

@@ -8,11 +8,17 @@ int AesCtrEncrypt(AES_CTR_ENCRYPT* encryption) {
     if (!ctx)
         return handleErrors_symmetry("An error occurred during ctx generation.", ctx);
 
-    unsigned char iv_with_counter[16];
+    unsigned char iv_with_counter[16] = {0};
     int len, ciphertext_len = 0;
 
-    std::memset(iv_with_counter, 0, sizeof(iv_with_counter));
-    std::memcpy(iv_with_counter, &encryption->COUNTER, sizeof(encryption->COUNTER));
+    if (encryption->IV && encryption->COUNTER == 0)
+        std::memcpy(iv_with_counter, encryption->IV, 16);
+    else if (!encryption->IV && encryption->COUNTER != 0)
+        std::memcpy(iv_with_counter + 8, &encryption->COUNTER, 8);
+    else if (encryption->IV && encryption->COUNTER != 0) {
+        std::memcpy(iv_with_counter, encryption->IV, 8);
+        std::memcpy(iv_with_counter + 8, &encryption->COUNTER, 8);
+    }
 
     const EVP_CIPHER* cipher = nullptr;
     switch (encryption->KEY_LENGTH) {
@@ -46,8 +52,14 @@ int AesCtrDecrypt(AES_CTR_DECRYPT* decryption) {
     unsigned char iv_with_counter[16];
     int len, plaintext_len = 0;
 
-    std::memset(iv_with_counter, 0, sizeof(iv_with_counter));
-    std::memcpy(iv_with_counter, &decryption->COUNTER, sizeof(decryption->COUNTER));
+    if (decryption->IV && decryption->COUNTER == 0)
+        std::memcpy(iv_with_counter, decryption->IV, 16);
+    else if (!decryption->IV && decryption->COUNTER != 0)
+        std::memcpy(iv_with_counter + 8, &decryption->COUNTER, 8);
+    else if (decryption->IV && decryption->COUNTER != 0) {
+        std::memcpy(iv_with_counter, decryption->IV, 8);
+        std::memcpy(iv_with_counter + 8, &decryption->COUNTER, 8);
+    }
 
     const EVP_CIPHER* cipher = nullptr;
     switch (decryption->KEY_LENGTH) {
