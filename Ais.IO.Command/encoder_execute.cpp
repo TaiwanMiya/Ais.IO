@@ -12,7 +12,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
         cmd.value = InputContent;
     else if (!cmd.input.empty()) {
         encoder_execute::SetInput(cmd, size, buffer);
-        inputPath = std::filesystem::absolute(cmd.input);
+        inputPath = make_path_from_utf8(cmd.input);
         if (!buffer.data()) {
             std::cerr << Error("Failed to read input file: ") << Ask(cmd.input) << "\n";
             return;
@@ -92,7 +92,7 @@ void encoder_execute::ExecuteEncoder(const std::string mode, Command& cmd) {
             buffer.resize(resultCode);
             std::memcpy(buffer.data(), outputBuffer.data(), resultCode);
             encoder_execute::SetOutput(cmd, static_cast<size_t>(resultCode), buffer);
-            outputPath = std::filesystem::absolute(cmd.output);
+            outputPath = make_path_from_utf8(cmd.output);
         }
         if (!IsRowData) {
             std::cout << Hint("<" + display + ">\n");
@@ -119,7 +119,9 @@ void encoder_execute::SetInput(Command& cmd, size_t& size, std::vector<unsigned 
         std::cerr << Error("Input file path is empty.") << std::endl;
         return;
     }
-    std::ifstream file(cmd.input, std::ios::in | std::ios::binary | std::ios::ate);
+
+    std::filesystem::path path = make_path_from_utf8(cmd.input);
+    std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         std::cerr << Error("Failed to open for file: " + cmd.input) << std::endl;
         return;
@@ -173,7 +175,9 @@ void encoder_execute::SetOutput(Command& cmd, size_t size, std::vector<unsigned 
         std::cerr << Error("No binary data or output path provided for writing.\n");
         return;
     }
-    std::ofstream file(cmd.output, std::ios::out | std::ios::binary);
+
+    std::filesystem::path path = make_path_from_utf8(cmd.output);
+    std::ofstream file(path, std::ios::out | std::ios::binary);
     if (!file.is_open()) {
         std::cerr << Error("Failed to open file: " + cmd.output) << std::endl;
         return;

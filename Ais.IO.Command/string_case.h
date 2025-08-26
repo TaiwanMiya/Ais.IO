@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 
 #if _WIN32
 #define ECL __cdecl
@@ -14,3 +15,4 @@ std::string ECL ToLetter(std::string str);
 std::string ECL ToLower(std::string str);
 std::string ECL ToUpper(std::string str);
 bool ECL IsULong(const std::string& str);
+std::filesystem::path ECL make_path_from_utf8(const std::string& utf8);

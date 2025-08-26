@@ -240,13 +240,14 @@ void cryptography_libary::ValueEncode(const CRYPT_OPTIONS option, std::vector<un
 		output.assign(result.begin(), result.end());
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
-		std::ofstream file(output, std::ios::out | std::ios::binary);
+		std::filesystem::path path = make_path_from_utf8(output);
+		std::ofstream file(path, std::ios::out | std::ios::binary);
 		if (!file.is_open())
 			throw std::ios_base::failure("Failed to open the file, please check the path or input if it is wrong.");
 		file.write(reinterpret_cast<const char*>(input.data()), input.size());
 		input.clear();
 		file.close();
-		output = std::filesystem::absolute(output).string();
+		output = path.string();
 		break;
 	}
 }
@@ -364,7 +365,8 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		}
 		break;
 	case CRYPT_OPTIONS::OPTION_FILE:
-		std::ifstream file(input, std::ios::in | std::ios::binary | std::ios::ate);
+		std::filesystem::path path = make_path_from_utf8(input);
+		std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);
 		if (!file.is_open())
 			throw std::ios_base::failure("Failed to open the file, please check the path or input if it is wrong.");
 		size_t size = file.tellg();
@@ -372,7 +374,7 @@ void cryptography_libary::ValueDecode(const CRYPT_OPTIONS option, std::string in
 		output.clear();
 		output.resize(size);
 		if (!file.read(reinterpret_cast<char*>(output.data()), size)) {
-			std::cerr << Error("Failed to read file: " + input) << std::endl;
+			std::cerr << Error("Failed to read file: " + path.string()) << std::endl;
 			output.clear();
 		}
 		while ((!output.empty() && output.back() == '\n') ||
