@@ -38,7 +38,7 @@ size_t Base85Length(const size_t inputSize, bool isEncode) {
 }
 
 size_t Base91Length(const size_t inputSize, bool isEncode) {
-    return isEncode ? std::ceil((inputSize * 8) / std::log2(91)) + 1 : std::floor(inputSize * std::log2(91) / 8) + 1;
+    return isEncode ? ((inputSize == 0) ? 0 : ((inputSize * 16 + 12) / 13)) + 2 : (inputSize == 0) ? 0 : static_cast<size_t>(std::floor(inputSize * 0.754047));
 }
 
 int Base10Encode(const unsigned char* input, const size_t inputSize, char* output, const size_t outputSize) {
