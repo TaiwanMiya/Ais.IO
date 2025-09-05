@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -54,6 +55,113 @@ namespace Ais.IO.Csharp.Command
                 return;
             Console.WriteLine($"[Public Key ({size} DER)]\n" + encoder.Encode(publicKey));
             Console.WriteLine($"[Private Key ({size} DER)]\n" + encoder.Encode(privateKey));
+        }
+
+        public static void GenerateCSR_PEM(ulong size)
+        {
+            Rsa rsa = new Rsa();
+            byte[] csr = [];
+            byte[] privateKey = [];
+            RsaDistinguishedName dn = new RsaDistinguishedName()
+            {
+                CommonName = "MyCommonName",
+                Country = "CN",
+                Organization = "MyOrganization",
+                OrganizationalUnit = "MyOrganizationalUnit",
+            };
+            RsaSubjectAlternativeName san = new RsaSubjectAlternativeName()
+            {
+                DNS = "aisio.com",
+                IP = "192.168.229.135",
+                Email = "8wubyq35@gmail.com",
+                URI = "http://aisio.com",
+            };
+            ASYMMETRIC_KEY_CSR_KEY_USAGE keyUsage =
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_DIGITAL_SIGNATURE |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_KEY_ENCIPHERMENT |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_CERT_SIGN;
+            rsa.GenerateCSR(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref csr, ref privateKey, dn, san, keyUsage, HASH_TYPE.HASH_SHA2_256, null);
+
+            if (csr.Length == 0 || privateKey.Length == 0)
+                return;
+            Console.WriteLine($"[CSR ({size} PEM)]\n" + Encoding.UTF8.GetString(csr));
+            Console.WriteLine($"[Private Key ({size} PEM)]\n" + Encoding.UTF8.GetString(privateKey));
+        }
+
+        public static void GenerateCSR_DER(ulong size)
+        {
+            Rsa rsa = new Rsa();
+            BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+            byte[] csr = [];
+            byte[] privateKey = [];
+            RsaDistinguishedName dn = new RsaDistinguishedName()
+            {
+                CommonName = "MyCommonName",
+                Country = "CN",
+                Organization = "MyOrganization",
+                OrganizationalUnit = "MyOrganizationalUnit",
+            };
+            RsaSubjectAlternativeName san = new RsaSubjectAlternativeName()
+            {
+                DNS = "aisio.com",
+                IP = "192.168.229.135",
+                Email = "8wubyq35@gmail.com",
+                URI = "http://aisio.com",
+            };
+            ASYMMETRIC_KEY_CSR_KEY_USAGE keyUsage =
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_DIGITAL_SIGNATURE |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_KEY_ENCIPHERMENT |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_CERT_SIGN;
+            rsa.GenerateCSR(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_DER, ref csr, ref privateKey, dn, san, keyUsage, HASH_TYPE.HASH_SHA2_256, null);
+
+            if (csr.Length == 0)
+                return;
+            Console.WriteLine($"[CSR ({size} DER)]\n" + encoder.Encode(csr));
+        }
+
+        public static void GenerateCA_PEM(ulong size)
+        {
+            Rsa rsa = new Rsa();
+            byte[] certificate = [];
+            RsaDistinguishedName dn = new RsaDistinguishedName()
+            {
+                CommonName = "MyCommonName",
+                Country = "CN",
+                Organization = "MyOrganization",
+                OrganizationalUnit = "MyOrganizationalUnit",
+            };
+            ASYMMETRIC_KEY_CSR_KEY_USAGE keyUsage =
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_DIGITAL_SIGNATURE |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_KEY_ENCIPHERMENT |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_CERT_SIGN;
+            rsa.GenerateCA(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref certificate, dn, keyUsage, HASH_TYPE.HASH_SHA2_256, 365, 1);
+
+            if (certificate.Length == 0)
+                return;
+            Console.WriteLine($"[CA ({size} PEM)]\n" + Encoding.UTF8.GetString(certificate));
+        }
+
+        public static void GenerateCA_DER(ulong size)
+        {
+            Rsa rsa = new Rsa();
+            BaseEncoding encoder = new BaseEncoding(EncodingType.Base16);
+            byte[] certificate = [];
+            RsaDistinguishedName dn = new RsaDistinguishedName()
+            {
+                CommonName = "MyCommonName",
+                Country = "CN",
+                Organization = "MyOrganization",
+                OrganizationalUnit = "MyOrganizationalUnit",
+            };
+            ASYMMETRIC_KEY_CSR_KEY_USAGE keyUsage =
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_DIGITAL_SIGNATURE |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_KEY_ENCIPHERMENT |
+                ASYMMETRIC_KEY_CSR_KEY_USAGE.CSR_KEY_USAGE_CERT_SIGN;
+            rsa.GenerateCA(size, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref certificate, dn, keyUsage, HASH_TYPE.HASH_SHA2_256, 365, 1);
+
+            if (certificate.Length == 0)
+                return;
+            Console.WriteLine($"[CA ({size} DER)]\n" + encoder.Encode(certificate));
         }
 
         public static void ToParamtersPEM()
@@ -177,6 +285,45 @@ namespace Ais.IO.Csharp.Command
             ulong size = rsa.GetKeyLength(ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_DER, publicKey, privateKey);
             Console.WriteLine($"[Public Key ({size} DER)]\n" + encoder.Encode(publicKey));
             Console.WriteLine($"[Private Key ({size} DER)]\n" + encoder.Encode(privateKey));
+        }
+
+        public static void ExtractPublicKeyPEM()
+        {
+            Rsa rsa = new Rsa();
+            byte[] publicKey = new byte[0];
+            string privateKey =
+"-----BEGIN PRIVATE KEY-----\n" +
+"MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDw8rBK5TbzjguW\n" +
+"DHA/dljXyFM6s8HJWnVVlcyFd2hEf4QZ8PSC6iX7dzVkHsCQTL8HQ2NX6+QLaWz/\n" +
+"bilCXB+hX8slBuJc4+Dn1eoTB4rHbOEc1wTVURQsfSzP1GTtq1Cp7+NzgF+h6SqZ\n" +
+"btisPKKvKzARXCh1bnfD8V97NLwDY0R23JQT0hV9Z8oYjl1Jep7xqMYPlD2uB0aX\n" +
+"saphWy84YWW6ue9jq+Htq9CzKkzbQDGVVC3DREKR/p3YyVTPVJH+MGI/XcHgEnye\n" +
+"ucM9S+U00ATW+gPWq9X6oI2i0jpon/a4+MobehGRt4WkfRFUMGlLbFVGLCqI65om\n" +
+"lSXA/OezAgMBAAECggEAFkGkooEXxARGnQlFw7xFKpwjgVRMvd0FjO6gYg0Mlunc\n" +
+"eZ+gm7Ml57De6qz4hpvAODCJAvxpfTBeKXNd4PZXfvWKnen2i4lfzf/Gy76Hmtzm\n" +
+"J7Qo4Hdz0JmOGR3Pu4XL7AFFAPdGXiixOakGif+z21Bhnp46UoFDaNhpRHKI53Bc\n" +
+"Y2fKqgksXMECEV+wAqKrImLs2vQNxpQ/uB8StAe1YdDUhjS9vPnnl6nm22YIqcbE\n" +
+"e9RGpQspNzduOEKRzGWgORSUZl+lGDuln2TctzUdmlAjpgEbwg+qfq8Z3H/gPz2H\n" +
+"TVjKCLOG1jOtka5aQRzp2F4J4uGUmTjttN2BKQIVIQKBgQD+iedpKCh8qkIoDuuK\n" +
+"7iHQFgKDG1hUReoAfIQ76vLBYl0ZBrBumSqVlZyxx9da286BMPYPyJ5oZ7FFDDNP\n" +
+"Mkua/HnBrgMUBeKh0IkCmR5URaRFHDaJ5llYisGtCFskvtPVKEIWn0cK8+ZVk/XQ\n" +
+"JJKaRhwfGo+GMxtNLs2CU7BuowKBgQDyVM94vRFJEmiuhldAChFru0vaTzbgdQLj\n" +
+"Ke5Jx67V/5doGslpCXICD70zP0ygq869oZyHY/8csnjCNYbPSc68Vj4AFdBR3bUy\n" +
+"OluZomUZT3VcUUdB0JohmZWGs3Rjjbo0wWI/xwMTgwbch52n+C7uIhaldniJGIBZ\n" +
+"sPrnrEGDsQKBgQCCaNMYDEwZ+v0kGujQ6EqImw40b8kkfCF0mFcDf89aBvRdwxCX\n" +
+"yX+I3ftHFnUehulZRWV8FrQaF646CxMqq0ETKfGTqnzHQHCpqPbZTuu8D2YnRlom\n" +
+"8s6pz4WFCnfv7pkHZ7Xcc0RptyY2iDTzrBk0U2FLCkeoYPzG4YjHEeud8wKBgDve\n" +
+"Rg9/LkkOOjx7xgx1ME6cTCYYEeesINV8Y3lo0sHdzksS6xV/FuJ5fvWtOsIrD/17\n" +
+"cs9kHf+5++mHDdIiWufeqpycxwWir4RENKMlIrL5FXaEQgV5gsqwReesaCG8PveP\n" +
+"mzVEdncYlNZgzstTnkyIsW2Zcjf0jKkb9zDLNrhRAoGBAJQJu0LIcZcTgVGkCpC+\n" +
+"JDnppBBJesn16nDXWN5AI0J04wPvxgAp3Xt2ytpFCyzHFdI44QJny3m0PCzHw1+3\n" +
+"Pahq06hJsSCAhXAiQ62KtM9+zaGGfkL9eEmASdVZpj0tt47fZe19yI59ea7/MPTO\n" +
+"RSvW4mwBKHm3TQHH6SyQAbVC\n" +
+"-----END PRIVATE KEY-----\n";
+
+            rsa.ExtractPublicKey(ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, ref publicKey, Encoding.UTF8.GetBytes(privateKey), null);
+            ulong size = rsa.GetKeyLength(ASYMMETRIC_KEY_FORMAT.ASYMMETRIC_KEY_PEM, publicKey, Encoding.UTF8.GetBytes(privateKey));
+            Console.WriteLine($"[Public Key ({size} PEM)]\n" + Encoding.UTF8.GetString(publicKey));
         }
     }
 }

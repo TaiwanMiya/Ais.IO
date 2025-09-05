@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ais.IO.Csharp
 {
-    public static class HashInterop
+    public static class HashIOInterop
     {
 #if DEBUG
         private const string DllName = "..\\Ais.IO.dll";

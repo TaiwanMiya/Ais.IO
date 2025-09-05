@@ -13,7 +13,7 @@ namespace Ais.IO.Csharp
 
         public byte[] Do(byte[] input, byte[] salt, HASH_TYPE type, SALT_SEQUENCE seq, long length = 0)
         {
-            int hashOutputLength = HashInterop.GetHashLength(type);
+            int hashOutputLength = HashIOInterop.GetHashLength(type);
             byte[] output = new byte[hashOutputLength == -1 ? length: hashOutputLength];
 
             GCHandle inputHandle = GCHandle.Alloc(input, GCHandleType.Pinned);
@@ -33,7 +33,7 @@ namespace Ais.IO.Csharp
                     SALT_LENGTH = (UIntPtr)salt.Length,
                     OUTPUT_LENGTH = (UIntPtr)length,
                 };
-                int outputLength = HashInterop.Hash(ref hash);
+                int outputLength = HashIOInterop.Hash(ref hash);
                 if (outputLength > 0)
                 {
                     byte[] result = new byte[hashOutputLength == -1 ? length : hashOutputLength];

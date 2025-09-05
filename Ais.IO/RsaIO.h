@@ -344,16 +344,16 @@ struct RSA_SIGN_CSR {
     const unsigned long VALIDITY_DAYS;
 };
 
-EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params);
-EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params);
-EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params);
-EXT RSAIO_API int RsaGenerateKeys(RSA_KEY_PAIR* generate);
-EXT RSAIO_API int RsaGenerateCSR(RSA_CSR* generate);
-EXT RSAIO_API int RsaGenerateCA(RSA_CA* generate);
+EXT RSAIO_API int RsaGetParametersLength(RSA_PARAMETERS* params); // OK
+EXT RSAIO_API int RsaGetKeyLength(RSA_KEY_PAIR* params); // OK
+EXT RSAIO_API int RsaGenerateParameters(RSA_PARAMETERS* params); // OK
+EXT RSAIO_API int RsaGenerateKeys(RSA_KEY_PAIR* generate); // OK
+EXT RSAIO_API int RsaGenerateCSR(RSA_CSR* generate); // OK
+EXT RSAIO_API int RsaGenerateCA(RSA_CA* generate); // OK
 EXT RSAIO_API int RsaGenerateP12(RSA_P12* generate);
-EXT RSAIO_API int RsaExportParameters(RSA_EXPORT* params);
-EXT RSAIO_API int RsaExportKeys(RSA_EXPORT* params);
-EXT RSAIO_API int RsaExtractPublicKey(RSA_EXTRACT_PUBLIC_KEY* params);
+EXT RSAIO_API int RsaExportParameters(RSA_EXPORT* params); // OK
+EXT RSAIO_API int RsaExportKeys(RSA_EXPORT* params); // OK
+EXT RSAIO_API int RsaExtractPublicKey(RSA_EXTRACT_PUBLIC_KEY* params); // OK
 EXT RSAIO_API int RsaExtractCSR(RSA_EXTRACT_CSR* params);
 EXT RSAIO_API int RsaExtractCA(RSA_EXTRACT_CA* params);
 EXT RSAIO_API int RsaCheckPublicKey(RSA_CHECK_PUBLIC_KEY* check);

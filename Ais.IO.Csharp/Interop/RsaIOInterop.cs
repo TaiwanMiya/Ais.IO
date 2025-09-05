@@ -15,6 +15,7 @@ namespace Ais.IO.Csharp
         private const string DllName = "Ais.IO.dll";
 #endif
 
+        #region RsaIO.h
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int RsaGetParametersLength(ref RSA_PARAMETERS @params);
 
@@ -28,9 +29,19 @@ namespace Ais.IO.Csharp
         public static extern int RsaGenerateKeys(ref RSA_KEY_PAIR encryption);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int RsaExportParameters(ref EXPORT_RSA @params);
+        public static extern int RsaGenerateCSR(ref RSA_CSR generate);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int RsaExportKeys(ref EXPORT_RSA @params);
+        public static extern int RsaGenerateCA(ref RSA_CA generate);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int RsaExportParameters(ref RSA_EXPORT @params);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int RsaExportKeys(ref RSA_EXPORT @params);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int RsaExtractPublicKey(ref RSA_EXTRACT_PUBLIC_KEY @params);
+        #endregion
     }
 }

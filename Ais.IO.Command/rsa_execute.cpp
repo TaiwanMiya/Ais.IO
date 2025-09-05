@@ -738,7 +738,17 @@ void rsa_execute::GenerateCA(Rsa& rsa) {
 		rsa.Key_Usage,
 	};
 	((RsaGenerateCA)RsaFunctions.at("-ca-gen"))(&generate);
-
+	ca.resize(generate.CERTIFICATE_LENGTH);
+	std::string ca_str = rsa.CA;
+	cryptography_libary::ValueEncode(rsa.ca_option, ca, ca_str);
+	if (!IsRowData) {
+		std::cout << Hint("<RSA CA Generate>") << std::endl;
+		std::cout << Mark("Length : ") << Ask(std::to_string(rsa.KeyLength)) << std::endl;
+		std::cout << Mark("Certificate Signing Request (CA) [") << Ask(std::to_string(generate.CERTIFICATE_LENGTH)) << Mark("]:\n") << Ask(ca_str) << std::endl;
+	}
+	else {
+		std::cout << Ask(ca_str) << std::endl;
+	}
 }
 
 void rsa_execute::ExportParamters(Rsa& rsa) {

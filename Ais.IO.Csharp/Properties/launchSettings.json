@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Ais.IO.Csharp": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

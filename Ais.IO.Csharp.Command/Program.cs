@@ -25,13 +25,13 @@ namespace Ais.IO.Csharp.Command
 
                 //AesIO.Generate();
 
-                StartAes(1);
+                //StartAes(1);
 
                 //StartDes(1);
 
                 //StartHash(1);
 
-                //StartRsa(1);
+                StartRsa(1);
 
                 sw.Stop();
                 Console.WriteLine($"Milli Seconds: {sw.ElapsedMilliseconds}");
@@ -146,13 +146,23 @@ namespace Ais.IO.Csharp.Command
 
                 //RsaIO.GenerateDER(2048);
 
+                //RsaIO.GenerateCSR_PEM(2048);
+
+                //RsaIO.GenerateCSR_DER(2048);
+
+                //RsaIO.GenerateCA_PEM(2048);
+
+                //RsaIO.GenerateCA_DER(2048);
+
                 //RsaIO.ToParamtersPEM();
 
                 //RsaIO.ToParamtersDER();
 
-                RsaIO.ToKeysPEM();
+                //RsaIO.ToKeysPEM();
 
-                RsaIO.ToKeysDER();
+                //RsaIO.ToKeysDER();
+
+                RsaIO.ExtractPublicKeyPEM();
             }
         }
     }

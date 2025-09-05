@@ -46,7 +46,47 @@ namespace Ais.IO.Csharp
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct EXPORT_RSA
+    public struct RSA_CSR
+    {
+        public ulong KEY_LENGTH;                        // 金鑰長度
+        public ASYMMETRIC_KEY_FORMAT KEY_FORMAT;        // 金鑰格式
+        public IntPtr CSR;                              // 指向CSR數據
+        public IntPtr PRIVATE_KEY;                      // 指向私鑰數據
+        public IntPtr PEM_PASSWORD;                     // 指向PEM密碼
+        public ulong CSR_LENGTH;                        // CSR長度
+        public ulong PRIVATE_KEY_LENGTH;                // 私鑰長度
+        public ulong PEM_PASSWORD_LENGTH;               // PEM密碼長度
+        public SYMMETRY_CRYPTER PEM_CIPHER;             // PEM密碼使用的演算法
+        public int PEM_CIPHER_SIZE;                     // PEM密碼的演算法長度
+        public SEGMENT_SIZE_OPTION PEM_CIPHER_SEGMENT;  // PEM密碼如果是CFB使用的段大小
+        public HASH_TYPE HASH_ALGORITHM;                // 哈希類型
+        public IntPtr COMMON_NAME;                      // CSR參數：通用名稱
+        public IntPtr COUNTRY;                          // CSR參數：國家/地區
+        public IntPtr ORGANIZATION;                     // CSR參數：組織
+        public IntPtr ORGANIZATION_UNIT;                // CSR參數：組織單位
+        public IntPtr SUBJECT_ALTERNATIVE_NAME;         // SAN參數：主體另類名稱
+        public ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;  // CSR用途
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RSA_CA
+    {
+        public ulong KEY_LENGTH;                        // 金鑰長度
+        public ASYMMETRIC_KEY_FORMAT KEY_FORMAT;        // 金鑰格式
+        public IntPtr CERTIFICATE;                      // 指向證書數據
+        public ulong CERTIFICATE_LENGTH;                // 證書長度
+        public HASH_TYPE HASH_ALGORITHM;                // 哈希類型
+        public IntPtr COMMON_NAME;                      // 證書參數：通用名稱
+        public IntPtr COUNTRY;                          // 證書參數：國家/地區
+        public IntPtr ORGANIZATION;                     // 證書參數：組織
+        public IntPtr ORGANIZATION_UNIT;                // 證書參數：組織單位
+        public ASYMMETRIC_KEY_CSR_KEY_USAGE KEY_USAGE;  // 證書用途
+        public ulong VALIDITY_DAYS;                     // 證書有效期限 (日)
+        public long SERIAL_NUMBER;                      // 證書序列號
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RSA_EXPORT
     {
         public ulong KEY_LENGTH;                    // 金鑰長度
         public ASYMMETRIC_KEY_FORMAT KEY_FORMAT;    // 金鑰格式
@@ -73,4 +113,17 @@ namespace Ais.IO.Csharp
         public ulong PRIVATE_KEY_LENGTH;            // 私鑰長度
         public ulong PEM_PASSWORD_LENGTH;           // PEM密碼長度
     };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RSA_EXTRACT_PUBLIC_KEY
+    {
+        public ASYMMETRIC_KEY_FORMAT PUBLIC_KEY_FORMAT;     // 輸出的公鑰格式
+        public ASYMMETRIC_KEY_FORMAT PRIVATE_KEY_FORMAT;    // 輸入的私鑰格式
+        public IntPtr PUBLIC_KEY;                           // 公鑰數據
+        public IntPtr PRIVATE_KEY;                          // 私鑰數據
+        public IntPtr PEM_PASSWORD;                         // PEM密碼
+        public ulong PUBLIC_KEY_LENGTH;                     // 公鑰長度
+        public ulong PRIVATE_KEY_LENGTH;                    // 私鑰長度
+        public ulong PEM_PASSWORD_LENGTH;                   // PEM密碼長度
+    }
 }

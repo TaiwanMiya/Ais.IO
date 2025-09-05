@@ -225,13 +225,13 @@ int RsaGenerateCSR(RSA_CSR* generate) {
     X509_NAME* name = X509_NAME_new();
 
     //X509_NAME_add_entry_by_NID(name, NID_organizationName)
-    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_UTF8, generate->COMMON_NAME, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, priv_bio, pkey);
-    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
+    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_UTF8, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, priv_bio, pkey);
-    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZATION, -1, -1, 0))
+    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_UTF8, generate->ORGANIZATION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, priv_bio, pkey);
-    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZATION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_UTF8, generate->ORGANIZATION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, priv_bio, pkey);
     
     if (1 != X509_REQ_set_subject_name(req, name)) {
@@ -362,13 +362,13 @@ int RsaGenerateCA(RSA_CA* generate) {
 
     // 設置主題資訊
     X509_NAME* name = X509_get_subject_name(x509);
-    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_UTF8, generate->COMMON_NAME, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
-    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
+    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_UTF8, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZATION, -1, -1, 0))
+    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_UTF8, generate->ORGANIZATION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZATION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_UTF8, generate->ORGANIZATION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
 
     // 設置 CA 為發行者 (自簽)
@@ -507,13 +507,13 @@ int RsaGenerateP12(RSA_P12* generate) {
 
     // 設置主題信息
     X509_NAME* name = X509_get_subject_name(x509);
-    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, generate->COMMON_NAME, -1, -1, 0))
+    if (generate->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_UTF8, generate->COMMON_NAME, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Common Name (CN) failed.", cert_bio, NULL, pkey);
-    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, generate->COUNTRY, -1, -1, 0))
+    if (generate->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_UTF8, generate->COUNTRY, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Country (C) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, generate->ORGANIZATION, -1, -1, 0))
+    if (generate->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_UTF8, generate->ORGANIZATION, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization (O) failed.", cert_bio, NULL, pkey);
-    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, generate->ORGANIZATION_UNIT, -1, -1, 0))
+    if (generate->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_UTF8, generate->ORGANIZATION_UNIT, -1, -1, 0))
         return handleErrors_asymmetric("Set Certificate Organization Unit (OU) failed.", cert_bio, NULL, pkey);
 
     const EVP_CIPHER* cipher = GetSymmetryCrypter(generate->PEM_CIPHER, generate->PEM_CIPHER_SIZE, generate->PEM_CIPHER_SEGMENT);
@@ -908,19 +908,19 @@ int RsaExtractCSR(RSA_EXTRACT_CSR* params) {
         return handleErrors_asymmetric("Failed to create X509_NAME.", NULL, NULL, pkey);
     }
 
-    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0)) {
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_UTF8, params->COMMON_NAME, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Common Name (CN).", NULL, NULL, pkey);
     }
-    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0)) {
+    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_UTF8, params->COUNTRY, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Country (C).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZATION, -1, -1, 0)) {
+    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_UTF8, params->ORGANIZATION, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Organization (O).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZATION_UNIT, -1, -1, 0)) {
+    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_UTF8, params->ORGANIZATION_UNIT, -1, -1, 0)) {
         X509_REQ_free(req);
         return handleErrors_asymmetric("Failed to set Organization Unit (OU).", NULL, NULL, pkey);
     }
@@ -1064,19 +1064,19 @@ int RsaExtractCA(RSA_EXTRACT_CA* params) {
 
     // **設置主題資訊**
     X509_NAME* name = X509_get_subject_name(x509);
-    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, params->COMMON_NAME, -1, -1, 0)) {
+    if (params->COMMON_NAME && 1 != X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_UTF8, params->COMMON_NAME, -1, -1, 0)) {
         X509_free(x509);
         return handleErrors_asymmetric("Failed to set Common Name (CN).", NULL, NULL, pkey);
     }
-    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, params->COUNTRY, -1, -1, 0)) {
+    if (params->COUNTRY && 1 != X509_NAME_add_entry_by_txt(name, "C", MBSTRING_UTF8, params->COUNTRY, -1, -1, 0)) {
         X509_free(x509);
         return handleErrors_asymmetric("Failed to set Country (C).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, params->ORGANIZATION, -1, -1, 0)) {
+    if (params->ORGANIZATION && 1 != X509_NAME_add_entry_by_txt(name, "O", MBSTRING_UTF8, params->ORGANIZATION, -1, -1, 0)) {
         X509_free(x509);
         return handleErrors_asymmetric("Failed to set Organization (O).", NULL, NULL, pkey);
     }
-    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, params->ORGANIZATION_UNIT, -1, -1, 0)) {
+    if (params->ORGANIZATION_UNIT && 1 != X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_UTF8, params->ORGANIZATION_UNIT, -1, -1, 0)) {
         X509_free(x509);
         return handleErrors_asymmetric("Failed to set Organization Unit (OU).", NULL, NULL, pkey);
     }
