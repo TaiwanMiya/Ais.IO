@@ -1,0 +1,7 @@
+-ID:/Qt/Examples/Qt-6.9.2/dbus/chat
+-IC:/Users/User/Documents/Ais.IO/aisio-gui/build
+-DWIN32
+-o
+C:/Users/User/Documents/Ais.IO/aisio-gui/build/moc_chat_interface.cpp
+C:/Users/User/Documents/Ais.IO/aisio-gui/build/chat_interface.h
+-DWIN32
