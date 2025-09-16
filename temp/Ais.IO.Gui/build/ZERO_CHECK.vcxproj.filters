@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\User\Documents\Ais.IO\Ais.IO.Gui\build\CMakeFiles\8a8abafbb8fc9b10404a0a82337b1d3c\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3108AADC-59F2-323D-925A-2637C21CD898}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
