@@ -1,8 +1,0 @@
-include("C:/Users/User/Documents/Ais.IO/aisio-gui/build/.qt/QtDeploySupport.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/chat-plugins.cmake" OPTIONAL)
-set(__QT_DEPLOY_I18N_CATALOGS "qtbase")
-
-qt6_deploy_runtime_dependencies(
-    EXECUTABLE "C:/Users/User/Documents/Ais.IO/aisio-gui/build/chat.exe"
-    GENERATE_QT_CONF
-)

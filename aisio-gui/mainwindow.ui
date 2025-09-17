@@ -32,115 +32,142 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTextEdit" name="plainText">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>80</y>
-      <width>500</width>
-      <height>500</height>
+      <x>0</x>
+      <y>0</y>
+      <width>1281</width>
+      <height>711</height>
      </rect>
     </property>
-    <property name="whatsThis">
-     <string/>
+    <property name="contextMenuPolicy">
+     <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
     </property>
-    <property name="accessibleDescription">
-     <string/>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-   </widget>
-   <widget class="QTextEdit" name="cipherText">
-    <property name="geometry">
-     <rect>
-      <x>740</x>
-      <y>80</y>
-      <width>500</width>
-      <height>500</height>
-     </rect>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::WheelFocus</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="decodeButton">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>350</y>
-      <width>101</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Decode</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="encodeButton">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>260</y>
-      <width>101</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Encode</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="modeComboBox">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>80</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <item>
-     <property name="text">
-      <string>Base10</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base16</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base32</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base58</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base62</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base64</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base85</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Base91</string>
-     </property>
-    </item>
+    <widget class="QWidget" name="baseEncoderTab">
+     <attribute name="title">
+      <string>Base</string>
+     </attribute>
+     <widget class="QComboBox" name="modeComboBox">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>100</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <item>
+       <property name="text">
+        <string>Base10</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base16</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base32</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base58</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base62</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base64</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base85</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Base91</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QTextEdit" name="plainText">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>100</y>
+        <width>500</width>
+        <height>500</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="accessibleDescription">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="cipherText">
+      <property name="geometry">
+       <rect>
+        <x>740</x>
+        <y>100</y>
+        <width>500</width>
+        <height>500</height>
+       </rect>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::FocusPolicy::WheelFocus</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="encodeButton">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>280</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Encode</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="decodeButton">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>370</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Decode</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="aesTab">
+     <attribute name="title">
+      <string>AES</string>
+     </attribute>
+    </widget>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -150,26 +177,7 @@
      <height>24</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuBase_Encoder">
-    <property name="title">
-     <string>Base Encoder</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuAES">
-    <property name="title">
-     <string>AES</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuDES">
-    <property name="title">
-     <string>DES</string>
-    </property>
-   </widget>
-   <addaction name="menuBase_Encoder"/>
-   <addaction name="menuAES"/>
-   <addaction name="menuDES"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionBase">
    <property name="text">
     <string>Base</string>

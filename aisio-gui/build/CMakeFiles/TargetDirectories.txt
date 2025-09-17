@@ -1,9 +1,0 @@
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/chat.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/edit_cache.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/rebuild_cache.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/list_install_components.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/install.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/install/local.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/install/strip.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/chat_autogen_timestamp_deps.dir
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/CMakeFiles/chat_autogen.dir

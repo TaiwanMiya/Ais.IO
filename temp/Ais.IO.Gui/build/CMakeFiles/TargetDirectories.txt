@@ -1,3 +1,0 @@
-C:/Users/User/Documents/Ais.IO/Ais.IO.Gui/build/CMakeFiles/Ais.IO.Gui.dir
-C:/Users/User/Documents/Ais.IO/Ais.IO.Gui/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/User/Documents/Ais.IO/Ais.IO.Gui/build/CMakeFiles/ZERO_CHECK.dir

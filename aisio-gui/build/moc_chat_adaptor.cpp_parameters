@@ -1,7 +1,0 @@
--ID:/Qt/Examples/Qt-6.9.2/dbus/chat
--IC:/Users/User/Documents/Ais.IO/aisio-gui/build
--DWIN32
--o
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/moc_chat_adaptor.cpp
-C:/Users/User/Documents/Ais.IO/aisio-gui/build/chat_adaptor.h
--DWIN32
