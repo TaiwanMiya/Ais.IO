@@ -1,4 +1,5 @@
-#include "mainwindow.h"
+// #include "base_encoder_window.h"
+#include "launcher_window.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    MainWindow w;
+    LauncherWindow w;
     w.show();
     return a.exec();
 }

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BaseEncoderWindow</class>
+ <widget class="QMainWindow" name="BaseEncoderWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::FocusPolicy::StrongFocus</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Base Encoder</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #2b2b2b;   /* 主背景 */
+    color: #f0f0f0;
+}
+
+QMenuBar {
+    background-color: #333;
+    color: #f0f0f0;
+}
+QMenuBar::item:selected {
+    background-color: #444;
+}
+
+QTextEdit {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    font: 11pt &quot;Consolas&quot;;
+}
+
+QPushButton {
+    background-color: #3c3f41;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #505357;
+}
+QPushButton:pressed {
+    background-color: #2e2f30;
+}
+
+QComboBox {
+    background-color: #2d2d30;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 4px;
+}
+</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">/* 全域字型與間距 */
+* { font-family: &quot;Microsoft JhengHei UI&quot;,&quot;Segoe UI&quot;,&quot;Noto Sans CJK TC&quot;; font-size: 12pt; }
+QMainWindow { background: #1f1f1f; }
+QLabel { color: #e8e8e8; font-weight: 600; }
+
+/* 控制列按鈕 */
+QPushButton {
+  background: #2b2f3a; color: #eaeaea; border: 1px solid #3a3f4b;
+  border-radius: 8px; padding: 6px 14px;
+}
+QPushButton:hover { background: #343a46; }
+QPushButton:pressed { background: #2a2f39; }
+
+/* ComboBox */
+QComboBox {
+  background: #2b2f3a; color: #eaeaea; border: 1px solid #3a3f4b; border-radius: 8px; padding: 4px 10px;
+}
+QComboBox QAbstractItemView { background: #2b2f3a; color: #eaeaea; selection-background-color: #3b4150; }
+
+/* 文字框 */
+QPlainTextEdit {
+  background: #111317; color: #dfe3ea; border: 1px solid #343a46; border-radius: 10px;
+  selection-background-color: #394359;
+}
+
+/* 分隔條 */
+QSplitter::handle { background: #2a2f39; width: 6px; }
+
+QMainWindow {
+    background-color: #2b2b2b;   /* 主背景 */
+    color: #f0f0f0;
+}
+
+QMenuBar {
+    background-color: #333;
+    color: #f0f0f0;
+}
+QMenuBar::item:selected {
+    background-color: #444;
+}
+
+QTextEdit {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    font: 11pt &quot;Arial&quot;;
+}
+
+QPushButton {
+    background-color: #3c3f41;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #505357;
+}
+QPushButton:pressed {
+    background-color: #2e2f30;
+}
+
+QComboBox {
+    background-color: #2d2d30;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 4px;
+}
+</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="3" column="4" colspan="3">
+     <widget class="QTextEdit" name="baseCipherText">
+      <property name="focusPolicy">
+       <enum>Qt::FocusPolicy::WheelFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="placeholderText">
+       <string>Please enter the text you want to decode.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="6">
+     <widget class="QLabel" name="decodeSizeLabel">
+      <property name="text">
+       <string>0 B</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="5">
+     <widget class="QToolButton" name="decodeToolButton">
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="encodeSizeLabel">
+      <property name="text">
+       <string>0 B</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="4">
+     <widget class="QLineEdit" name="decodePathLineEdit">
+      <property name="placeholderText">
+       <string>Path to the file to be decoded. (optional)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="encodePathLineEdit">
+      <property name="placeholderText">
+       <string>Path to the file to be encoded. (optional)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QTextEdit" name="basePlainText">
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="accessibleDescription">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="placeholderText">
+       <string>Please enter the text you want to encode.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QToolButton" name="encodeToolButton">
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3" rowspan="2">
+     <layout class="QVBoxLayout" name="baseVerticalLayout">
+      <item>
+       <widget class="QComboBox" name="baseModeComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Base10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base32</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base58</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base62</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base64</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base85</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Base91</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="baseEncodeButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Encode</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="baseDecodeButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Decode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="placeholderText">
+       <string>The file output after successful decoding. (optional)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QToolButton" name="toolButton">
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="5">
+     <widget class="QToolButton" name="toolButton_2">
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="4">
+     <widget class="QLineEdit" name="lineEdit_2">
+      <property name="placeholderText">
+       <string>The file output after successful encoding. (optional)</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <action name="actionBase">
+   <property name="text">
+    <string>Base</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -17,9 +17,15 @@ set(TS_FILES aisio-gui_trv_TW.ts)
 
 set(PROJECT_SOURCES
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+    launcher_window.cpp
+    launcher_window.h
+    launcher_window.ui
+    binary_window.cpp
+    binary_window.h
+    binary_window.ui
+    base_encoder_window.cpp
+    base_encoder_window.h
+    base_encoder_window.ui
     ${TS_FILES}
 )
 
@@ -27,6 +33,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(aisio-gui
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        launcher_window.ui
+        launcher_window.h launcher_window.cpp
+        binary_window.ui
+        binary_window.h binary_window.cpp
         # 如需其他檔案在這邊加
         # aisio_adapter.h
         # aisio_adapter.cpp
@@ -176,6 +186,16 @@ else()
           COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                   "${AISIO_DLL_RELEASE}"
                   "$<TARGET_FILE_DIR:aisio-gui>/Ais.IO.dll"
+          VERBATIM)
+      endif()
+
+      if (QT_VERSION_MAJOR EQUAL 6)
+        add_custom_command(TARGET aisio-gui POST_BUILD
+          COMMAND $<TARGET_FILE:Qt6::windeployqt>
+                  $<IF:$<CONFIG:Debug>,--debug,--release>
+                  --compiler-runtime
+                  $<TARGET_FILE:aisio-gui>
+          COMMENT "Running windeployqt on aisio-gui..."
           VERBATIM)
       endif()
 
