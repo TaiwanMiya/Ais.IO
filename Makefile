@@ -18,6 +18,9 @@ endif
 AISO_DIR = Ais.IO
 AISO_CMD_DIR = Ais.IO.Command
 BIN_DIR = unix
+GUI_DIR        = aisio-gui
+GUI_BUILD_DIR  = $(GUI_DIR)/build
+CMAKE_FLAGS    ?= -DCMAKE_BUILD_TYPE=Release -DAISIO_USE_PREBUILT=OFF
 
 # Dependencies
 DEPS = libssl-dev g++
@@ -55,6 +58,11 @@ install_deps:
 	else \
 		echo "whiptail Already installed."; \
 	fi
+	@if ! command -v apt-cache show qt6-base-dev >/dev/null 2>&1; then \
+		sudo apt update && sudo apt install qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+	else \
+		echo "qt6-base Already installed."; \
+	fi
 
 
 compile: $(BIN_DIR)/Ais.IO.so $(BIN_DIR)/aisio
@@ -81,6 +89,12 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 	@echo "Compiling aisio..."
 	$(CXX) -o $@ $^ -ldl
 
+	@echo "==> [GUI] CMake configure at $(GUI_BUILD_DIR)"
+	@mkdir -p "$(GUI_BUILD_DIR)"
+	@cmake -S "$(GUI_DIR)" -B "$(GUI_BUILD_DIR)" $(CMAKE_FLAGS)
+	@echo "==> [GUI] CMake build -j$(JOBS)"
+	@cmake --build "$(GUI_BUILD_DIR)" -j$(JOBS)
+
 	@dos2unix Terminal/Linux/*.sh
 	@dos2unix *.sh
 	@dos2unix Makefile
@@ -92,3 +106,4 @@ $(BIN_DIR)/aisio: $(AISO_CMD_DIR)/output_colors.cpp $(AISO_CMD_DIR)/string_case.
 clean:
 	@echo "Cleaning up..."
 	@rm -rf $(BIN_DIR)
+	@rm -rf "$(GUI_BUILD_DIR)"

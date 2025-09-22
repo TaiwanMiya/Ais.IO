@@ -19,6 +19,26 @@
     color: #f0f0f0;
 }
 
+QToolBox {
+    background-color: #2b2b2b;
+    color: #f0f0f0;
+    border: 1px solid #444;
+}
+
+QToolBox::tab {
+    background-color: #2f2f2f;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 6px 10px;
+}
+
+QToolBox QWidget {
+    background-color: #2b2b2b;
+    color: #f0f0f0;
+}
+
 QMenuBar {
     background-color: #333;
     color: #f0f0f0;
@@ -56,8 +76,7 @@ QComboBox {
     border: 1px solid #555;
     border-radius: 6px;
     padding: 4px;
-}
-</string>
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -71,8 +90,8 @@ QComboBox {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>622</width>
-         <height>375</height>
+         <width>620</width>
+         <height>373</height>
         </rect>
        </property>
        <attribute name="label">
@@ -120,6 +139,14 @@ QComboBox {
        </layout>
       </widget>
       <widget class="QWidget" name="symmetryPage">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>620</width>
+         <height>373</height>
+        </rect>
+       </property>
        <attribute name="label">
         <string>Symmetry Cryptography</string>
        </attribute>
@@ -169,8 +196,8 @@ QComboBox {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>622</width>
-         <height>375</height>
+         <width>620</width>
+         <height>373</height>
         </rect>
        </property>
        <attribute name="label">

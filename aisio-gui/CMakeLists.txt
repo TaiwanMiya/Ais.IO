@@ -76,6 +76,27 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(aisio-gui)
 endif()
 
+if(UNIX)
+  set(AISIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Ais.IO")
+
+  file(GLOB AISIO_SRC
+      "${AISIO_DIR}/*.cpp"
+  )
+  # 排除 Windows 專屬檔案
+  list(FILTER AISIO_SRC EXCLUDE REGEX ".*\\.(rc|aps)$")
+  list(FILTER AISIO_SRC EXCLUDE REGEX ".*/dllmain\\.cpp$")
+
+  add_library(aisio STATIC ${AISIO_SRC})
+  target_include_directories(aisio PUBLIC "${AISIO_DIR}")
+
+  # 用系統 OpenSSL（建議）
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(aisio PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+
+  # 讓 GUI 連到這顆庫
+  target_link_libraries(aisio-gui PRIVATE aisio)
+endif()
+
 # ===================================================================
 # ===============   Ais.IO 連結（相對路徑）段落   ===================
 # ===================================================================
@@ -86,6 +107,7 @@ endif()
 #                    aisio-gui/       ← 這個 Qt 專案（本檔所在）
 set(AISIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Ais.IO" CACHE PATH "Path to Ais.IO root")
 set(AISIO_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE PATH "Path to Ais.IO root")
+set(AISIO_BUILD_UNIX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../unix" CACHE PATH "Path to Ais.IO root")
 
 # 選擇模式：
 #   OFF → 走 add_subdirectory 直接編譯 Ais.IO（首選，最穩）
@@ -207,7 +229,8 @@ else()
         # Linux / macOS：找 .so/.a（以 ./so 為例）
         set(AISIO_LIB_DIR_UNIX "${AISIO_DIR}/so" CACHE PATH "Ais.IO Unix lib dir (relative)")
         # 嘗試尋找共享庫
-        find_library(AISIO_SO NAMES aisio PATHS "${AISIO_LIB_DIR_UNIX}" NO_DEFAULT_PATH)
+        # find_library(AISIO_SO NAMES aisio PATHS "${AISIO_LIB_DIR_UNIX}" NO_DEFAULT_PATH)
+        find_library(AISIO_SO NAMES aisio PATHS "${AISIO_BUILD_UNIX_DIR}" NO_DEFAULT_PATH)
         if(AISIO_SO)
             add_library(aisio SHARED IMPORTED GLOBAL)
             set_target_properties(aisio PROPERTIES IMPORTED_LOCATION "${AISIO_SO}")

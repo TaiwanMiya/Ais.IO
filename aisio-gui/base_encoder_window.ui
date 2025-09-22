@@ -48,6 +48,15 @@ QTextEdit {
     font: 11pt &quot;Consolas&quot;;
 }
 
+QLineEdit {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    font: 11pt &quot;Consolas&quot;;
+}
+
 QPushButton {
     background-color: #3c3f41;
     color: #ffffff;
@@ -59,6 +68,19 @@ QPushButton:hover {
     background-color: #505357;
 }
 QPushButton:pressed {
+    background-color: #2e2f30;
+}
+
+QToolButton {
+    background-color: #3c3f41;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 6px;
+}
+QToolButton:hover {
+    background-color: #505357;
+}
+QToolButton:pressed {
     background-color: #2e2f30;
 }
 
@@ -323,28 +345,28 @@ QComboBox {
      </layout>
     </item>
     <item row="4" column="0">
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="plainTextOutputLineEdit">
       <property name="placeholderText">
        <string>The file output after successful decoding. (optional)</string>
       </property>
      </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QToolButton" name="toolButton">
+     <widget class="QToolButton" name="plainTextOutputToolButton">
       <property name="text">
        <string>...</string>
       </property>
      </widget>
     </item>
     <item row="4" column="5">
-     <widget class="QToolButton" name="toolButton_2">
+     <widget class="QToolButton" name="cipherTextOutputToolButton">
       <property name="text">
        <string>...</string>
       </property>
      </widget>
     </item>
     <item row="4" column="4">
-     <widget class="QLineEdit" name="lineEdit_2">
+     <widget class="QLineEdit" name="cipherTextOutputLineEdit">
       <property name="placeholderText">
        <string>The file output after successful encoding. (optional)</string>
       </property>

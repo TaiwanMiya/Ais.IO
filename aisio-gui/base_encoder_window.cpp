@@ -82,7 +82,7 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         return;
     }
 
-    const size_t need = f.len(static_cast<size_t>(in.size()), /*isEncode=*/true) + 8; // 預估輸出長度
+    const size_t need = f.len(static_cast<size_t>(in.size()), /*isEncode=*/true) + 8;
     QByteArray out;
     out.resize(int(need));
     const int n = f.enc(reinterpret_cast<const unsigned char*>(in.constData()),
@@ -94,7 +94,35 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         return;
     }
     out.resize(n);
-    ui->baseCipherText->setPlainText(QString::fromLatin1(out)); // BaseN 字串 → 直接以 Latin1 顯示
+    ui->baseCipherText->setPlainText(QString::fromLatin1(out));
+
+    // 寫入檔案 (如果有路徑的話)
+    if (!ui->cipherTextOutputLineEdit->text().isEmpty()) {
+        QString path = ui->cipherTextOutputLineEdit->text().trimmed();
+        QFileInfo info(path);
+        if (!info.absolutePath().isEmpty())
+            QDir().mkpath(info.absolutePath());
+
+        QSaveFile f(path);
+        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qWarning() << "Open failed:" << f.errorString();
+            return;
+        }
+
+        qint64 n = f.write(out);
+        if (n < 0) {
+            qWarning() << "Write failed:" << f.errorString();
+            return;
+        }
+        if (n != out.size()) {
+            qWarning() << "Partial write:" << n << "of" << out.size();
+            return;
+        }
+        if (!f.commit()) {
+            qWarning() << "Commit failed:" << f.errorString();
+            return;
+        }
+    }
 }
 
 void BaseEncoderWindow::on_baseDecodeButton_clicked() {
@@ -113,7 +141,7 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
         return;
     }
 
-    const size_t need = f.len(size_t(in.size()), /*isEncode=*/false) + 8; // 預估原始 bytes 長度  :contentReference[oaicite:3]{index=3}
+    const size_t need = f.len(size_t(in.size()), /*isEncode=*/false) + 8;
     QByteArray out;
     out.resize(int(need));
     const int n = f.dec(in.constData(), size_t(in.size()),
@@ -125,7 +153,6 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
     }
     out.resize(n);
 
-    // 嘗試用 UTF-8 顯示原始位元組；若失敗就退而求其次用十六進位
     QString text = QString::fromUtf8(out.constData(), out.size());
     if (text.isEmpty() && !out.isEmpty()) {
         QString hex; hex.reserve(out.size() * 2);
@@ -134,6 +161,34 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
         text = hex;
     }
     ui->basePlainText->setPlainText(text);
+
+    // 寫入檔案 (如果有路徑的話)
+    if (!ui->plainTextOutputLineEdit->text().isEmpty()) {
+        QString path = ui->plainTextOutputLineEdit->text().trimmed();
+        QFileInfo info(path);
+        if (!info.absolutePath().isEmpty())
+            QDir().mkpath(info.absolutePath());
+
+        QSaveFile f(path);
+        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qWarning() << "Open failed:" << f.errorString();
+            return;
+        }
+
+        qint64 n = f.write(out);
+        if (n < 0) {
+            qWarning() << "Write failed:" << f.errorString();
+            return;
+        }
+        if (n != out.size()) {
+            qWarning() << "Partial write:" << n << "of" << out.size();
+            return;
+        }
+        if (!f.commit()) {
+            qWarning() << "Commit failed:" << f.errorString();
+            return;
+        }
+    }
 }
 
 void BaseEncoderWindow::on_encodeToolButton_clicked() {
@@ -217,4 +272,20 @@ void BaseEncoderWindow::on_baseCipherText_textChanged() {
 
     if (ui->decodeSizeLabel)
         ui->decodeSizeLabel->setText(humanSize(ui->baseCipherText->toPlainText().toUtf8().size()));
+}
+
+void BaseEncoderWindow::on_plainTextOutputToolButton_clicked() {
+    QString path = QFileDialog::getSaveFileName(this);
+    if (path.isEmpty())
+        return;
+
+    ui->plainTextOutputLineEdit->setText(path);
+}
+
+void BaseEncoderWindow::on_cipherTextOutputToolButton_clicked() {
+    QString path = QFileDialog::getSaveFileName(this);
+    if (path.isEmpty())
+        return;
+
+    ui->cipherTextOutputLineEdit->setText(path);
 }

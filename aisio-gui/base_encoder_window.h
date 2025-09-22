@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSaveFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BaseEncoderWindow; }
@@ -21,12 +22,14 @@ public:
     ~BaseEncoderWindow();
 
 private slots:
-    void on_baseEncodeButton_clicked();     // 對應 baseEncodeButton
-    void on_baseDecodeButton_clicked();     // 對應 baseDecodeButton
-    void on_encodeToolButton_clicked();     // 對應 encodeToolButton
-    void on_decodeToolButton_clicked();     // 對應 decodeToolButton
-    void on_basePlainText_textChanged();    // 對應 basePlainText
-    void on_baseCipherText_textChanged();   // 對應 baseCipherText
+    void on_baseEncodeButton_clicked();             // 對應 baseEncodeButton
+    void on_baseDecodeButton_clicked();             // 對應 baseDecodeButton
+    void on_encodeToolButton_clicked();             // 對應 encodeToolButton
+    void on_decodeToolButton_clicked();             // 對應 decodeToolButton
+    void on_basePlainText_textChanged();            // 對應 basePlainText
+    void on_baseCipherText_textChanged();           // 對應 baseCipherText
+    void on_plainTextOutputToolButton_clicked();    // 對應 plainTextOutputToolButton
+    void on_cipherTextOutputToolButton_clicked();   // 對應 cipherTextOutputToolButton
 
 private:
     Ui::BaseEncoderWindow *ui;
