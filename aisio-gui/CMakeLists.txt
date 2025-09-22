@@ -10,6 +10,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
@@ -37,6 +38,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         launcher_window.h launcher_window.cpp
         binary_window.ui
         binary_window.h binary_window.cpp
+        chunked_appender.h chunked_appender.cpp
+
+
+
         # 如需其他檔案在這邊加
         # aisio_adapter.h
         # aisio_adapter.cpp
@@ -52,6 +57,7 @@ else()
 endif()
 
 target_link_libraries(aisio-gui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(aisio-gui PRIVATE Qt6::Widgets Qt6::Concurrent)
 
 # macOS/iOS 相關屬性（保留你原本設定）
 if(${QT_VERSION} VERSION_LESS 6.9.2)
@@ -96,6 +102,11 @@ if(UNIX)
   # 讓 GUI 連到這顆庫
   target_link_libraries(aisio-gui PRIVATE aisio)
 endif()
+
+qt_add_resources(aisio-gui "resources.qrc"
+    PREFIX "/"
+    FILES images/aisio-icon.png
+)
 
 # ===================================================================
 # ===============   Ais.IO 連結（相對路徑）段落   ===================

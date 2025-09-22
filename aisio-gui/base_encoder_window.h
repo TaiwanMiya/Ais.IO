@@ -1,6 +1,8 @@
 #ifndef BASE_ENCODER_WINDOW_H
 #define BASE_ENCODER_WINDOW_H
 
+#include "genericworker.h"
+
 #include <QMainWindow>
 #include <QPointer>
 #include <BaseEncoderIO.h>
@@ -8,6 +10,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSaveFile>
+#include <QThread>
+#include <QProgressDialog>
+#include <QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BaseEncoderWindow; }

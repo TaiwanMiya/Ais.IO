@@ -38,6 +38,11 @@ install_deps:
 	else \
 		echo "g++ Already installed."; \
 	fi
+	@if ! command -v cmake 2>&1; then \
+		sudo apt update && sudo apt install cmake; \
+	else \
+		echo "cmake Already installed."; \
+	fi
 	@if ! command -v openssl 2>&1; then \
 		sudo apt update && sudo apt install -y $(DEPS); \
 	else \
@@ -58,10 +63,17 @@ install_deps:
 	else \
 		echo "whiptail Already installed."; \
 	fi
-	@if ! command -v apt-cache show qt6-base-dev >/dev/null 2>&1; then \
-		sudo apt update && sudo apt install qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+	@set -e; \
+	if dpkg -s qt6-base-dev >/dev/null 2>&1; then \
+		sudo apt update && sudo apt install qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools; \
 	else \
 		echo "qt6-base Already installed."; \
+	fi
+	@set -e; \
+	if pkg-config --exists Qt6Widgets; then \
+		echo "Qt6 Widgets present."; \
+	else \
+		sudo apt update && sudo apt install qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools; \
 	fi
 
 

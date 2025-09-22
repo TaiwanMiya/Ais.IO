@@ -1,5 +1,10 @@
 #include "base_encoder_window.h"
+#include "chunked_appender.h"
 #include <ui_base_encoder_window.h>
+#include <algorithm>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QFuture>
 
 BaseEncoderWindow::BaseEncoderWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,15 +16,15 @@ BaseEncoderWindow::~BaseEncoderWindow() {
     delete ui;   // 釋放記憶體
 }
 
+static constexpr qint64 PREVIEW_LIMIT = 1LL * 1024 * 1024; // 2 MB
+
 static QString humanSize(qint64 b) {
     const char* u[] = {"B","KB","MB","GB","TB","PB","EB","ZB","YB"};
     double s = double(b);
     int i = 0;
-    while (s >= 1024.0 && i < 4) { s /= 1024.0; ++i; }
+    while (s >= 1024.0 && i < 8) { s /= 1024.0; ++i; }
     return QString::number(s, 'f', (i==0 ? 0 : 2)) + " " + u[i];
 }
-
-static constexpr qint64 PREVIEW_LIMIT = 2LL * 1024 * 1024; // 2 MB
 
 // ---- 把 ComboBox 文字映射到對應 API ----
 BaseEncoderWindow::BaseFns BaseEncoderWindow::selectBaseFns(const QString& mode) const {
@@ -82,47 +87,68 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         return;
     }
 
-    const size_t need = f.len(static_cast<size_t>(in.size()), /*isEncode=*/true) + 8;
-    QByteArray out;
-    out.resize(int(need));
-    const int n = f.enc(reinterpret_cast<const unsigned char*>(in.constData()),
-                        size_t(in.size()),
-                        out.data(),
-                        size_t(out.size()));
-    if (n < 0) {
-        processErrorCode(n);
-        return;
-    }
-    out.resize(n);
-    ui->baseCipherText->setPlainText(QString::fromLatin1(out));
+    // 進度對話框：>1秒才顯示
+    auto* dlg = new QProgressDialog(tr("Encoding…"), tr("Cancel"), 0, 0, this);
+    dlg->setWindowModality(Qt::ApplicationModal);
+    dlg->setMinimumDuration(1000);
+    dlg->setAutoClose(true);
 
-    // 寫入檔案 (如果有路徑的話)
-    if (!ui->cipherTextOutputLineEdit->text().isEmpty()) {
-        QString path = ui->cipherTextOutputLineEdit->text().trimmed();
-        QFileInfo info(path);
-        if (!info.absolutePath().isEmpty())
-            QDir().mkpath(info.absolutePath());
+    // 回傳 (data, err)；err==0 表成功，否則為錯誤碼
+    using EncodeResult = QPair<QByteArray,int>;
 
-        QSaveFile f(path);
-        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            qWarning() << "Open failed:" << f.errorString();
+    auto* watcher = new QFutureWatcher<EncodeResult>(this);
+    QObject::connect(dlg, &QProgressDialog::canceled, watcher, &QFutureWatcher<EncodeResult>::cancel);
+
+    // 背景執行：一次性 API，這裡不做 chunk 進度；日後要更細可改成分段回報
+    QFuture<EncodeResult> fut = QtConcurrent::run([in, f]() -> EncodeResult {
+        QByteArray out; out.resize(int(f.len(size_t(in.size()), /*encode*/true) + 8));
+        const int n = f.enc(reinterpret_cast<const unsigned char*>(in.constData()),
+                            size_t(in.size()),
+                            out.data(),
+                            size_t(out.size()));
+        if (n < 0) return qMakePair(QByteArray(), n);
+        out.resize(n);
+        return qMakePair(out, 0);
+    });
+    watcher->setFuture(fut);
+
+    // 完成：回主執行緒更新 UI + 寫檔
+    QObject::connect(watcher, &QFutureWatcher<EncodeResult>::finished, this, [=]{
+        dlg->close(); dlg->deleteLater();
+
+        const EncodeResult res = watcher->result();
+        watcher->deleteLater();
+
+        if (res.second != 0) {
+            processErrorCode(res.second);
             return;
         }
 
-        qint64 n = f.write(out);
-        if (n < 0) {
-            qWarning() << "Write failed:" << f.errorString();
-            return;
+        const QByteArray out = res.first;
+        // ui->baseCipherText->setPlainText(QString::fromLatin1(out));
+        auto app = new ChunkedAppender(ui->baseCipherText, out, 128*1024, this);
+        connect(app, &ChunkedAppender::finished, this, []{ /* 需要的話這裡可關狀態列訊息 */ });
+        app->start();
+
+        // 輸出路徑
+        const QString path = ui->cipherTextOutputLineEdit->text().trimmed();
+        if (!path.isEmpty()) {
+            QFileInfo info(path);
+            if (!info.absolutePath().isEmpty())
+                QDir().mkpath(info.absolutePath());
+
+            QSaveFile f(path);
+            if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                QMessageBox::warning(this, tr("Error"), f.errorString());
+                return;
+            }
+            if (f.write(out) != out.size() || !f.commit()) {
+                QMessageBox::warning(this, tr("Error"), tr("Write failed: %1").arg(f.errorString()));
+            }
         }
-        if (n != out.size()) {
-            qWarning() << "Partial write:" << n << "of" << out.size();
-            return;
-        }
-        if (!f.commit()) {
-            qWarning() << "Commit failed:" << f.errorString();
-            return;
-        }
-    }
+    });
+
+    dlg->show();
 }
 
 void BaseEncoderWindow::on_baseDecodeButton_clicked() {
@@ -141,54 +167,91 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
         return;
     }
 
-    const size_t need = f.len(size_t(in.size()), /*isEncode=*/false) + 8;
-    QByteArray out;
-    out.resize(int(need));
-    const int n = f.dec(in.constData(), size_t(in.size()),
-                        reinterpret_cast<unsigned char*>(out.data()),
-                        size_t(out.size()));
-    if (n < 0) {
-        processErrorCode(n);
-        return;
-    }
-    out.resize(n);
+    auto* dlg = new QProgressDialog(tr("Decoding…"), tr("Cancel"), 0, 0, this);
+    dlg->setWindowModality(Qt::ApplicationModal);
+    dlg->setMinimumDuration(1000);
+    dlg->setAutoClose(true);
 
-    QString text = QString::fromUtf8(out.constData(), out.size());
-    if (text.isEmpty() && !out.isEmpty()) {
-        QString hex; hex.reserve(out.size() * 2);
-        static const char* kHex = "0123456789ABCDEF";
-        for (unsigned char c : out) { hex.append(kHex[c >> 4]); hex.append(kHex[c & 0xF]); }
-        text = hex;
-    }
-    ui->basePlainText->setPlainText(text);
+    using DecodeResult = QPair<QByteArray,int>;
 
-    // 寫入檔案 (如果有路徑的話)
-    if (!ui->plainTextOutputLineEdit->text().isEmpty()) {
-        QString path = ui->plainTextOutputLineEdit->text().trimmed();
-        QFileInfo info(path);
-        if (!info.absolutePath().isEmpty())
-            QDir().mkpath(info.absolutePath());
+    auto* watcher = new QFutureWatcher<DecodeResult>(this);
+    QObject::connect(dlg, &QProgressDialog::canceled, watcher, &QFutureWatcher<DecodeResult>::cancel);
 
-        QSaveFile f(path);
-        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            qWarning() << "Open failed:" << f.errorString();
+    QFuture<DecodeResult> fut = QtConcurrent::run([in, f]() -> DecodeResult {
+        QByteArray out; out.resize(int(f.len(size_t(in.size()), /*encode*/false) + 8));
+        const int n = f.dec(in.constData(), size_t(in.size()),
+                            reinterpret_cast<unsigned char*>(out.data()),
+                            size_t(out.size()));
+        if (n < 0) return qMakePair(QByteArray(), n);
+        out.resize(n);
+        return qMakePair(out, 0);
+    });
+    watcher->setFuture(fut);
+
+    // 完成：回主執行緒更新 UI + 寫檔
+    QObject::connect(watcher, &QFutureWatcher<DecodeResult>::finished, this, [=]{
+        dlg->close(); dlg->deleteLater();
+
+        const DecodeResult res = watcher->result();
+        watcher->deleteLater();
+
+        if (res.second != 0) {
+            processErrorCode(res.second);
             return;
         }
 
-        qint64 n = f.write(out);
-        if (n < 0) {
-            qWarning() << "Write failed:" << f.errorString();
-            return;
+        const QByteArray out = res.first;
+
+        QByteArray displayBytes;
+        QString text = QString::fromUtf8(out.constData(), out.size());
+        if (!text.isEmpty() || out.isEmpty()) {
+            // UTF-8 OK：直接用原 bytes 走 Latin1（多數 Base 輸出是 ASCII，可顯示）
+            displayBytes = out;
+        } else {
+            // 回退 Hex（還是 bytes，比先拼 QString 再拆更省）
+            static const char H[] = "0123456789ABCDEF";
+            displayBytes.resize(out.size()*2);
+            for (int i=0;i<out.size();++i) {
+                const unsigned char c = static_cast<unsigned char>(out[i]);
+                displayBytes[2*i]   = H[c>>4];
+                displayBytes[2*i+1] = H[c&0xF];
+            }
         }
-        if (n != out.size()) {
-            qWarning() << "Partial write:" << n << "of" << out.size();
-            return;
+        // 分段灌入到左側
+        auto app = new ChunkedAppender(ui->basePlainText, displayBytes, 128*1024, this);
+        connect(app, &ChunkedAppender::finished, this, []{ /* done */ });
+        app->start();
+
+        // // UTF-8 優先；空又非零 bytes → 十六進位回退（保留你原本策略）
+        // QString text = QString::fromUtf8(out.constData(), out.size());
+        // if (text.isEmpty() && !out.isEmpty()) {
+        //     static const char* H = "0123456789ABCDEF";
+        //     QString hex; hex.reserve(out.size()*2);
+        //     for (unsigned char c: out){ hex.append(H[c>>4]); hex.append(H[c&0xF]); }
+        //     text = hex;
+        // }
+
+        // ui->basePlainText->setPlainText(text);
+
+        // 輸出路徑
+        const QString path = ui->plainTextOutputLineEdit->text().trimmed();
+        if (!path.isEmpty()) {
+            QFileInfo info(path);
+            if (!info.absolutePath().isEmpty())
+                QDir().mkpath(info.absolutePath());
+
+            QSaveFile f(path);
+            if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                QMessageBox::warning(this, tr("Error"), f.errorString());
+                return;
+            }
+            if (f.write(out) != out.size() || !f.commit()) {
+                QMessageBox::warning(this, tr("Error"), tr("Write failed: %1").arg(f.errorString()));
+            }
         }
-        if (!f.commit()) {
-            qWarning() << "Commit failed:" << f.errorString();
-            return;
-        }
-    }
+    });
+
+    dlg->show();
 }
 
 void BaseEncoderWindow::on_encodeToolButton_clicked() {
