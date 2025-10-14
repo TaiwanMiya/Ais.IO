@@ -1,0 +1,7 @@
+{
+  "previewLimitBytes": 1048576,
+  "chunkAppendSize": 131072,
+  "ui": {
+    "theme": "dark"
+  }
+}

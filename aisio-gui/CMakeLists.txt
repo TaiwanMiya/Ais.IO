@@ -39,6 +39,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         binary_window.ui
         binary_window.h binary_window.cpp
         chunked_appender.h chunked_appender.cpp
+        config.h config.cpp
 
 
 
@@ -56,8 +57,13 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(aisio-gui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(aisio-gui PRIVATE Qt6::Widgets Qt6::Concurrent)
+qt_add_resources(aisio-gui "resources.qrc"
+    PREFIX "/"
+    FILES
+        images/aisio-icon.png
+        config/default.json
+)
+target_link_libraries(aisio-gui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui)
 
 # macOS/iOS 相關屬性（保留你原本設定）
 if(${QT_VERSION} VERSION_LESS 6.9.2)
@@ -102,11 +108,6 @@ if(UNIX)
   # 讓 GUI 連到這顆庫
   target_link_libraries(aisio-gui PRIVATE aisio)
 endif()
-
-qt_add_resources(aisio-gui "resources.qrc"
-    PREFIX "/"
-    FILES images/aisio-icon.png
-)
 
 # ===================================================================
 # ===============   Ais.IO 連結（相對路徑）段落   ===================

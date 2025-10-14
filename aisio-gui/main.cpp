@@ -1,5 +1,6 @@
 // #include "base_encoder_window.h"
 #include "launcher_window.h"
+#include "config.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -9,6 +10,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/images/aisio-icon.png"));
+    Config::instance().load();
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();

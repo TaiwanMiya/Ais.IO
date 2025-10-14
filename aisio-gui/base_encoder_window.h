@@ -1,8 +1,6 @@
 #ifndef BASE_ENCODER_WINDOW_H
 #define BASE_ENCODER_WINDOW_H
 
-#include "genericworker.h"
-
 #include <QMainWindow>
 #include <QPointer>
 #include <BaseEncoderIO.h>

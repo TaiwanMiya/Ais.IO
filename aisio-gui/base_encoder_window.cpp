@@ -1,7 +1,7 @@
 #include "base_encoder_window.h"
 #include "chunked_appender.h"
+#include "config.h"
 #include <ui_base_encoder_window.h>
-#include <algorithm>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QFuture>
@@ -16,7 +16,10 @@ BaseEncoderWindow::~BaseEncoderWindow() {
     delete ui;   // 釋放記憶體
 }
 
-static constexpr qint64 PREVIEW_LIMIT = 1LL * 1024 * 1024; // 2 MB
+// static constexpr qint64 PREVIEW_LIMIT = 2LL * 1024 * 1024; // 2 MB
+// static constexpr qint64 PREVIEW_LIMIT = 2LL * 1024; // 2 KB
+const qint64 PREVIEW_LIMIT = Config::instance().previewLimitBytes();
+const qint64 CHUNK_SIZE    = Config::instance().chunkAppendSize();
 
 static QString humanSize(qint64 b) {
     const char* u[] = {"B","KB","MB","GB","TB","PB","EB","ZB","YB"};
@@ -113,7 +116,7 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
     watcher->setFuture(fut);
 
     // 完成：回主執行緒更新 UI + 寫檔
-    QObject::connect(watcher, &QFutureWatcher<EncodeResult>::finished, this, [=]{
+    QObject::connect(watcher, &QFutureWatcher<EncodeResult>::finished, this, [=] {
         dlg->close(); dlg->deleteLater();
 
         const EncodeResult res = watcher->result();
@@ -125,10 +128,30 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         }
 
         const QByteArray out = res.first;
-        // ui->baseCipherText->setPlainText(QString::fromLatin1(out));
-        auto app = new ChunkedAppender(ui->baseCipherText, out, 128*1024, this);
-        connect(app, &ChunkedAppender::finished, this, []{ /* 需要的話這裡可關狀態列訊息 */ });
+
+        m_cipherBuffer = out;
+        m_cipherPath.clear();
+        m_cipherFromFile = true;
+
+        const QByteArray preview = (out.size() > PREVIEW_LIMIT)
+                                       ? out.left(PREVIEW_LIMIT) : out;
+
+        ui->baseCipherText->blockSignals(true);
+        auto app = new ChunkedAppender(ui->baseCipherText, preview, 128*1024, this);
+        connect(app, &ChunkedAppender::finished, this, [=] {
+            ui->baseCipherText->blockSignals(false);
+            m_cipherFromFile = true;
+        });
         app->start();
+
+        if (ui->decodeSizeLabel) ui->decodeSizeLabel->setText(humanSize(out.size()));
+        if (out.size() > PREVIEW_LIMIT) {
+            statusBar()->showMessage(
+                tr("Show only the front: %1, Total size: %2")
+                    .arg(humanSize(PREVIEW_LIMIT), humanSize(out.size())));
+        } else {
+            statusBar()->clearMessage();
+        }
 
         // 輸出路徑
         const QString path = ui->cipherTextOutputLineEdit->text().trimmed();
@@ -189,7 +212,7 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
     watcher->setFuture(fut);
 
     // 完成：回主執行緒更新 UI + 寫檔
-    QObject::connect(watcher, &QFutureWatcher<DecodeResult>::finished, this, [=]{
+    QObject::connect(watcher, &QFutureWatcher<DecodeResult>::finished, this, [=] {
         dlg->close(); dlg->deleteLater();
 
         const DecodeResult res = watcher->result();
@@ -201,6 +224,10 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
         }
 
         const QByteArray out = res.first;
+
+        m_plainBuffer = out;
+        m_plainPath.clear();
+        m_plainFromFile = true;
 
         QByteArray displayBytes;
         QString text = QString::fromUtf8(out.constData(), out.size());
@@ -217,21 +244,27 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
                 displayBytes[2*i+1] = H[c&0xF];
             }
         }
+
+        const QByteArray preview = (displayBytes.size() > PREVIEW_LIMIT)
+                                       ? displayBytes.left(PREVIEW_LIMIT) : displayBytes;
+
+        ui->basePlainText->blockSignals(true);
         // 分段灌入到左側
-        auto app = new ChunkedAppender(ui->basePlainText, displayBytes, 128*1024, this);
-        connect(app, &ChunkedAppender::finished, this, []{ /* done */ });
+        auto app = new ChunkedAppender(ui->basePlainText, preview, 128*1024, this);
+        connect(app, &ChunkedAppender::finished, this, [=] {
+            ui->basePlainText->blockSignals(false);
+            m_plainFromFile = true;
+        });
         app->start();
 
-        // // UTF-8 優先；空又非零 bytes → 十六進位回退（保留你原本策略）
-        // QString text = QString::fromUtf8(out.constData(), out.size());
-        // if (text.isEmpty() && !out.isEmpty()) {
-        //     static const char* H = "0123456789ABCDEF";
-        //     QString hex; hex.reserve(out.size()*2);
-        //     for (unsigned char c: out){ hex.append(H[c>>4]); hex.append(H[c&0xF]); }
-        //     text = hex;
-        // }
-
-        // ui->basePlainText->setPlainText(text);
+        if (ui->encodeSizeLabel) ui->encodeSizeLabel->setText(humanSize(out.size()));
+        if (displayBytes.size() > PREVIEW_LIMIT) {
+            statusBar()->showMessage(
+                tr("Show only the front: %1, Total size: %2")
+                    .arg(humanSize(PREVIEW_LIMIT), humanSize(displayBytes.size())));
+        } else {
+            statusBar()->clearMessage();
+        }
 
         // 輸出路徑
         const QString path = ui->plainTextOutputLineEdit->text().trimmed();
@@ -276,6 +309,7 @@ void BaseEncoderWindow::on_encodeToolButton_clicked() {
                                    ? m_plainBuffer.left(PREVIEW_LIMIT)
                                    : m_plainBuffer;
 
+    QSignalBlocker block(*ui->basePlainText);
     ui->basePlainText->setPlainText(QString::fromUtf8(preview));
 
     if (ui->encodeSizeLabel) ui->encodeSizeLabel->setText(humanSize(fi.size()));
@@ -309,6 +343,7 @@ void BaseEncoderWindow::on_decodeToolButton_clicked() {
                                    ? m_cipherBuffer.left(PREVIEW_LIMIT)
                                    : m_cipherBuffer;
 
+    QSignalBlocker block(*ui->baseCipherText);
     ui->baseCipherText->setPlainText(QString::fromUtf8(preview));
 
     if (ui->decodeSizeLabel) ui->decodeSizeLabel->setText(humanSize(fi.size()));

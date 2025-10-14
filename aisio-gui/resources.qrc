@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>images/aisio-icon.png</file>
+        <file>config/default.json</file>
     </qresource>
 </RCC>
