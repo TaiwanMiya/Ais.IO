@@ -3,6 +3,12 @@
 #include <QJsonObject>
 #include <QMutex>
 
+enum class ThemeMode {
+    System,
+    Light,
+    Dark
+};
+
 class Config : public QObject {
     Q_OBJECT
 public:
@@ -18,6 +24,9 @@ public:
 
     int  chunkAppendSize() const;
     void setChunkAppendSize(int v);
+
+    ThemeMode themeMode() const;
+    void setThemeMode(ThemeMode v);
 
 private:
     explicit Config(QObject* parent=nullptr);

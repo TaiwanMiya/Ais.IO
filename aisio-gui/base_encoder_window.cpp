@@ -10,16 +10,38 @@ BaseEncoderWindow::BaseEncoderWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::BaseEncoderWindow) {  // ← 初始化
     ui->setupUi(this);          // ← 建立 UI 元件
+
+    QPalette p = statusBar()->palette();
+    p.setColor(QPalette::WindowText, palette().color(QPalette::WindowText));
+    p.setColor(QPalette::Window, palette().color(QPalette::Window));
+    statusBar()->setPalette(p);
+    statusBar()->setAutoFillBackground(false);
 }
 
 BaseEncoderWindow::~BaseEncoderWindow() {
     delete ui;   // 釋放記憶體
 }
 
-// static constexpr qint64 PREVIEW_LIMIT = 2LL * 1024 * 1024; // 2 MB
-// static constexpr qint64 PREVIEW_LIMIT = 2LL * 1024; // 2 KB
-const qint64 PREVIEW_LIMIT = Config::instance().previewLimitBytes();
-const qint64 CHUNK_SIZE    = Config::instance().chunkAppendSize();
+static inline qint64 PREVIEW_LIMIT() {
+    return static_cast<qint64>(Config::instance().previewLimitBytes());
+}
+static inline qint64 CHUNK_SIZE() {
+    return static_cast<qint64>(Config::instance().chunkAppendSize());
+}
+
+static QColor contrastingTextColor(const QColor &bg) {
+    const int brightness = qRound(static_cast<qfloat16>((bg.red()*299 + bg.green()*587 + bg.blue()*114) / 1000));
+    return (brightness < 128) ? Qt::white : Qt::black;
+}
+void BaseEncoderWindow::updateStatusBarColors() {
+    const QColor bg = palette().color(QPalette::Window);
+    const QColor fg = contrastingTextColor(bg);
+    QPalette p = statusBar()->palette();
+    p.setColor(QPalette::Window, bg);
+    p.setColor(QPalette::WindowText, fg);
+    statusBar()->setPalette(p);
+    statusBar()->setAutoFillBackground(true);
+}
 
 static QString humanSize(qint64 b) {
     const char* u[] = {"B","KB","MB","GB","TB","PB","EB","ZB","YB"};
@@ -133,8 +155,8 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         m_cipherPath.clear();
         m_cipherFromFile = true;
 
-        const QByteArray preview = (out.size() > PREVIEW_LIMIT)
-                                       ? out.left(PREVIEW_LIMIT) : out;
+        const QByteArray preview = (out.size() > PREVIEW_LIMIT())
+                                       ? out.left(PREVIEW_LIMIT()) : out;
 
         ui->baseCipherText->blockSignals(true);
         auto app = new ChunkedAppender(ui->baseCipherText, preview, 128*1024, this);
@@ -145,10 +167,10 @@ void BaseEncoderWindow::on_baseEncodeButton_clicked() {
         app->start();
 
         if (ui->decodeSizeLabel) ui->decodeSizeLabel->setText(humanSize(out.size()));
-        if (out.size() > PREVIEW_LIMIT) {
+        if (out.size() > PREVIEW_LIMIT()) {
             statusBar()->showMessage(
                 tr("Show only the front: %1, Total size: %2")
-                    .arg(humanSize(PREVIEW_LIMIT), humanSize(out.size())));
+                    .arg(humanSize(PREVIEW_LIMIT()), humanSize(out.size())));
         } else {
             statusBar()->clearMessage();
         }
@@ -245,8 +267,8 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
             }
         }
 
-        const QByteArray preview = (displayBytes.size() > PREVIEW_LIMIT)
-                                       ? displayBytes.left(PREVIEW_LIMIT) : displayBytes;
+        const QByteArray preview = (displayBytes.size() > PREVIEW_LIMIT())
+                                       ? displayBytes.left(PREVIEW_LIMIT()) : displayBytes;
 
         ui->basePlainText->blockSignals(true);
         // 分段灌入到左側
@@ -258,10 +280,10 @@ void BaseEncoderWindow::on_baseDecodeButton_clicked() {
         app->start();
 
         if (ui->encodeSizeLabel) ui->encodeSizeLabel->setText(humanSize(out.size()));
-        if (displayBytes.size() > PREVIEW_LIMIT) {
+        if (displayBytes.size() > PREVIEW_LIMIT()) {
             statusBar()->showMessage(
                 tr("Show only the front: %1, Total size: %2")
-                    .arg(humanSize(PREVIEW_LIMIT), humanSize(displayBytes.size())));
+                    .arg(humanSize(PREVIEW_LIMIT()), humanSize(displayBytes.size())));
         } else {
             statusBar()->clearMessage();
         }
@@ -305,18 +327,18 @@ void BaseEncoderWindow::on_encodeToolButton_clicked() {
     m_plainPath      = path;
     m_plainFromFile  = true;
 
-    const QByteArray preview = (fi.size() > PREVIEW_LIMIT)
-                                   ? m_plainBuffer.left(PREVIEW_LIMIT)
+    const QByteArray preview = (fi.size() > PREVIEW_LIMIT())
+                                   ? m_plainBuffer.left(PREVIEW_LIMIT())
                                    : m_plainBuffer;
 
     QSignalBlocker block(*ui->basePlainText);
     ui->basePlainText->setPlainText(QString::fromUtf8(preview));
 
     if (ui->encodeSizeLabel) ui->encodeSizeLabel->setText(humanSize(fi.size()));
-    if (fi.size() > PREVIEW_LIMIT) {
+    if (fi.size() > PREVIEW_LIMIT()) {
         statusBar()->showMessage(
             tr("Show only the front: %1, Total size: %2")
-                .arg(humanSize(PREVIEW_LIMIT), humanSize(fi.size())));
+                .arg(humanSize(PREVIEW_LIMIT()), humanSize(fi.size())));
     } else {
         statusBar()->clearMessage();
     }
@@ -339,18 +361,18 @@ void BaseEncoderWindow::on_decodeToolButton_clicked() {
     m_cipherPath      = path;
     m_cipherFromFile  = true;
 
-    const QByteArray preview = (fi.size() > PREVIEW_LIMIT)
-                                   ? m_cipherBuffer.left(PREVIEW_LIMIT)
+    const QByteArray preview = (fi.size() > PREVIEW_LIMIT())
+                                   ? m_cipherBuffer.left(PREVIEW_LIMIT())
                                    : m_cipherBuffer;
 
     QSignalBlocker block(*ui->baseCipherText);
     ui->baseCipherText->setPlainText(QString::fromUtf8(preview));
 
     if (ui->decodeSizeLabel) ui->decodeSizeLabel->setText(humanSize(fi.size()));
-    if (fi.size() > PREVIEW_LIMIT) {
+    if (fi.size() > PREVIEW_LIMIT()) {
         statusBar()->showMessage(
             tr("Show only the front: %1, Total size: %2")
-                .arg(humanSize(PREVIEW_LIMIT), humanSize(fi.size())));
+                .arg(humanSize(PREVIEW_LIMIT()), humanSize(fi.size())));
     } else {
         statusBar()->clearMessage();
     }

@@ -53,6 +53,7 @@ private:
     };
     BaseFns selectBaseFns(const QString& mode) const;
     void processErrorCode(const int& n);
+    void updateStatusBarColors();
 };
 
 #endif // BASE_ENCODER_WINDOW_H

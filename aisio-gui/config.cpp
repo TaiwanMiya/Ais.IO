@@ -31,32 +31,42 @@ QString Config::userConfigPath() const {
 }
 
 bool Config::load() {
-    // QMutexLocker lk(&mtx_);
-    // // 先嘗試讀使用者檔
-    // if (loadFromFile(ensureUserConfigPath()))
+    // QJsonObject tmp;
+    // // 先讀使用者檔
+    // if (readJsonFromFile(ensureUserConfigPath(), tmp)) {
+    //     QMutexLocker lk(&mtx_);
+    //     obj_ = std::move(tmp);
     //     return true;
-    // // 沒有 → 讀資源預設，並寫一份到使用者目錄
-    // if (!loadFromResource(kResDefault))
+    // }
+    // // 沒有就讀資源預設
+    // if (!readJsonFromResource(":/config/default.json", tmp)) {
     //     return false;
-    // lk.unlock(); // 避免死鎖：save 也會鎖
+    // }
+    // {
+    //     QMutexLocker lk(&mtx_);
+    //     obj_ = std::move(tmp);
+    // }
+    // // 落地一份到使用者檔
     // return save();
 
-    QJsonObject tmp;
-    // 先讀使用者檔
-    if (readJsonFromFile(ensureUserConfigPath(), tmp)) {
-        QMutexLocker lk(&mtx_);
-        obj_ = std::move(tmp);
+    QJsonObject user;
+    if (readJsonFromFile(ensureUserConfigPath(), user)) {
+        QJsonObject res;
+        if (readJsonFromResource(":/config/default.json", res)) {
+            // 覆蓋或做「資源為主、使用者覆寫同名鍵」的合併
+            for (auto it = res.begin(); it != res.end(); ++it)
+                if (!user.contains(it.key())) user[it.key()] = it.value();
+            { QMutexLocker lk(&mtx_); obj_ = user; }
+            save();
+            return true;
+        }
+        { QMutexLocker lk(&mtx_); obj_ = user; }
         return true;
     }
-    // 沒有就讀資源預設
-    if (!readJsonFromResource(":/config/default.json", tmp)) {
-        return false;
-    }
-    {
-        QMutexLocker lk(&mtx_);
-        obj_ = std::move(tmp);
-    }
-    // 落地一份到使用者檔
+    // 沒有使用者檔 → 讀資源並落地
+    QJsonObject res;
+    if (!readJsonFromResource(":/config/default.json", res)) return false;
+    { QMutexLocker lk(&mtx_); obj_ = res; }
     return save();
 }
 
@@ -116,8 +126,7 @@ bool Config::save() {
 int Config::previewLimitBytes() const {
     QMutexLocker lk(&mtx_);
     const auto v = obj_.value("previewLimitBytes");
-    qDebug() << "[Config] previewLimitBytes =" << v << v.toDouble();
-    return v.isDouble() ? int(v.toDouble()) : 1048576; // 1 MiB 預設
+    return v.isDouble() ? int(v.toDouble()) : 1048576;
 }
 void Config::setPreviewLimitBytes(int v) {
     QMutexLocker lk(&mtx_);
@@ -127,9 +136,34 @@ void Config::setPreviewLimitBytes(int v) {
 int Config::chunkAppendSize() const {
     QMutexLocker lk(&mtx_);
     const auto v = obj_.value("chunkAppendSize");
-    return v.isDouble() ? int(v.toDouble()) : 131072;  // 128 KiB 預設
+    return v.isDouble() ? int(v.toDouble()) : 131072;
 }
 void Config::setChunkAppendSize(int v) {
     QMutexLocker lk(&mtx_);
     obj_["chunkAppendSize"] = v;
+}
+
+ThemeMode Config::themeMode() const {
+    QMutexLocker lk(&mtx_);
+    const auto ui = obj_.value("ui").toObject();
+    const QString s = ui.value("theme").toString("system").trimmed().toLower();
+    if (s == "dark")  return ThemeMode::Dark;
+    if (s == "light") return ThemeMode::Light;
+    return ThemeMode::System;
+}
+void Config::setThemeMode(ThemeMode v) {
+    QMutexLocker lk(&mtx_);
+    switch (v) {
+    case ThemeMode::Dark:
+        obj_["ui/theme"] = "dark";
+        break;
+    case ThemeMode::Light:
+        obj_["ui/theme"] = "light";
+        break;
+    case ThemeMode::System:
+        obj_["ui/theme"] = "system";
+        break;
+    default:
+        break;
+    }
 }
