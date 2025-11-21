@@ -40,6 +40,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         binary_window.h binary_window.cpp
         chunked_appender.h chunked_appender.cpp
         config.h config.cpp
+        codeeditor.h codeeditor.cpp
 
 
 

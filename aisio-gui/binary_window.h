@@ -1,9 +1,10 @@
 #ifndef BINARY_WINDOW_H
 #define BINARY_WINDOW_H
 
+#include "codeeditor.h"
+
 #include <QMainWindow>
 #include <QPointer>
-#include <BaseEncoderIO.h>
 #include <QTimer>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -20,6 +21,7 @@ public:
 
 private:
     Ui::BinaryWindow *ui;
+    CodeEditor *editor;
 };
 
 #endif // BINARY_WINDOW_H
