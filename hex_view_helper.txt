@@ -1,0 +1,14 @@
+✔ 反選 Highlight（選 HEX → ASCII 同時高亮）
+✔ 直接跳到 Offset（Go To Address）
+✔ 記憶體監視（Process Memory Live View）
+✔ 搜尋（Find Hex / Find ASCII）
+✔ 編輯（十六進位編輯器）
+✔ 與 Memory Map（GraphicsView）連動
+✔ 選取 HEX → 自動反選 ASCII
+✔ 檔案監視
+✔ 編輯功能
+
+1. 編輯（十六進位編輯器）
+2. 反選 Highlight（選 HEX → ASCII 同時高亮）
+3. 直接跳到 Offset（Go To Address）
+4. 搜尋（Find Hex / Find ASCII）

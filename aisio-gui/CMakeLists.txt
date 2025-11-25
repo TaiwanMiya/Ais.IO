@@ -41,6 +41,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         chunked_appender.h chunked_appender.cpp
         config.h config.cpp
         codeeditor.h codeeditor.cpp
+        hexview.h hexview.cpp
+        richtextdelegate.h
+
 
 
 

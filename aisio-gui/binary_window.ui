@@ -60,11 +60,472 @@ QComboBox {
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPlainTextEdit" name="plainTextEdit"/>
-    </item>
-   </layout>
+   <property name="styleSheet">
+    <string notr="true">/* 全域字型與間距 */
+* { font-family: &quot;Microsoft JhengHei UI&quot;,&quot;Segoe UI&quot;,&quot;Noto Sans CJK TC&quot;; font-size: 12pt; }
+QMainWindow { background: #1f1f1f; }
+QLabel { color: #e8e8e8; font-weight: 600; }
+
+/* 控制列按鈕 */
+QPushButton {
+  background: #2b2f3a; color: #eaeaea; border: 1px solid #3a3f4b;
+  border-radius: 8px; padding: 6px 14px;
+}
+QPushButton:hover { background: #343a46; }
+QPushButton:pressed { background: #2a2f39; }
+
+/* ComboBox */
+QComboBox {
+  background: #2b2f3a; color: #eaeaea; border: 1px solid #3a3f4b; border-radius: 8px; padding: 4px 10px;
+}
+QComboBox QAbstractItemView { background: #2b2f3a; color: #eaeaea; selection-background-color: #3b4150; }
+
+/* 文字框 */
+QPlainTextEdit {
+  background: #111317; color: #dfe3ea; border: 1px solid #343a46; border-radius: 10px;
+  selection-background-color: #394359;
+}
+
+/* 分隔條 */
+QSplitter::handle { background: #2a2f39; width: 6px; }
+
+QMainWindow {
+    background-color: #2b2b2b;   /* 主背景 */
+    color: #f0f0f0;
+}
+
+QMenuBar {
+    background-color: #333;
+    color: #f0f0f0;
+}
+QMenuBar::item:selected {
+    background-color: #444;
+}
+
+QTextEdit {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    font: 11pt &quot;Arial&quot;;
+}
+
+QLineEdit {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    font: 11pt &quot;Arial&quot;;
+}
+
+QPushButton {
+    background-color: #3c3f41;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #505357;
+}
+QPushButton:pressed {
+    background-color: #2e2f30;
+}
+
+QComboBox {
+    background-color: #2d2d30;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 4px;
+}
+</string>
+   </property>
+   <widget class="QLineEdit" name="byteLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>60</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only 0 ~ 255 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter 0 ~ 255</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="boolTruePushButton">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>20</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>True</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="boolFalsePushButton">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>20</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>False</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="byteLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Byte</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="sbyteLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SByte</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="sbyteLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>90</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only -128 ~ 127 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter -128 ~ 127</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="shortLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Short</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="shortLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>120</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only -32768 ~ 32767 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter -32768 ~ 32767</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ushortLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>150</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>UShort</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="ushortLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>150</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only 0 ~ 65535 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter 0 ~ 65535</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="longLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>240</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only -9223372036854775808 ~ 9223372036854775807 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter -9223372036854775808 ~ 9223372036854775807</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="ulongLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>270</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only 0 ~ 18446744073709551615 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter 0 ~ 18446744073709551615</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ulongLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>270</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ULong</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="intLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>180</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Int</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="uintLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>210</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only 0 ~ 4294967295 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter 0 ~ 4294967295</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="uintLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>210</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>UInt</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="longLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>240</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Long</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="intLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>180</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only -2147483648 ~ 2147483647 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter -2147483648 ~ 2147483647</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="doubleLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>330</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Double</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="floatLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>300</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only ~-3.402823e38 ~ ~3.402823e38 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter ~-3.402823e38 ~ ~3.402823e38</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="floatLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>300</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Float</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="doubleLineEdit">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>330</y>
+      <width>500</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only ~-1.7976931348623157e308 ~ ~1.7976931348623157e308 can be entered.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="placeholderText">
+     <string>Enter ~-1.7976931348623157e308 ~ ~1.7976931348623157e308</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="boolLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>53</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Bool</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableHexView">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>540</y>
+      <width>181</width>
+      <height>111</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>20</y>
+      <width>671</width>
+      <height>651</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
