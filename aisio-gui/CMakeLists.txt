@@ -28,7 +28,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/launcher_window.cpp
         src/binary_window.cpp
         src/base_encoder_window.cpp
-        src/chunked_appender.cpp
+
         src/codeeditor.cpp
         src/config.cpp
         src/hexform.cpp
@@ -51,10 +51,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         resources.qrc
         ${TS_FILES}
-
-        # 如需其他檔案在這邊加
-        # include/aisio_adapter.h
-        # src/aisio_adapter.cpp
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
@@ -96,7 +92,7 @@ if(UNIX)
   set(AISIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Ais.IO")
 
   file(GLOB AISIO_SRC
-      "${AISIO_DIR}/src/*.cpp"
+      "${AISIO_DIR}/*.cpp"
   )
   # 排除 Windows 專屬檔案
   list(FILTER AISIO_SRC EXCLUDE REGEX ".*\\.(rc|aps)$")
@@ -243,15 +239,13 @@ else()
 
     elseif(UNIX)
         # Linux / macOS：找 .so/.a（以 ./so 為例）
-        set(AISIO_LIB_DIR_UNIX "${AISIO_DIR}/so" CACHE PATH "Ais.IO Unix lib dir (relative)")
         # 嘗試尋找共享庫
-        # find_library(AISIO_SO NAMES aisio PATHS "${AISIO_LIB_DIR_UNIX}" NO_DEFAULT_PATH)
         find_library(AISIO_SO NAMES aisio PATHS "${AISIO_BUILD_UNIX_DIR}" NO_DEFAULT_PATH)
         if(AISIO_SO)
             add_library(aisio SHARED IMPORTED GLOBAL)
             set_target_properties(aisio PROPERTIES IMPORTED_LOCATION "${AISIO_SO}")
             target_link_libraries(aisio-gui PRIVATE aisio)
-        else()
+        # else()
             # 或者你也可以改成靜態庫 .a
             # set(AISIO_A "${AISIO_LIB_DIR_UNIX}/libaisio.a")
             # if(EXISTS "${AISIO_A}")

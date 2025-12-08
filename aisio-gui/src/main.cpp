@@ -40,15 +40,8 @@ static void applyTheme(ThemeMode mode,
     case ThemeMode::Light: setLight(); break;
     case ThemeMode::System:
     default: {
-#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
         const auto cs = qApp->styleHints()->colorScheme();
         if (cs == Qt::ColorScheme::Dark) setDark(); else setLight();
-#else
-        // 簡易偵測：用目前系統 palette 的 Window 亮度判斷
-        const QColor bg = systemLight.color(QPalette::Window);
-        const int brightness = qRound((bg.red()*299 + bg.green()*587 + bg.blue()*114) / 1000);
-        if (brightness < 128) setDark(); else setLight();
-#endif
         break;
     }}
 }
