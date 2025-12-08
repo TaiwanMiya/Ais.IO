@@ -2,6 +2,7 @@
 #define BINARY_WINDOW_H
 
 #include "codeeditor.h"
+#include "hexform.h"
 #include "hexview.h"
 
 #include <QMainWindow>
@@ -26,6 +27,7 @@ private:
     Ui::BinaryWindow *ui;
     CodeEditor *editor;
     HexView *hex;
+    QPointer<HexForm> hexform;
     // void loadBinary(const QByteArray& data);
 };
 

@@ -1,6 +1,6 @@
-#include "base_encoder_window.h"
-#include "launcher_window.h"
-#include <ui_launcher_window.h>
+#include "../include/base_encoder_window.h"
+#include "../include/launcher_window.h"
+#include "ui_launcher_window.h"
 
 LauncherWindow::LauncherWindow(QWidget *parent)
     : QMainWindow(parent)

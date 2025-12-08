@@ -1,0 +1,15 @@
+QWidget HexForm
+└── verticalLayoutMain (QVBoxLayout)
+    ├── searchBarWidget (QWidget)
+    │    └── horizontalLayoutSearch
+    │         ├── lblFind        (QLabel)
+    │         ├── lineEditFind   (QLineEdit)
+    │         ├── comboFindMode  (QComboBox)
+    │         ├── btnFindPrev    (QToolButton)
+    │         ├── btnFindNext    (QToolButton)
+    │         ├── lblGoto        (QLabel)
+    │         ├── lineEditGoto   (QLineEdit)
+    │         └── btnGoto        (QToolButton)
+    └── hexViewWidget (QWidget)
+         └── hexViewWidgetLayout (QVBoxLayout)
+              └── HexView (動態加入)

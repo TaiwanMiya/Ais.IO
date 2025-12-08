@@ -14,50 +14,50 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
-set(TS_FILES aisio-gui_trv_TW.ts)
-
-set(PROJECT_SOURCES
-    main.cpp
-    launcher_window.cpp
-    launcher_window.h
-    launcher_window.ui
-    binary_window.cpp
-    binary_window.h
-    binary_window.ui
-    base_encoder_window.cpp
-    base_encoder_window.h
-    base_encoder_window.ui
-    ${TS_FILES}
+set(CMAKE_AUTOUIC_SEARCH_PATHS
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui
 )
+
+set(TS_FILES aisio-gui_trv_TW.ts)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(aisio-gui
         MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-        launcher_window.ui
-        launcher_window.h launcher_window.cpp
-        binary_window.ui
-        binary_window.h binary_window.cpp
-        chunked_appender.h chunked_appender.cpp
-        config.h config.cpp
-        codeeditor.h codeeditor.cpp
-        hexview.h hexview.cpp
-        richtextdelegate.h
+
+        src/main.cpp
+        src/launcher_window.cpp
+        src/binary_window.cpp
+        src/base_encoder_window.cpp
+        src/chunked_appender.cpp
+        src/codeeditor.cpp
+        src/config.cpp
+        src/hexform.cpp
+        src/hexview.cpp
+
+        include/launcher_window.h
+        include/binary_window.h
+        include/base_encoder_window.h
+        include/chunked_appender.h
+        include/codeeditor.h
+        include/config.h
+        include/hexform.h
+        include/hexview.h
 
 
+        ui/launcher_window.ui
+        ui/binary_window.ui
+        ui/base_encoder_window.ui
+        ui/hexform.ui
 
+        resources.qrc
+        ${TS_FILES}
 
         # 如需其他檔案在這邊加
-        # aisio_adapter.h
-        # aisio_adapter.cpp
+        # include/aisio_adapter.h
+        # src/aisio_adapter.cpp
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
-    if(ANDROID)
-        add_library(aisio-gui SHARED ${PROJECT_SOURCES})
-    else()
-        add_executable(aisio-gui ${PROJECT_SOURCES})
-    endif()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
@@ -96,7 +96,7 @@ if(UNIX)
   set(AISIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Ais.IO")
 
   file(GLOB AISIO_SRC
-      "${AISIO_DIR}/*.cpp"
+      "${AISIO_DIR}/src/*.cpp"
   )
   # 排除 Windows 專屬檔案
   list(FILTER AISIO_SRC EXCLUDE REGEX ".*\\.(rc|aps)$")

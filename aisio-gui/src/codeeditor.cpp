@@ -1,4 +1,4 @@
-#include "codeeditor.h"
+#include "../include/codeeditor.h"
 #include <QRegularExpressionMatchIterator>
 #include <QTextBlock>
 #include <QTextFormat>

@@ -1,0 +1,46 @@
+列出資料夾 PATH
+磁碟區序號為 38D7-9273
+C:.
+├─build
+│  └─Desktop_Qt_6_9_2_MSVC2022_64bit-Debug
+│      ├─.cmake
+│      │  └─api
+│      │      └─v1
+│      │          ├─query
+│      │          ├─reply
+│      │          └─reply.prev
+│      ├─.lupdate
+│      ├─.qt
+│      │  └─rcc
+│      ├─.qtc
+│      │  └─package-manager
+│      ├─.qtc_clangd
+│      │  └─.cache
+│      │      └─clangd
+│      │          └─index
+│      ├─aisio-gui_autogen
+│      │  └─include
+│      ├─CMakeFiles
+│      │  ├─3.30.5
+│      │  │  └─CompilerIdCXX
+│      │  │      └─tmp
+│      │  ├─aisio-gui.dir
+│      │  │  ├─aisio-gui_autogen
+│      │  │  │  └─EWIEGA46WW
+│      │  │  ├─build
+│      │  │  │  └─Desktop_Qt_6_9_2_MSVC2022_64bit-Debug
+│      │  │  │      └─.qt
+│      │  │  │          └─rcc
+│      │  │  └─src
+│      │  ├─aisio-gui_autogen.dir
+│      │  ├─pkgRedirects
+│      │  └─ShowIncludes
+│      └─Testing
+│          └─Temporary
+├─config
+├─images
+├─include
+├─resources
+├─src
+├─translations
+└─ui

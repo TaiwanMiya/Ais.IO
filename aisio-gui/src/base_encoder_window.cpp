@@ -1,7 +1,7 @@
-#include "base_encoder_window.h"
-#include "chunked_appender.h"
-#include "config.h"
-#include <ui_base_encoder_window.h>
+#include "../include/base_encoder_window.h"
+#include "../include/chunked_appender.h"
+#include "../include/config.h"
+#include "ui_base_encoder_window.h"
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QFuture>

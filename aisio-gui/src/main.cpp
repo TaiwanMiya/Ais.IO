@@ -1,6 +1,6 @@
 // #include "base_encoder_window.h"
-#include "launcher_window.h"
-#include "config.h"
+#include "../include/launcher_window.h"
+#include "../include/config.h"
 
 #include <QApplication>
 #include <QStyleHints>

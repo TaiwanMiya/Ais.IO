@@ -1,0 +1,56 @@
+void HexView::handleMove(int key) {
+    int row = m_table->currentRow();
+    int col = m_table->currentColumn();
+
+    bool isAscii = (col >= 17 && col <= 32);
+
+    switch (key) {
+    case Qt::Key_Right:
+        if (!isAscii) {
+            // HEX
+            if (col < 16)
+                col++;           // 下一個 HEX
+            else {
+                row++;
+                col = 1;         // HEX 最右 → 跳到下一列 HEX
+            }
+        }
+        else {
+            // ASCII
+            if (col < 32)
+                col++;           // 下一個 ASCII
+            else {
+                row++;
+                col = 17;        // ASCII 最右 → 下一行 ASCII 最左
+            }
+        }
+        break;
+    case Qt::Key_Left:
+        if (isAscii) {
+            if (col > 17)
+                col--;           // 上一個 ASCII
+            else {
+                row--;
+                col = 32;        // ASCII 最左 → 上一行 ASCII 最右
+            }
+        }
+        else {
+            // HEX
+            if (col > 1)
+                col--;           // 前一個 HEX
+            else {
+                row--;
+                col = 16;        // HEX 最左 → 跳到上一列 HEX
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    // Clamp rows
+    if (row < 0) row = 0;
+    if (row >= m_table->rowCount()) row = m_table->rowCount() - 1;
+
+    m_table->setCurrentCell(row, col);
+}
