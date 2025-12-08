@@ -14,7 +14,7 @@ class HexForm : public QWidget {
     Q_OBJECT
 
 public:
-    explicit HexForm(QByteArray arr = nullptr, QWidget *parent = nullptr, bool setEdit = true);
+    explicit HexForm(const QByteArray &arr = QByteArray(), QWidget *parent = nullptr, bool setEdit = true);
     ~HexForm();
 
 private:

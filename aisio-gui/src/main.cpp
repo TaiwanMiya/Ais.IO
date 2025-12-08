@@ -39,11 +39,8 @@ static void applyTheme(ThemeMode mode,
     case ThemeMode::Dark:  setDark();  break;
     case ThemeMode::Light: setLight(); break;
     case ThemeMode::System:
-    default: {
-        const auto cs = qApp->styleHints()->colorScheme();
-        if (cs == Qt::ColorScheme::Dark) setDark(); else setLight();
-        break;
-    }}
+    default: setDark();  break;
+    }
 }
 
 int main(int argc, char *argv[]) {

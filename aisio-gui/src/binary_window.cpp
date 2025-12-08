@@ -20,7 +20,11 @@ BinaryWindow::BinaryWindow(QWidget *parent)
     // arr.append("OkOk");
 
     QByteArray arr;
+#ifdef _WIN32
     QFile file("C:\\Users\\User\\Documents\\Ais.IO\\etest.bin");
+#else
+    QFile file("home/ais/Ais.IO/etest.bin");
+#endif
     if (file.open(QIODevice::ReadOnly)) {
         arr = file.readAll();
         qDebug() << arr.length();

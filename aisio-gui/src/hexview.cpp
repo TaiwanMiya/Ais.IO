@@ -13,6 +13,7 @@ HexView::HexView(QWidget *parent)
     setFont(f);
 
     setFocusPolicy(Qt::StrongFocus);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     updateMetrics();
 
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -68,7 +69,8 @@ void HexView::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
 
     QPainter p(viewport());
-    p.fillRect(rect(), QColor(0x1e, 0x1e, 0x1e));
+    QRect vpRect = viewport()->rect();
+    p.fillRect(vpRect, QColor(0x1e, 0x1e, 0x1e));
 
     if (m_data.isEmpty())
         return;
@@ -121,8 +123,7 @@ void HexView::paintEvent(QPaintEvent *event) {
     }
 }
 
-void HexView::resizeEvent(QResizeEvent *event)
-{
+void HexView::resizeEvent(QResizeEvent *event) {
     QAbstractScrollArea::resizeEvent(event);
     updateMetrics();
     updateScrollBars();
@@ -136,8 +137,22 @@ void HexView::wheelEvent(QWheelEvent *event) {
 
     int lines = delta / 120; // 120 是一格滾輪
     int newVal = verticalScrollBar()->value() - lines;
+    // newVal = qBound(0, newVal, verticalScrollBar()->maximum());
     verticalScrollBar()->setValue(newVal);
     event->accept();
+
+    QAbstractScrollArea::wheelEvent(event);
+}
+
+QSize HexView::sizeHint() const {
+    // 大概顯示個 16 行，寬度根據 HEX + ASCII 算一下
+    int w = m_asciiStartX + m_bytesPerLine * m_charWidth + m_leftMargin;
+    int h = m_topMargin * 2 + m_lineHeight * 16;
+    return QSize(w, h);
+}
+
+QSize HexView::minimumSizeHint() const {
+    return QSize(200, 100);
 }
 
 void HexView::ensureVisible(qint64 offset) {
@@ -151,11 +166,10 @@ void HexView::ensureVisible(qint64 offset) {
     int linesPerPage = v->pageStep();
     int lastLine = firstLine + linesPerPage - 1;
 
-    if (line < firstLine) {
+    if (line < firstLine)
         v->setValue(line);
-    } else if (line > lastLine) {
+    else if (line > lastLine)
         v->setValue(line - linesPerPage + 1);
-    }
 }
 
 void HexView::moveCursorRelative(qint64 deltaBytes) {
@@ -266,14 +280,12 @@ void HexView::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Down:
         moveCursorLineRelative(1);
         return;
-    case Qt::Key_PageUp: {
+    case Qt::Key_PageUp:
         moveCursorLineRelative(-verticalScrollBar()->pageStep());
         return;
-    }
-    case Qt::Key_PageDown: {
+    case Qt::Key_PageDown:
         moveCursorLineRelative(verticalScrollBar()->pageStep());
         return;
-    }
     case Qt::Key_Home:
         moveCursorToLineStart();
         return;

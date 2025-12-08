@@ -7,7 +7,7 @@
 #include <QShortcut>
 #include <QToolButton>
 
-HexForm::HexForm(QByteArray arr, QWidget *parent, bool setEdit)
+HexForm::HexForm(const QByteArray &arr, QWidget *parent, bool setEdit)
     : QWidget(parent)
     , ui(new Ui::HexForm) {
     ui->setupUi(this);
@@ -16,8 +16,7 @@ HexForm::HexForm(QByteArray arr, QWidget *parent, bool setEdit)
     ui->hexViewWidgetLayout->addWidget(m_hexView);
     ui->searchBarWidget->setVisible(false);
 
-    if (arr != nullptr)
-        m_hexView->loadData(arr);
+    m_hexView->loadData(arr);
     m_hexView->setEditable(setEdit);
     this->EnabledConnect();
 }

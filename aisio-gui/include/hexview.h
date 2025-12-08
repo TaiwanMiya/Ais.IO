@@ -30,6 +30,8 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 private:
     QByteArray m_data;
     bool      m_editable = true;
