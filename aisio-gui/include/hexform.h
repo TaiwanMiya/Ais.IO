@@ -2,7 +2,6 @@
 #define HEXFORM_H
 
 #include "hexview.h"
-
 #include <QPropertyAnimation>
 #include <QWidget>
 
@@ -17,6 +16,9 @@ public:
     explicit HexForm(const QByteArray &arr = QByteArray(), QWidget *parent = nullptr, bool setEdit = true);
     ~HexForm();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;   // ⭐ 新增
+
 private:
     Ui::HexForm *ui;
     HexView *m_hexView;
@@ -30,6 +32,7 @@ private:
     QByteArray parseHexString(const QString& s, bool *ok) const;
     qint64 doFind(bool backwards, bool newPattern);
     void EnabledConnect();
+    void positionSearchBar();                         // ⭐ 新增
 
 private slots:
     void onFindModeChanged(int index);

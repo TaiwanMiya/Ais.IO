@@ -1,4 +1,3 @@
-// #include "base_encoder_window.h"
 #include "../include/launcher_window.h"
 #include "../include/config.h"
 

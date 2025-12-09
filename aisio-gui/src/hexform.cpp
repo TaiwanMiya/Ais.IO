@@ -10,11 +10,16 @@
 HexForm::HexForm(const QByteArray &arr, QWidget *parent, bool setEdit)
     : QWidget(parent)
     , ui(new Ui::HexForm) {
-    ui->setupUi(this);
-    m_hexView = new HexView(this);
 
-    ui->hexViewWidgetLayout->addWidget(m_hexView);
-    ui->searchBarWidget->setVisible(false);
+    ui->setupUi(this);
+
+    // ⭐ 改：讓 searchBar 浮動在 HexForm，而不是 layout 裡
+    ui->searchBarWidget->setParent(this);
+    ui->searchBarWidget->hide();
+
+    m_hexView = new HexView(ui->hexViewWidget);
+    m_hexView->setGeometry(ui->hexViewWidget->rect());
+    m_hexView->show();
 
     m_hexView->loadData(arr);
     m_hexView->setEditable(setEdit);
@@ -23,6 +28,18 @@ HexForm::HexForm(const QByteArray &arr, QWidget *parent, bool setEdit)
 
 HexForm::~HexForm() {
     delete ui;
+}
+
+void HexForm::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+
+    // ⭐ 讓 HexView 填滿 hexViewWidget
+    if (m_hexView)
+        m_hexView->setGeometry(ui->hexViewWidget->rect());
+
+    // ⭐ searchBar 可以保持距離
+    positionSearchBar();
 }
 
 void HexForm::setupShortcuts() {
@@ -133,9 +150,9 @@ qint64 HexForm::doFind(bool backwards, bool newPattern) {
     } else {
         // 新 pattern 從目前選取位置之後開始
         // 嘗試抓目前光標的 offset
-        auto idx = m_hexView->currentIndex(); // 若你有 m_hexView，用 m_hexView->currentIndex 之類
-        // 這裡簡化：先從 0 開始
-        start = m_hexView->offsetFromIndex(idx);
+        // auto idx = m_hexView->currentIndex(); // 若你有 m_hexView，用 m_hexView->currentIndex 之類
+        // // 這裡簡化：先從 0 開始
+        // start = m_hexView->offsetFromIndex(idx);
         if (start < 0) start = 0;
     }
 
@@ -171,6 +188,13 @@ void HexForm::EnabledConnect() {
             this, &HexForm::onGotoOffset);
 
     setupShortcuts();
+}
+
+void HexForm::positionSearchBar()
+{
+    // 浮在畫面上方 8px 的位置
+    ui->searchBarWidget->move(8, 8);
+    ui->searchBarWidget->raise();
 }
 
 void HexForm::onFindModeChanged(int index) {
@@ -235,7 +259,8 @@ void HexForm::toggleSearchBar(bool show) {
     ui->searchBarWidget->setVisible(show);
 
     if (show) {
-        // 自動 layout
-        ui->searchBarWidget->adjustSize();
+        positionSearchBar();
+        ui->lineEditFind->setFocus();
+        ui->lineEditFind->selectAll();
     }
 }

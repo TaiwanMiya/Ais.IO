@@ -1,0 +1,67 @@
+#include "../include/hexview.h"
+
+HexView::HexView(QWidget *parent)
+    : QHexEdit(parent)
+{
+    // 這裡做一次性外觀 / 行為設定
+    setAddressArea(true);          // 顯示位址欄
+    setAsciiArea(true);            // 顯示 ASCII 欄
+    setDynamicBytesPerLine(true);  // 視窗大小自動調整 bytesPerLine
+    setOverwriteMode(true);        // 預設覆寫模式
+    setReadOnly(false);            // 可編輯
+    setHexCaps(true);              // A-F 大寫或小寫看妳喜好
+
+    // 也可以在 HexForm 那邊再覆蓋 palette 來做深色主題
+}
+
+void HexView::loadData(const QByteArray &data)
+{
+    // QHexEdit 已經有 setData(const QByteArray &) 的版本
+    setData(data);          // property data() 對應的 setter
+    setCursorPosition(0);   // 注意：這裡是 nibble 單位（2 倍 byte）
+    ensureVisible();
+}
+
+void HexView::setEditable(bool editable)
+{
+    setReadOnly(!editable);
+}
+
+qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backwards)
+{
+    if (pattern.isEmpty())
+        return -1;
+
+    // QHexEdit 的 indexOf / lastIndexOf：參數是「byte offset」
+    qint64 pos = backwards
+                     ? lastIndexOf(pattern, start)
+                     : indexOf(pattern, start);
+
+    // 它內部已經會幫你移動游標、選取、ensureVisible
+    // 我們只回傳找到的 byte offset 給 HexForm 使用
+    return pos;
+}
+
+void HexView::gotoOffset(qint64 offset)
+{
+    if (offset < 0)
+        offset = 0;
+    if (offset > data().size())
+        offset = data().size();
+
+    // QHexEdit 的 cursorPosition 是 nibble 單位，所以 *2
+    setCursorPosition(offset * 2);
+    ensureVisible();
+}
+
+qint64 HexView::currentOffset() const
+{
+    // cursorPosition 是 nibble，所以 /2 就是 byte index
+    return cursorPosition() / 2;
+}
+
+void HexView::setBaseOffset(qint64 base)
+{
+    // 對應 QHexEdit 的 addressOffset
+    setAddressOffset(base);
+}

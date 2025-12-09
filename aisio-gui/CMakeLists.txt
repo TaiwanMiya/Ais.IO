@@ -51,6 +51,17 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         resources.qrc
         ${TS_FILES}
+
+        qhexedit/chunks.cpp
+        qhexedit/color_manager.cpp
+        qhexedit/commands.cpp
+        qhexedit/qhexedit.cpp
+
+        qhexedit/chunks.h
+        qhexedit/color_manager.h
+        qhexedit/commands.h
+        qhexedit/qhexedit.h
+
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
