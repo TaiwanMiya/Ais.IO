@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QKeyEvent>
 #include "../qhexedit/qhexedit.h"
 
 class HexView : public QHexEdit
@@ -22,6 +23,9 @@ public:
 
     // 如果有需要 base offset / address 欄
     void setBaseOffset(qint64 base);
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
 };
 
 #endif // HEXVIEW_H

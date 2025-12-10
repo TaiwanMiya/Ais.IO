@@ -6,6 +6,8 @@
 #include <QLineEdit>
 #include <QShortcut>
 #include <QToolButton>
+#include <QApplication>
+#include <QRegularExpression>
 
 HexForm::HexForm(const QByteArray &arr, QWidget *parent, bool setEdit)
     : QWidget(parent)
@@ -42,6 +44,16 @@ void HexForm::resizeEvent(QResizeEvent *event)
     positionSearchBar();
 }
 
+void HexForm::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+
+    if (m_hexView)
+        m_hexView->setGeometry(ui->hexViewWidget->rect());
+
+    positionSearchBar();
+}
+
 void HexForm::setupShortcuts() {
     // Ctrl+F: 聚焦搜尋欄
     QShortcut *scFind = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
@@ -73,7 +85,7 @@ void HexForm::setupShortcuts() {
     });
 
     QShortcut *scEsc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    scEsc->setContext(Qt::ApplicationShortcut);
+    scEsc->setContext(Qt::WidgetShortcut);
     connect(scEsc, &QShortcut::activated, this, [this]{
 
         QWidget* f = QApplication::focusWidget();
@@ -85,7 +97,8 @@ void HexForm::setupShortcuts() {
              f == ui->lineEditGoto  || f == ui->btnGoto))
         {
             toggleSearchBar(false);
-            m_hexView->setFocus();
+            return; // ⚠️ 這時吃掉 ESC
+            // m_hexView->setFocus();
         }
     });
 }

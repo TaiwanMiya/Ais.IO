@@ -19,6 +19,8 @@ void HexView::loadData(const QByteArray &data)
     // QHexEdit 已經有 setData(const QByteArray &) 的版本
     setData(data);          // property data() 對應的 setter
     setCursorPosition(0);   // 注意：這裡是 nibble 單位（2 倍 byte）
+    setSelection(0);
+    setSelection(1);
     ensureVisible();
 }
 
@@ -44,13 +46,22 @@ qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backward
 
 void HexView::gotoOffset(qint64 offset)
 {
+    const QByteArray ba = data();
+    if (ba.isEmpty())
+        return;
+
     if (offset < 0)
         offset = 0;
-    if (offset > data().size())
-        offset = data().size();
+    if (offset >= ba.size())
+        offset = ba.size() - 1;   // ⭐ 最後一個有效 byte
 
-    // QHexEdit 的 cursorPosition 是 nibble 單位，所以 *2
-    setCursorPosition(offset * 2);
+    qint64 nibblePos = offset * 2;
+    setCursorPosition(nibblePos);
+
+    resetSelection();
+    setSelection(offset);
+    setSelection(offset + 1);
+
     ensureVisible();
 }
 
@@ -65,3 +76,27 @@ void HexView::setBaseOffset(qint64 base)
     // 對應 QHexEdit 的 addressOffset
     setAddressOffset(base);
 }
+
+void HexView::keyPressEvent(QKeyEvent *event)
+{
+    // 先讓 QHexEdit 自己處理按鍵、更新 cursorPosition()
+    QHexEdit::keyPressEvent(event);
+
+    qint64 nibblePos = cursorPosition();
+    if (nibblePos < 0)
+        return;
+
+    qint64 byteIndex = nibblePos / 2;
+
+    // ⭐ 清空舊選區（否則會亂延伸）
+    resetSelection();
+
+    // ⭐ 選取這個 byte（開始）
+    setSelection(byteIndex);
+
+    // ⭐ 選取這個 byte（結束）
+    setSelection(byteIndex + 1);
+
+    ensureVisible();
+}
+

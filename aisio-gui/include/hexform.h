@@ -4,6 +4,7 @@
 #include "hexview.h"
 #include <QPropertyAnimation>
 #include <QWidget>
+#include <QShowEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class HexForm; }
@@ -17,7 +18,8 @@ public:
     ~HexForm();
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;   // ⭐ 新增
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 private:
     Ui::HexForm *ui;
@@ -32,7 +34,7 @@ private:
     QByteArray parseHexString(const QString& s, bool *ok) const;
     qint64 doFind(bool backwards, bool newPattern);
     void EnabledConnect();
-    void positionSearchBar();                         // ⭐ 新增
+    void positionSearchBar();
 
 private slots:
     void onFindModeChanged(int index);

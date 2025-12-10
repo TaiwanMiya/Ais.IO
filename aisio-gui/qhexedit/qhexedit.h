@@ -360,6 +360,9 @@ public:
 
     bool isReadOnly() const;
     void setReadOnly(bool readOnly);
+    void resetSelection(qint64 pos);            // set selectionStart and selectionEnd to pos
+    void resetSelection();                      // set selectionEnd to selectionStart
+    void setSelection(qint64 pos);              // set min (if below init) or max (if greater init)
 
 protected:
     // Handle events
@@ -372,9 +375,6 @@ protected:
     virtual bool focusNextPrevChild(bool next);
 private:
     // Handle selections
-    void resetSelection(qint64 pos);            // set selectionStart and selectionEnd to pos
-    void resetSelection();                      // set selectionEnd to selectionStart
-    void setSelection(qint64 pos);              // set min (if below init) or max (if greater init)
     qint64 getSelectionBegin() const;
     qint64 getSelectionEnd() const;
 

@@ -29,6 +29,8 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
@@ -58,6 +60,37 @@ private:
     QString m_hexCache[256];
     QChar   m_asciiCache[256];
 
+    // === Selection Model ===
+    qint64 m_selStart = -1;
+    qint64 m_selEnd   = -1;
+    qint64 m_selAnchor = -1;
+    bool   m_dragSelecting = false;
+    bool   m_showCursor = true;
+    int    m_errorFlashCounter = 0;
+    QTimer *m_errorFlashTimer = nullptr;
+
+    // 工具方法
+    void clearSelectionRange();
+    void setSelectionRange(qint64 start, qint64 end);
+    bool hasSelection() const { return m_selStart >= 0 && m_selEnd > m_selStart; }
+    qint64 clickedOffset(const QPoint &p);
+
+    // === Undo / Redo ===
+    struct Edit {
+        qint64 offset;
+        quint8 oldByte;
+        quint8 newByte;
+    };
+    QVector<Edit> m_undoStack;
+    QVector<Edit> m_redoStack;
+
+    void pushEdit(qint64 offset, quint8 oldByte, quint8 newByte);
+    void undo();
+    void redo();
+
+    // === Internal helper ===
+    void updateSelectionAfterCursorMove();
+
     // 每行的影像快取（行快取）
     struct LineCacheEntry {
         int   line  = -1;     // 第幾行
@@ -67,6 +100,23 @@ private:
     QVector<LineCacheEntry> m_lineCache;
     int m_nextCacheSlot = 0;  // 簡單輪替（LRU 近似）
 
+    // === Multi-selection support ===
+    struct Range {
+        qint64 start;
+        qint64 end;   // end is exclusive
+    };
+    QVector<Range> m_extraSelections;
+
+    bool byteInAnySelection(qint64 off) const;
+    QVector<Range> allSelectionsNormalized() const;
+
+    // === Clipboard support ===
+    void copySelectionToClipboard();
+    void pasteFromClipboard();
+
+    enum class Area { None, Hex, Ascii };
+    Area lastClickArea = Area::None;
+
     // 設定
     int addressChars() const { return 8; } // 8 位位址（00000000~FFFFFFFF）
 
@@ -74,6 +124,7 @@ private:
     void updateScrollBars();                 // 根據資料與度量更新捲軸範圍
     void recalcBytesPerLineForWidth(int viewportWidth);
     void ensureVisible(qint64 offset);
+    void invalidateAllLines();
 
     // 行快取相關
     void ensureLineCacheCapacity();          // 依視窗高度調整快取大小
@@ -85,7 +136,9 @@ private:
     void moveCursorLineRelative(qint64 deltaLines);
     void moveCursorToLineStart();
     void moveCursorToLineEnd();
-    void handleHexEdit(QKeyEvent *event);
+    bool handleHexEdit(QKeyEvent *event);
+    bool handleAsciiEdit(QKeyEvent *event);
+    void flashError();
 };
 
 #endif // HEXVIEW_H
