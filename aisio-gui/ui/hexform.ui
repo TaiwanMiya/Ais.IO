@@ -99,142 +99,23 @@ QTableWidget{
 	
 }</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>50</y>
-     <width>1281</width>
-     <height>721</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayoutMain">
-    <item>
-     <widget class="QWidget" name="hexViewWidget" native="true">
-      <widget class="QWidget" name="verticalLayoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>-1</x>
-         <y>-1</y>
-         <width>1281</width>
-         <height>721</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="hexViewWidgetLayout"/>
-      </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="hexViewWidget" native="true">
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>-1</x>
+        <y>-1</y>
+        <width>1281</width>
+        <height>721</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="hexViewWidgetLayout"/>
      </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="searchBarWidget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1280</width>
-     <height>50</height>
-    </rect>
-   </property>
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>1281</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayoutSearch">
-     <property name="spacing">
-      <number>8</number>
-     </property>
-     <property name="leftMargin">
-      <number>6</number>
-     </property>
-     <property name="topMargin">
-      <number>4</number>
-     </property>
-     <property name="rightMargin">
-      <number>6</number>
-     </property>
-     <property name="bottomMargin">
-      <number>4</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="lblFind">
-       <property name="text">
-        <string>Find:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditFind">
-       <property name="placeholderText">
-        <string>Find text or hex...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboFindMode">
-       <item>
-        <property name="text">
-         <string>Hex</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Text</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="btnFindPrev">
-       <property name="toolTip">
-        <string>Find Previous (Shift+F3)</string>
-       </property>
-       <property name="text">
-        <string>Prev</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="btnFindNext">
-       <property name="toolTip">
-        <string>Find Next (F3)</string>
-       </property>
-       <property name="text">
-        <string>Next</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblGoto">
-       <property name="text">
-        <string>Goto:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditGoto">
-       <property name="placeholderText">
-        <string>offset (hex or dec)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="btnGoto">
-       <property name="toolTip">
-        <string>Go To Offset (Ctrl+G)</string>
-       </property>
-       <property name="text">
-        <string>Go</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

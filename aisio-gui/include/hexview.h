@@ -1,12 +1,18 @@
 #ifndef HEXVIEW_H
 #define HEXVIEW_H
 
+#include <QString>
 #include <QAbstractScrollArea>
 #include <QByteArray>
 #include <QImage>
 #include <QVector>
 #include <QModelIndex>
 
+class QLineEdit;
+class QComboBox;
+class QToolButton;
+class QWidget;
+class QTimer;
 class HexView : public QAbstractScrollArea
 {
     Q_OBJECT
@@ -24,6 +30,15 @@ public:
     qint64 currentOffset() const;
 
     const QByteArray &data() const { return m_data; }
+
+    // 設定
+    enum class FindMode { Hex, Text };
+
+    void   setFindMode(FindMode mode);
+    void   resetFindState();
+    qint64 findNext(const QString &input);
+    qint64 findPrev(const QString &input);
+    qint64 gotoOffsetFromText(const QString &text);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -55,6 +70,10 @@ private:
     int m_hexStartX    = 0;
     int m_asciiStartX  = 0;
     int m_hexCellWidth = 0;
+
+    // 閃爍
+    int m_editFlashCounter = 0;
+    int m_searchFlashCounter = 0;
 
     // HEX / ASCII 字元快取（文字）
     QString m_hexCache[256];
@@ -88,6 +107,15 @@ private:
     void undo();
     void redo();
 
+    // === Find / Search 狀態 ===
+    FindMode   m_findMode    = FindMode::Hex;
+    QByteArray m_lastPattern;
+    qint64     m_lastPos     = -1;   // 下次搜尋起點（方向決定）
+
+    // 內部搜尋 helper
+    QByteArray parseHexString(const QString& s, bool *ok) const;
+    qint64     doFindInternal(const QString &input, bool backwards);
+
     // === Internal helper ===
     void updateSelectionAfterCursorMove();
 
@@ -117,6 +145,19 @@ private:
     enum class Area { None, Hex, Ascii };
     Area lastClickArea = Area::None;
 
+    // === 浮動搜尋面板 ===
+    QWidget     *m_searchPanel   = nullptr;
+    QLineEdit   *m_findEdit      = nullptr;
+    QComboBox   *m_findModeCombo = nullptr;
+    QToolButton *m_btnFindNext   = nullptr;
+    QToolButton *m_btnFindPrev   = nullptr;
+    QLineEdit   *m_gotoEdit      = nullptr;
+    QToolButton *m_btnGoto       = nullptr;
+
+    void createSearchPanel();
+    void positionSearchPanel();
+    void setupSearchShortcuts();
+
     // 設定
     int addressChars() const { return 8; } // 8 位位址（00000000~FFFFFFFF）
 
@@ -131,6 +172,13 @@ private:
     const QImage &getLineImage(int line);    // 取得指定行的影像（必要時重畫）
     QImage renderLineToImage(int line);      // 真正畫一行內容到 QImage
 
+    // --- LineEdit flash support ---
+    QTimer *m_lineEditFlashTimer = nullptr;
+    int m_lineEditFlashCount = 0;
+    QLineEdit *m_lineEditFlashing = nullptr;
+    QString m_lineEditOriginalStyle;
+    void flashLineEditError(QLineEdit *edit);
+
     // 游標與編輯
     void moveCursorRelative(qint64 deltaBytes);
     void moveCursorLineRelative(qint64 deltaLines);
@@ -138,7 +186,11 @@ private:
     void moveCursorToLineEnd();
     bool handleHexEdit(QKeyEvent *event);
     bool handleAsciiEdit(QKeyEvent *event);
+
+    // 閃爍
     void flashError();
+    void flashEditError();
+    void flashSearchError();
 };
 
 #endif // HEXVIEW_H

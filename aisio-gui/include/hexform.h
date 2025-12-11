@@ -2,7 +2,6 @@
 #define HEXFORM_H
 
 #include "hexview.h"
-#include <QPropertyAnimation>
 #include <QWidget>
 #include <QShowEvent>
 
@@ -14,7 +13,9 @@ class HexForm : public QWidget {
     Q_OBJECT
 
 public:
-    explicit HexForm(const QByteArray &arr = QByteArray(), QWidget *parent = nullptr, bool setEdit = true);
+    explicit HexForm(const QByteArray &arr = QByteArray(),
+                     QWidget *parent = nullptr,
+                     bool setEdit = true);
     ~HexForm();
 
 protected:
@@ -23,27 +24,7 @@ protected:
 
 private:
     Ui::HexForm *ui;
-    HexView *m_hexView;
-
-    enum class FindMode { Hex, Text };
-    FindMode   m_findMode = FindMode::Hex;
-    QByteArray m_lastPattern;
-    qint64     m_lastPos = -1;  // 下次搜尋的起點
-
-    void setupShortcuts();
-    QByteArray parseHexString(const QString& s, bool *ok) const;
-    qint64 doFind(bool backwards, bool newPattern);
-    void EnabledConnect();
-    void positionSearchBar();
-
-private slots:
-    void onFindModeChanged(int index);
-    void onFindTextEdited();
-    void onFindNext();
-    void onFindPrev();
-    void onGotoOffset();
-    void focusGotoBox();
-    void toggleSearchBar(bool show);
+    HexView     *m_hexView = nullptr;
 };
 
 #endif // HEXFORM_H
