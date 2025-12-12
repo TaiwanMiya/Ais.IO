@@ -15,6 +15,7 @@
 #include <QTimer>
 #include <QRegularExpression>
 #include <QInputDialog>
+#include <QMessageBox>
 
 #include <QLineEdit>
 #include <QComboBox>
@@ -44,11 +45,6 @@ HexView::HexView(QWidget *parent)
         m_hexCache[i] = QString("%1").arg(i, 2, 16, QLatin1Char('0')).toUpper();
         m_asciiCache[i] = (i >= 0x20 && i < 0x7F) ? QChar(i) : QChar('.');
     }
-
-    new QShortcut(QKeySequence("Ctrl+Z"), this, [this](){ this->undo(); });
-    new QShortcut(QKeySequence("Ctrl+Y"), this, [this](){ this->redo(); });
-    new QShortcut(QKeySequence("Ctrl+C"), this, [this](){ this->copySelectionToClipboard(); });
-    new QShortcut(QKeySequence("Ctrl+V"), this, [this](){ this->pasteFromClipboard(); });
 
     m_errorFlashTimer = new QTimer(this);
     m_errorFlashTimer->setInterval(60);
@@ -98,6 +94,7 @@ HexView::HexView(QWidget *parent)
 
     updateMetrics();
     createSearchPanel();
+    setupEditorShortcuts();
     setupSearchShortcuts();
 }
 
@@ -187,10 +184,46 @@ qint64 HexView::clickedOffset(const QPoint &p)
     return -1;
 }
 
-void HexView::pushEdit(qint64 offset, quint8 oldByte, quint8 newByte)
+void HexView::pushEdit(Edit::Type type,
+                       qint64 offset,
+                       const QByteArray &oldData,
+                       const QByteArray &newData)
 {
-    m_undoStack.append({offset, oldByte, newByte});
+    m_undoStack.append(Edit{type, offset, oldData, newData});
     m_redoStack.clear();
+}
+
+void HexView::pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte)
+{
+    if (oldByte == newByte)
+        return;
+
+    pushEdit(Edit::Type::Replace,
+             offset,
+             QByteArray(1, char(oldByte)),
+             QByteArray(1, char(newByte)));
+}
+
+void HexView::pushInsertBytes(qint64 offset, const QByteArray &data)
+{
+    if (data.isEmpty())
+        return;
+
+    pushEdit(Edit::Type::Insert,
+             offset,
+             QByteArray(),
+             data);
+}
+
+void HexView::pushDeleteBytes(qint64 offset, const QByteArray &data)
+{
+    if (data.isEmpty())
+        return;
+
+    pushEdit(Edit::Type::Delete,
+             offset,
+             data,
+             QByteArray());
 }
 
 void HexView::undo()
@@ -201,9 +234,26 @@ void HexView::undo()
     Edit e = m_undoStack.takeLast();
     m_redoStack.append(e);
 
-    m_data[e.offset] = char(e.oldByte);
-    m_cursorOffset = e.offset;
+    switch (e.type) {
+    case Edit::Type::Replace:
+        m_data.replace(e.offset, e.newData.size(), e.oldData);
+        m_cursorOffset = e.offset;
+        break;
+    case Edit::Type::Insert:
+        m_data.remove(e.offset, e.newData.size());
+        m_cursorOffset = e.offset;
+        break;
+    case Edit::Type::Delete:
+        m_data.insert(e.offset, e.oldData);
+        m_cursorOffset = e.offset + e.oldData.size() - 1;
+        break;
+    default:
+        return;
+    }
 
+    // m_data[e.offset] = char(e.oldData);
+    // m_cursorOffset = e.offset;
+    updateScrollBars();
     invalidateAllLines();
     viewport()->update();
 }
@@ -216,9 +266,26 @@ void HexView::redo()
     Edit e = m_redoStack.takeLast();
     m_undoStack.append(e);
 
-    m_data[e.offset] = char(e.newByte);
-    m_cursorOffset = e.offset;
+    switch (e.type) {
+    case Edit::Type::Replace:
+        m_data.replace(e.offset, e.oldData.size(), e.newData);
+        m_cursorOffset = e.offset;
+        break;
+    case Edit::Type::Insert:
+        m_data.insert(e.offset, e.newData);
+        m_cursorOffset = e.offset + e.newData.size() - 1;
+        break;
+    case Edit::Type::Delete:
+        m_data.remove(e.offset, e.oldData.size());
+        m_cursorOffset = e.offset;
+        break;
+    default:
+        return;
+    }
 
+    // m_data[e.offset] = char(e.newData);
+    // m_cursorOffset = e.offset;
+    updateScrollBars();
     invalidateAllLines();
     viewport()->update();
 }
@@ -360,6 +427,39 @@ QVector<HexView::Range> HexView::allSelectionsNormalized() const
     return merged;
 }
 
+void HexView::deleteRanges(const QVector<Range> &ranges)
+{
+    if (ranges.isEmpty())
+        return;
+
+    QVector<Range> rs = ranges;
+    std::sort(rs.begin(), rs.end(),
+              [](const Range &a, const Range &b){ return a.start > b.start; });
+
+    for (const Range &r : rs) {
+        QByteArray old = m_data.mid(r.start, r.end - r.start);
+        pushDeleteBytes(r.start, old);
+        m_data.remove(r.start, r.end - r.start);
+        m_cursorOffset = r.start;
+    }
+
+    clearSelectionRange();
+    m_extraSelections.clear();
+    updateScrollBars();
+    invalidateAllLines();
+    viewport()->update();
+}
+
+void HexView::selectAll() {
+    if (m_data.isEmpty()) return;
+    m_selStart = 0;
+    m_selEnd   = m_data.size();
+    m_selAnchor = 0;
+    m_extraSelections.clear();
+    invalidateAllLines();
+    viewport()->update();
+}
+
 void HexView::copySelectionToClipboard()
 {
     bool inHexArea = (lastClickArea == Area::Hex);
@@ -445,6 +545,26 @@ void HexView::copySelectionToClipboard()
 
 void HexView::pasteFromClipboard()
 {
+    // 加入詢問
+    QMessageBox box(this);
+    box.setStyleSheet("* { background:#222222; color:#f0f0f0; }");
+    box.setWindowTitle(tr("Paste"));
+    box.setText(tr("Paste mode?"));
+    QPushButton *btnInsert = box.addButton(tr("Insert"), QMessageBox::AcceptRole);
+    QPushButton *btnOverwrite = box.addButton(tr("Overwrite"), QMessageBox::AcceptRole);
+    box.addButton(QMessageBox::Cancel);
+
+    box.exec();
+
+    if (box.clickedButton() == nullptr ||
+        box.clickedButton()->text() == tr("Cancel"))
+        return;
+
+    bool doInsert = (box.clickedButton()->text() == "Insert");
+
+    bool inHex = (lastClickArea == Area::Hex);
+    bool inAscii = (lastClickArea == Area::Ascii);
+
     if (m_data.isEmpty())
         return;
 
@@ -490,24 +610,29 @@ void HexView::pasteFromClipboard()
     if (pos < 0) pos = 0;
     if (pos >= m_data.size()) pos = m_data.size() - 1;
 
-    int maxWrite = qMin<qint64>(bytes.size(), m_data.size() - pos);
+    if (doInsert) {
+        m_data.insert(pos, bytes);
+        m_cursorOffset = pos + bytes.size() - 1;
+    } else {
+        int maxWrite = qMin<qint64>(bytes.size(), m_data.size() - pos);
 
-    for (int i = 0; i < maxWrite; ++i) {
-        qint64 off = pos + i;
-        unsigned char oldByte = static_cast<unsigned char>(m_data.at(off));
-        unsigned char newByte = static_cast<unsigned char>(bytes.at(i));
-        if (oldByte == newByte)
-            continue;
-        pushEdit(off, oldByte, newByte);
-        m_data[off] = char(newByte);
+        for (int i = 0; i < maxWrite; ++i) {
+            qint64 off = pos + i;
+            unsigned char oldByte = static_cast<unsigned char>(m_data.at(off));
+            unsigned char newByte = static_cast<unsigned char>(bytes.at(i));
+            if (oldByte == newByte)
+                continue;
+            pushReplaceByte(off, oldByte, newByte);
+            m_data[off] = char(newByte);
+        }
+
+        m_cursorOffset = qMin<qint64>(pos + maxWrite - 1, m_data.size() - 1);
     }
-
-    m_cursorOffset = qMin<qint64>(pos + maxWrite - 1, m_data.size() - 1);
 
     // 貼上後清選取
     clearSelectionRange();
     m_extraSelections.clear();
-
+    updateScrollBars();
     invalidateAllLines();
     viewport()->update();
 }
@@ -626,6 +751,14 @@ void HexView::positionSearchPanel()
 
     m_searchPanel->move(topLeft);
     m_searchPanel->raise();
+}
+
+void HexView::setupEditorShortcuts() {
+    new QShortcut(QKeySequence("Ctrl+Z"), this, [this](){ this->undo(); });
+    new QShortcut(QKeySequence("Ctrl+Y"), this, [this](){ this->redo(); });
+    new QShortcut(QKeySequence("Ctrl+C"), this, [this](){ this->copySelectionToClipboard(); });
+    new QShortcut(QKeySequence("Ctrl+V"), this, [this](){ this->pasteFromClipboard(); });
+    new QShortcut(QKeySequence("Ctrl+A"), this, [this](){ this->selectAll(); });
 }
 
 void HexView::setupSearchShortcuts()
@@ -769,6 +902,8 @@ void HexView::invalidateAllLines()
         e.valid = false;
     }
 }
+
+
 
 void HexView::loadData(const QByteArray &data)
 {
@@ -1136,7 +1271,8 @@ bool HexView::handleHexEdit(QKeyEvent *event)
     } else {
         newByte = static_cast<unsigned char>((oldByte & 0xF0) | v);
     }
-    pushEdit(m_cursorOffset, oldByte, newByte);
+
+    pushReplaceByte(m_cursorOffset, oldByte, newByte);
 
     m_data[m_cursorOffset] = char(newByte);
     highNibble = !highNibble;
@@ -1178,13 +1314,40 @@ bool HexView::handleAsciiEdit(QKeyEvent *event)
     unsigned char oldByte = static_cast<unsigned char>(m_data[m_cursorOffset]);
     unsigned char newByte = static_cast<unsigned char>(c.unicode());
 
-    pushEdit(m_cursorOffset, oldByte, newByte);
+    pushReplaceByte(m_cursorOffset, oldByte, newByte);
     m_data[m_cursorOffset] = char(newByte);
 
     invalidateAllLines();
     moveCursorRelative(1);
     viewport()->update();
     return true;
+}
+
+void HexView::moveCursorToStart() {
+    if (m_data.isEmpty()) return;
+    m_cursorOffset = 0;
+    clearSelectionRange();
+    m_extraSelections.clear();
+    ensureVisible(0);
+    invalidateAllLines();
+    viewport()->update();
+}
+
+void HexView::moveCursorToEnd() {
+    if (m_data.isEmpty()) return;
+    m_cursorOffset = m_data.size() - 1;
+    clearSelectionRange();
+    m_extraSelections.clear();
+    ensureVisible(m_cursorOffset);
+    invalidateAllLines();
+    viewport()->update();
+}
+
+bool HexView::isHexString(const QString &s) {
+    QString t = s.trimmed();
+    t.remove(' ');
+    QRegularExpression re("^[0-9A-Fa-f]+$");
+    return re.match(t).hasMatch() && (t.size() % 2 == 0);
 }
 
 void HexView::flashLineEditError(QLineEdit *edit) {
@@ -1260,10 +1423,14 @@ void HexView::keyPressEvent(QKeyEvent *event)
 
         // 依方向鍵移動 cursor
         switch (event->key()) {
-        case Qt::Key_Left:   moveCursorRelative(-1); break;
-        case Qt::Key_Right:  moveCursorRelative( 1); break;
-        case Qt::Key_Up:     moveCursorLineRelative(-1); break;
-        case Qt::Key_Down:   moveCursorLineRelative( 1); break;
+        case Qt::Key_Left:      moveCursorRelative(-1); break;
+        case Qt::Key_Right:     moveCursorRelative( 1); break;
+        case Qt::Key_Up:        moveCursorLineRelative(-1); break;
+        case Qt::Key_Down:      moveCursorLineRelative( 1); break;
+        case Qt::Key_PageUp:    moveCursorLineRelative(-verticalScrollBar()->pageStep()); break;
+        case Qt::Key_PageDown:  moveCursorLineRelative(verticalScrollBar()->pageStep()); break;
+        case Qt::Key_Home:      if (event->modifiers() & Qt::ControlModifier) moveCursorToStart(); else moveCursorToLineStart(); break;
+        case Qt::Key_End:       if (event->modifiers() & Qt::ControlModifier) moveCursorToEnd(); else moveCursorToLineEnd(); break;
         default:return; // 不處理非方向鍵
         }
 
@@ -1300,18 +1467,79 @@ void HexView::keyPressEvent(QKeyEvent *event)
         moveCursorLineRelative(verticalScrollBar()->pageStep());
         return;
     case Qt::Key_Home:
-        moveCursorToLineStart();
+        if (event->modifiers() & Qt::ControlModifier)
+            moveCursorToStart();
+        else
+            moveCursorToLineStart();
         return;
     case Qt::Key_End:
-        moveCursorToLineEnd();
+        if (event->modifiers() & Qt::ControlModifier)
+            moveCursorToEnd();
+        else
+            moveCursorToLineEnd();
         return;
     case Qt::Key_Return:
     case Qt::Key_Enter:
-        // Enter / Return 不當成 Hex / ASCII 輸入
-        // 若焦點在搜尋欄，Qt 會自己觸發 QLineEdit::returnPressed，
-        // 我們這裡直接忽略，不要再往下丟給 handleHexEdit。
         event->ignore();
         return;
+    case Qt::Key_Insert:
+        if (!m_editable)
+            return;
+        {
+            // 在目前游標位置插入 1 byte（預設 0x00）
+            qint64 pos = m_cursorOffset;
+            if (pos < 0) pos = 0;
+            if (pos > m_data.size()) pos = m_data.size();
+
+            QByteArray newData(1, 0x00);
+            pushInsertBytes(pos, newData);
+            m_data.insert(pos, newData);
+
+            // Undo：這裡可以視為「old = 無，new = 0」
+            // 若你未來想完整 undo insert，可另外做 EditType
+            updateScrollBars();
+
+            m_cursorOffset = pos;
+            clearSelectionRange();
+            m_extraSelections.clear();
+
+            invalidateAllLines();
+            viewport()->update();
+        }
+        return;
+    case Qt::Key_Backspace:
+        if (hasSelection() || !m_extraSelections.isEmpty()) {
+            deleteRanges(allSelectionsNormalized());
+            return;
+        } else {
+            if (m_cursorOffset > 0) {
+                unsigned char oldByte = m_data.at(m_cursorOffset - 1);
+                QByteArray oldData(1, oldByte);
+                pushDeleteBytes(m_cursorOffset - 1, oldData);
+                m_data.remove(m_cursorOffset - 1, 1);
+                moveCursorRelative(-1);
+                updateScrollBars();
+                invalidateAllLines();
+                viewport()->update();
+            }
+            return;
+        }
+    case Qt::Key_Delete:
+        if (hasSelection() || !m_extraSelections.isEmpty()) {
+            deleteRanges(allSelectionsNormalized());
+            return;
+        } else {
+            if (m_cursorOffset < m_data.size()) {
+                unsigned char oldByte = m_data.at(m_cursorOffset);
+                QByteArray oldData(1, oldByte);
+                pushDeleteBytes(m_cursorOffset, oldData);
+                m_data.remove(m_cursorOffset, 1);
+                updateScrollBars();
+                invalidateAllLines();
+                viewport()->update();
+            }
+            return;
+        }
     default:
         break;
     }
@@ -1574,8 +1802,8 @@ qint64 HexView::gotoOffsetFromText(const QString &t)
         value = s.toLongLong(&ok, 10);
     }
 
-    if (!ok || value < 0 || value >= m_data.size()){
-        flashLineEditError(m_findEdit);
+    if (!ok || value < 0 || value >= m_data.size()) {
+        flashLineEditError(m_gotoEdit);
         return -1;
     }
 

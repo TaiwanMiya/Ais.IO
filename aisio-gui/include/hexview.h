@@ -96,14 +96,25 @@ private:
 
     // === Undo / Redo ===
     struct Edit {
+        enum class Type {
+            Replace,   // 單 byte 改值（你原本的）
+            Insert,    // 插入 bytes
+            Delete     // 刪除 bytes
+        };
+
+        Type type;
         qint64 offset;
-        quint8 oldByte;
-        quint8 newByte;
+        QByteArray oldData;
+        QByteArray newData;
     };
     QVector<Edit> m_undoStack;
     QVector<Edit> m_redoStack;
 
-    void pushEdit(qint64 offset, quint8 oldByte, quint8 newByte);
+    // ===== Edit helpers =====
+    void pushEdit(Edit::Type type, qint64 offset, const QByteArray &oldData, const QByteArray &newData);
+    void pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte);
+    void pushInsertBytes(qint64 offset, const QByteArray &data);
+    void pushDeleteBytes(qint64 offset, const QByteArray &data);
     void undo();
     void redo();
 
@@ -137,6 +148,10 @@ private:
 
     bool byteInAnySelection(qint64 off) const;
     QVector<Range> allSelectionsNormalized() const;
+    void deleteRanges(const QVector<Range> &ranges);
+
+    // 選取
+    void selectAll();
 
     // === Clipboard support ===
     void copySelectionToClipboard();
@@ -156,6 +171,7 @@ private:
 
     void createSearchPanel();
     void positionSearchPanel();
+    void setupEditorShortcuts();
     void setupSearchShortcuts();
 
     // 設定
@@ -186,6 +202,9 @@ private:
     void moveCursorToLineEnd();
     bool handleHexEdit(QKeyEvent *event);
     bool handleAsciiEdit(QKeyEvent *event);
+    void moveCursorToStart();
+    void moveCursorToEnd();
+    bool isHexString(const QString &s);
 
     // 閃爍
     void flashError();
