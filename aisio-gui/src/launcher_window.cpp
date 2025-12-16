@@ -12,6 +12,17 @@ LauncherWindow::~LauncherWindow() {
     delete ui;   // 釋放記憶體
 }
 
+void LauncherWindow::on_hexadecimalEditorPushButton_clicked() {
+    if (!hexform) {
+        hexform = new HexForm(nullptr);
+        hexform->setWindowFlag(Qt::Window, true);
+        hexform->setAttribute(Qt::WA_DeleteOnClose);
+    }
+    hexform->showNormal();
+    hexform->raise();
+    hexform->activateWindow();
+}
+
 void LauncherWindow::on_baseEncoderPushButton_clicked() {
     if (!baseEncoderWin) {
         baseEncoderWin = new BaseEncoderWindow(nullptr);

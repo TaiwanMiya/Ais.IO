@@ -1,8 +1,6 @@
 #ifndef HEXVIEW_H
 #define HEXVIEW_H
 
-#include "chunkslite.h"
-#include "overlaymap.h"
 #include <QString>
 #include <QAbstractScrollArea>
 #include <QByteArray>
@@ -15,27 +13,23 @@ class QComboBox;
 class QToolButton;
 class QWidget;
 class QTimer;
-
 class HexView : public QAbstractScrollArea
 {
     Q_OBJECT
 public:
     explicit HexView(QWidget *parent = nullptr);
 
-    void loadDevice(QIODevice *dev);
+    void loadData(const QByteArray &data);
     void setEditable(bool editable);
 
-    // 給外部使用的 API
+    // 給 HexForm / 外部使用的查詢 API
     qint64 findBytes(const QByteArray &pattern, qint64 start, bool backwards);
     void   gotoOffset(qint64 offset);
     qint64 offsetFromIndex(const QModelIndex &idx) const;
     QModelIndex currentIndex() const;
     qint64 currentOffset() const;
-    qint64 getBytesLength() const;
-    qint64 getBaseBytesLength() const;
-    QByteArray readBytes(qint64 offset, qint64 len) const;
-    QByteArray readBaseBytes(qint64 offset, qint64 len) const;
-    int getaddressChars() { return addressChars(); }
+
+    const QByteArray &data() const { return m_data; }
 
     // 設定
     enum class FindMode { Hex, Text };
@@ -46,10 +40,6 @@ public:
     qint64 findPrev(const QString &input);
     qint64 gotoOffsetFromText(const QString &text);
 
-signals:
-    void cursorChanged(qint64 offset);
-    void dataSizeChanged(qint64 size);
-
 protected:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -58,28 +48,21 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
-    bool eventFilter(QObject *obj, QEvent *ev) override;
 
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
 private:
     // 主要資料
-    // QByteArray m_data;
-    ChunksLite *m_chunks = nullptr;
-    qint64     m_dataSize = 0;
+    QByteArray m_data;
     bool       m_editable      = true;
     qint64     m_cursorOffset  = 0;   // 游標所在 byte
     qint64     m_baseOffset    = 0;   // 顯示位址 base（目前先 0）
-    OverlayMap m_overlay;
-
-    // 刻度
-    qint64 scrollResolution() const;
 
     // 字體與度量
     int m_charWidth    = 0;
     int m_lineHeight   = 0;
-    int m_bytesPerLine = 16;          // 一行顯示幾個 byte (16)
+    int m_bytesPerLine = 16;          // 會根據視窗寬度自動調整
     int m_leftMargin   = 12;
     int m_topMargin    = 4;
 
@@ -104,7 +87,6 @@ private:
     bool   m_showCursor = true;
     int    m_errorFlashCounter = 0;
     QTimer *m_errorFlashTimer = nullptr;
-    bool   m_hexHighNibble = true;
 
     // 工具方法
     void clearSelectionRange();
@@ -120,10 +102,10 @@ private:
             Delete     // 刪除 bytes
         };
 
-        Type type;              // Replace / Insert / Delete
-        qint64 offset;          // 操作發生的位置 (before)
-        QByteArray oldData;     // undo 用
-        QByteArray newData;     // redo 用
+        Type type;
+        qint64 offset;
+        QByteArray oldData;
+        QByteArray newData;
     };
     QVector<Edit> m_undoStack;
     QVector<Edit> m_redoStack;
@@ -133,8 +115,8 @@ private:
     void pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte);
     void pushInsertBytes(qint64 offset, const QByteArray &data);
     void pushDeleteBytes(qint64 offset, const QByteArray &data);
-    void undo(); /*TODO*/
-    void redo(); /*TODO*/
+    void undo();
+    void redo();
 
     // === Find / Search 狀態 ===
     FindMode   m_findMode    = FindMode::Hex;
@@ -166,15 +148,14 @@ private:
 
     bool byteInAnySelection(qint64 off) const;
     QVector<Range> allSelectionsNormalized() const;
-    void deleteRanges(const QVector<Range> &ranges); /*TODO*/
+    void deleteRanges(const QVector<Range> &ranges);
 
     // 選取
     void selectAll();
 
     // === Clipboard support ===
-    enum class PasteMode { Insert, Overwrite };
     void copySelectionToClipboard();
-    void pasteFromClipboard(); /*TODO*/
+    void pasteFromClipboard();
 
     enum class Area { None, Hex, Ascii };
     Area lastClickArea = Area::None;
@@ -188,15 +169,14 @@ private:
     QLineEdit   *m_gotoEdit      = nullptr;
     QToolButton *m_btnGoto       = nullptr;
 
-    QPoint m_dragOffset;
-    bool   m_dragSearchPanel = false;
     void createSearchPanel();
     void positionSearchPanel();
+    void setupEditorShortcuts();
     void setupSearchShortcuts();
 
     // 設定
-    int addressChars() const; // 8 位位址（00000000~FFFFFFFF）
-    qint64 visibleLineCount() const;
+    int addressChars() const { return 8; } // 8 位位址（00000000~FFFFFFFF）
+
     void updateMetrics();                    // 更新度量 + bytesPerLine + X 座標
     void updateScrollBars();                 // 根據資料與度量更新捲軸範圍
     void recalcBytesPerLineForWidth(int viewportWidth);
@@ -216,14 +196,12 @@ private:
     void flashLineEditError(QLineEdit *edit);
 
     // 游標與編輯
-    qint64 lineFromScroll() const;
-    void scrollToLine(qint64 line);
     void moveCursorRelative(qint64 deltaBytes);
     void moveCursorLineRelative(qint64 deltaLines);
     void moveCursorToLineStart();
     void moveCursorToLineEnd();
-    bool handleHexEdit(QKeyEvent *event); /*TODO*/
-    bool handleAsciiEdit(QKeyEvent *event); /*TODO*/
+    bool handleHexEdit(QKeyEvent *event);
+    bool handleAsciiEdit(QKeyEvent *event);
     void moveCursorToStart();
     void moveCursorToEnd();
     bool isHexString(const QString &s);
@@ -232,19 +210,6 @@ private:
     void flashError();
     void flashEditError();
     void flashSearchError();
-
-    qint64 effectiveSize() const {
-        if (!m_chunks) return 0;
-        return m_overlay.size();
-    }
-
-    // 游標合法化方法
-    void clampCursorToValidRange() {
-        qint64 sz = effectiveSize();
-        if (sz <= 0) { m_cursorOffset = 0; return; }
-        if (m_cursorOffset < 0) m_cursorOffset = 0;
-        if (m_cursorOffset >= sz) m_cursorOffset = sz - 1;
-    }
 };
 
 #endif // HEXVIEW_H

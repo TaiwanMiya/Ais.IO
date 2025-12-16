@@ -85,13 +85,39 @@ QComboBox {
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="editorPage">
+       <attribute name="label">
+        <string>Editor</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="hexadecimalEditorPushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Hexadecimal Editor</string>
+          </property>
+          <property name="autoRepeat">
+           <bool>false</bool>
+          </property>
+          <property name="autoExclusive">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="basicPage">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
          <width>620</width>
-         <height>373</height>
+         <height>344</height>
         </rect>
        </property>
        <attribute name="label">
@@ -144,7 +170,7 @@ QComboBox {
          <x>0</x>
          <y>0</y>
          <width>620</width>
-         <height>373</height>
+         <height>344</height>
         </rect>
        </property>
        <attribute name="label">
@@ -197,7 +223,7 @@ QComboBox {
          <x>0</x>
          <y>0</y>
          <width>620</width>
-         <height>373</height>
+         <height>344</height>
         </rect>
        </property>
        <attribute name="label">

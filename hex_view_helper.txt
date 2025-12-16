@@ -1,14 +1,50 @@
-✔ 反選 Highlight（選 HEX → ASCII 同時高亮）
-✔ 直接跳到 Offset（Go To Address）
-✔ 記憶體監視（Process Memory Live View）
-✔ 搜尋（Find Hex / Find ASCII）
-✔ 編輯（十六進位編輯器）
-✔ 與 Memory Map（GraphicsView）連動
-✔ 選取 HEX → 自動反選 ASCII
-✔ 檔案監視
-✔ 編輯功能
+功能：
+        1. 游標與選取
+        ✔ 單一選取
+        ✔ 多段選取（Ctrl + 點擊）
+        ✔ Shift 延伸選取
+        ✔ Ctrl+A 全選
 
-1. 編輯（十六進位編輯器）
-2. 反選 Highlight（選 HEX → ASCII 同時高亮）
-3. 直接跳到 Offset（Go To Address）
-4. 搜尋（Find Hex / Find ASCII）
+        2. 快捷鍵
+        ✔ Ctrl+Home → 開頭
+        ✔ Ctrl+End → 結尾
+        ✔ Shift+Home / End
+        ✔ Shift+PageUp / PageDown
+        ✔ Ctrl+Shift+Home / End
+
+        3. 編輯
+        ✔ Hex 編輯（高 / 低 nibble）
+        ✔ ASCII 編輯
+        ✔ Backspace（刪前一 byte）
+        ✔ Delete（刪當前 byte）
+        ✔ Insert（插入 1 byte）
+
+        4. 搜尋 / 導航
+        ✔ Find / Find Next / Find Prev
+        ✔ Goto Offset
+        ✔ 搜尋 / Goto 失敗時 LineEdit 紅色閃爍
+        ✔ 搜尋成功時 Hex 區黃色高亮
+
+        5. Undo / Redo
+        ✔ Replace / Insert / Delete 皆可 undo
+
+
+類別結構：
+        ┌───────────────┐
+        │  ChunksLite   │  ← 原始檔案（只讀、不修改）
+        └───────▲───────┘
+                │ read()
+        ┌───────┴───────┐
+        │  OverlayMap   │  ← 所有修改（insert / delete / overwrite）
+        │  (piece table)│
+        └───────▲───────┘
+                │ read()
+        ┌───────┴───────┐
+        │   HexView     │  ← 游標、選取、undo/redo、UI、輸入
+        └───────────────┘
+
+
+代辦：
+	1. delete 過多好像還是會檔案變小 (大約要超過 3GB)
+	2. 按照第1點，insert 大概率也是會出現問題，畢竟他們想法、邏輯是很像的。
+	3. copy 過多好像會卡住。(HxD 會顯示記憶體不足)

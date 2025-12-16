@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>HexForm</class>
- <widget class="QWidget" name="HexForm">
+ <widget class="QMainWindow" name="HexForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,13 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Hexadecimal Editor</string>
   </property>
   <property name="styleSheet">
    <string notr="true">/* 全域字型與間距 */
 * { font-family: &quot;Microsoft JhengHei UI&quot;,&quot;Segoe UI&quot;,&quot;Noto Sans CJK TC&quot;; font-size: 12pt; }
 QMainWindow { background: #1f1f1f; }
-QLabel { color: #e8e8e8; font-weight: 600; }
+QLabel { color: #e8e8e8; font-weight: 400; }
 
 /* 控制列按鈕 */
 QPushButton {
@@ -51,8 +51,20 @@ QMenuBar {
     background-color: #333;
     color: #f0f0f0;
 }
-QMenuBar::item:selected {
+QMenuBar::item::selected {
     background-color: #444;
+}
+
+QMenu {
+    background-color: #555;
+	color:#f0f0f0;
+	selection-background-color: #444;
+}
+
+QAction {
+	background-color: #555;
+	color:#f0f0f0;
+	selection-background-color: #444;
 }
 
 QTextEdit {
@@ -99,23 +111,48 @@ QTableWidget{
 	
 }</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QWidget" name="hexViewWidget" native="true">
-     <widget class="QWidget" name="verticalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>-1</x>
-        <y>-1</y>
-        <width>1281</width>
-        <height>721</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="hexViewWidgetLayout"/>
-     </widget>
-    </widget>
-   </item>
-  </layout>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QWidget" name="hexViewWidget" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_As"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_As">
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

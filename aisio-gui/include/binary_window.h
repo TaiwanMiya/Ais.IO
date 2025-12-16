@@ -27,6 +27,7 @@ private:
     Ui::BinaryWindow *ui;
     CodeEditor *editor;
     HexView *hex;
+    // QPointer<HexForm> hexform;
     QPointer<HexForm> hexform;
     // void loadBinary(const QByteArray& data);
 };

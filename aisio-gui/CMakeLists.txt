@@ -28,11 +28,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/launcher_window.cpp
         src/binary_window.cpp
         src/base_encoder_window.cpp
-
         src/codeeditor.cpp
         src/config.cpp
         src/hexform.cpp
         src/hexview.cpp
+        src/chunkslite.cpp
+        src/overlaymap.cpp
 
         include/launcher_window.h
         include/binary_window.h
@@ -42,7 +43,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         include/config.h
         include/hexform.h
         include/hexview.h
-
+        include/chunkslite.h
+        include/overlaymap.h
 
         ui/launcher_window.ui
         ui/binary_window.ui
@@ -51,17 +53,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         resources.qrc
         ${TS_FILES}
-
-        qhexedit/chunks.cpp
-        qhexedit/color_manager.cpp
-        qhexedit/commands.cpp
-        qhexedit/qhexedit.cpp
-
-        qhexedit/chunks.h
-        qhexedit/color_manager.h
-        qhexedit/commands.h
-        qhexedit/qhexedit.h
-
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()

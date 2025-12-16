@@ -76,25 +76,25 @@ HexView::HexView(QWidget *parent)
             return;
         }
 
-        m_lineEditFlashCount--;
-
-        if (m_lineEditFlashCount < 0) {
-            m_lineEditFlashing->setProperty("flashError", false);
-            m_lineEditFlashing->style()->unpolish(m_lineEditFlashing);
-            m_lineEditFlashing->style()->polish(m_lineEditFlashing);
+        if (m_lineEditFlashCount <= 0) {
+            m_lineEditFlashing->setStyleSheet(m_lineEditOriginalStyle);
             m_lineEditFlashing = nullptr;
             m_lineEditFlashTimer->stop();
             return;
         }
 
-        bool on = (m_lineEditFlashCount % 2) == 0;
-        m_lineEditFlashing->setProperty("flashError", on);
-        m_lineEditFlashing->style()->unpolish(m_lineEditFlashing);
-        m_lineEditFlashing->style()->polish(m_lineEditFlashing);
+        if (m_lineEditFlashCount % 2 == 0) {
+            m_lineEditFlashing->setStyleSheet("QLineEdit { background:#330000; color:#ff8080; }");
+        } else {
+            m_lineEditFlashing->setStyleSheet((m_lineEditOriginalStyle));
+        }
+
+        m_lineEditFlashCount--;
     });
 
     updateMetrics();
     createSearchPanel();
+    setupEditorShortcuts();
     setupSearchShortcuts();
 }
 
@@ -116,18 +116,6 @@ void HexView::recalcBytesPerLineForWidth(int viewportWidth)
 
     m_hexStartX   = m_leftMargin + addrWidth + gapAddrHex;
     m_asciiStartX = m_hexStartX + m_bytesPerLine * m_hexCellWidth + gapHexAscii;
-}
-
-qint64 HexView::scrollResolution() const {
-    qint64 byteCount = effectiveSize();
-    qint64 totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-
-    // 小檔案：1 行 = 1 單位（手感最佳）
-    if (totalLines <= INT_MAX)
-        return totalLines;
-
-    // 大檔案：退化成比例模式
-    return 1000000;
 }
 
 // 清空選取
@@ -154,26 +142,23 @@ void HexView::setSelectionRange(qint64 start, qint64 end)
 
 qint64 HexView::clickedOffset(const QPoint &p)
 {
-    qint64 byteCount = effectiveSize();
-
-    if (!m_chunks || byteCount <= 0 || m_lineHeight <= 0)
+    if (m_data.isEmpty() || m_lineHeight <= 0)
         return -1;
 
     QFontMetrics fm(font());
     int headerHeight = fm.height();
 
-    // int vpos = verticalScrollBar()->value();
-    qint64 vpos = lineFromScroll();
+    int vpos = verticalScrollBar()->value();
 
     // Y → 行號
-    qint64 y = p.y() - headerHeight - m_topMargin;
+    int y = p.y() - headerHeight - m_topMargin;
     if (y < 0) return -1;
 
-    qint64 lineOffset = y / m_lineHeight;
-    qint64 line = vpos + lineOffset;
+    int lineOffset = y / m_lineHeight;
+    int line = vpos + lineOffset;
 
     qint64 base = qint64(line) * m_bytesPerLine;
-    if (base >= byteCount) return -1;
+    if (base >= m_data.size()) return -1;
 
     // X → HEX/ASCII 欄位
     int x = p.x();
@@ -184,16 +169,16 @@ qint64 HexView::clickedOffset(const QPoint &p)
         lastClickArea = Area::Hex;
         int col = (x - m_hexStartX) / m_hexCellWidth;
         qint64 off = base + col;
-        return (off < byteCount) ? off : byteCount - 1;
+        return (off < m_data.size()) ? off : m_data.size() - 1;
     }
 
     // ASCII 區
     if (x >= m_asciiStartX && x < m_asciiStartX + m_bytesPerLine * m_charWidth)
     {
         lastClickArea = Area::Ascii;
-        qint64 col = (x - m_asciiStartX) / m_charWidth;
+        int col = (x - m_asciiStartX) / m_charWidth;
         qint64 off = base + col;
-        return (off < byteCount) ? off : byteCount - 1;
+        return (off < m_data.size()) ? off : m_data.size() - 1;
     }
 
     return -1;
@@ -249,51 +234,27 @@ void HexView::undo()
     Edit e = m_undoStack.takeLast();
     m_redoStack.append(e);
 
-    switch (e.type){
+    switch (e.type) {
     case Edit::Type::Replace:
-        m_overlay.replace(e.offset, e.oldData, m_chunks);
+        m_data.replace(e.offset, e.newData.size(), e.oldData);
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Insert:
-        m_overlay.erase(e.offset, e.newData.size());
+        m_data.remove(e.offset, e.newData.size());
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Delete:
-        m_overlay.insert(e.offset, e.oldData);
-        m_cursorOffset = e.offset;
+        m_data.insert(e.offset, e.oldData);
+        m_cursorOffset = e.offset + e.oldData.size() - 1;
         break;
     default:
         return;
     }
 
-    // 讓游標一定出現在畫面中
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-    ensureVisible(m_cursorOffset);
-
-    // 重置半位編輯狀態（非常重要）
-    m_hexHighNibble = true;
-
-    // 游標一定顯示
-    m_showCursor = true;
-
-    // ⭐ Undo / Redo 後，統一回到 Hex 區語意
-    lastClickArea = Area::Hex;
-
-    // ⭐ 清掉任何殘留的 selection anchor
-    m_selAnchor = -1;
-    clearSelectionRange();
-    m_extraSelections.clear();
-
-    qint64 len = e.type == Edit::Type::Delete
-        ? e.oldData.size()
-        : e.newData.size();
-    m_selStart = e.offset;
-    m_selEnd   = e.offset + len;
-    m_selAnchor = e.offset;
-
-    invalidateAllLines();
+    // m_data[e.offset] = char(e.oldData);
+    // m_cursorOffset = e.offset;
     updateScrollBars();
+    invalidateAllLines();
     viewport()->update();
 }
 
@@ -305,51 +266,27 @@ void HexView::redo()
     Edit e = m_redoStack.takeLast();
     m_undoStack.append(e);
 
-    switch (e.type){
+    switch (e.type) {
     case Edit::Type::Replace:
-        m_overlay.replace(e.offset, e.newData, m_chunks);
+        m_data.replace(e.offset, e.oldData.size(), e.newData);
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Insert:
-        m_overlay.insert(e.offset, e.newData);
-        m_cursorOffset = e.offset;
+        m_data.insert(e.offset, e.newData);
+        m_cursorOffset = e.offset + e.newData.size() - 1;
         break;
     case Edit::Type::Delete:
-        m_overlay.erase(e.offset, e.oldData.size());
+        m_data.remove(e.offset, e.oldData.size());
         m_cursorOffset = e.offset;
         break;
     default:
         return;
     }
 
-    // 讓游標一定出現在畫面中
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-    ensureVisible(m_cursorOffset);
-
-    // 重置半位編輯狀態（非常重要）
-    m_hexHighNibble = true;
-
-    // 游標一定顯示
-    m_showCursor = true;
-
-    // ⭐ Undo / Redo 後，統一回到 Hex 區語意
-    lastClickArea = Area::Hex;
-
-    // ⭐ 清掉任何殘留的 selection anchor
-    m_selAnchor = -1;
-    clearSelectionRange();
-    m_extraSelections.clear();
-
-    qint64 len = e.type == Edit::Type::Delete
-        ? e.oldData.size()
-        : e.newData.size();
-    m_selStart = e.offset;
-    m_selEnd   = e.offset + len;
-    m_selAnchor = e.offset;
-
-    invalidateAllLines();
+    // m_data[e.offset] = char(e.newData);
+    // m_cursorOffset = e.offset;
     updateScrollBars();
+    invalidateAllLines();
     viewport()->update();
 }
 
@@ -391,8 +328,7 @@ QByteArray HexView::parseHexString(const QString &s, bool *ok) const
 qint64 HexView::doFindInternal(const QString &input, bool backwards)
 {
     QString text = input.trimmed();
-    qint64 byteCount = effectiveSize();
-    if (text.isEmpty() || !m_chunks || byteCount <= 0)
+    if (text.isEmpty() || m_data.isEmpty())
         return -1;
 
     // 1) 依 FindMode 解析 pattern
@@ -412,26 +348,16 @@ qint64 HexView::doFindInternal(const QString &input, bool backwards)
     bool newPattern = m_lastPattern.isEmpty() || (pattern != m_lastPattern);
 
     qint64 start = 0;
-    auto clampStart = [&](qint64 v) -> qint64 {
-        qint64 byteCount = effectiveSize();
-        if (byteCount <= 0) return 0;
-        if (v < 0) return 0;
-        if (v >= byteCount) return byteCount - 1;
-        return v;
-    };
-
     if (!newPattern && m_lastPos >= 0) {
         // 延續同一個 pattern 的搜尋
         start = backwards ? (m_lastPos - 1) : m_lastPos;
         if (start < 0) start = 0;
-        start = clampStart(start);
     } else {
         // 新 pattern：以目前游標 / 選取為基準
         if (hasSelection())
             start = backwards ? m_selStart : m_selEnd;
         else
             start = m_cursorOffset;
-        start = clampStart(start);
     }
 
     // 3) 真正執行搜尋（這裡呼叫你原本的 findBytes）
@@ -439,35 +365,6 @@ qint64 HexView::doFindInternal(const QString &input, bool backwards)
     if (pos >= 0) {
         m_lastPattern = pattern;
         m_lastPos     = pos + (backwards ? 0 : pattern.size());
-    }
-
-    if (pos >= 0) {
-        // ⭐ 移動游標
-        m_cursorOffset = pos;
-
-        // ⭐ 設定 selection（讓使用者「看到」找到的東西）
-        m_selAnchor = pos;
-        m_selStart  = pos;
-        m_selEnd    = pos + pattern.size();
-
-        // ⭐ 搜尋成功 → 黃色閃爍整個選取
-        m_searchFlashCounter = 3;
-        m_errorFlashTimer->start();
-
-        emit cursorChanged(m_cursorOffset);
-
-        // ⭐ 確保畫面捲動到該位置
-        ensureVisible(m_cursorOffset);
-
-        // ⭐ 重設 nibble 狀態（避免編輯時怪怪的）
-        m_hexHighNibble = true;
-
-        // ⭐ 記錄 last find position（給 findNext / findPrev 用）
-        m_extraSelections.clear();
-
-        // ⭐ 重畫
-        invalidateAllLines();
-        viewport()->update();
     }
 
     return pos;
@@ -532,30 +429,19 @@ QVector<HexView::Range> HexView::allSelectionsNormalized() const
 
 void HexView::deleteRanges(const QVector<Range> &ranges)
 {
+    if (ranges.isEmpty())
+        return;
+
     QVector<Range> rs = ranges;
     std::sort(rs.begin(), rs.end(),
-              [](auto &a, auto &b){ return a.start > b.start; });
+              [](const Range &a, const Range &b){ return a.start > b.start; });
 
-    for (auto &r : rs) {
-        QByteArray old = m_overlay.read(r.start, r.end - r.start, m_chunks);
+    for (const Range &r : rs) {
+        QByteArray old = m_data.mid(r.start, r.end - r.start);
         pushDeleteBytes(r.start, old);
-        m_overlay.erase(r.start, r.end - r.start);
+        m_data.remove(r.start, r.end - r.start);
+        m_cursorOffset = r.start;
     }
-
-    // ⭐ 刪除後游標應該回到第一個被刪的位置
-    if (!rs.isEmpty()) {
-        qint64 newPos = rs.last().start;
-        qint64 size = effectiveSize();
-        if (newPos >= size)
-            newPos = size > 0 ? size - 1 : 0;
-
-        m_cursorOffset = newPos;
-        clampCursorToValidRange();
-        ensureVisible(m_cursorOffset);
-    }
-
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
 
     clearSelectionRange();
     m_extraSelections.clear();
@@ -565,10 +451,9 @@ void HexView::deleteRanges(const QVector<Range> &ranges)
 }
 
 void HexView::selectAll() {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0) return;
+    if (m_data.isEmpty()) return;
     m_selStart = 0;
-    m_selEnd   = byteCount;
+    m_selEnd   = m_data.size();
     m_selAnchor = 0;
     m_extraSelections.clear();
     invalidateAllLines();
@@ -579,21 +464,18 @@ void HexView::copySelectionToClipboard()
 {
     bool inHexArea = (lastClickArea == Area::Hex);
     bool inAsciiArea = (lastClickArea == Area::Ascii);
-    qint64 byteCount = effectiveSize();
 
     QVector<Range> ranges = allSelectionsNormalized();
-    if (ranges.isEmpty() || !m_chunks || byteCount <= 0)
+    if (ranges.isEmpty() || m_data.isEmpty())
         return;
 
     QByteArray bytes;
 
     for (const auto &r : ranges) {
         qint64 s = qMax<qint64>(0, r.start);
-        qint64 e = qMin<qint64>(byteCount, r.end);
+        qint64 e = qMin<qint64>(m_data.size(), r.end);
         for (qint64 i = s; i < e; ++i) {
-            QByteArray one = m_overlay.read(i, 1, m_chunks);
-            if (!one.isEmpty())
-                bytes.append(one[0]);
+            bytes.append(m_data.at(i));
         }
     }
 
@@ -664,13 +546,12 @@ void HexView::copySelectionToClipboard()
 void HexView::pasteFromClipboard()
 {
     // 加入詢問
-    PasteMode mode = PasteMode::Insert;
     QMessageBox box(this);
     box.setStyleSheet("* { background:#222222; color:#f0f0f0; }");
     box.setWindowTitle(tr("Paste"));
     box.setText(tr("Paste mode?"));
-    box.addButton(tr("Insert"), QMessageBox::AcceptRole);
-    box.addButton(tr("Overwrite"), QMessageBox::AcceptRole);
+    QPushButton *btnInsert = box.addButton(tr("Insert"), QMessageBox::AcceptRole);
+    QPushButton *btnOverwrite = box.addButton(tr("Overwrite"), QMessageBox::AcceptRole);
     box.addButton(QMessageBox::Cancel);
 
     box.exec();
@@ -678,48 +559,79 @@ void HexView::pasteFromClipboard()
     if (box.clickedButton() == nullptr ||
         box.clickedButton()->text() == tr("Cancel"))
         return;
-    if (box.clickedButton()->text() == tr("Overwrite"))
-        mode = PasteMode::Overwrite;
-    else if (box.clickedButton()->text() != tr("Insert"))
+
+    bool doInsert = (box.clickedButton()->text() == "Insert");
+
+    bool inHex = (lastClickArea == Area::Hex);
+    bool inAscii = (lastClickArea == Area::Ascii);
+
+    if (m_data.isEmpty())
         return;
 
-    if (!m_editable || !m_chunks)
+    const QClipboard *cb = QGuiApplication::clipboard();
+    if (!cb)
         return;
 
-    QString text = QGuiApplication::clipboard()->text();
+    QString text = cb->text();
     if (text.isEmpty())
         return;
 
-    QByteArray data = parseHexString(text, nullptr);
-    if (data.isEmpty())
+    // 解析 hex：抓連續兩個 hex 字元為一個 byte
+    auto hexVal = [](QChar ch) -> int {
+        if (ch >= '0' && ch <= '9') return ch.unicode() - '0';
+        QChar up = ch.toUpper();
+        if (up >= 'A' && up <= 'F') return up.unicode() - 'A' + 10;
+        return -1;
+    };
+
+    QByteArray bytes;
+    for (int i = 0; i < text.size();) {
+        while (i < text.size() && hexVal(text.at(i)) < 0)
+            ++i;
+        if (i + 1 >= text.size())
+            break;
+
+        int v1 = hexVal(text.at(i));
+        int v2 = hexVal(text.at(i + 1));
+        if (v1 < 0 || v2 < 0) {
+            ++i;
+            continue;
+        }
+        unsigned char b = static_cast<unsigned char>((v1 << 4) | v2);
+        bytes.append(char(b));
+        i += 2;
+    }
+
+    if (bytes.isEmpty())
         return;
 
-    qint64 pos = hasSelection() ? m_selStart : m_cursorOffset;
+    // 貼上的起點：如果有主選取，就從 m_selStart 開始；否則從游標
+    qint64 pos = (m_selStart >= 0 && m_selEnd > m_selStart) ? m_selStart : m_cursorOffset;
+    if (pos < 0) pos = 0;
+    if (pos >= m_data.size()) pos = m_data.size() - 1;
 
-    if (mode == PasteMode::Insert) {
-        pushInsertBytes(pos, data);
-        m_overlay.insert(pos, data);
-        m_cursorOffset = pos + data.size();
+    if (doInsert) {
+        m_data.insert(pos, bytes);
+        m_cursorOffset = pos + bytes.size() - 1;
+    } else {
+        int maxWrite = qMin<qint64>(bytes.size(), m_data.size() - pos);
+
+        for (int i = 0; i < maxWrite; ++i) {
+            qint64 off = pos + i;
+            unsigned char oldByte = static_cast<unsigned char>(m_data.at(off));
+            unsigned char newByte = static_cast<unsigned char>(bytes.at(i));
+            if (oldByte == newByte)
+                continue;
+            pushReplaceByte(off, oldByte, newByte);
+            m_data[off] = char(newByte);
+        }
+
+        m_cursorOffset = qMin<qint64>(pos + maxWrite - 1, m_data.size() - 1);
     }
-    else { // Overwrite
-        qint64 maxWrite = qMin<qint64>(data.size(), effectiveSize() - pos);
-        QByteArray old = m_overlay.read(pos, maxWrite, m_chunks);
 
-        pushEdit(Edit::Type::Replace, pos, old, data.left(maxWrite));
-        m_overlay.replace(pos, data.left(maxWrite), m_chunks);
-        m_cursorOffset = pos + maxWrite;
-    }
-
+    // 貼上後清選取
     clearSelectionRange();
     m_extraSelections.clear();
-
-    m_selStart = pos;
-    m_selEnd   = pos + data.size();
-    m_selAnchor = m_cursorOffset;
-
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-
     updateScrollBars();
     invalidateAllLines();
     viewport()->update();
@@ -737,12 +649,10 @@ void HexView::createSearchPanel()
     m_searchPanel->setAttribute(Qt::WA_StyledBackground, true);
     m_searchPanel->setStyleSheet(
         "QWidget { border: 1px solid #666666; border-radius: 4px; }"
-        "QLineEdit[flashError=\"true\"] { background:#330000; color:#ff8080; }"
-        "QComboBox { background-color: #1e1e1e; color: #ffffff; border: 1px solid #555555; }"
+        "QLineEdit, QComboBox { background-color: #1e1e1e; color: #ffffff; border: 1px solid #555555; }"
         "QToolButton { background-color: #333333; color: #ffffff; border: 1px solid #555555; padding: 0 6px; }"
         "QToolButton:hover { background-color: #444444; }"
         );
-    m_searchPanel->installEventFilter(this);
 
     auto layout = new QHBoxLayout(m_searchPanel);
     layout->setContentsMargins(6, 4, 6, 4);
@@ -766,7 +676,6 @@ void HexView::createSearchPanel()
     // Goto offset 欄位
     m_gotoEdit = new QLineEdit(m_searchPanel);
     m_gotoEdit->setPlaceholderText(tr("Goto offset..."));
-    m_gotoEdit->setText(QString("0x"));
 
     m_btnGoto = new QToolButton(m_searchPanel);
     m_btnGoto->setText(tr("Go"));
@@ -834,16 +743,22 @@ void HexView::positionSearchPanel()
         return;
 
     // 浮在 viewport 左上角偏 8px 的位置
-    if (m_dragOffset.x() == 0 && m_dragOffset.y() == 0) {
-        QRect vpRect = viewport()->geometry();
-        const int margin = 8;
+    QRect vpRect = viewport()->geometry();
+    const int margin = 8;
 
-        QPoint topLeft = QPoint(vpRect.left() + margin,
-                                vpRect.top()  + margin);
+    QPoint topLeft = QPoint(vpRect.left() + margin,
+                            vpRect.top()  + margin);
 
-        m_searchPanel->move(topLeft);
-        m_searchPanel->raise();
-    }
+    m_searchPanel->move(topLeft);
+    m_searchPanel->raise();
+}
+
+void HexView::setupEditorShortcuts() {
+    new QShortcut(QKeySequence("Ctrl+Z"), this, [this](){ this->undo(); });
+    new QShortcut(QKeySequence("Ctrl+Y"), this, [this](){ this->redo(); });
+    new QShortcut(QKeySequence("Ctrl+C"), this, [this](){ this->copySelectionToClipboard(); });
+    new QShortcut(QKeySequence("Ctrl+V"), this, [this](){ this->pasteFromClipboard(); });
+    new QShortcut(QKeySequence("Ctrl+A"), this, [this](){ this->selectAll(); });
 }
 
 void HexView::setupSearchShortcuts()
@@ -917,30 +832,6 @@ void HexView::setupSearchShortcuts()
     }
 }
 
-// 地址長度運算 (預設8)
-int HexView::addressChars() const {
-    qint64 size = m_dataSize;
-    int digits = 1;
-    while (size > 0x10) {
-        size >>= 4;   // 每 4 bit 一個 hex digit
-        digits++;
-    }
-    return qMax(digits, 8); // 最少 8 位，向上成長
-}
-
-// 計算並顯示行數
-qint64 HexView::visibleLineCount() const
-{
-    QFontMetrics fm(font());
-    int headerHeight = fm.height();
-    if (m_lineHeight <= 0) return 1;
-
-    return qMax<qint64>(
-        1,
-        (viewport()->height() - headerHeight - m_topMargin * 2) / m_lineHeight
-        );
-}
-
 // 更新度量
 void HexView::updateMetrics()
 {
@@ -961,9 +852,8 @@ void HexView::updateScrollBars()
     int headerHeight = fm.height();
 
     int totalLines = 0;
-    qint64 byteCount = effectiveSize();
-    if (m_chunks && byteCount > 0 && m_bytesPerLine > 0) {
-        totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
+    if (!m_data.isEmpty() && m_bytesPerLine > 0) {
+        totalLines = (m_data.size() + m_bytesPerLine - 1) / m_bytesPerLine;
     }
 
     int linesPerPage = 1;
@@ -971,21 +861,10 @@ void HexView::updateScrollBars()
         linesPerPage = qMax(1, (viewport()->height() - headerHeight - m_topMargin * 2) / m_lineHeight);
     }
 
-    qint64 res = scrollResolution();
     QScrollBar *v = verticalScrollBar();
-    v->setRange(0, res);
-
-    if (res == totalLines) {
-        // 小檔：一頁 = 可見行數
-        v->setPageStep(linesPerPage);
-        v->setSingleStep(1);
-    } else {
-        // 大檔：比例模式
-        // qint64 page = double(linesPerPage) / double(totalLines * res);
-        int page = int(double(linesPerPage) / double(totalLines) * double(res));
-        v->setPageStep(qMax(1, page));
-        v->setSingleStep(qMax(1, page / 10));
-    }
+    v->setRange(0, qMax(0, totalLines - linesPerPage));
+    v->setSingleStep(1);
+    v->setPageStep(linesPerPage);
 }
 
 // 依視窗高度調整行快取容量
@@ -1024,21 +903,33 @@ void HexView::invalidateAllLines()
     }
 }
 
-void HexView::loadDevice(QIODevice *dev)
+
+
+void HexView::loadData(const QByteArray &data)
 {
-    delete m_chunks;
-    m_chunks = new ChunksLite(dev);
+    m_data = data;
+    if (m_data.isEmpty()) {
+        m_cursorOffset = 0;
+        verticalScrollBar()->setRange(0, 0);
+        for (auto &e : m_lineCache) {
+            e.line  = -1;
+            e.valid = false;
+        }
+        viewport()->update();
+        return;
+    }
 
-    m_overlay.reset(m_chunks->size());   // ⭐ 新增
-    m_dataSize = m_chunks->size();       // base size 仍可留著做顯示或 debug
+    if (m_cursorOffset < 0 || m_cursorOffset >= m_data.size())
+        m_cursorOffset = 0;
 
-    m_cursorOffset = 0;
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
     verticalScrollBar()->setValue(0);
-
-    invalidateAllLines();
     updateScrollBars();
+
+    // 清空快取，下次畫面自動重建
+    for (auto &e : m_lineCache) {
+        e.line  = -1;
+        e.valid = false;
+    }
     viewport()->update();
 }
 
@@ -1092,7 +983,7 @@ QImage HexView::renderLineToImage(int line)
     int y = m_lineHeight - 2; // baseline
 
     qint64 base = qint64(line) * m_bytesPerLine;
-    qint64 byteCount = effectiveSize();
+    int byteCount = m_data.size();
 
     // 地址欄
     QString addr = QString("%1")
@@ -1102,66 +993,58 @@ QImage HexView::renderLineToImage(int line)
     p.drawText(m_leftMargin, y, addr);
 
     // 畫 HEX + ASCII
-    QByteArray lines = m_overlay.read(base, m_bytesPerLine, m_chunks);
     for (int col = 0; col < m_bytesPerLine; ++col) {
         qint64 off = base + col;
         if (off >= byteCount)
             break;
 
-        if (col >= lines.size())
-            break;
+        unsigned char byte = static_cast<unsigned char>(m_data.at(off));
 
-        if (col < lines.size()) {
-            unsigned char byte = static_cast<unsigned char>(lines.at(col));
+        int hx = m_hexStartX   + col * m_hexCellWidth;
+        int ax = m_asciiStartX + col * m_charWidth;
 
-            int hx = m_hexStartX   + col * m_hexCellWidth;
-            int ax = m_asciiStartX + col * m_charWidth;
+        QRect hexRect(hx, 0, m_hexCellWidth, m_lineHeight);
+        QRect asciiRect(ax, 0, m_charWidth, m_lineHeight);
 
-            QRect hexRect(hx, 0, m_hexCellWidth, m_lineHeight);
-            QRect asciiRect(ax, 0, m_charWidth, m_lineHeight);
+        bool hasSel = (m_selStart >= 0 && m_selEnd > m_selStart) ||
+                      !m_extraSelections.isEmpty();
 
-            bool hasSel = (m_selStart >= 0 && m_selEnd > m_selStart) ||
-                          !m_extraSelections.isEmpty();
+        bool inSelection = byteInAnySelection(off);
 
-            bool inSelection = byteInAnySelection(off);
-
-            // 如果有選取 → 不畫游標
-            // bool isCursor = (!hasSel && m_showCursor && off == m_cursorOffset);
-            bool isCursor = (!hasSel && m_showCursor && off == m_cursorOffset);
-            bool halfCursor = isCursor && (lastClickArea == Area::Hex) && !m_hexHighNibble;
+        // 如果有選取 → 不畫游標
+        bool isCursor = (!hasSel && m_showCursor && off == m_cursorOffset);
 
 
-            // 紅色錯誤閃爍：編輯錯誤用（Hex 輸入錯字）
-            if (m_editFlashCounter > 0 && off == m_cursorOffset) {
-                p.fillRect(hexRect, QColor(255, 80, 80, 160));
-                p.fillRect(asciiRect, QColor(255, 80, 80, 160));
-                p.setPen(Qt::white);
-            }
-            // 黃色搜尋閃爍：找到的區塊（整個 selection 範圍）
-            else if (m_searchFlashCounter > 0 && inSelection) {
-                p.fillRect(hexRect, QColor(255, 200, 0, 160));
-                p.fillRect(asciiRect, QColor(255, 200, 0, 160));
-                p.setPen(Qt::black);
-            }
-            // 選取
-            else if (inSelection) {
-                p.fillRect(hexRect, QColor(100, 130, 200));
-                p.fillRect(asciiRect, QColor(100, 130, 200));
-                p.setPen(Qt::white);
-            }
-            // 游標
-            else if (isCursor) {
-                p.fillRect(hexRect, QColor(70, 100, 160));
-                p.fillRect(asciiRect, QColor(70, 100, 160));
-                p.setPen(Qt::white);
-            }
-            else {
-                p.setPen(QColor(230,230,230));
-            }
-
-            p.drawText(hexRect,   Qt::AlignHCenter  | Qt::AlignVCenter, m_hexCache[byte]);
-            p.drawText(asciiRect, Qt::AlignHCenter  | Qt::AlignVCenter, m_asciiCache[byte]);
+        // 紅色錯誤閃爍：編輯錯誤用（Hex 輸入錯字）
+        if (m_editFlashCounter > 0 && off == m_cursorOffset) {
+            p.fillRect(hexRect, QColor(255, 80, 80, 160));
+            p.fillRect(asciiRect, QColor(255, 80, 80, 160));
+            p.setPen(Qt::white);
         }
+        // 黃色搜尋閃爍：找到的區塊（整個 selection 範圍）
+        else if (m_searchFlashCounter > 0 && inSelection) {
+            p.fillRect(hexRect, QColor(255, 200, 0, 160));
+            p.fillRect(asciiRect, QColor(255, 200, 0, 160));
+            p.setPen(Qt::black);
+        }
+        // 選取
+        else if (inSelection) {
+            p.fillRect(hexRect, QColor(100, 130, 200));
+            p.fillRect(asciiRect, QColor(100, 130, 200));
+            p.setPen(Qt::white);
+        }
+        // 游標
+        else if (isCursor) {
+            p.fillRect(hexRect, QColor(70, 100, 160));
+            p.fillRect(asciiRect, QColor(70, 100, 160));
+            p.setPen(Qt::white);
+        }
+        else {
+            p.setPen(QColor(230,230,230));
+        }
+
+        p.drawText(hexRect,   Qt::AlignHCenter  | Qt::AlignVCenter, m_hexCache[byte]);
+        p.drawText(asciiRect, Qt::AlignHCenter  | Qt::AlignVCenter, m_asciiCache[byte]);
     }
 
     return img;
@@ -1190,20 +1073,18 @@ void HexView::paintEvent(QPaintEvent *event)
         p.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, label);
     }
 
-    qint64 byteCount = effectiveSize();
-
-    if (!m_chunks || byteCount <= 0 || m_lineHeight <= 0 || m_bytesPerLine <= 0)
+    if (m_data.isEmpty() || m_lineHeight <= 0 || m_bytesPerLine <= 0)
         return;
 
-    // int vpos = verticalScrollBar()->value();
-    qint64 totalLines   = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-    qint64 vpos = lineFromScroll();
+    int vpos = verticalScrollBar()->value();
 
-    qint64 linesPerPage = qMax(1, (viewport()->height() - headerHeight - m_topMargin * 2) / m_lineHeight);
-    qint64 lastLine     = qMin(vpos + visibleLineCount(), totalLines);
+    int linesPerPage = qMax(1, (viewport()->height() - headerHeight - m_topMargin * 2) / m_lineHeight);
+    int byteCount    = m_data.size();
+    int totalLines   = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
+    int lastLine     = qMin(vpos + linesPerPage, totalLines);
 
     // === 把每一行畫到 header 底下 ===
-    qint64 baseY = headerHeight + m_topMargin;
+    int baseY = headerHeight + m_topMargin;
 
     for (int line = vpos; line < lastLine; ++line) {
         int y = baseY + (line - vpos) * m_lineHeight;
@@ -1240,39 +1121,20 @@ void HexView::wheelEvent(QWheelEvent *event)
     }
 
     double steps = double(delta) / 120.0;
-    qint64 lines = -qRound(steps);  // 每格 = 1 行
+    int lines = -qRound(steps); // 滾輪往上 delta>0 → 往下捲 1 行
 
-    qint64 firstLine = lineFromScroll();
-    scrollToLine(firstLine + lines);
+    QScrollBar *v = verticalScrollBar();
+    int newVal = v->value() + lines;
+    newVal = qBound(v->minimum(), newVal, v->maximum());
+    if (newVal != v->value()) {
+        v->setValue(newVal);
+
+        // 捲動時，原則上只會有新的行出現，快取可以漸進更新
+        // 這裡我們簡單做：不清快取，但下一次 getLineImage 需要時會補
+    }
 
     event->accept();
     viewport()->update();
-}
-
-bool HexView::eventFilter(QObject *obj, QEvent *ev)
-{
-    if (obj == m_searchPanel) {
-        if (ev->type() == QEvent::MouseButtonPress) {
-            auto *e = static_cast<QMouseEvent*>(ev);
-            if (e->button() == Qt::LeftButton) {
-                m_dragSearchPanel = true;
-                m_dragOffset = e->pos();
-                return true;
-            }
-        }
-        else if (ev->type() == QEvent::MouseMove && m_dragSearchPanel) {
-            auto *e = static_cast<QMouseEvent*>(ev);
-            m_searchPanel->move(
-                m_searchPanel->pos() + e->pos() - m_dragOffset
-                );
-            return true;
-        }
-        else if (ev->type() == QEvent::MouseButtonRelease) {
-            m_dragSearchPanel = false;
-            return true;
-        }
-    }
-    return QAbstractScrollArea::eventFilter(obj, ev);
 }
 
 QSize HexView::sizeHint() const
@@ -1299,79 +1161,46 @@ QSize HexView::minimumSizeHint() const
 
 void HexView::ensureVisible(qint64 offset)
 {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0)
+    if (offset < 0 || m_data.isEmpty() || m_bytesPerLine <= 0)
         return;
 
-    qint64 line = offset / m_bytesPerLine;
-    qint64 first = lineFromScroll();
-    qint64 page  = visibleLineCount();
+    int line = int(offset / m_bytesPerLine);
+    QScrollBar *v = verticalScrollBar();
 
-    if (line < first)
-        scrollToLine(line);
-    else if (line >= first + page)
-        scrollToLine(line - page + 1);
-}
+    QFontMetrics fm(font());
+    int headerHeight = fm.height();
+    int linesPerPage = (viewport()->height() - headerHeight - m_topMargin * 2) / m_lineHeight;
+    if (linesPerPage <= 0) linesPerPage = 1;
 
-qint64 HexView::lineFromScroll() const
-{
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0 || m_bytesPerLine <= 0)
-        return 0;
+    int firstLine    = v->value();
+    int lastLine = firstLine + linesPerPage - 1;
 
-    qint64 totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-
-    int sb = verticalScrollBar()->value();
-    qint64 line = qint64(
-        double(sb) / double(scrollResolution()) * totalLines
-        );
-
-    // ⭐ 關鍵：永遠 clamp 到最後「有資料的第一行」
-    qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
-    return qBound<qint64>(0, line, maxFirstLine);
-}
-
-void HexView::scrollToLine(qint64 line)
-{
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0)
-        return;
-
-    qint64 totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-
-    qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
-    line = qBound<qint64>(0, line, maxFirstLine);
-
-    int sb = int(
-        double(line) / double(totalLines) * scrollResolution()
-        );
-
-    verticalScrollBar()->setValue(sb);
+    if (line < firstLine)
+        v->setValue(line);
+    else if (line > lastLine)
+        v->setValue(line - linesPerPage + 1);
 }
 
 void HexView::moveCursorRelative(qint64 deltaBytes)
 {
-    qint64 byteCount = effectiveSize();
-
     m_showCursor = true;
     if (!(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)) {
         clearSelectionRange();
         m_extraSelections.clear();
     }
 
-    if (!m_chunks || byteCount <= 0)
+    if (m_data.isEmpty())
         return;
 
     qint64 newOff = m_cursorOffset + deltaBytes;
     if (newOff < 0) newOff = 0;
-    if (newOff >= byteCount) newOff = byteCount - 1;
+    if (newOff >= m_data.size()) newOff = m_data.size() - 1;
 
     if (newOff == m_cursorOffset)
         return;
 
     m_cursorOffset = newOff;
     ensureVisible(m_cursorOffset);
-    emit cursorChanged(m_cursorOffset);
     // 游標位置變了，整個行快取無效化，避免殘留高亮
     invalidateAllLines();
     viewport()->update();
@@ -1384,101 +1213,119 @@ void HexView::moveCursorLineRelative(qint64 deltaLines)
 
 void HexView::moveCursorToLineStart()
 {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0)
+    if (m_data.isEmpty())
         return;
 
     qint64 line = m_cursorOffset / m_bytesPerLine;
     qint64 newOff = line * m_bytesPerLine;
-    if (newOff >= byteCount)
-        newOff = byteCount - 1;
+    if (newOff >= m_data.size())
+        newOff = m_data.size() - 1;
 
     moveCursorRelative(newOff - m_cursorOffset);
 }
 
 void HexView::moveCursorToLineEnd()
 {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0)
+    if (m_data.isEmpty())
         return;
 
     qint64 line = m_cursorOffset / m_bytesPerLine;
     qint64 newOff = line * m_bytesPerLine + (m_bytesPerLine - 1);
-    if (newOff >= byteCount)
-        newOff = byteCount - 1;
+    if (newOff >= m_data.size())
+        newOff = m_data.size() - 1;
 
     moveCursorRelative(newOff - m_cursorOffset);
 }
 
 bool HexView::handleHexEdit(QKeyEvent *event)
 {
-    if (!m_editable || !m_chunks)
+    if (!m_editable || m_data.isEmpty())
         return false;
 
-    QString t = event->text();
-    if (t.isEmpty())
+    QString txt = event->text();
+    if (txt.isEmpty())
         return false;
+    QChar c = txt.at(0);
 
-    int v = -1;
-    QChar c = t.at(0);
-    if (c.isDigit()) v = c.unicode() - '0';
-    else if (c >= 'a' && c <= 'f') v = c.unicode() - 'a' + 10;
-    else if (c >= 'A' && c <= 'F') v = c.unicode() - 'A' + 10;
+    auto hexVal = [](QChar ch) -> int {
+        if (ch >= '0' && ch <= '9') return ch.unicode() - '0';
+        if (ch >= 'a' && ch <= 'f') return ch.unicode() - 'a' + 10;
+        if (ch >= 'A' && ch <= 'F') return ch.unicode() - 'A' + 10;
+        return -1;
+    };
+
+    int v = hexVal(c);
     if (v < 0) {
-        flashEditError();
+        // ⭐ 無效 hex → 不動游標，不動 highNibble
+        flashError();
         return false;
     }
 
-    QByteArray old = m_overlay.read(m_cursorOffset, 1, m_chunks);
-    if (old.isEmpty()) return false;
+    static bool highNibble = true;
 
-    uchar oldByte = uchar(old[0]);
-    uchar newByte;
+    unsigned char oldByte = static_cast<unsigned char>(m_data.at(m_cursorOffset));
+    unsigned char newByte;
 
-    if (m_hexHighNibble)
-        newByte = (v << 4) | (oldByte & 0x0F);
-    else
-        newByte = (oldByte & 0xF0) | v;
+    if (highNibble) {
+        newByte = static_cast<unsigned char>((v << 4) | (oldByte & 0x0F));
+    } else {
+        newByte = static_cast<unsigned char>((oldByte & 0xF0) | v);
+    }
 
     pushReplaceByte(m_cursorOffset, oldByte, newByte);
-    m_overlay.replace(m_cursorOffset, QByteArray(1, char(newByte)), m_chunks);
 
-    m_hexHighNibble = !m_hexHighNibble;
-    if (m_hexHighNibble)
-        moveCursorRelative(1);
+    m_data[m_cursorOffset] = char(newByte);
+    highNibble = !highNibble;
 
+    // ⭐ 編輯後整個快取無效化，避免殘留錯誤 highlight
     invalidateAllLines();
+
+    if (highNibble) {
+        // 高位 + 低位輸入完 → 游標往下一個 byte
+        moveCursorRelative(1);
+    }
     viewport()->update();
     return true;
 }
 
 bool HexView::handleAsciiEdit(QKeyEvent *event)
 {
-    if (!m_editable || !m_chunks)
+    if (!m_editable || m_data.isEmpty())
         return false;
 
-    QString t = event->text();
-    if (t.isEmpty())
+    QString txt = event->text();
+    QChar c(0x00);
+
+    // text 可靠時使用 text
+    if (!txt.isEmpty()) {
+        c = txt.at(0);
+    } else {
+        // fallback：用 key() 推算 ASCII 字元
+        int k = event->key();
+        if (k >= 0x20 && k <= 0x7F)
+            c = QChar(k);
+    }
+
+    // still invalid?
+    if (c.unicode() < 0x20 || c.unicode() > 0x7F) {
         return false;
+    }
 
-    uchar newByte = uchar(t.at(0).unicode());
-    QByteArray old = m_overlay.read(m_cursorOffset, 1, m_chunks);
-    if (old.isEmpty()) return false;
+    unsigned char oldByte = static_cast<unsigned char>(m_data[m_cursorOffset]);
+    unsigned char newByte = static_cast<unsigned char>(c.unicode());
 
-    pushReplaceByte(m_cursorOffset, uchar(old[0]), newByte);
-    m_overlay.replace(m_cursorOffset, QByteArray(1, char(newByte)), m_chunks);
+    pushReplaceByte(m_cursorOffset, oldByte, newByte);
+    m_data[m_cursorOffset] = char(newByte);
 
-    moveCursorRelative(1);
     invalidateAllLines();
+    moveCursorRelative(1);
     viewport()->update();
     return true;
 }
 
 void HexView::moveCursorToStart() {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0) return;
+    if (m_data.isEmpty()) return;
     m_cursorOffset = 0;
-    emit cursorChanged(m_cursorOffset);
     clearSelectionRange();
     m_extraSelections.clear();
     ensureVisible(0);
@@ -1487,10 +1334,8 @@ void HexView::moveCursorToStart() {
 }
 
 void HexView::moveCursorToEnd() {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0) return;
-    m_cursorOffset = byteCount - 1;
-    emit cursorChanged(m_cursorOffset);
+    if (m_data.isEmpty()) return;
+    m_cursorOffset = m_data.size() - 1;
     clearSelectionRange();
     m_extraSelections.clear();
     ensureVisible(m_cursorOffset);
@@ -1509,7 +1354,7 @@ void HexView::flashLineEditError(QLineEdit *edit) {
     if (!edit) return;
 
     m_lineEditFlashing = edit;
-    m_lineEditFlashCount = 6; // 閃 5 次 (紅 -> 白 -> 紅 -> 白 -> 紅 -> 白)
+    m_lineEditFlashCount = 5; // 閃 5 次 (紅 -> 白 -> 紅 -> 白)
     m_lineEditOriginalStyle = edit->styleSheet();
     m_lineEditFlashTimer->start();
 }
@@ -1537,33 +1382,6 @@ void HexView::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() & (Qt::AltModifier | Qt::MetaModifier)) {
         QAbstractScrollArea::keyPressEvent(event);
         return;
-    }
-
-    if (event->modifiers() & Qt::ControlModifier) {
-        switch (event->key()) {
-        case Qt::Key_Z:
-            undo();
-            event->accept();
-            return;
-        case Qt::Key_Y:
-            redo();
-            event->accept();
-            return;
-        case Qt::Key_C:
-            copySelectionToClipboard();
-            event->accept();
-            return;
-        case Qt::Key_V:
-            pasteFromClipboard();
-            event->accept();
-            return;
-        case Qt::Key_A:
-            selectAll();
-            event->accept();
-            return;
-        default:
-            break; // 其他 Ctrl 組合讓後面照常處理
-        }
     }
 
     if (event->key() == Qt::Key_Escape) {
@@ -1609,8 +1427,8 @@ void HexView::keyPressEvent(QKeyEvent *event)
         case Qt::Key_Right:     moveCursorRelative( 1); break;
         case Qt::Key_Up:        moveCursorLineRelative(-1); break;
         case Qt::Key_Down:      moveCursorLineRelative( 1); break;
-        case Qt::Key_PageUp:    moveCursorLineRelative(-visibleLineCount()); break;
-        case Qt::Key_PageDown:  moveCursorLineRelative(visibleLineCount()); break;
+        case Qt::Key_PageUp:    moveCursorLineRelative(-verticalScrollBar()->pageStep()); break;
+        case Qt::Key_PageDown:  moveCursorLineRelative(verticalScrollBar()->pageStep()); break;
         case Qt::Key_Home:      if (event->modifiers() & Qt::ControlModifier) moveCursorToStart(); else moveCursorToLineStart(); break;
         case Qt::Key_End:       if (event->modifiers() & Qt::ControlModifier) moveCursorToEnd(); else moveCursorToLineEnd(); break;
         default:return; // 不處理非方向鍵
@@ -1643,10 +1461,10 @@ void HexView::keyPressEvent(QKeyEvent *event)
         moveCursorLineRelative(1);
         return;
     case Qt::Key_PageUp:
-        moveCursorLineRelative(-visibleLineCount());
+        moveCursorLineRelative(-verticalScrollBar()->pageStep());
         return;
     case Qt::Key_PageDown:
-        moveCursorLineRelative(visibleLineCount());
+        moveCursorLineRelative(verticalScrollBar()->pageStep());
         return;
     case Qt::Key_Home:
         if (event->modifiers() & Qt::ControlModifier)
@@ -1669,22 +1487,19 @@ void HexView::keyPressEvent(QKeyEvent *event)
             return;
         {
             // 在目前游標位置插入 1 byte（預設 0x00）
-            qint64 byteCount = effectiveSize();
             qint64 pos = m_cursorOffset;
             if (pos < 0) pos = 0;
-            if (pos > byteCount) pos = byteCount;
+            if (pos > m_data.size()) pos = m_data.size();
 
             QByteArray newData(1, 0x00);
-            m_overlay.insert(pos, newData);
             pushInsertBytes(pos, newData);
+            m_data.insert(pos, newData);
 
             // Undo：這裡可以視為「old = 無，new = 0」
             // 若你未來想完整 undo insert，可另外做 EditType
             updateScrollBars();
 
             m_cursorOffset = pos;
-            emit cursorChanged(m_cursorOffset);
-            emit dataSizeChanged(effectiveSize());
             clearSelectionRange();
             m_extraSelections.clear();
 
@@ -1698,24 +1513,11 @@ void HexView::keyPressEvent(QKeyEvent *event)
             return;
         } else {
             if (m_cursorOffset > 0) {
-                qint64 delPos = m_cursorOffset - 1;
-
-                QByteArray oldData =
-                    m_overlay.read(delPos, 1, m_chunks);
-                if (oldData.isEmpty())
-                    return;
-
-                m_overlay.erase(delPos, 1);
-                pushDeleteBytes(delPos, oldData);
-
-                emit dataSizeChanged(effectiveSize());
-
+                unsigned char oldByte = m_data.at(m_cursorOffset - 1);
+                QByteArray oldData(1, oldByte);
+                pushDeleteBytes(m_cursorOffset - 1, oldData);
+                m_data.remove(m_cursorOffset - 1, 1);
                 moveCursorRelative(-1);
-                clampCursorToValidRange();
-                ensureVisible(m_cursorOffset);
-
-                emit cursorChanged(m_cursorOffset);
-
                 updateScrollBars();
                 invalidateAllLines();
                 viewport()->update();
@@ -1727,25 +1529,11 @@ void HexView::keyPressEvent(QKeyEvent *event)
             deleteRanges(allSelectionsNormalized());
             return;
         } else {
-            qint64 byteCount = effectiveSize();
-            if (m_cursorOffset < byteCount) {
-                qint64 delPos = m_cursorOffset;
-
-                QByteArray oldData =
-                    m_overlay.read(delPos, 1, m_chunks);
-                if (oldData.isEmpty())
-                    return;
-
-                m_overlay.erase(delPos, 1);
-                pushDeleteBytes(delPos, oldData);
-
-                emit dataSizeChanged(effectiveSize());
-
-                clampCursorToValidRange();
-                ensureVisible(m_cursorOffset);
-
-                emit cursorChanged(m_cursorOffset);
-
+            if (m_cursorOffset < m_data.size()) {
+                unsigned char oldByte = m_data.at(m_cursorOffset);
+                QByteArray oldData(1, oldByte);
+                pushDeleteBytes(m_cursorOffset, oldData);
+                m_data.remove(m_cursorOffset, 1);
                 updateScrollBars();
                 invalidateAllLines();
                 viewport()->update();
@@ -1783,7 +1571,6 @@ void HexView::mousePressEvent(QMouseEvent *event)
 
     qint64 oldCursor = m_cursorOffset;
     m_cursorOffset = clickOff;
-    emit cursorChanged(m_cursorOffset);
     ensureVisible(m_cursorOffset);
     resetFindState();
 
@@ -1827,9 +1614,7 @@ void HexView::mousePressEvent(QMouseEvent *event)
     }
 
     // --- 一般左鍵：開始新的單一選取，清除所有額外選取 ---
-    m_selAnchor = -1;
     m_dragSelecting = true;
-    m_hexHighNibble = true;
     m_selAnchor = m_cursorOffset;
     m_selStart  = m_cursorOffset;
     m_selEnd    = m_cursorOffset + 1;
@@ -1839,12 +1624,13 @@ void HexView::mousePressEvent(QMouseEvent *event)
     viewport()->update();
 }
 
-void HexView::mouseMoveEvent(QMouseEvent *event) {
+void HexView::mouseMoveEvent(QMouseEvent *event)
+{
     if (!m_dragSelecting)
         return;
 
     qint64 off = clickedOffset(event->pos());
-    if (off >= 0 && off != m_selAnchor)
+    if (off >= 0)
     {
         if (off >= m_selAnchor)
             setSelectionRange(m_selAnchor, off + 1);
@@ -1856,41 +1642,68 @@ void HexView::mouseMoveEvent(QMouseEvent *event) {
     }
 }
 
-void HexView::mouseReleaseEvent(QMouseEvent *event) {
+void HexView::mouseReleaseEvent(QMouseEvent *event)
+{
     if (event->button() == Qt::LeftButton)
         m_dragSelecting = false;
 }
 
-qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backwards) {
-    qint64 size = effectiveSize();
-    if (pattern.isEmpty() || size <= 0)
+qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backwards)
+{
+    if (pattern.isEmpty() || m_data.isEmpty())
         return -1;
 
+    if (start < 0) start = 0;
+    if (start >= m_data.size()) start = m_data.size() - 1;
+
+    qint64 found = -1;
+
     if (!backwards) {
-        for (qint64 i = start; i + pattern.size() <= size; ++i) {
-            if (m_overlay.read(i, pattern.size(), m_chunks) == pattern)
-                return i;
-        }
+        int pos = m_data.indexOf(pattern, int(start));
+        if (pos >= 0)
+            found = pos;
     } else {
-        for (qint64 i = start; i >= 0; --i) {
-            if (m_overlay.read(i, pattern.size(), m_chunks) == pattern)
-                return i;
+        int pos = m_data.indexOf(pattern);
+        while (pos >= 0 && pos <= start) {
+            found = pos;
+            pos = m_data.indexOf(pattern, pos + 1);
         }
     }
-    return -1;
+
+    if (found >= 0) {
+
+        // ⭐ 設選取 = 整個 pattern 範圍
+        m_selStart = found;
+        m_selEnd   = found + pattern.size();
+        m_selAnchor = found;
+        m_extraSelections.clear();
+
+        // ⭐ 游標移到起點，並啟用 cursor（如果想）
+        m_cursorOffset = found;
+        m_showCursor = true;
+
+        // ⭐ 搜尋成功 → 黃色閃爍整個選取
+        m_searchFlashCounter = 3;
+        m_errorFlashTimer->start();
+
+        ensureVisible(found);
+
+        invalidateAllLines();
+        viewport()->update();
+    }
+
+    return found;
 }
 
-void HexView::gotoOffset(qint64 offset) {
-    qint64 byteCount = effectiveSize();
-
-    if (!m_chunks || byteCount <= 0)
+void HexView::gotoOffset(qint64 offset)
+{
+    if (m_data.isEmpty())
         return;
 
     if (offset < 0) offset = 0;
-    if (offset >= byteCount) offset = byteCount - 1;
+    if (offset >= m_data.size()) offset = m_data.size() - 1;
 
     m_cursorOffset = offset;
-    emit cursorChanged(m_cursorOffset);
 
     // ⭐ 清除所有選取
     clearSelectionRange();
@@ -1912,33 +1725,20 @@ void HexView::gotoOffset(qint64 offset) {
     viewport()->update();
 }
 
-qint64 HexView::offsetFromIndex(const QModelIndex &idx) const {
+qint64 HexView::offsetFromIndex(const QModelIndex &idx) const
+{
     Q_UNUSED(idx);
     return m_cursorOffset;
 }
 
-QModelIndex HexView::currentIndex() const {
+QModelIndex HexView::currentIndex() const
+{
     return QModelIndex();
 }
 
-qint64 HexView::currentOffset() const {
+qint64 HexView::currentOffset() const
+{
     return m_cursorOffset;
-}
-
-qint64 HexView::getBytesLength() const {
-    return m_overlay.size();
-}
-
-qint64 HexView::getBaseBytesLength() const {
-    return m_dataSize;
-}
-
-QByteArray HexView::readBytes(qint64 offset, qint64 len) const {
-    return const_cast<OverlayMap&>(m_overlay).read(offset, len, m_chunks);
-}
-
-QByteArray HexView::readBaseBytes(qint64 offset, qint64 len) const {
-    return m_chunks ? m_chunks->read(offset, len) : QByteArray();
 }
 
 void HexView::setFindMode(FindMode mode)
@@ -1964,6 +1764,9 @@ qint64 HexView::findNext(const QString &input)
         return -1;
     }
 
+    if (m_findEdit)
+        m_findEdit->setStyleSheet("");
+
     return pos;
 }
 
@@ -1976,14 +1779,16 @@ qint64 HexView::findPrev(const QString &input)
         return -1;
     }
 
+    if (m_findEdit)
+        m_findEdit->setStyleSheet("");
+
     return pos;
 }
 
 qint64 HexView::gotoOffsetFromText(const QString &t)
 {
     QString s = t.trimmed();
-    qint64 byteCount = effectiveSize();
-    if (s.isEmpty() || !m_chunks || byteCount <= 0)
+    if (s.isEmpty() || m_data.isEmpty())
         return -1;
 
     bool ok = false;
@@ -1997,10 +1802,13 @@ qint64 HexView::gotoOffsetFromText(const QString &t)
         value = s.toLongLong(&ok, 10);
     }
 
-    if (!ok || value < 0 || value >= byteCount) {
+    if (!ok || value < 0 || value >= m_data.size()) {
         flashLineEditError(m_gotoEdit);
         return -1;
     }
+
+    if (m_gotoEdit)
+        m_gotoEdit->setStyleSheet("");
 
     gotoOffset(value);  // ⭐ 你原本的 API：把 cursor & 視圖移到指定位移
     return value;

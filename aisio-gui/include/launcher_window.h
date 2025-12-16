@@ -27,6 +27,7 @@ public:
 
 
 private slots:
+    void on_hexadecimalEditorPushButton_clicked();
     void on_baseEncoderPushButton_clicked();
     void on_binaryDataPushButton_clicked();
     void on_aesPushButton_clicked();
@@ -37,6 +38,7 @@ private slots:
 
 private:
     Ui::LauncherWindow *ui;
+    QPointer<HexForm> hexform;
     QPointer<BaseEncoderWindow> baseEncoderWin;
     QPointer<BinaryWindow> binaryWin;
 };
