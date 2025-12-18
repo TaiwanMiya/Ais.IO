@@ -1,31 +1,39 @@
+版本 (v2.0)
 功能：
-        1. 游標與選取
+	1. 基本
+	✔ 開啟檔案
+	✔ 儲存檔案
+	✔ 另存檔案
+
+        2. 游標與選取
         ✔ 單一選取
         ✔ 多段選取（Ctrl + 點擊）
         ✔ Shift 延伸選取
         ✔ Ctrl+A 全選
 
-        2. 快捷鍵
+        3. 快捷鍵
         ✔ Ctrl+Home → 開頭
         ✔ Ctrl+End → 結尾
         ✔ Shift+Home / End
         ✔ Shift+PageUp / PageDown
         ✔ Ctrl+Shift+Home / End
 
-        3. 編輯
+        4. 編輯
         ✔ Hex 編輯（高 / 低 nibble）
         ✔ ASCII 編輯
-        ✔ Backspace（刪前一 byte）
-        ✔ Delete（刪當前 byte）
+        ✔ Backspace（刪前一 byte、選取刪除選取 bytes）
+        ✔ Delete（刪當前 byte、選取刪除選取 bytes）
         ✔ Insert（插入 1 byte）
+	✔ Hex 複製
+	✔ Hex 貼上（可插入、可覆蓋）
 
-        4. 搜尋 / 導航
+        5. 搜尋 / 導航
         ✔ Find / Find Next / Find Prev
         ✔ Goto Offset
         ✔ 搜尋 / Goto 失敗時 LineEdit 紅色閃爍
         ✔ 搜尋成功時 Hex 區黃色高亮
 
-        5. Undo / Redo
+        6. Undo / Redo
         ✔ Replace / Insert / Delete 皆可 undo
 
 
@@ -42,7 +50,6 @@
         ┌───────┴───────┐
         │   HexView     │  ← 游標、選取、undo/redo、UI、輸入
         └───────────────┘
-
 
 代辦：
 	1. delete 過多好像還是會檔案變小 (大約要超過 3GB)

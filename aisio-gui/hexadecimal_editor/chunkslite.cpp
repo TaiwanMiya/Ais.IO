@@ -1,4 +1,4 @@
-#include "../include/chunkslite.h"
+#include "chunkslite.h"
 
 ChunksLite::ChunksLite(QIODevice *dev)
 {

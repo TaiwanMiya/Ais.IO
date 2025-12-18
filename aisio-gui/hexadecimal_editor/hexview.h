@@ -35,6 +35,7 @@ public:
     qint64 getBaseBytesLength() const;
     QByteArray readBytes(qint64 offset, qint64 len) const;
     QByteArray readBaseBytes(qint64 offset, qint64 len) const;
+    bool saveToFile(const QString &fileName);
     int getaddressChars() { return addressChars(); }
 
     // 設定

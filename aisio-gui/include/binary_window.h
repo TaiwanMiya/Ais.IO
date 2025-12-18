@@ -2,8 +2,8 @@
 #define BINARY_WINDOW_H
 
 #include "codeeditor.h"
-#include "hexform.h"
-#include "hexview.h"
+#include "../hexadecimal_editor/hexform.h"
+#include "../hexadecimal_editor/hexview.h"
 
 #include <QMainWindow>
 #include <QPointer>

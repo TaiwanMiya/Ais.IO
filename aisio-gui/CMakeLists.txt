@@ -21,7 +21,7 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS
 set(TS_FILES aisio-gui_trv_TW.ts)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(aisio-gui
+    qt_add_executable(AisIO
         MANUAL_FINALIZATION
 
         src/main.cpp
@@ -30,10 +30,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/base_encoder_window.cpp
         src/codeeditor.cpp
         src/config.cpp
-        src/hexform.cpp
-        src/hexview.cpp
-        src/chunkslite.cpp
-        src/overlaymap.cpp
+        src/msgbox.cpp
 
         include/launcher_window.h
         include/binary_window.h
@@ -41,37 +38,48 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         include/chunked_appender.h
         include/codeeditor.h
         include/config.h
-        include/hexform.h
-        include/hexview.h
-        include/chunkslite.h
-        include/overlaymap.h
+        include/msgbox.h
 
         ui/launcher_window.ui
         ui/binary_window.ui
         ui/base_encoder_window.ui
-        ui/hexform.ui
+
+        hexadecimal_editor/hexform.h
+        hexadecimal_editor/hexview.h
+        hexadecimal_editor/chunkslite.h
+        hexadecimal_editor/overlaymap.h
+        hexadecimal_editor/hexform.cpp
+        hexadecimal_editor/hexview.cpp
+        hexadecimal_editor/chunkslite.cpp
+        hexadecimal_editor/overlaymap.cpp
+        hexadecimal_editor/hexform.ui
 
         resources.qrc
         ${TS_FILES}
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+    if (WIN32)
+        target_sources(AisIO PRIVATE
+            app.rc
+        )
+    endif()
 else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-qt_add_resources(aisio-gui "resources.qrc"
+qt_add_resources(AisIO "resources.qrc"
     PREFIX "/"
     FILES
         images/aisio-icon.png
         config/default.json
 )
-target_link_libraries(aisio-gui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui)
+target_link_libraries(AisIO PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui)
 
 # macOS/iOS 相關屬性（保留你原本設定）
 if(${QT_VERSION} VERSION_LESS 6.9.2)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.aisio-gui)
 endif()
-set_target_properties(aisio-gui PROPERTIES
+set_target_properties(AisIO PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -80,14 +88,14 @@ set_target_properties(aisio-gui PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS aisio-gui
+install(TARGETS AisIO
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(aisio-gui)
+    qt_finalize_executable(AisIO)
 endif()
 
 if(UNIX)
@@ -108,7 +116,7 @@ if(UNIX)
   target_link_libraries(aisio PUBLIC OpenSSL::SSL OpenSSL::Crypto)
 
   # 讓 GUI 連到這顆庫
-  target_link_libraries(aisio-gui PRIVATE aisio)
+  target_link_libraries(AisIO PRIVATE aisio)
 endif()
 
 # ===================================================================
@@ -119,6 +127,7 @@ endif()
 # 例：你的專案： <root>/
 #                    Ais.IO/          ← 庫
 #                    aisio-gui/       ← 這個 Qt 專案（本檔所在）
+#                    AisIO            ← 編譯名稱
 set(AISIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Ais.IO" CACHE PATH "Path to Ais.IO root")
 set(AISIO_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE PATH "Path to Ais.IO root")
 set(AISIO_BUILD_UNIX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../unix" CACHE PATH "Path to Ais.IO root")
@@ -137,10 +146,10 @@ if(NOT AISIO_USE_PREBUILT AND EXISTS "${AISIO_DIR}/CMakeLists.txt")
     # Ais.IO 在它自己的 CMake 裡的 target 名稱（請依實際情況調整）
     # 例如可能叫 aisio / aisio_core / AisIO 等等
     set(AISIO_TARGET "aisio" CACHE STRING "Ais.IO CMake target name")
-    target_link_libraries(aisio-gui PRIVATE ${AISIO_TARGET})
+    target_link_libraries(AisIO PRIVATE ${AISIO_TARGET})
 
     # 如需公開頭檔且目標未自動公開，可自行補 include（依實際結構調整）
-    target_include_directories(aisio-gui PRIVATE "${AISIO_DIR}" "${AISIO_DIR}/include")
+    target_include_directories(AisIO PRIVATE "${AISIO_DIR}" "${AISIO_DIR}/include")
 
 # 否則走「B 模式」：連預編譯好的 .lib / .dll / .so
 else()
@@ -151,7 +160,7 @@ else()
     #   ${AISIO_DIR}/lib/VC/x64/MD/     ← Windows 的 .lib / 對應 .dll 在 bin 或同層
     #   ${AISIO_DIR}/so/                ← Linux 的 .a/.so
     set(AISIO_INCLUDE_DIR "${AISIO_DIR}" CACHE PATH "Ais.IO include dir")
-    target_include_directories(aisio-gui PRIVATE "${AISIO_INCLUDE_DIR}")
+    target_include_directories(AisIO PRIVATE "${AISIO_INCLUDE_DIR}")
 
     # Windows：bin/x64/{Debug,Release}
     if (WIN32)
@@ -186,58 +195,58 @@ else()
       endif()
 
       # 頭檔（假設在 Ais.IO/include）
-      target_include_directories(aisio-gui PRIVATE "${AISIO_DIR}")
+      target_include_directories(AisIO PRIVATE "${AISIO_DIR}")
 
       # 連到你的 GUI
-      target_link_libraries(aisio-gui PRIVATE aisio)
+      target_link_libraries(AisIO PRIVATE aisio)
 
       # 執行期需要 DLL 的話，複製到輸出資料夾（只有在該組態存在時才會複製）
       # if (EXISTS "${AISIO_DLL_DEBUG}" OR EXISTS "${AISIO_DLL_RELEASE}")
-      #   add_custom_command(TARGET aisio-gui POST_BUILD
+      #   add_custom_command(TARGET AisIO POST_BUILD
       #     COMMAND "${CMAKE_COMMAND}" -E echo "Copying Ais.IO runtime DLL..."
       #     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
       #             $<$<CONFIG:Debug>:"${AISIO_DLL_DEBUG}">
-      #             $<TARGET_FILE_DIR:aisio-gui>
+      #             $<TARGET_FILE_DIR:AisIO>
       #     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
       #             $<$<CONFIG:Release>:"${AISIO_DLL_RELEASE}">
-      #             $<TARGET_FILE_DIR:aisio-gui>
+      #             $<TARGET_FILE_DIR:AisIO>
       #     COMMAND_EXPAND_LISTS
       #     VERBATIM)
       # endif()
 
       # Debug
       if (EXISTS "${AISIO_DLL_DEBUG}")
-        add_custom_command(TARGET aisio-gui POST_BUILD
+        add_custom_command(TARGET AisIO POST_BUILD
           COMMAND "${CMAKE_COMMAND}" -E echo "Copy Ais.IO Debug DLL"
           COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                   "${AISIO_DLL_DEBUG}"
-                  "$<TARGET_FILE_DIR:aisio-gui>/Ais.IO.dll"
+                  "$<TARGET_FILE_DIR:AisIO>/Ais.IO.dll"
           VERBATIM)
       endif()
 
       # Release
       if (EXISTS "${AISIO_DLL_RELEASE}")
-        add_custom_command(TARGET aisio-gui POST_BUILD
+        add_custom_command(TARGET AisIO POST_BUILD
           COMMAND "${CMAKE_COMMAND}" -E echo "Copy Ais.IO Release DLL"
           COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                   "${AISIO_DLL_RELEASE}"
-                  "$<TARGET_FILE_DIR:aisio-gui>/Ais.IO.dll"
+                  "$<TARGET_FILE_DIR:AisIO>/Ais.IO.dll"
           VERBATIM)
       endif()
 
       if (QT_VERSION_MAJOR EQUAL 6)
-        add_custom_command(TARGET aisio-gui POST_BUILD
+        add_custom_command(TARGET AisIO POST_BUILD
           COMMAND $<TARGET_FILE:Qt6::windeployqt>
                   $<IF:$<CONFIG:Debug>,--debug,--release>
                   --compiler-runtime
-                  $<TARGET_FILE:aisio-gui>
+                  $<TARGET_FILE:AisIO>
           COMMENT "Running windeployqt on aisio-gui..."
           VERBATIM)
       endif()
 
       # （選配）如果 Ais.IO 是靜態庫、而且需要 OpenSSL，建議用官方套件：
       # find_package(OpenSSL REQUIRED)
-      # target_link_libraries(aisio-gui PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+      # target_link_libraries(AisIO PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
     elseif(UNIX)
         # Linux / macOS：找 .so/.a（以 ./so 為例）
@@ -246,21 +255,21 @@ else()
         if(AISIO_SO)
             add_library(aisio SHARED IMPORTED GLOBAL)
             set_target_properties(aisio PROPERTIES IMPORTED_LOCATION "${AISIO_SO}")
-            target_link_libraries(aisio-gui PRIVATE aisio)
+            target_link_libraries(AisIO PRIVATE aisio)
         # else()
             # 或者你也可以改成靜態庫 .a
             # set(AISIO_A "${AISIO_LIB_DIR_UNIX}/libaisio.a")
             # if(EXISTS "${AISIO_A}")
             #   add_library(aisio STATIC IMPORTED GLOBAL)
             #   set_target_properties(aisio PROPERTIES IMPORTED_LOCATION "${AISIO_A}")
-            #   target_link_libraries(aisio-gui PRIVATE aisio)
+            #   target_link_libraries(AisIO PRIVATE aisio)
             # endif()
         endif()
 
         # OpenSSL（建議用系統的）
         find_package(OpenSSL QUIET)
         if(OpenSSL_FOUND)
-            target_link_libraries(aisio-gui PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+            target_link_libraries(AisIO PRIVATE OpenSSL::SSL OpenSSL::Crypto)
         endif()
     endif()
 endif()

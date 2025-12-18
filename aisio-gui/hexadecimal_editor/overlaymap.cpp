@@ -1,4 +1,4 @@
-#include "../include/overlaymap.h"
+#include "overlaymap.h"
 
 void OverlayMap::reset(qint64 baseSize)
 {

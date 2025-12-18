@@ -27,18 +27,28 @@ private slots:
     void setAddress(qint64 address);
     void setSize(qint64 address);
     void open();
+    bool save();
+    bool saveAs();
+    void dataChanged();
 
 private:
     Ui::HexForm *ui;
     HexView     *m_hexView      = nullptr;
     QStatusBar  *m_statusBar    = nullptr;
     QLabel *lbAddressName       = nullptr;
-    QLineEdit *lbAddress        = nullptr;
+    QLineEdit *lineEditAddress  = nullptr;
     QLabel *lbSizeName          = nullptr;
-    QLineEdit *lbSize           = nullptr;
+    QLineEdit *lineEditSize     = nullptr;
+
+    QString curFile;
+    bool isUntitled;
+    bool isModified;
 
     void createStatusBar();
     void createAction();
+
+    void setCurrentFile(const QString &fileName);
+    bool saveFile(const QString &fileName);
 };
 
 #endif // MAINWINDOW_H

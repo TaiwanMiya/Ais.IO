@@ -6,6 +6,7 @@
 #include <QPalette>
 #include <QLocale>
 #include <QTranslator>
+#include <QStyle>
 
 static QPalette makeDarkPalette() {
     QPalette p;
@@ -28,17 +29,24 @@ static void applyTheme(ThemeMode mode,
                        const QPalette& systemLight,
                        const QPalette& systemDarkCandidate = QPalette()) {
     auto setDark = [&]{
+        // QApplication::setPalette(makeDarkPalette());
         QApplication::setPalette(makeDarkPalette());
     };
     auto setLight = [&]{
-        QApplication::setPalette(systemLight); // 原生/淺色
+        QApplication::setPalette(systemLight);
     };
 
     switch (mode) {
-    case ThemeMode::Dark:  setDark();  break;
-    case ThemeMode::Light: setLight(); break;
+    case ThemeMode::Dark:
+        setDark();
+        break;
+    case ThemeMode::Light:
+        setLight();
+        break;
     case ThemeMode::System:
-    default: setDark();  break;
+    default:
+        QApplication::setPalette(QApplication::style()->standardPalette());
+        break;
     }
 }
 

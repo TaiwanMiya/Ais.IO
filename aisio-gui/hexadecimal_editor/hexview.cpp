@@ -1,4 +1,4 @@
-#include "../include/hexview.h"
+#include "hexview.h"
 
 #include <QPainter>
 #include <QScrollBar>
@@ -22,6 +22,7 @@
 #include <QToolButton>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QFile>
 
 HexView::HexView(QWidget *parent)
     : QAbstractScrollArea(parent)
@@ -973,7 +974,11 @@ void HexView::updateScrollBars()
 
     qint64 res = scrollResolution();
     QScrollBar *v = verticalScrollBar();
-    v->setRange(0, res);
+    // v->setRange(0, res);
+    qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
+    v->setRange(0, maxFirstLine);
+    v->setSingleStep(1);
+    v->setPageStep(visibleLineCount());
 
     if (res == totalLines) {
         // 小檔：一頁 = 可見行數
@@ -1235,15 +1240,25 @@ void HexView::wheelEvent(QWheelEvent *event)
 {
     int delta = event->angleDelta().y();
     if (delta == 0) {
-        QAbstractScrollArea::wheelEvent(event);
+        event->ignore();
         return;
     }
 
-    double steps = double(delta) / 120.0;
-    qint64 lines = -qRound(steps);  // 每格 = 1 行
+    QScrollBar *v = verticalScrollBar();
+    if (!v) {
+        event->ignore();
+        return;
+    }
 
-    qint64 firstLine = lineFromScroll();
-    scrollToLine(firstLine + lines);
+    // 每一個 notch = 1 行
+    int steps = delta / 120;
+    if (steps == 0)
+        steps = (delta > 0) ? 1 : -1;
+
+    int newValue = v->value() - steps;
+    newValue = qBound(v->minimum(), newValue, v->maximum());
+
+    v->setValue(newValue);
 
     event->accept();
     viewport()->update();
@@ -1315,38 +1330,12 @@ void HexView::ensureVisible(qint64 offset)
 
 qint64 HexView::lineFromScroll() const
 {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0 || m_bytesPerLine <= 0)
-        return 0;
-
-    qint64 totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-
-    int sb = verticalScrollBar()->value();
-    qint64 line = qint64(
-        double(sb) / double(scrollResolution()) * totalLines
-        );
-
-    // ⭐ 關鍵：永遠 clamp 到最後「有資料的第一行」
-    qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
-    return qBound<qint64>(0, line, maxFirstLine);
+    return verticalScrollBar()->value();
 }
 
 void HexView::scrollToLine(qint64 line)
 {
-    qint64 byteCount = effectiveSize();
-    if (!m_chunks || byteCount <= 0)
-        return;
-
-    qint64 totalLines = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
-
-    qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
-    line = qBound<qint64>(0, line, maxFirstLine);
-
-    int sb = int(
-        double(line) / double(totalLines) * scrollResolution()
-        );
-
-    verticalScrollBar()->setValue(sb);
+    verticalScrollBar()->setValue(line);
 }
 
 void HexView::moveCursorRelative(qint64 deltaBytes)
@@ -1939,6 +1928,43 @@ QByteArray HexView::readBytes(qint64 offset, qint64 len) const {
 
 QByteArray HexView::readBaseBytes(qint64 offset, qint64 len) const {
     return m_chunks ? m_chunks->read(offset, len) : QByteArray();
+}
+
+
+bool HexView::saveToFile(const QString &fileName) {
+    if (!m_chunks)
+        return false;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+
+    const qint64 totalSize = effectiveSize();
+    const qint64 BUF = 0x10000; // 64KB，安全又快
+
+    qint64 written = 0;
+    while (written < totalSize)
+    {
+        qint64 len = qMin<qint64>(BUF, totalSize - written);
+        QByteArray data = m_overlay.read(written, len, m_chunks);
+
+        if (data.size() != len) {
+            file.close();
+            return false;
+        }
+
+        if (file.write(data) != data.size()) {
+            file.close();
+            return false;
+        }
+
+        written += len;
+    }
+
+    file.flush();
+    file.close();
+    return true;
 }
 
 void HexView::setFindMode(FindMode mode)

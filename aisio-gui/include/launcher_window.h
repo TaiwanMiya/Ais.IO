@@ -27,6 +27,7 @@ public:
 
 
 private slots:
+    void on_textEditorPushButton_clicked();
     void on_hexadecimalEditorPushButton_clicked();
     void on_baseEncoderPushButton_clicked();
     void on_binaryDataPushButton_clicked();

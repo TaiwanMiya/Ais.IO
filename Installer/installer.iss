@@ -7,6 +7,8 @@
 #define MyAppPublisher "Ais Fran, Inc."
 #define MyAppURL "https://github.com/TaiwanMiya/Ais.IO"
 #define MyAppExeName "aisio.exe"
+#define MyAppGuiExePath "dist\AisIO.exe"
+#define MyAppGuiExeName "AisIO.exe"
 #define MyAppDll "Ais.IO.dll"
 #define MyAppLib "Ais.IO.lib"
 ; #define MyLibssl "libssl-3-x64.dll"
@@ -85,11 +87,15 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
     ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
     Flags: preservestringtype;
+    
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
 
 [Files]
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppDll}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppLib}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\dist\*"; DestDir: "{app}\dist\"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibssl}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibcrypto}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -97,8 +103,10 @@ Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppLib}"; DestDir: "
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}\{#MyAppExeName}";  IconFilename: "{app}\AisIO_64x64.ico"
+Name: "{commondesktop}\AisIO"; Filename: "{app}\{#MyAppGuiExePath}"; Tasks: desktopicon
 
 [Run]
+Filename: "{app}\{#MyAppGuiExePath}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppGuiExeName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent;
 Filename: "cmd.exe"; Parameters: "rundll32.exe user32.dll,UpdatePerUserSystemParameters\n/K aisio"; WorkingDir: "{app}"; Flags: postinstall runasoriginaluser waituntilidle;
 
 [InstallDelete]

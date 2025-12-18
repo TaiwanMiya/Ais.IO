@@ -12,6 +12,11 @@ LauncherWindow::~LauncherWindow() {
     delete ui;   // 釋放記憶體
 }
 
+void LauncherWindow::on_textEditorPushButton_clicked() {
+    QMessageBox::warning(this, tr("Wrong"), "Not yet developed, please stay tuned!");
+    return;
+}
+
 void LauncherWindow::on_hexadecimalEditorPushButton_clicked() {
     if (!hexform) {
         hexform = new HexForm(nullptr);
