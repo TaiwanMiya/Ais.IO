@@ -1,5 +1,6 @@
 #include "hexform.h"
 #include "hexview.h"
+#include "../include/hexshortcutdialog.h"
 #include "ui_hexform.h"
 
 #include <QFileDialog>
@@ -62,6 +63,7 @@ void HexForm::createAction() {
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(save()));
     connect(ui->actionSave_As, SIGNAL(triggered()), this, SLOT(saveAs()));
     connect(m_hexView, SIGNAL(dataChanged()), this, SLOT(dataChanged()));
+    connect(ui->actionShortcutKey, SIGNAL(triggered()), this, SLOT(shortcutKeyHelper()));
 }
 
 void HexForm::setCurrentFile(const QString &fileName) {
@@ -137,7 +139,7 @@ void HexForm::setSize(qint64 size) {
 }
 
 void HexForm::open() {
-    QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open"));
     if (!fileName.isEmpty()) {
         QFile *file = new QFile(fileName, this);
         m_hexView->loadDevice(file);
@@ -156,8 +158,7 @@ bool HexForm::save() {
 }
 
 bool HexForm::saveAs() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
-                                                    curFile);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile);
     if (fileName.isEmpty())
         return false;
 
@@ -167,4 +168,9 @@ bool HexForm::saveAs() {
 void HexForm::dataChanged() {
     isModified = true;
     setWindowModified(isModified);
+}
+
+void HexForm::shortcutKeyHelper() {
+    HexShortcutDialog dlg(this);
+    dlg.exec();
 }

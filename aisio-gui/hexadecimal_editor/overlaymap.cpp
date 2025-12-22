@@ -89,7 +89,9 @@ QByteArray OverlayMap::read(qint64 offset, qint64 len, ChunksLite *base)
             if (p.src == Piece::Src::Base) {
                 if (base) out += base->read(p.start + insideOff, takeLen);
             } else {
-                out += m_add.mid(int(p.start + insideOff), int(takeLen));
+                const qsizetype s = static_cast<qsizetype>(p.start + insideOff);
+                const qsizetype n = static_cast<qsizetype>(takeLen);
+                out += m_add.mid(s, n);
             }
             len -= takeLen;
             offset = takeEnd;
@@ -292,4 +294,145 @@ void OverlayMap::mergeAdjacentPieces()
     merged.push_back(cur);
 
     m_pieces.swap(merged);
+}
+
+QVector<OverlayMap::Piece> OverlayMap::eraseAndReturnPieces(qint64 offset, qint64 len)
+{
+    QVector<Piece> removed;
+    if (len <= 0 || m_pieces.isEmpty())
+        return removed;
+
+    qint64 logicalSize = size();
+    if (offset < 0) offset = 0;
+    if (offset >= logicalSize) return removed;
+    if (offset + len > logicalSize) len = logicalSize - offset;
+
+    qint64 end = offset + len;
+
+    QVector<Piece> newPieces;
+    newPieces.reserve(m_pieces.size());
+
+    qint64 pos = 0;
+
+    for (const Piece &p : m_pieces) {
+        qint64 pStart = pos;
+        qint64 pEnd   = pos + p.len;
+
+        if (pEnd <= offset || pStart >= end) {
+            // outside delete range
+            newPieces.push_back(p);
+        } else {
+            // overlap
+            qint64 cutL = qMax(pStart, offset);
+            qint64 cutR = qMin(pEnd, end);
+
+            // left keep
+            if (pStart < cutL) {
+                Piece left = p;
+                left.len = cutL - pStart;
+                newPieces.push_back(left);
+            }
+
+            // middle removed
+            qint64 insideOff = cutL - pStart;
+            qint64 cutLen = cutR - cutL;
+            if (cutLen > 0) {
+                removed.push_back(Piece{
+                    (p.src == Piece::Src::Base) ? Piece::Src::Base : Piece::Src::Add,
+                    p.start + insideOff,
+                    cutLen
+                });
+            }
+
+            // right keep
+            if (cutR < pEnd) {
+                Piece right = p;
+                right.start += (cutR - pStart);
+                right.len = pEnd - cutR;
+                newPieces.push_back(right);
+            }
+        }
+
+        pos = pEnd;
+    }
+
+    m_pieces.swap(newPieces);
+    mergeAdjacentPieces();
+    return removed;
+}
+
+void OverlayMap::insertPieces(qint64 offset, const QVector<Piece>& pieces)
+{
+    if (pieces.isEmpty())
+        return;
+
+    qint64 total = size();
+    if (offset < 0) offset = 0;
+    if (offset > total) offset = total;
+
+    // 將 public pieces 轉成 internal pieces
+    QVector<Piece> ins;
+    ins.reserve(pieces.size());
+    for (const auto &pp : pieces) {
+        Piece p;
+        p.src = (pp.src == Piece::Src::Base) ? Piece::Src::Base : Piece::Src::Add;
+        p.start = pp.start;
+        p.len   = pp.len;
+        if (p.len > 0)
+            ins.push_back(p);
+    }
+    if (ins.isEmpty())
+        return;
+
+    QVector<Piece> newPieces;
+    newPieces.reserve(m_pieces.size() + ins.size());
+
+    qint64 pos = 0;
+    bool done = false;
+
+    for (const Piece &p : m_pieces) {
+        qint64 pStart = pos;
+        qint64 pEnd   = pos + p.len;
+
+        if (!done) {
+            if (offset <= pStart) {
+                for (auto &x : ins) newPieces.push_back(x);
+                done = true;
+            }
+            else if (offset > pStart && offset < pEnd) {
+                // split current piece
+                qint64 leftLen = offset - pStart;
+                qint64 rightLen = pEnd - offset;
+
+                if (leftLen > 0) {
+                    Piece left = p;
+                    left.len = leftLen;
+                    newPieces.push_back(left);
+                }
+
+                for (auto &x : ins) newPieces.push_back(x);
+                done = true;
+
+                if (rightLen > 0) {
+                    Piece right = p;
+                    right.start += leftLen;
+                    right.len = rightLen;
+                    newPieces.push_back(right);
+                }
+
+                pos = pEnd;
+                continue;
+            }
+        }
+
+        newPieces.push_back(p);
+        pos = pEnd;
+    }
+
+    if (!done) {
+        for (auto &x : ins) newPieces.push_back(x);
+    }
+
+    m_pieces.swap(newPieces);
+    mergeAdjacentPieces();
 }

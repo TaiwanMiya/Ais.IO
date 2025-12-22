@@ -1,0 +1,40 @@
+游標與選取：
+1. 左鍵游標
+2. 左鍵按住選取
+3. 方向鍵上 游標往上
+4. 方向鍵下 游標往下
+5. 方向鍵左 游標往左
+6. 方向鍵右 游標往右
+7. PageUp 上一頁
+8. PageDown 下一頁
+9. Home 移到行首
+10. End 移到行尾
+11. Ctrl+Home 文件開頭
+12. Ctrl+End 文件結尾
+13. Shift+方向鍵上 游標往上選取
+14. Shift+方向鍵下 游標往下選取
+15. Shift+方向鍵左 游標往左選取
+16. Shift+方向鍵右 游標往右選取
+17. Shift+PageUp 選取目前位置至上一頁
+18. Shift+PageDown 選取目前位置至下一頁
+19. Shift+Home 選取目前位置至行開頭
+20. Shift+End 選取目前位置至行結尾
+21. Ctrl+Shift+Home 選取目前位置至文件開頭
+22. Ctrl+Shift+End 選取目前位置至文件結尾
+23. Ctrl+A 全選
+24. Esc 取消選取
+
+編輯：
+1. Insert 插入一個 byte (預設 0x00)
+2. Delete 刪除一個 byte (目前選取)
+3. Backspace 刪除前一個 byte (目前選取)
+4. Ctrl+C 複製
+5. Ctrl+V 覆蓋貼上、插入貼上
+6. Ctrl+Z 撤銷
+7. Ctrl+Y 重做
+
+搜索：
+1. Ctrl+F 搜尋 Hex、Ascii
+2. F3 下一個結果
+3. Shift+F3 上一個結果
+4. Ctrl+G 跳轉位址

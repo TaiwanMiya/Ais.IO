@@ -231,15 +231,22 @@ void HexView::pushInsertBytes(qint64 offset, const QByteArray &data)
              data);
 }
 
-void HexView::pushDeleteBytes(qint64 offset, const QByteArray &data)
-{
-    if (data.isEmpty())
+void HexView::pushDeletePieces(qint64 offset, const QVector<OverlayMap::Piece>& pieces, qint64 deleteLen) {
+    if (deleteLen <= 0 || pieces.isEmpty())
         return;
 
-    pushEdit(Edit::Type::Delete,
-             offset,
-             data,
-             QByteArray());
+    Edit e;
+    e.type = Edit::Type::Delete;
+    e.offset = offset;
+    e.pieces = pieces;
+    e.deleteLen = deleteLen;
+    e.beforeLen = deleteLen; // undo 後，會插回 deleteLen bytes
+    e.afterLen  = 0;         // redo 後，資料被刪掉，沒東西可選
+    e.oldData.clear();
+    e.newData.clear();
+
+    m_undoStack.append(e);
+    m_redoStack.clear();
 }
 
 void HexView::undo()
@@ -260,7 +267,8 @@ void HexView::undo()
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Delete:
-        m_overlay.insert(e.offset, e.oldData);
+        // m_overlay.insert(e.offset, e.oldData);
+        m_overlay.insertPieces(e.offset, e.pieces);
         m_cursorOffset = e.offset;
         break;
     default:
@@ -286,12 +294,24 @@ void HexView::undo()
     clearSelectionRange();
     m_extraSelections.clear();
 
-    qint64 len = e.type == Edit::Type::Delete
-        ? e.oldData.size()
-        : e.newData.size();
-    m_selStart = e.offset;
-    m_selEnd   = e.offset + len;
-    m_selAnchor = e.offset;
+    switch (e.type){
+    case Edit::Type::Replace:
+    case Edit::Type::Insert:
+        m_selStart = e.offset;
+        m_selEnd = e.offset + e.newData.size();
+        m_selAnchor = e.offset;
+        break;
+    case Edit::Type::Delete:
+        if (e.beforeLen > 0) {
+            m_selStart = e.offset;
+            m_selEnd   = e.offset + e.beforeLen;
+            m_cursorOffset = m_selEnd;
+        } else {
+            m_selStart = m_selEnd = -1;
+            m_cursorOffset = e.offset;
+        }
+        break;
+    }
 
     invalidateAllLines();
     updateScrollBars();
@@ -316,7 +336,7 @@ void HexView::redo()
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Delete:
-        m_overlay.erase(e.offset, e.oldData.size());
+        m_overlay.erase(e.offset, e.deleteLen);
         m_cursorOffset = e.offset;
         break;
     default:
@@ -342,12 +362,24 @@ void HexView::redo()
     clearSelectionRange();
     m_extraSelections.clear();
 
-    qint64 len = e.type == Edit::Type::Delete
-        ? e.oldData.size()
-        : e.newData.size();
-    m_selStart = e.offset;
-    m_selEnd   = e.offset + len;
-    m_selAnchor = e.offset;
+    switch (e.type){
+    case Edit::Type::Replace:
+    case Edit::Type::Insert:
+        m_selStart = e.offset;
+        m_selEnd = e.offset + e.newData.size();
+        m_selAnchor = e.offset;
+        break;
+    case Edit::Type::Delete:
+        if (e.beforeLen > 0) {
+            m_selStart = e.offset;
+            m_selEnd   = e.offset + e.afterLen;
+            m_cursorOffset = m_selEnd;
+        } else {
+            m_selStart = m_selEnd = -1;
+            m_cursorOffset = e.offset;
+        }
+        break;
+    }
 
     invalidateAllLines();
     updateScrollBars();
@@ -538,9 +570,8 @@ void HexView::deleteRanges(const QVector<Range> &ranges)
               [](auto &a, auto &b){ return a.start > b.start; });
 
     for (auto &r : rs) {
-        QByteArray old = m_overlay.read(r.start, r.end - r.start, m_chunks);
-        pushDeleteBytes(r.start, old);
-        m_overlay.erase(r.start, r.end - r.start);
+        auto pieces = m_overlay.eraseAndReturnPieces(r.start, r.end - r.start);
+        pushDeletePieces(r.start, pieces, r.end - r.start);
     }
 
     // ⭐ 刪除後游標應該回到第一個被刪的位置
@@ -580,11 +611,36 @@ void HexView::copySelectionToClipboard()
 {
     bool inHexArea = (lastClickArea == Area::Hex);
     bool inAsciiArea = (lastClickArea == Area::Ascii);
+    static constexpr qint64 MAX_COPY_BYTES = 0x200000; // 2 MB
     qint64 byteCount = effectiveSize();
 
     QVector<Range> ranges = allSelectionsNormalized();
     if (ranges.isEmpty() || !m_chunks || byteCount <= 0)
         return;
+
+    qint64 totalLen = 0;
+    for (const auto &r : ranges) {
+        qint64 s = qMax<qint64>(0, r.start);
+        qint64 e = qMin<qint64>(byteCount, r.end);
+        if (e > s)
+            totalLen += (e - s);
+    }
+
+    if (totalLen <= 0)
+        return;
+
+    if (totalLen > MAX_COPY_BYTES) {
+        QMessageBox box(this);
+        box.setStyleSheet("* { background:#222222; color:#f0f0f0; }");
+        box.setWindowTitle(tr("Copy failed"));
+        box.setText(tr("The selected data (%1 bytes) is too large to copy.\n\n"
+                       "Maximum allowed size is %2 bytes.")
+                        .arg(totalLen)
+                        .arg(MAX_COPY_BYTES));
+        box.setIcon(QMessageBox::Warning);
+        box.exec();
+        return;
+    }
 
     QByteArray bytes;
 
@@ -1688,18 +1744,11 @@ void HexView::keyPressEvent(QKeyEvent *event)
         } else {
             if (m_cursorOffset > 0) {
                 qint64 delPos = m_cursorOffset - 1;
-
-                QByteArray oldData =
-                    m_overlay.read(delPos, 1, m_chunks);
-                if (oldData.isEmpty())
-                    return;
-
-                m_overlay.erase(delPos, 1);
-                pushDeleteBytes(delPos, oldData);
+                deleteRanges({ { delPos, delPos + 1 } });
 
                 emit dataSizeChanged(effectiveSize());
 
-                moveCursorRelative(-1);
+                m_cursorOffset = delPos;
                 clampCursorToValidRange();
                 ensureVisible(m_cursorOffset);
 
@@ -1719,22 +1768,7 @@ void HexView::keyPressEvent(QKeyEvent *event)
             qint64 byteCount = effectiveSize();
             if (m_cursorOffset < byteCount) {
                 qint64 delPos = m_cursorOffset;
-
-                QByteArray oldData =
-                    m_overlay.read(delPos, 1, m_chunks);
-                if (oldData.isEmpty())
-                    return;
-
-                m_overlay.erase(delPos, 1);
-                pushDeleteBytes(delPos, oldData);
-
-                emit dataSizeChanged(effectiveSize());
-
-                clampCursorToValidRange();
-                ensureVisible(m_cursorOffset);
-
-                emit cursorChanged(m_cursorOffset);
-
+                deleteRanges({ { delPos, delPos + 1 } });
                 updateScrollBars();
                 invalidateAllLines();
                 viewport()->update();
@@ -1833,8 +1867,40 @@ void HexView::mouseMoveEvent(QMouseEvent *event) {
         return;
 
     qint64 off = clickedOffset(event->pos());
-    if (off >= 0 && off != m_selAnchor)
-    {
+
+    // ⭐ 若滑鼠在 viewport 外（尤其是上方），clickedOffset 會回 -1
+    //    我們要做對稱的 auto-scroll：上/下都要能捲
+    if (off < 0) {
+        QScrollBar *v = verticalScrollBar();
+        if (!v) return;
+
+        const QRect vp = viewport()->rect();
+        const int margin = 12; // 觸發自動捲動的邊界
+
+        // 往上 auto-scroll
+        if (event->pos().y() < vp.top() + margin) {
+            v->setValue(qMax(v->minimum(), v->value() - 1));
+
+            // 用「貼在 viewport 上緣」的點來重新取 offset
+            QPoint clamped(event->pos().x(), vp.top() + 1);
+            off = clickedOffset(clamped);
+        }
+        // 往下 auto-scroll
+        else if (event->pos().y() > vp.bottom() - margin) {
+            v->setValue(qMin(v->maximum(), v->value() + 1));
+
+            // 用「貼在 viewport 下緣」的點來重新取 offset
+            QPoint clamped(event->pos().x(), vp.bottom() - 1);
+            off = clickedOffset(clamped);
+        }
+        else {
+            // 在左右或其他區域外，就先不處理
+            return;
+        }
+    }
+
+    // 重新取得 offset 後，正常更新選取
+    if (off >= 0 && off != m_selAnchor) {
         if (off >= m_selAnchor)
             setSelectionRange(m_selAnchor, off + 1);
         else
@@ -1842,12 +1908,18 @@ void HexView::mouseMoveEvent(QMouseEvent *event) {
 
         m_cursorOffset = off;
         ensureVisible(m_cursorOffset);
+        viewport()->update();
     }
 }
 
 void HexView::mouseReleaseEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton) {
         m_dragSelecting = false;
+        m_mouseSelecting = false;
+        return;
+    }
+
+    QAbstractScrollArea::mouseReleaseEvent(event);
 }
 
 qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backwards) {
@@ -2009,8 +2081,10 @@ qint64 HexView::gotoOffsetFromText(const QString &t)
 {
     QString s = t.trimmed();
     qint64 byteCount = effectiveSize();
-    if (s.isEmpty() || !m_chunks || byteCount <= 0)
+    if (s.isEmpty() || !m_chunks || byteCount <= 0) {
+        flashLineEditError(m_gotoEdit);
         return -1;
+    }
 
     bool ok = false;
     qint64 value = 0;

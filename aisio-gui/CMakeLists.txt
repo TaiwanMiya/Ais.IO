@@ -28,17 +28,17 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/launcher_window.cpp
         src/binary_window.cpp
         src/base_encoder_window.cpp
-        src/codeeditor.cpp
         src/config.cpp
         src/msgbox.cpp
+        src/hexshortcutdialog.cpp
 
         include/launcher_window.h
         include/binary_window.h
         include/base_encoder_window.h
         include/chunked_appender.h
-        include/codeeditor.h
         include/config.h
         include/msgbox.h
+        include/hexshortcutdialog.h
 
         ui/launcher_window.ui
         ui/binary_window.ui
@@ -53,6 +53,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hexadecimal_editor/chunkslite.cpp
         hexadecimal_editor/overlaymap.cpp
         hexadecimal_editor/hexform.ui
+
+        text_editor/textview.cpp
+        text_editor/textview.h
 
         resources.qrc
         ${TS_FILES}

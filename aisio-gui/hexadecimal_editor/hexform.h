@@ -30,6 +30,7 @@ private slots:
     bool save();
     bool saveAs();
     void dataChanged();
+    void shortcutKeyHelper();
 
 private:
     Ui::HexForm *ui;

@@ -1,7 +1,7 @@
 #ifndef BINARY_WINDOW_H
 #define BINARY_WINDOW_H
 
-#include "codeeditor.h"
+#include "../text_editor/textview.h"
 #include "../hexadecimal_editor/hexform.h"
 #include "../hexadecimal_editor/hexview.h"
 
@@ -25,7 +25,7 @@ public:
 
 private:
     Ui::BinaryWindow *ui;
-    CodeEditor *editor;
+    TextView *editor;
     HexView *hex;
     // QPointer<HexForm> hexform;
     QPointer<HexForm> hexform;

@@ -106,6 +106,7 @@ private:
     int    m_errorFlashCounter = 0;
     QTimer *m_errorFlashTimer = nullptr;
     bool   m_hexHighNibble = true;
+    bool   m_mouseSelecting = false;
 
     // 工具方法
     void clearSelectionRange();
@@ -125,6 +126,10 @@ private:
         qint64 offset;          // 操作發生的位置 (before)
         QByteArray oldData;     // undo 用
         QByteArray newData;     // redo 用
+        QVector<OverlayMap::Piece> pieces;      // Delete 用：被刪掉的 pieces
+        qint64 deleteLen = 0;                   // Delete 用：redo 時要刪多長
+        qint64 beforeLen = 0; // undo 完後，要選取的長度
+        qint64 afterLen  = 0; // redo 完後，要選取的長度
     };
     QVector<Edit> m_undoStack;
     QVector<Edit> m_redoStack;
@@ -133,9 +138,9 @@ private:
     void pushEdit(Edit::Type type, qint64 offset, const QByteArray &oldData, const QByteArray &newData);
     void pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte);
     void pushInsertBytes(qint64 offset, const QByteArray &data);
-    void pushDeleteBytes(qint64 offset, const QByteArray &data);
-    void undo(); /*TODO*/
-    void redo(); /*TODO*/
+    void pushDeletePieces(qint64 offset, const QVector<OverlayMap::Piece>& pieces, qint64 deleteLen);
+    void undo();
+    void redo();
 
     // === Find / Search 狀態 ===
     FindMode   m_findMode    = FindMode::Hex;
@@ -167,7 +172,6 @@ private:
 
     bool byteInAnySelection(qint64 off) const;
     QVector<Range> allSelectionsNormalized() const;
-    void deleteRanges(const QVector<Range> &ranges); /*TODO*/
 
     // 選取
     void selectAll();
@@ -175,10 +179,13 @@ private:
     // === Clipboard support ===
     enum class PasteMode { Insert, Overwrite };
     void copySelectionToClipboard();
-    void pasteFromClipboard(); /*TODO*/
+    void pasteFromClipboard();
 
     enum class Area { None, Hex, Ascii };
     Area lastClickArea = Area::None;
+
+    // 刪除
+    void deleteRanges(const QVector<Range> &ranges);
 
     // === 浮動搜尋面板 ===
     QWidget     *m_searchPanel   = nullptr;
@@ -223,8 +230,8 @@ private:
     void moveCursorLineRelative(qint64 deltaLines);
     void moveCursorToLineStart();
     void moveCursorToLineEnd();
-    bool handleHexEdit(QKeyEvent *event); /*TODO*/
-    bool handleAsciiEdit(QKeyEvent *event); /*TODO*/
+    bool handleHexEdit(QKeyEvent *event);
+    bool handleAsciiEdit(QKeyEvent *event);
     void moveCursorToStart();
     void moveCursorToEnd();
     bool isHexString(const QString &s);
