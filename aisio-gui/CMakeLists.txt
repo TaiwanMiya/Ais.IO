@@ -47,6 +47,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hexadecimal_editor/hexform.h
         hexadecimal_editor/hexview.h
         hexadecimal_editor/chunkslite.h
+        hexadecimal_editor/interpretvaluedelegate.h
         hexadecimal_editor/overlaymap.h
         hexadecimal_editor/hexform.cpp
         hexadecimal_editor/hexview.cpp
@@ -96,6 +97,13 @@ install(TARGETS AisIO
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# Capstone 本地路徑（依你實際位置調整）
+set(CAPSTONE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../capstone")
+set(PROJECT_VERSION 5.0.1)
+add_subdirectory(${CAPSTONE_DIR} ${CMAKE_BINARY_DIR}/capstone-build)
+
+target_link_libraries(AisIO PRIVATE capstone)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(AisIO)

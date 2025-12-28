@@ -53,15 +53,15 @@ QHeaderView::section {
     font-weight: 500;
 }
 
-/* 滑過列 */
-QTableView::item:hover {
-    background-color: #2a2f39;
-}
+// /* 滑過列 */
+// QTableView::item:hover {
+//     background-color: #2a2f39;
+// }
 
-/* 選取列 */
-QTableView::item:selected {
-    background-color: #394359;
-}
+// /* 選取列 */
+// QTableView::item:selected {
+//     background-color: #394359;
+// }
 
 /* 捲軸（簡約版） */
 QScrollBar:vertical {
@@ -98,8 +98,9 @@ QScrollBar::handle:vertical:hover {
     tableView = new QTableView(this);
     tableView->setModel(proxyModel);
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView->setSelectionMode(QAbstractItemView::NoSelection);
     tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tableView->setFocusPolicy(Qt::NoFocus);
     tableView->verticalHeader()->hide();
     tableView->horizontalHeader()->setStretchLastSection(true);
     tableView->setAlternatingRowColors(false);
@@ -129,6 +130,17 @@ QScrollBar::handle:vertical:hover {
 
 void HexShortcutDialog::populateData()
 {
+    auto addCategory = [&](const QString &title) {
+        auto *item = new QStandardItem(title);
+        QFont f = item->font();
+        f.setBold(true);
+        item->setFont(f);
+        item->setFlags(Qt::ItemIsEnabled); // ❗不可選
+        item->setForeground(QBrush(QColor("#a0a0a0")));
+
+        model->appendRow({ item, new QStandardItem("") });
+    };
+
     auto addRow = [&](const QString &action, const QString &key) {
         QList<QStandardItem*> row;
         row << new QStandardItem(action)
@@ -137,6 +149,7 @@ void HexShortcutDialog::populateData()
     };
 
     // 🧭 游標與選取
+    addCategory(tr("🧭 Cursor & Selection"));
     addRow("Cursor selection", "Left mouse button");
     addRow("Multiple selection of cursors", "Hold down the left mouse button");
     addRow("Cursor up", "↑");
@@ -163,6 +176,7 @@ void HexShortcutDialog::populateData()
     addRow("Cancel selection", "Esc");
 
     // ✏️ 編輯
+    addCategory(tr("✏️ Editing"));
     addRow("Insert a byte (0x00)", "Insert");
     addRow("Delete selected byte", "Delete");
     addRow("Delete the previous byte", "Backspace");
@@ -172,8 +186,23 @@ void HexShortcutDialog::populateData()
     addRow("Redo", "Ctrl + Y");
 
     // 🔍 搜索
+    addCategory(tr("🔍 Search"));
     addRow("Search Hex / ASCII", "Ctrl + F");
     addRow("Next search result", "F3");
     addRow("Previous search result", "Shift + F3");
     addRow("Goto offset", "Ctrl + G");
+
+    // 🔎 分析
+    addCategory(tr("🔎 Interpret"));
+    addRow("Show / Hide Interpret", "Ctrl + D");
+
+    // 📃 檔案
+    addCategory(tr("📃 File"));
+    addRow("Create file", "Ctrl + N");
+    addRow("Open file", "Ctrl + O");
+    addRow("Save file", "Ctrl + S");
+    addRow("Save as file", "Ctrl + Shift + S");
+    addRow("Close file", "Ctrl + W");
+    addRow("Next tab", "Ctrl + Tab");
+    addRow("Previous tab", "Ctrl + Shift + Tab");
 }

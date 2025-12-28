@@ -25,7 +25,7 @@ public:
     QByteArray read(qint64 offset, qint64 len, ChunksLite *base);                           // 依 pieces 拼出邏輯資料
     void insert(qint64 offset, const QByteArray &data);                                     // 插入一段 Add pieces
     void erase(qint64 offset, qint64 len);                                                  // 移除範圍內的 pieces
-    void replace(qint64 offset, const QByteArray &data, ChunksLite *base);                // 不改 size，只改內容
+    void replace(qint64 offset, const QByteArray &data, ChunksLite *base);                  // 不改 size，只改內容
     QVector<Piece> eraseAndReturnPieces(qint64 offset, qint64 len);
     void insertPieces(qint64 offset, const QVector<Piece>& pieces);
 

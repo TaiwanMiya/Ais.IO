@@ -9,12 +9,17 @@
 #include <QImage>
 #include <QVector>
 #include <QModelIndex>
+#include <QComboBox>
+#include <QToolButton>
+#include <QLineEdit>
+#include <QTableWidgetItem>
 
 class QLineEdit;
-class QComboBox;
 class QToolButton;
 class QWidget;
 class QTimer;
+class QTableWidget;
+class QComboBox;
 
 class HexView : public QAbstractScrollArea
 {
@@ -50,6 +55,7 @@ public:
 signals:
     void cursorChanged(qint64 offset);
     void dataSizeChanged(qint64 size);
+    void modifiedChanged(bool modified);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -66,7 +72,6 @@ protected:
 
 private:
     // 主要資料
-    // QByteArray m_data;
     ChunksLite *m_chunks = nullptr;
     qint64     m_dataSize = 0;
     bool       m_editable      = true;
@@ -202,6 +207,27 @@ private:
     void positionSearchPanel();
     void setupSearchShortcuts();
 
+    // === Interpret As 面板 ===
+    QWidget      *m_interpretPanel     = nullptr;
+    QTableWidget *m_interpretTable     = nullptr;
+    QToolButton  *m_btnInterpretClose  = nullptr;
+
+    // Endian 切換
+    QComboBox    *m_endianCombo        = nullptr;
+    bool          m_interpretBigEndian = false;
+
+    QPoint m_dragInterpretOffset;
+    bool   m_dragInterpretPanel = false;
+    bool   m_interpretUpdating = false;
+
+    void createInterpretPanel();
+    void positionInterpretPanel();
+    void setupInterpretShortcuts();
+    void updateInterpretPanel();
+    void interpretApplyBytes(qint64 pos, int oldLen, const QByteArray& newBytes);
+    QString interpretRawText(QTableWidgetItem* it) const;
+    QByteArray bytesForInterpret(int maxLen) const;
+
     // 設定
     int addressChars() const; // 8 位位址（00000000~FFFFFFFF）
     qint64 visibleLineCount() const;
@@ -253,6 +279,9 @@ private:
         if (m_cursorOffset < 0) m_cursorOffset = 0;
         if (m_cursorOffset >= sz) m_cursorOffset = sz - 1;
     }
+
+private slots:
+    void onInterpretItemEdited(QTableWidgetItem *item);
 };
 
 #endif // HEXVIEW_H

@@ -36,6 +36,38 @@
         6. Undo / Redo
         ✔ Replace / Insert / Delete 皆可 undo
 
+	7. 解釋器
+	✔ 二進制 (8位元)
+        ✔ Int8
+        ✔ UInt8
+        ✔ Int16
+        ✔ UInt16
+        ✔ Int24
+        ✔ UInt24
+        ✔ Int32
+        ✔ UInt32
+        ✔ Int64
+        ✔ UInt64
+        ✔ LEB128
+        ✔ ULEB128
+        ✔ AnsiChar / char8_t / ASCII
+        ✔ WideChar / char16_t
+        ✔ UTF-8 程式點
+        ✔ Half (Float16)
+        ✔ Single (Float32)
+        ✔ Double (Float64)
+        ✔ OLETIME
+        ✔ FILETIME
+        ✔ DOS 日期
+        ✔ DOS 時間
+        ✔ DOS 時間 & 日期
+        ✔ time_t (32位元)
+        ✔ time_t (64位元)
+        ✔ GUID
+        ✔ 反組譯 (x86-16)
+        ✔ 反組譯 (x86-32)
+        ✔ 反組譯 (x86-64)
+
 
 類別結構：
         ┌───────────────┐
@@ -52,6 +84,8 @@
         └───────────────┘
 
 代辦：
-	1. delete 過多好像還是會檔案變小 (大約要超過 3GB)
-	2. 按照第1點，insert 大概率也是會出現問題，畢竟他們想法、邏輯是很像的。
-	3. copy 過多好像會卡住。(HxD 會顯示記憶體不足)
+	你想先把 Interpret As 進化成哪種？
+		1. 加 Endian 切換（LE/BE）（很多檔案很需要）
+		2. 加入顯示長度提示 +「使用了幾 bytes」（LEB128/UTF8/字串更直覺）
+		3. 開始做反組譯 16/32/64（我會用 Capstone 最省事、跨平台好包）
+	你回我「1/2/3」就行，我就接著把那條線做滿。

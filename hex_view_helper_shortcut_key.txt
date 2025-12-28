@@ -38,3 +38,15 @@
 2. F3 下一個結果
 3. Shift+F3 上一個結果
 4. Ctrl+G 跳轉位址
+
+解釋器：
+1. Ctrl+D 顯示、隱藏解釋器
+
+檔案：
+1. Ctrl+N 建立新檔案
+2. Ctrl+O 開啟檔案
+3. Ctrl+S 儲存檔案
+4. Ctrl+Shift+S 另存檔案
+5. Ctrl+W 關閉此標籤頁
+6. Ctrl+Tab 下一個標籤頁
+7. Ctrl+Shift+Tab 上一個標籤頁

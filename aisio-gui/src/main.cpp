@@ -52,6 +52,9 @@ static void applyTheme(ThemeMode mode,
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+
+    QCoreApplication::setOrganizationName("AisIO");
+    QCoreApplication::setApplicationName("AisIO");
     app.setWindowIcon(QIcon(":/images/aisio-icon.png"));
     Config::instance().load();
 
