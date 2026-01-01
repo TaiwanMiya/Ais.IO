@@ -49,10 +49,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hexadecimal_editor/chunkslite.h
         hexadecimal_editor/interpretvaluedelegate.h
         hexadecimal_editor/overlaymap.h
+        hexadecimal_editor/hexdiffwidget.h
+        hexadecimal_editor/diffnavigator.h
+        hexadecimal_editor/tabprogressbar.h
         hexadecimal_editor/hexform.cpp
         hexadecimal_editor/hexview.cpp
         hexadecimal_editor/chunkslite.cpp
         hexadecimal_editor/overlaymap.cpp
+        hexadecimal_editor/hexdiffwidget.cpp
+        hexadecimal_editor/diffnavigator.cpp
+        hexadecimal_editor/tabprogressbar.cpp
         hexadecimal_editor/hexform.ui
 
         text_editor/textview.cpp

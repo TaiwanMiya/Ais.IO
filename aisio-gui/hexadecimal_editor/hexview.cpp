@@ -1,3 +1,4 @@
+#include "hexdiffwidget.h"
 #include "hexview.h"
 #include "interpretvaluedelegate.h"
 
@@ -32,6 +33,8 @@
 
 #include <QStyledItemDelegate>
 #include <QEvent>
+#include <QTimeZone>
+#include <QFileDialog>
 
 #if __has_include(<capstone/capstone.h>)
 #include <capstone/capstone.h>
@@ -73,6 +76,10 @@ HexView::HexView(QWidget *parent)
         }
         if (m_searchFlashCounter > 0) {
             m_searchFlashCounter--;
+            needUpdate = true;
+        }
+        if (m_diffFlashCounter > 0) {
+            m_diffFlashCounter--;
             needUpdate = true;
         }
 
@@ -186,7 +193,6 @@ qint64 HexView::clickedOffset(const QPoint &p)
     QFontMetrics fm(font());
     int headerHeight = fm.height();
 
-    // int vpos = verticalScrollBar()->value();
     qint64 vpos = lineFromScroll();
 
     // Y → 行號
@@ -230,6 +236,7 @@ void HexView::pushEdit(Edit::Type type,
 {
     m_undoStack.append(Edit{type, offset, oldData, newData});
     m_redoStack.clear();
+    refreshModifiedFlag();
 }
 
 void HexView::pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte)
@@ -290,7 +297,6 @@ void HexView::undo()
         m_cursorOffset = e.offset;
         break;
     case Edit::Type::Delete:
-        // m_overlay.insert(e.offset, e.oldData);
         m_overlay.insertPieces(e.offset, e.pieces);
         m_cursorOffset = e.offset;
         break;
@@ -301,7 +307,7 @@ void HexView::undo()
     // 讓游標一定出現在畫面中
     emit cursorChanged(m_cursorOffset);
     emit dataSizeChanged(effectiveSize());
-    emit modifiedChanged(true);
+    refreshModifiedFlag();
     ensureVisible(m_cursorOffset);
 
     // 重置半位編輯狀態（非常重要）
@@ -370,7 +376,7 @@ void HexView::redo()
     // 讓游標一定出現在畫面中
     emit cursorChanged(m_cursorOffset);
     emit dataSizeChanged(effectiveSize());
-    emit modifiedChanged(true);
+    refreshModifiedFlag();
     ensureVisible(m_cursorOffset);
 
     // 重置半位編輯狀態（非常重要）
@@ -409,6 +415,12 @@ void HexView::redo()
     invalidateAllLines();
     updateScrollBars();
     viewport()->update();
+}
+
+void HexView::refreshModifiedFlag() {
+    const bool modified = (m_undoStack.size() != m_cleanUndoDepth);
+    emit modifiedChanged(modified);
+    m_isModified = modified;
 }
 
 QByteArray HexView::parseHexString(const QString &s, bool *ok) const
@@ -614,6 +626,7 @@ void HexView::deleteRanges(const QVector<Range> &ranges)
     emit cursorChanged(m_cursorOffset);
     emit dataSizeChanged(effectiveSize());
     emit modifiedChanged(true);
+    m_isModified = true;
 
     clearSelectionRange();
     m_extraSelections.clear();
@@ -783,10 +796,6 @@ void HexView::pasteFromClipboard()
 
     QByteArray data;
 
-    // QByteArray data = parseHexString(text, nullptr);
-    // if (data.isEmpty())
-    //     return;
-
     if (inAsciiArea) {
         // ⭐ ASCII 區：把文字直接轉成 bytes
         // - toLatin1：超出 0x00~0xFF 的字元會變成 '?'
@@ -837,7 +846,9 @@ void HexView::pasteFromClipboard()
     emit cursorChanged(m_cursorOffset);
     emit dataSizeChanged(effectiveSize());
     emit modifiedChanged(true);
+    m_isModified = true;
 
+    ensureVisible(m_cursorOffset);
     updateScrollBars();
     invalidateAllLines();
     viewport()->update();
@@ -920,25 +931,25 @@ void HexView::createSearchPanel()
     connect(m_btnFindNext, &QToolButton::clicked,
             this, [this]() {
                 if (m_findEdit)
-                    findNext(m_findEdit->text());
+                    onFindNext(m_findEdit->text());
             });
     connect(m_btnFindPrev, &QToolButton::clicked,
             this, [this]() {
                 if (m_findEdit)
-                    findPrev(m_findEdit->text());
+                    onFindPrev(m_findEdit->text());
             });
 
     // 按 Enter 也等於 Next
     connect(m_findEdit, &QLineEdit::returnPressed,
             this, [this]() {
                 if (m_findEdit)
-                    findNext(m_findEdit->text());
+                    onFindNext(m_findEdit->text());
             });
 
     // Goto
     auto doGoto = [this]() {
         if (!m_gotoEdit) return;
-        gotoOffsetFromText(m_gotoEdit->text());
+        onGotoOffsetFromText(m_gotoEdit->text());
     };
     connect(m_btnGoto, &QToolButton::clicked,
             this, doGoto);
@@ -972,66 +983,42 @@ void HexView::setupSearchShortcuts()
     {
         QShortcut *sc = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
         sc->setContext(ctx);
-        connect(sc, &QShortcut::activated, this, [this]() {
-            if (!m_searchPanel) return;
-            m_searchPanel->show();
-            positionSearchPanel();
-            if (m_findEdit) {
-                m_findEdit->setFocus();
-                m_findEdit->selectAll();
-            }
-        });
+        connect(sc, &QShortcut::activated, this, &HexView::openSearchPanel);
     }
 
     // F3 → Find Next
     {
         QShortcut *sc = new QShortcut(QKeySequence(Qt::Key_F3), this);
         sc->setContext(ctx);
-        connect(sc, &QShortcut::activated, this, [this]() {
-            if (!m_searchPanel) return;
-
-            if (m_findEdit && !m_findEdit->text().isEmpty()) {
-                findNext(m_findEdit->text());
-            } else {
-                m_searchPanel->show();
-                positionSearchPanel();
-                if (m_findEdit)
-                    m_findEdit->setFocus();
-            }
-        });
+        connect(sc, &QShortcut::activated, this, &HexView::findNext);
     }
 
     // Shift+F3 → Find Prev
     {
         QShortcut *sc = new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_F3), this);
         sc->setContext(ctx);
-        connect(sc, &QShortcut::activated, this, [this]() {
-            if (!m_searchPanel) return;
-
-            if (m_findEdit && !m_findEdit->text().isEmpty()) {
-                findPrev(m_findEdit->text());
-            } else {
-                m_searchPanel->show();
-                positionSearchPanel();
-                if (m_findEdit)
-                    m_findEdit->setFocus();
-            }
-        });
+        connect(sc, &QShortcut::activated, this, &HexView::findPrev);
     }
 
     // Ctrl+G → 顯示搜尋欄 & 聚焦 Goto
     {
         QShortcut *sc = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_G), this);
         sc->setContext(ctx);
-        connect(sc, &QShortcut::activated, this, [this]() {
-            if (!m_searchPanel) return;
-            m_searchPanel->show();
-            positionSearchPanel();
-            if (m_gotoEdit) {
-                m_gotoEdit->setFocus();
-                m_gotoEdit->selectAll();
-            }
-        });
+        connect(sc, &QShortcut::activated, this, &HexView::gotoOffset);
+    }
+
+    // F6 → Diff Find Next 下一個差異
+    {
+        QShortcut *sc = new QShortcut(QKeySequence(Qt::Key_F6), this);
+        sc->setContext(ctx);
+        connect(sc, &QShortcut::activated, this, &HexView::diffFindNext);
+    }
+
+    // Shift+F6 → Diff Find Prev 上一個差異
+    {
+        QShortcut *sc = new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_F6), this);
+        sc->setContext(ctx);
+        connect(sc, &QShortcut::activated, this, &HexView::diffFindPrev);
     }
 }
 
@@ -1091,7 +1078,6 @@ void HexView::updateScrollBars()
 
     qint64 res = scrollResolution();
     QScrollBar *v = verticalScrollBar();
-    // v->setRange(0, res);
     qint64 maxFirstLine = qMax<qint64>(0, totalLines - visibleLineCount());
     v->setRange(0, maxFirstLine);
     v->setSingleStep(1);
@@ -1103,7 +1089,6 @@ void HexView::updateScrollBars()
         v->setSingleStep(1);
     } else {
         // 大檔：比例模式
-        // qint64 page = double(linesPerPage) / double(totalLines * res);
         int page = int(double(linesPerPage) / double(totalLines) * double(res));
         v->setPageStep(qMax(1, page));
         v->setSingleStep(qMax(1, page / 10));
@@ -1146,27 +1131,37 @@ void HexView::invalidateAllLines()
     }
 }
 
+void HexView::setDiffNavSources(OverlayMap* left, OverlayMap* right) {
+    m_diffNav.setSources(left, right);
+}
+
 void HexView::loadDevice(QIODevice *dev)
 {
     delete m_chunks;
     m_chunks = new ChunksLite(dev);
 
     m_overlay.reset(m_chunks->size());   // ⭐ 新增
+    m_overlay.setBase(m_chunks);
     m_dataSize = m_chunks->size();       // base size 仍可留著做顯示或 debug
+
+    m_undoStack.clear();
+    m_redoStack.clear();
+    m_cleanUndoDepth = 0;
 
     m_cursorOffset = 0;
     emit cursorChanged(m_cursorOffset);
     emit dataSizeChanged(effectiveSize());
     emit modifiedChanged(false);
+    m_isModified = false;
     verticalScrollBar()->setValue(0);
 
+    ensureVisible(m_cursorOffset);
     invalidateAllLines();
     updateScrollBars();
     viewport()->update();
 }
 
-void HexView::setEditable(bool editable)
-{
+void HexView::setEditable(bool editable) {
     m_editable = editable;
 }
 
@@ -1249,7 +1244,6 @@ QImage HexView::renderLineToImage(int line)
             bool inSelection = byteInAnySelection(off);
 
             // 如果有選取 → 不畫游標
-            // bool isCursor = (!hasSel && m_showCursor && off == m_cursorOffset);
             bool isCursor = (!hasSel && m_showCursor && off == m_cursorOffset);
             bool halfCursor = isCursor && (lastClickArea == Area::Hex) && !m_hexHighNibble;
 
@@ -1266,6 +1260,12 @@ QImage HexView::renderLineToImage(int line)
                 p.fillRect(asciiRect, QColor(255, 200, 0, 160));
                 p.setPen(Qt::black);
             }
+            // 綠色比對閃爍：差異的偏移（比對不同處）
+            else if (m_diffFlashCounter > 0 && inSelection) {
+                p.fillRect(hexRect, QColor(120, 255, 120, 160));
+                p.fillRect(asciiRect, QColor(120, 255, 120, 160));
+                p.setPen(Qt::black);
+            }
             // 選取
             else if (inSelection) {
                 p.fillRect(hexRect, QColor(100, 130, 200));
@@ -1278,9 +1278,8 @@ QImage HexView::renderLineToImage(int line)
                 p.fillRect(asciiRect, QColor(70, 100, 160));
                 p.setPen(Qt::white);
             }
-            else {
+            else
                 p.setPen(QColor(230,230,230));
-            }
 
             p.drawText(hexRect,   Qt::AlignHCenter  | Qt::AlignVCenter, m_hexCache[byte]);
             p.drawText(asciiRect, Qt::AlignHCenter  | Qt::AlignVCenter, m_asciiCache[byte]);
@@ -1318,7 +1317,6 @@ void HexView::paintEvent(QPaintEvent *event)
     if (!m_chunks || byteCount <= 0 || m_lineHeight <= 0 || m_bytesPerLine <= 0)
         return;
 
-    // int vpos = verticalScrollBar()->value();
     qint64 totalLines   = (byteCount + m_bytesPerLine - 1) / m_bytesPerLine;
     qint64 vpos = lineFromScroll();
 
@@ -1467,6 +1465,25 @@ void HexView::ensureVisible(qint64 offset)
         scrollToLine(line);
     else if (line >= first + page)
         scrollToLine(line - page + 1);
+    if (m_hasLastDiff)
+        m_lastDiffPos = offset;
+}
+
+void HexView::emitStatus(QString message)
+{
+    HexViewStatus st;
+    st.cursorOffset = m_cursorOffset;
+    st.fileSize     = effectiveSize();
+    st.selStart     = m_selStart;
+    st.selEnd       = m_selEnd;
+    st.hasSelection = (m_selStart >= 0 && m_selEnd > m_selStart);
+    st.isModified   = m_isModified;
+    st.inDiffSearch = m_diffRunning;
+    st.inFindSearch = m_findEdit;
+    st.mode         = (lastClickArea == Area::Hex) ? "HEX" : "ASCII";
+    st.message      = message;
+
+    emit statusChanged(st);
 }
 
 qint64 HexView::lineFromScroll() const
@@ -1578,6 +1595,7 @@ bool HexView::handleHexEdit(QKeyEvent *event)
         moveCursorRelative(1);
 
     emit modifiedChanged(true);
+    m_isModified = true;
 
     invalidateAllLines();
     viewport()->update();
@@ -1602,6 +1620,7 @@ bool HexView::handleAsciiEdit(QKeyEvent *event)
 
     moveCursorRelative(1);
     emit modifiedChanged(true);
+    m_isModified = true;
 
     invalidateAllLines();
     viewport()->update();
@@ -1660,6 +1679,11 @@ void HexView::flashEditError() {
 
 void HexView::flashSearchError() {
     m_searchFlashCounter = 3;
+    m_errorFlashTimer->start();
+}
+
+void HexView::flashDiffError() {
+    m_diffFlashCounter = 3;
     m_errorFlashTimer->start();
 }
 
@@ -1820,9 +1844,11 @@ void HexView::keyPressEvent(QKeyEvent *event)
             emit cursorChanged(m_cursorOffset);
             emit dataSizeChanged(effectiveSize());
             emit modifiedChanged(true);
+            m_isModified = true;
             clearSelectionRange();
             m_extraSelections.clear();
 
+            ensureVisible(m_cursorOffset);
             invalidateAllLines();
             viewport()->update();
         }
@@ -2034,7 +2060,7 @@ qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backward
     return -1;
 }
 
-void HexView::gotoOffset(qint64 offset) {
+void HexView::onGotoOffset(qint64 offset) {
     qint64 byteCount = effectiveSize();
 
     if (!m_chunks || byteCount <= 0)
@@ -2095,6 +2121,13 @@ QByteArray HexView::readBaseBytes(qint64 offset, qint64 len) const {
     return m_chunks ? m_chunks->read(offset, len) : QByteArray();
 }
 
+void HexView::invalidateLineCache()
+{
+    for (auto &e : m_lineCache)
+        e.valid = false;
+    m_nextCacheSlot = 0;
+    viewport()->update();
+}
 
 bool HexView::saveToFile(const QString &fileName) {
     if (!m_chunks)
@@ -2129,8 +2162,44 @@ bool HexView::saveToFile(const QString &fileName) {
 
     file.flush();
     file.close();
-    emit modifiedChanged(false);
+    m_cleanUndoDepth = m_undoStack.size();  // ⭐ 這一刻起，這個狀態就是「乾淨」
+    refreshModifiedFlag();
     return true;
+}
+
+void HexView::setCursorOffsetExternal(qint64 off)
+{
+    m_showCursor = true;
+    clearSelectionRange();
+    m_extraSelections.clear();
+
+    m_cursorOffset = off;
+    clampCursorToValidRange();
+    emit cursorChanged(m_cursorOffset);
+    ensureVisible(m_cursorOffset);
+
+    invalidateAllLines();
+    viewport()->update();
+}
+
+OverlayMap& HexView::overlay()
+{
+    return m_overlay;
+}
+
+const OverlayMap& HexView::overlay() const
+{
+    return m_overlay;
+}
+
+ChunksLite* HexView::chunks()
+{
+    return m_chunks;
+}
+
+const ChunksLite* HexView::chunks() const
+{
+    return m_chunks;
 }
 
 void HexView::setFindMode(FindMode mode)
@@ -2147,36 +2216,251 @@ void HexView::resetFindState()
     m_lastPos = -1;
 }
 
-qint64 HexView::findNext(const QString &input)
+void HexView::openInterpretPanel() {
+    if (!m_interpretPanel) return;
+    if (m_interpretPanel->isVisible()) {
+        m_interpretPanel->hide();
+        return;
+    }
+    m_interpretPanel->show();
+    positionInterpretPanel();
+    updateInterpretPanel();
+}
+
+void HexView::openSearchPanel() {
+    if (!m_searchPanel) return;
+    m_searchPanel->show();
+    positionSearchPanel();
+    if (m_findEdit) {
+        m_findEdit->setFocus();
+        m_findEdit->selectAll();
+    }
+}
+
+void HexView::findNext() {
+    if (!m_searchPanel) return;
+    if (m_findEdit && !m_findEdit->text().isEmpty()) {
+        onFindNext(m_findEdit->text());
+    } else {
+        m_searchPanel->show();
+        positionSearchPanel();
+        if (m_findEdit)
+            m_findEdit->setFocus();
+    }
+}
+
+void HexView::findPrev() {
+    if (!m_searchPanel) return;
+    if (m_findEdit && !m_findEdit->text().isEmpty()) {
+        onFindPrev(m_findEdit->text());
+    } else {
+        m_searchPanel->show();
+        positionSearchPanel();
+        if (m_findEdit)
+            m_findEdit->setFocus();
+    }
+}
+
+void HexView::gotoOffset() {
+    if (!m_searchPanel) return;
+    m_searchPanel->show();
+    positionSearchPanel();
+    if (m_gotoEdit) {
+        m_gotoEdit->setFocus();
+        m_gotoEdit->selectAll();
+    }
+}
+
+void HexView::diffFindNext() {
+    if (m_diffRunning)
+        return;
+    qint64 byteCount = m_diffNav.size();
+    if (byteCount <= 0)
+        return;
+
+    auto clampStart = [&](qint64 v) -> qint64 {
+        if (v < 0) return 0;
+        if (v >= byteCount) return byteCount - 1;
+        return v;
+    };
+
+    qint64 start = 0;
+
+    if (m_hasLastDiff && m_lastDiffPos >= 0) {
+        // 延續搜尋
+        start = m_lastDiffPos + 1;
+        start = clampStart(start);
+    } else {
+        // 新搜尋：以目前游標為基準
+        start = clampStart(m_cursorOffset);
+    }
+
+    m_diffRunning = true;
+    emit diffStarted();
+
+    auto future = QtConcurrent::run([this, start]() -> qint64 {
+        qint64 pos = -1;
+        if (m_diffNav.findNext(start, pos))
+            return pos;
+        return -1;
+    });
+
+    m_diffWatcher.setFuture(future);
+
+    connect(&m_diffWatcher, &QFutureWatcher<qint64>::finished,
+            this, [this]() {
+                m_diffRunning = false;
+
+                qint64 pos = m_diffWatcher.result();
+                if (pos < 0) {
+                    emit diffFinished();
+                    emitStatus("No next diff found.");
+                    return;
+                }
+
+                // 回到 UI thread，安全
+                emit diffFound(pos);
+                emit diffFinished();
+            });
+
+    // qint64 pos = -1;
+    // if (!m_diffNav.findNext(start, pos)) {
+    //     m_hasLastDiff = false;
+    //     m_lastDiffPos = -1;
+    //     return;
+    // }
+    // emit diffFound(pos);
+}
+
+void HexView::diffFindPrev() {
+    qint64 byteCount = m_diffNav.size();
+    if (byteCount <= 0)
+        return;
+
+    auto clampStart = [&](qint64 v) -> qint64 {
+        if (v < 0) return 0;
+        if (v >= byteCount) return byteCount - 1;
+        return v;
+    };
+
+    qint64 start = 0;
+
+    if (m_hasLastDiff && m_lastDiffPos >= 0) {
+        // 延續搜尋（★ 關鍵：用 lastDiffPos - 1）
+        start = m_lastDiffPos - 1;
+        start = clampStart(start);
+    } else {
+        // 新搜尋：以目前游標為基準
+        start = clampStart(m_cursorOffset);
+    }
+
+    m_diffRunning = true;
+    emit diffStarted();
+
+    auto future = QtConcurrent::run([this, start]() -> qint64 {
+        qint64 pos = -1;
+        if (m_diffNav.findPrev(start, pos))
+            return pos;
+        return -1;
+    });
+
+    m_diffWatcher.setFuture(future);
+
+    connect(&m_diffWatcher, &QFutureWatcher<qint64>::finished,
+            this, [this]() {
+                m_diffRunning = false;
+
+                qint64 pos = m_diffWatcher.result();
+                if (pos < 0) {
+                    emit diffFinished();
+                    emitStatus("No prev diff found.");
+                    return;
+                }
+
+                // 回到 UI thread，安全
+                emit diffFound(pos);
+                emit diffFinished();
+            });
+
+    // qint64 pos = -1;
+    // if (!m_diffNav.findPrev(start, pos)) {
+    //     m_hasLastDiff = false;
+    //     m_lastDiffPos = -1;
+    //     return;
+    // }
+    // emit diffFound(pos);
+}
+
+void HexView::startDiffFlash(qint64 offset)
+{
+    // ⭐ 更新狀態
+    clearSelectionRange();
+    m_extraSelections.clear();
+
+    m_lastDiffPos = offset;
+    m_hasLastDiff = true;
+
+    // 設定 selection（1 byte）
+    m_selStart  = offset;
+    m_selEnd    = offset + 1;
+    m_selAnchor = offset;
+    lastClickArea = Area::Hex;
+
+    // 游標同步到該位置
+    m_cursorOffset = offset;
+    m_showCursor = true;
+
+    // 啟動 diff 閃爍
+    m_diffFlashCounter = 3;
+    m_errorFlashTimer->start();
+
+    emit cursorChanged(m_cursorOffset);
+    ensureVisible(m_cursorOffset);
+
+    m_hexHighNibble = true;
+
+    invalidateAllLines();
+    viewport()->update();
+}
+
+void HexView::diffClose() {
+    m_lastDiffPos = -1;
+    m_hasLastDiff = false;
+}
+
+qint64 HexView::onFindNext(const QString &input)
 {
     qint64 pos = doFindInternal(input, false);
 
     if (pos < 0) {
         flashLineEditError(m_findEdit);
+        emitStatus("No next find found.");
         return -1;
     }
 
     return pos;
 }
 
-qint64 HexView::findPrev(const QString &input)
+qint64 HexView::onFindPrev(const QString &input)
 {
     qint64 pos = doFindInternal(input, true);
 
     if (pos < 0) {
         flashLineEditError(m_findEdit);
+        emitStatus("No prev find found.");
         return -1;
     }
 
     return pos;
 }
 
-qint64 HexView::gotoOffsetFromText(const QString &t)
+qint64 HexView::onGotoOffsetFromText(const QString &t)
 {
     QString s = t.trimmed();
     qint64 byteCount = effectiveSize();
     if (s.isEmpty() || !m_chunks || byteCount <= 0) {
         flashLineEditError(m_gotoEdit);
+        emitStatus("Offset search failed, possibly because no offset has been entered or IO is not enabled.");
         return -1;
     }
 
@@ -2193,10 +2477,11 @@ qint64 HexView::gotoOffsetFromText(const QString &t)
 
     if (!ok || value < 0 || value >= byteCount) {
         flashLineEditError(m_gotoEdit);
+        emitStatus("Invalid offset, or offset range exceeded.");
         return -1;
     }
 
-    gotoOffset(value);  // ⭐ 你原本的 API：把 cursor & 視圖移到指定位移
+    onGotoOffset(value);  // ⭐ 你原本的 API：把 cursor & 視圖移到指定位移
     return value;
 }
 
@@ -2491,7 +2776,6 @@ static QString disasmX86(const QByteArray& b, void *mode, int maxInsns, int maxB
         bytes = bytes.trimmed();
 
         // ⭐ 正確的 Qt 字串組法（不混用 printf）
-        // out += QString("%1  %2 %3\n")
         out += QString("%1 %2\n")
                    // .arg(QString::number((quint64)ci.address, 16).rightJustified(4, '0').toUpper())
                    // .arg(bytes.leftJustified(23, ' '))   // 對齊用 Qt 自己的 API
@@ -2667,16 +2951,7 @@ void HexView::setupInterpretShortcuts()
 
     QShortcut *sc = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_D), this);
     sc->setContext(ctx);
-    connect(sc, &QShortcut::activated, this, [this]() {
-        if (!m_interpretPanel) return;
-        if (m_interpretPanel->isVisible()) {
-            m_interpretPanel->hide();
-            return;
-        }
-        m_interpretPanel->show();
-        positionInterpretPanel();
-        updateInterpretPanel();
-    });
+    connect(sc, &QShortcut::activated, this, &HexView::openInterpretPanel);
 }
 
 QByteArray HexView::bytesForInterpret(int maxLen) const
@@ -2805,7 +3080,8 @@ void HexView::updateInterpretPanel()
         } else ok = false;
 
         if (ok) {
-            QString s = QString::fromUcs4(&cp, 1);
+            char32_t cp32 = static_cast<char32_t>(cp);
+            QString s = QString::fromUcs4(&cp32, 1);
             setRow(15, tr("UTF-8 code point"), QString("U+%1  '%2'  (%3 bytes)").arg(cp,0,16).arg(s).arg(needBytes), QString("%1").arg(s), needBytes);
         } else {
             setRow(15, tr("UTF-8 code point"), tr("(invalid UTF-8)"), tr(""), 0);
@@ -2829,7 +3105,7 @@ void HexView::updateInterpretPanel()
     // OLETIME
     double ole{};
     if (readAnyEndian(b,0,BE,ole)) {
-        QDateTime base(QDate(1899,12,30), QTime(0,0,0), Qt::UTC);
+        QDateTime base(QDate(1899,12,30), QTime(0,0,0), QTimeZone::utc());
         qint64 secs = (qint64)llround(ole * 86400.0);
         QDateTime dt = base.addSecs(secs);
         setRow(19, tr("OLETIME"), dt.isValid() ? (dt.toString(Qt::ISODate) + "  (8 bytes)") : tr("(invalid)"), dt.isValid() ? (dt.toString(Qt::ISODate)) : tr(""), 8);
@@ -2839,7 +3115,7 @@ void HexView::updateInterpretPanel()
     if (readAnyEndian(b,0,BE,u64)) {
         const quint64 HUNDRED_NANO_PER_SEC = 10000000ULL;
         quint64 secs = u64 / HUNDRED_NANO_PER_SEC;
-        QDateTime base(QDate(1601,1,1), QTime(0,0,0), Qt::UTC);
+        QDateTime base(QDate(1601,1,1), QTime(0,0,0), QTimeZone::utc());
         QDateTime dt = base.addSecs((qint64)secs);
         setRow(20, tr("FILETIME"), dt.isValid() ? (dt.toString(Qt::ISODate) + "  (8 bytes)") : tr("(invalid)"), dt.isValid() ? (dt.toString(Qt::ISODate)) : tr(""), 8);
     } else setRow(20, tr("FILETIME"), tr("(need 8 bytes)"), tr(""), 8);
@@ -2875,20 +3151,20 @@ void HexView::updateInterpretPanel()
         int day = d & 0x1F;
         int mon = (d >> 5) & 0x0F;
         int yr  = ((d >> 9) & 0x7F) + 1980;
-        QDateTime dt(QDate(yr,mon,day), QTime(hr,min,sec), Qt::UTC);
+        QDateTime dt(QDate(yr,mon,day), QTime(hr,min,sec), QTimeZone::utc());
         setRow(23, tr("DOS DateTime"), dt.isValid() ? dt.toString(Qt::ISODate) + "  (4 bytes)" : tr("(invalid)"), dt.isValid() ? dt.toString(Qt::ISODate) : tr(""), 4);
     } else setRow(23, tr("DOS DateTime"), tr("(need 4 bytes)"), tr(""), 4);
 
     // time_t 32/64
     qint32 time_i32{};
     if (readAnyEndian(b,0,BE,time_i32))
-        setRow(24, tr("time_t (32-bit)"), QDateTime::fromSecsSinceEpoch((qint64)time_i32, Qt::UTC).toString(Qt::ISODate) + "  (4 bytes)", QDateTime::fromSecsSinceEpoch((qint64)time_i32, Qt::UTC).toString(Qt::ISODate), 4);
+        setRow(24, tr("time_t (32-bit)"), QDateTime::fromSecsSinceEpoch((qint64)time_i32, QTimeZone::utc()).toString(Qt::ISODate) + "  (4 bytes)", QDateTime::fromSecsSinceEpoch((qint64)time_i32, QTimeZone::utc()).toString(Qt::ISODate), 4);
     else
         setRow(24, tr("time_t (32-bit)"), tr("(need 4 bytes)"), tr(""), 4);
 
     qint64 time_i64{};
     if (readAnyEndian(b,0,BE,time_i64))
-        setRow(25, tr("time_t (64-bit)"), QDateTime::fromSecsSinceEpoch(time_i64, Qt::UTC).toString(Qt::ISODate) + "  (8 bytes)", QDateTime::fromSecsSinceEpoch(time_i64, Qt::UTC).toString(Qt::ISODate), 8);
+        setRow(25, tr("time_t (64-bit)"), QDateTime::fromSecsSinceEpoch(time_i64, QTimeZone::utc()).toString(Qt::ISODate) + "  (8 bytes)", QDateTime::fromSecsSinceEpoch(time_i64, QTimeZone::utc()).toString(Qt::ISODate), 8);
     else
         setRow(25, tr("time_t (64-bit)"), tr("(need 8 bytes)"), tr(""), 8);
 
@@ -2903,9 +3179,9 @@ void HexView::updateInterpretPanel()
     hx = hx.trimmed();
 
 #if !HEXVIEW_HAVE_CAPSTONE
-    setRow(27, tr("Disasm (x86-16)"), tr("(not implemented) bytes: %1").arg(hx));
-    setRow(28, tr("Disasm (x86-32)"), tr("(not implemented) bytes: %1").arg(hx));
-    setRow(29, tr("Disasm (x86-64)"), tr("(not implemented) bytes: %1").arg(hx));
+    setRow(27, tr("Disasm (x86-16)"), tr("(not implemented) bytes: %1").arg(hx), QString(), 0);
+    setRow(28, tr("Disasm (x86-32)"), tr("(not implemented) bytes: %1").arg(hx), QString(), 0);
+    setRow(29, tr("Disasm (x86-64)"), tr("(not implemented) bytes: %1").arg(hx), QString(), 0);
 #else
     // Disasm (x86) — 用 Capstone，顯示前幾條指令 + 使用了多少 bytes
     {
@@ -2971,6 +3247,7 @@ void HexView::interpretApplyBytes(qint64 pos, int oldLen, const QByteArray& newB
     }
 
     emit modifiedChanged(true);
+    m_isModified = true;
 
     // 更新游標/選取/畫面
     clearSelectionRange();
@@ -3006,18 +3283,6 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     if (!item) return;
     if (!m_interpretTable) return;
 
-    const QString oldRaw =
-        item->data(Qt::UserRole + 100).toString();
-
-    const QString newRaw =
-        item->text().trimmed();
-
-    qDebug() << "Old: " << oldRaw << "New: " << newRaw;
-
-    // ⭐ 沒變 → 直接 return，不標記 modified、不寫入
-    if (oldRaw == newRaw)
-        return;
-
     const int row = item->row();
     const int col = item->column();
     if (col != 1) return;                 // 只允許改 Value 欄
@@ -3027,7 +3292,6 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     qint64 pos = hasSelection() ? m_selStart : m_cursorOffset;
     const bool BE = m_interpretBigEndian;
 
-    // QString text = interpretRawText(item).trimmed();
     QString text = item->text().trimmed();
     if (text.isEmpty()) return;
 
@@ -3049,6 +3313,11 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         return ok;
     };
 
+    auto fail = [&](){
+        updateInterpretPanel();   // 恢復顯示
+        return;
+    };
+
     switch (row) {
     case 0: { // Binary (8-bit)
         QString s = text;
@@ -3058,7 +3327,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
 
         bool ok2 = false;
         int v = s.toInt(&ok2, 2);   // ⭐ base = 2
-        if (!ok2 || v < 0 || v > 255) return;
+        if (!ok2 || v < 0 || v > 255) return fail();
 
         quint8 b = (quint8)v;
         bytes.append((char)b);
@@ -3066,21 +3335,21 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 1: { // Int8
-        qint64 v; if (!parseInt64(v)) return;
+        qint64 v; if (!parseInt64(v)) return fail();
         qint8 x = (qint8)v;
         bytes.append((char)x);
         oldLen = 1;
         break;
     }
     case 2: { // UInt8
-        quint64 v; if (!parseUInt64(v)) return;
+        quint64 v; if (!parseUInt64(v)) return fail();
         quint8 x = (quint8)v;
         bytes.append((char)x);
         oldLen = 1;
         break;
     }
     case 3: { // Int16
-        qint64 v; if (!parseInt64(v)) return;
+        qint64 v; if (!parseInt64(v)) return fail();
         qint16 x = (qint16)v;
         quint16 u; memcpy(&u, &x, 2);
         if (BE) u = bswap16(u);
@@ -3089,7 +3358,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 4: { // UInt16
-        quint64 v; if (!parseUInt64(v)) return;
+        quint64 v; if (!parseUInt64(v)) return fail();
         quint16 u = (quint16)v;
         if (BE) u = bswap16(u);
         bytes.append((const char*)&u, 2);
@@ -3097,7 +3366,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 5: { // Int24
-        qint64 v; if (!parseI64(v)) return;
+        qint64 v; if (!parseI64(v)) return fail();
         qint32 x = (qint32)v;
         quint32 u = (quint32)x & 0x00FFFFFFu;
         if (!BE) {
@@ -3113,7 +3382,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 6: { // UInt24
-        quint64 v; if (!parseU64(v)) return;
+        quint64 v; if (!parseU64(v)) return fail();
         quint32 u = (quint32)v & 0x00FFFFFFu;
         if (!BE) {
             bytes.append(char(u & 0xFF));
@@ -3128,7 +3397,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 7: { // Int32
-        qint64 v; if (!parseInt64(v)) return;
+        qint64 v; if (!parseInt64(v)) return fail();
         qint32 x = (qint32)v;
         quint32 u; memcpy(&u, &x, 4);
         if (BE) u = bswap32(u);
@@ -3137,7 +3406,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 8: { // UInt32
-        quint64 v; if (!parseUInt64(v)) return;
+        quint64 v; if (!parseUInt64(v)) return fail();
         quint32 u = (quint32)v;
         if (BE) u = bswap32(u);
         bytes.append((const char*)&u, 4);
@@ -3145,7 +3414,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 9: { // Int64
-        qint64 v; if (!parseInt64(v)) return;
+        qint64 v; if (!parseInt64(v)) return fail();
         qint64 x = v;
         quint64 u; memcpy(&u, &x, 8);
         if (BE) u = bswap64(u);
@@ -3154,21 +3423,21 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 10: { // UInt64
-        quint64 u; if (!parseUInt64(u)) return;
+        quint64 u; if (!parseUInt64(u)) return fail();
         if (BE) u = bswap64(u);
         bytes.append((const char*)&u, 8);
         oldLen = 8;
         break;
     }
     case 11: { // SLEB128（可變長）
-        qint64 v; if (!parseI64(v)) return;
+        qint64 v; if (!parseI64(v)) return fail();
         bytes = encodeSLEB128(v); // 你已有 decodeSLEB128，這裡需要補 encode（下面我給）
         if (oldLen <= 0)
             oldLen = bytes.size();
         break;
     }
     case 12: { // ULEB128（可變長）
-        quint64 v; if (!parseU64(v)) return;
+        quint64 v; if (!parseU64(v)) return fail();
         bytes = encodeULEB128(v); // 同上，需要補 encode（下面我給）
         if (oldLen <= 0)
             oldLen = bytes.size();
@@ -3178,7 +3447,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         if (text.startsWith("0x", Qt::CaseInsensitive)) {
             bool ok2=false;
             int x = text.mid(2).toInt(&ok2,16);
-            if (!ok2) return;
+            if (!ok2) return fail();
             bytes.append(char(x & 0xFF));
         } else {
             bytes.append(text.at(0).toLatin1());
@@ -3192,13 +3461,12 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         if (t.startsWith("U+", Qt::CaseInsensitive)) t = t.mid(2);
         if (t.startsWith("0x", Qt::CaseInsensitive)) {
             u = (quint16)t.mid(2).toUInt(&ok, 16);
-            if (!ok) return;
+            if (!ok) return fail();
         } else {
-            if (text.isEmpty()) return;
+            if (text.isEmpty()) return fail();
 
             QChar c = text.at(0);
             u = (quint16)c.unicode();
-            // if (!ok) return;
         }
         if (BE) u = bswap16(u);
         bytes.append((const char*)&u, 2);
@@ -3207,7 +3475,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     }
     case 15: { // UTF-8 code point：輸入 U+XXXX 或 0xXXXX 或十進位
         QString t = text.trimmed();
-        if (t.isEmpty()) return;
+        if (t.isEmpty()) return fail();
 
         ok = false;
         quint32 cp = 0;
@@ -3232,9 +3500,10 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
 
         if (ok) {
             // code point -> UTF-8
-            if (cp > 0x10FFFFu) return;                 // 不合法 Unicode
-            if (cp >= 0xD800u && cp <= 0xDFFFu) return; // 不允許 surrogate code point
-            bytes = QString::fromUcs4(&cp, 1).toUtf8();
+            if (cp > 0x10FFFFu) return fail();                 // 不合法 Unicode
+            if (cp >= 0xD800u && cp <= 0xDFFFu) return fail(); // 不允許 surrogate code point
+            char32_t cp32 = static_cast<char32_t>(cp);
+            bytes = QString::fromUcs4(&cp32, 1).toUtf8();
         } else {
             // 2) 字元模式：只取第一個 Unicode 字（含 surrogate pair）
             QString first;
@@ -3251,7 +3520,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 16: { // Half Float16：輸入 float，轉 half（你已有 halfToFloat，這裡要補 floatToHalf）
-        float f = text.toFloat(&ok); if(!ok) return;
+        float f = text.toFloat(&ok); if(!ok) return fail();
         quint16 h = floatToHalf(f); // 下面我給
         if (BE) h = bswap16(h);
         bytes.append((const char*)&h,2);
@@ -3260,7 +3529,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     }
     case 17: { // Float32：允許 1.23
         float f = text.toFloat(&ok);
-        if (!ok) return;
+        if (!ok) return fail();
         quint32 u; memcpy(&u, &f, 4);
         if (BE) u = bswap32(u);
         bytes.append((const char*)&u, 4);
@@ -3269,7 +3538,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     }
     case 18: { // Float64
         double d = text.toDouble(&ok);
-        if (!ok) return;
+        if (!ok) return fail();
         quint64 u; memcpy(&u, &d, 8);
         if (BE) u = bswap64(u);
         bytes.append((const char*)&u, 8);
@@ -3278,14 +3547,14 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     }
     case 19: { // OLETIME：允許輸入 ISODate 或數字天數
         double days=0;
-        QDateTime base(QDate(1899,12,30), QTime(0,0,0), Qt::UTC);
+        QDateTime base(QDate(1899,12,30), QTime(0,0,0), QTimeZone::utc());
         QDateTime dt = QDateTime::fromString(text, Qt::ISODate);
         if (dt.isValid()) {
             qint64 secs = base.secsTo(dt);
             days = (double)secs / 86400.0;
         } else {
             days = text.toDouble(&ok);
-            if(!ok) return;
+            if(!ok) return fail();
         }
         quint64 u; memcpy(&u,&days,8);
         if (BE) u = bswap64(u);
@@ -3295,13 +3564,13 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     }
     case 20: { // FILETIME：允許 ISODate 或 64-bit 整數（100ns）
         quint64 ft=0;
-        QDateTime base(QDate(1601,1,1), QTime(0,0,0), Qt::UTC);
+        QDateTime base(QDate(1601,1,1), QTime(0,0,0), QTimeZone::utc());
         QDateTime dt = QDateTime::fromString(text, Qt::ISODate);
         if (dt.isValid()) {
             qint64 secs = base.secsTo(dt);
             ft = (quint64)secs * 10000000ULL;
         } else {
-            if (!parseU64(ft)) return;
+            if (!parseU64(ft)) return fail();
         }
         quint64 u = ft;
         if (BE) u = bswap64(u);
@@ -3314,7 +3583,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     case 23: { // DOS DateTime（ISO）
         if (row == 21) {
             QDate d = QDate::fromString(text, Qt::ISODate);
-            if(!d.isValid()) return;
+            if(!d.isValid()) return fail();
             quint16 v = (quint16)(((d.year()-1980) & 0x7F) << 9)
                         | (quint16)((d.month() & 0x0F) << 5)
                         | (quint16)(d.day() & 0x1F);
@@ -3323,7 +3592,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
             oldLen = 2;
         } else if (row == 22) {
             QTime t = QTime::fromString(text, "HH:mm:ss");
-            if(!t.isValid()) return;
+            if(!t.isValid()) return fail();
             quint16 v = (quint16)((t.hour() & 0x1F) << 11)
                         | (quint16)((t.minute() & 0x3F) << 5)
                         | (quint16)((t.second()/2) & 0x1F);
@@ -3332,7 +3601,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
             oldLen = 2;
         } else {
             QDateTime dt = QDateTime::fromString(text, Qt::ISODate);
-            if(!dt.isValid()) return;
+            if(!dt.isValid()) return fail();
             QDate d = dt.date(); QTime t = dt.time();
             quint16 tv = (quint16)((t.hour() & 0x1F) << 11)
                          | (quint16)((t.minute() & 0x3F) << 5)
@@ -3348,13 +3617,13 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         break;
     }
     case 24: { // time_t 32
-        qint64 v; if (!parseI64(v)) return;
+        qint64 v; if (!parseI64(v)) return fail();
         qint32 x = (qint32)v; quint32 u; memcpy(&u,&x,4);
         if (BE) u = bswap32(u);
         bytes.append((const char*)&u,4); oldLen=4; break;
     }
     case 25: { // time_t 64
-        qint64 v; if (!parseI64(v)) return;
+        qint64 v; if (!parseI64(v)) return fail();
         quint64 u; memcpy(&u,&v,8);
         if (BE) u = bswap64(u);
         bytes.append((const char*)&u,8); oldLen=8; break;
@@ -3362,9 +3631,9 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
     case 26: { // GUID：接受 XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX（按 Windows GUID 規則回寫）
         QString t = text;
         t.remove('{'); t.remove('}'); t.remove('-');
-        if (t.size() != 32) return;
+        if (t.size() != 32) return fail();
         QByteArray hex = QByteArray::fromHex(t.toLatin1());
-        if (hex.size() != 16) return;
+        if (hex.size() != 16) return fail();
 
         // GUID 混合 endian：Data1(4),Data2(2),Data3(2) 走 LE，其餘 8 bytes 原序
         auto sw2 = [](uchar* p){ std::swap(p[0],p[1]); };
@@ -3382,9 +3651,7 @@ void HexView::onInterpretItemEdited(QTableWidgetItem *item) {
         return;
     }
 
-    item->setData(Qt::UserRole + 100, QVariant());
-
-    if (bytes.isEmpty()) return;
+    if (bytes.isEmpty()) return fail();
     if (oldLen <= 0) oldLen = bytes.size();
 
     interpretApplyBytes(pos, oldLen, bytes);

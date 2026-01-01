@@ -19,6 +19,7 @@
 #include <QScreen>
 #include <QComboBox>
 #include <QSettings>
+#include <QMetaType>
 
 // -------------------- Ctrl+Tab Popup Dialog --------------------
 class TabSwitcherPopup : public QDialog {
@@ -123,6 +124,7 @@ private:
     QListWidget* m_list = nullptr;
     bool m_cancel = false;
 };
+
 // ------------------------------------------------------------
 
 HexForm::HexForm(QWidget *parent)
@@ -167,8 +169,14 @@ HexForm::HexForm(QWidget *parent)
             setWindowTitle(QFileInfo(fileName).fileName() + " - Hexadecimal Editor");
     });
 
+    m_busyOverlay = new BusyOverlay(ui->hexViewWidget);
+    m_busyOverlay->hide();
+
+    qRegisterMetaType<HexViewStatus>("HexViewStatus");
+
     this->createStatusBar();
     this->createAction();
+    this->createActionShortcutsText();
     this->setupShortcuts();
 }
 
@@ -217,17 +225,76 @@ void HexForm::createStatusBar() {
 }
 
 void HexForm::createAction() {
+    // File
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(create()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(save()));
-    connect(ui->actionSave_As, SIGNAL(triggered()), this, SLOT(saveAs()));
+    connect(ui->actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+    connect(ui->actionNextPage, SIGNAL(triggered()), this, SLOT(nextPage()));
+    connect(ui->actionPrevPage, SIGNAL(triggered()), this, SLOT(prevPage()));
+    connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeTab()));
+    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
+
+    // Edit
+    connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(undo()));
+    connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(redo()));
+    connect(ui->actionCopy, SIGNAL(triggered()), this, SLOT(copy()));
+    connect(ui->actionPaste, SIGNAL(triggered()), this, SLOT(paste()));
+    connect(ui->actionOpenCloseInterpret, SIGNAL(triggered()), this, SLOT(interpret()));
+
+    // Search
+    connect(ui->actionSearch, SIGNAL(triggered()), this, SLOT(openSearchPanel()));
+    connect(ui->actionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
+    connect(ui->actionFindPrev, SIGNAL(triggered()), this, SLOT(findPrevious()));
+    connect(ui->actionGotoOffset, SIGNAL(triggered()), this, SLOT(gotoOffset()));
+
+    // Diff
+    connect(ui->actionDiffOpen, SIGNAL(triggered()), this, SLOT(diffOpen()));
+    connect(ui->actionDiffNext, SIGNAL(triggered()), this, SLOT(diffNext()));
+    connect(ui->actionDiffPrev, SIGNAL(triggered()), this, SLOT(diffPrev()));
+    connect(ui->actionDiffClose, SIGNAL(triggered()), this, SLOT(diffClose()));
+
+    // About
     connect(ui->actionShortcutKey, SIGNAL(triggered()), this, SLOT(shortcutKeyHelper()));
+
+    // Other
     connect(cbSizeUnit, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         HexView *view = this->currentHexView();
         if (view == nullptr)
             return;
         this->changeSizeUnit(idx, view->getBaseBytesLength());
     });
+}
+
+void HexForm::createActionShortcutsText() {
+    // File
+    ui->actionNew->setText(     ui->actionNew->text()                           + QString("\t%1").arg("Ctrl+N"));
+    ui->actionOpen->setText(    ui->actionOpen->text()                          + QString("\t%1").arg("Ctrl+O"));
+    ui->actionSave->setText(    ui->actionSave->text()                          + QString("\t%1").arg("Ctrl+S"));
+    ui->actionSaveAs->setText(  ui->actionSaveAs->text()                        + QString("\t%1").arg("Ctrl+Shift+S"));
+    ui->actionNextPage->setText(ui->actionNextPage->text()                      + QString("\t%1").arg("Ctrl+Tab"));
+    ui->actionPrevPage->setText(ui->actionPrevPage->text()                      + QString("\t%1").arg("Ctrl+Shift+Tab"));
+    ui->actionClose->setText(   ui->actionClose->text()                         + QString("\t%1").arg("Ctrl+W"));
+    ui->actionExit->setText(    ui->actionExit->text()                          + QString("\t%1").arg("Ctrl+Q"));
+
+    // Edit
+    ui->actionUndo->setText(ui->actionUndo->text()                              + QString("\t%1").arg("Ctrl+Z"));
+    ui->actionRedo->setText(ui->actionRedo->text()                              + QString("\t%1").arg("Ctrl+Y"));
+    ui->actionCopy->setText(ui->actionCopy->text()                              + QString("\t%1").arg("Ctrl+C"));
+    ui->actionPaste->setText(ui->actionPaste->text()                            + QString("\t%1").arg("Ctrl+V"));
+    ui->actionOpenCloseInterpret->setText(ui->actionOpenCloseInterpret->text()  + QString("\t%1").arg("Ctrl+D"));
+
+    // Search
+    ui->actionSearch->setText(ui->actionSearch->text()                          + QString("\t%1").arg("Ctrl+F"));
+    ui->actionFindNext->setText(ui->actionFindNext->text()                      + QString("\t%1").arg("F3"));
+    ui->actionFindPrev->setText(ui->actionFindPrev->text()                      + QString("\t%1").arg("Shift+F3"));
+    ui->actionGotoOffset->setText(ui->actionGotoOffset->text()                  + QString("\t%1").arg("Ctrl+G"));
+
+    // Diff
+    ui->actionDiffOpen->setText(ui->actionDiffOpen->text()                      + QString("\t%1").arg("Ctrl+K"));
+    ui->actionDiffNext->setText(ui->actionDiffNext->text()                      + QString("\t%1").arg("F6"));
+    ui->actionDiffPrev->setText(ui->actionDiffPrev->text()                      + QString("\t%1").arg("Shift+F6"));
+    ui->actionDiffClose->setText(ui->actionDiffClose->text()                    + QString("\t%1").arg("Ctrl+Shift+K"));
 }
 
 void HexForm::setupShortcuts() {
@@ -239,14 +306,14 @@ void HexForm::setupShortcuts() {
     connect(swr, &QShortcut::activated, this, [this]() { showTabSwitcher(true); });
 
     QShortcut* closeTab = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this);
-    connect(closeTab, &QShortcut::activated, this, [this]() {
-        int idx = m_tabs->currentIndex();
-        if (idx >= 0)
-            closeTabAt(m_tabs->currentIndex());
-    });
+    connect(closeTab, &QShortcut::activated, this, &HexForm::closeTab);
+
+    QShortcut* close = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q), this);
+    connect(close, &QShortcut::activated, this, &HexForm::close);
 
     QShortcut* newFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_N), this);
     connect(newFile, &QShortcut::activated, this, &HexForm::create);
+    // ui->actionNew->setShortcuts(QKeySequence::Open);
 
     QShortcut* openFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_O), this);
     connect(openFile, &QShortcut::activated, this, &HexForm::open);
@@ -256,11 +323,22 @@ void HexForm::setupShortcuts() {
 
     QShortcut* saveAsFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S), this);
     connect(saveAsFile, &QShortcut::activated, this, &HexForm::saveAs);
+
+    QShortcut* openDiff = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_K), this);
+    connect(openDiff, &QShortcut::activated, this, &HexForm::diffOpen);
+
+    QShortcut* closeDiff = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K), this);
+    connect(closeDiff, &QShortcut::activated, this, &HexForm::diffClose);
 }
 
 HexView* HexForm::currentHexView() const {
     if (!m_tabs) return nullptr;
     return qobject_cast<HexView*>(m_tabs->currentWidget());
+}
+
+HexDiffWidget* HexForm::currentHexDiffWidget() const {
+    if (!m_tabs) return nullptr;
+    return qobject_cast<HexDiffWidget*>(m_tabs->currentWidget());
 }
 
 QWidget* HexForm::currentPage() const {
@@ -281,6 +359,9 @@ void HexForm::attachStatusToView(HexView* view)
 
     m_connCursor = connect(view, &HexView::cursorChanged, this, &HexForm::setAddress);
     m_connSize   = connect(view, &HexView::dataSizeChanged, this, &HexForm::setSize);
+
+
+    connect(view, &HexView::statusChanged, this, &HexForm::updateStatusBar);
 
     view->setFocus();
     setAddress(view->currentOffset());
@@ -424,6 +505,20 @@ void HexForm::closeTabAt(int index)
     m_isClosingTab = false;
 }
 
+void HexForm::beginBusy() {
+    if (!m_busyOverlay) return;
+    m_busyOverlay->setGeometry(ui->hexViewWidget->rect());
+    m_busyOverlay->show();
+    m_busyOverlay->raise();
+    m_busyOverlay->update();
+}
+
+void HexForm::endBusy() {
+    if (!m_busyOverlay) return;
+    m_busyOverlay->update();
+    m_busyOverlay->hide();
+}
+
 void HexForm::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
@@ -431,6 +526,9 @@ void HexForm::resizeEvent(QResizeEvent *event)
     // 視窗大小改變 → 讓 TabWidget 填滿 hexViewWidget
     if (m_tabs)
         m_tabs->setGeometry(ui->hexViewWidget->rect());
+
+    if (m_busyOverlay && m_busyOverlay->isVisible())
+        m_busyOverlay->setGeometry(ui->hexViewWidget->rect());
 }
 
 void HexForm::showEvent(QShowEvent *event)
@@ -478,7 +576,6 @@ void HexForm::setAddress(qint64 address) {
 }
 
 void HexForm::setSize(qint64 size) {
-    // lineEditSize->setText(QString("%1").arg(size, 1).toUpper());
     this->changeSizeUnit(cbSizeUnit->currentIndex(), size);
 }
 
@@ -540,6 +637,91 @@ bool HexForm::saveAs() {
     return saveFile(page, fileName);
 }
 
+void HexForm::nextPage() {
+    int idx = m_tabs->currentIndex();
+    if (idx < m_tabs->count() - 1)
+        m_tabs->setCurrentIndex(idx + 1);
+    else
+        m_tabs->setCurrentIndex(0);
+}
+
+void HexForm::prevPage() {
+    int idx = m_tabs->currentIndex();
+    if (idx > 0)
+        m_tabs->setCurrentIndex(idx - 1);
+    else
+        m_tabs->setCurrentIndex(m_tabs->count() - 1);
+}
+
+void HexForm::closeTab() {
+    int idx = m_tabs->currentIndex();
+    if (idx >= 0)
+        closeTabAt(m_tabs->currentIndex());
+}
+
+void HexForm::openSearchPanel() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->openSearchPanel();
+}
+
+void HexForm::findNext() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->findNext();
+}
+
+void HexForm::findPrevious() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->findPrev();
+}
+
+void HexForm::gotoOffset() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->gotoOffset();
+}
+
+void HexForm::undo() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->undo();
+}
+
+void HexForm::redo() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->redo();
+}
+
+void HexForm::copy() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->copySelectionToClipboard();
+}
+
+void HexForm::paste() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->pasteFromClipboard();
+}
+
+void HexForm::interpret() {
+    HexView *view = this->currentHexView();
+    if (view == nullptr)
+        return;
+    view->openInterpretPanel();
+}
+
 void HexForm::dataChanged() {
     QWidget* page = currentPage();
     if (!page) return;
@@ -551,6 +733,107 @@ void HexForm::dataChanged() {
 void HexForm::shortcutKeyHelper() {
     HexShortcutDialog dlg(this);
     dlg.exec();
+}
+
+void HexForm::diffOpen()
+{
+    int idx = m_tabs->currentIndex();
+    if (idx < 0)
+        return;
+
+    QWidget *w = m_tabs->widget(idx);
+
+    // 只允許在「單一 HexView」上啟動 diff
+    HexView *left = qobject_cast<HexView*>(w);
+    if (!left)
+        return;
+
+    // 讓使用者選第二個檔案
+    QString path = QFileDialog::getOpenFileName(
+        this,
+        tr("Select file to compare"),
+        QString(),
+        tr("All Files (*)")
+        );
+    if (path.isEmpty())
+        return;
+
+    QFile *f = new QFile(path, this);
+    if (!f->open(QIODevice::ReadOnly))
+        return;
+
+    // 建立右邊 HexView
+    HexDiffWidget *diff = new HexDiffWidget;
+    diff->leftView()->loadDevice(left->chunks()->getDevice());
+    diff->rightView()->loadDevice(f);
+
+    diff->leftView()->setDiffNavSources(
+        &diff->leftView()->overlay(), &diff->rightView()->overlay());
+
+    diff->rightView()->setDiffNavSources(
+        &diff->leftView()->overlay(), &diff->rightView()->overlay());
+
+    // ✅ Diff 模式下：真正跑 diffFindNext/Prev 的是 diff->leftView()，必須把它的 busy 訊號接到 HexForm
+    connect(diff->leftView(),  &HexView::diffStarted,  this, &HexForm::beginBusy, Qt::UniqueConnection);
+    connect(diff->leftView(),  &HexView::diffFinished, this, &HexForm::endBusy,   Qt::UniqueConnection);
+
+    // （可選）如果你之後右邊也會跑 diff，就也接上
+    connect(diff->rightView(), &HexView::diffStarted,  this, &HexForm::beginBusy, Qt::UniqueConnection);
+    connect(diff->rightView(), &HexView::diffFinished, this, &HexForm::endBusy,   Qt::UniqueConnection);
+
+    attachStatusToView(diff->leftView());
+    attachStatusToView(diff->rightView());
+
+    // 用 diff widget 取代原本的 tab
+    // ⭐ 繼承原 tab 的狀態
+    diff->setProperty("curFile", w->property("curFile"));
+    diff->setProperty("isUntitled", w->property("isUntitled"));
+    diff->setProperty("isModified", w->property("isModified"));
+    diff->setProperty("isDiffTab", true);
+    QWidget* page = currentPage();
+    const QString fileName = QFileInfo(page->property("curFile").toString()).fileName();
+    const QString diffFileName = QFileInfo(path).fileName();
+    m_tabs->removeTab(idx);
+    m_tabs->insertTab(idx, diff, QString("%1 / %2").arg(fileName, diffFileName));
+    m_tabs->setCurrentIndex(idx);
+}
+
+void HexForm::diffNext() {
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (diff == nullptr)
+        return;
+    diff->leftView()->diffFindNext();
+}
+
+void HexForm::diffPrev() {
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (diff == nullptr)
+        return;
+    diff->leftView()->diffFindPrev();
+}
+
+void HexForm::diffClose() {
+    QWidget *page = currentPage();
+    if (!page || !page->property("isDiffTab").toBool())
+        return;
+    HexDiffWidget *diff = currentHexDiffWidget();
+    if (!diff)
+        return;
+
+    int idx = m_tabs->currentIndex();
+    if (idx < 0)
+        return;
+
+    // 移除 diff widget
+    this->closeTab();
+    this->openFileInNewTab(diff->property("curFile").toString());
+    HexView *view = currentHexView();
+    view->diffClose();
+
+    delete diff;
+    diff = nullptr;
+
+    m_tabs->setCurrentIndex(idx);
 }
 
 // -------------------- Close Tab Ask Save --------------------
@@ -668,4 +951,13 @@ void HexForm::changeSizeUnit(int idx, qint64 size) {
 
     result = idx == 0 ? QString::number(size) : QString::number(byteunit, 'f', 3);
     lineEditSize->setText(result);
+}
+
+void HexForm::updateStatusBar(const HexViewStatus& st)
+{
+    this->setAddress(st.cursorOffset);
+
+    this->changeSizeUnit(cbSizeUnit->currentIndex(), st.fileSize);
+
+    this->m_statusBar->showMessage(st.message, 3000);
 }

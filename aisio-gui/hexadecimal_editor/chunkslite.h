@@ -15,7 +15,8 @@ public:
     void setDevice(QIODevice *dev);
     qint64 size() const;
 
-    QByteArray read(qint64 offset, qint64 length);
+    QByteArray read(qint64 offset, qint64 length) const;
+    QIODevice* getDevice() { return m_dev; }
 
     void clearCache();
 
@@ -31,7 +32,7 @@ private:
     static constexpr qint64 CHUNK_SIZE = 0x10000; // 64 KB
     static constexpr int   MAX_CHUNKS  = 64;      // LRU 上限
 
-    QList<Chunk> m_chunks; // 簡單 LRU（足夠用）
+    mutable QList<Chunk> m_chunks; // 簡單 LRU（足夠用）
 };
 
 #endif // CHUNKS_LITE_H

@@ -20,9 +20,12 @@ public:
         qint64 start;                         // base/add 裡的起點
         qint64 len;                           // 本段的長度
     };
-    void reset(qint64 baseSize); // ⭐ loadDevice() 時呼叫一次
+    void reset(qint64 baseSize);
+    void setBase(ChunksLite* base);
+    ChunksLite* base() const; // ⭐ loadDevice() 時呼叫一次
 
     QByteArray read(qint64 offset, qint64 len, ChunksLite *base);                           // 依 pieces 拼出邏輯資料
+    QByteArray read(qint64 offset, qint64 len);                                             // 使用已綁定的 base
     void insert(qint64 offset, const QByteArray &data);                                     // 插入一段 Add pieces
     void erase(qint64 offset, qint64 len);                                                  // 移除範圍內的 pieces
     void replace(qint64 offset, const QByteArray &data, ChunksLite *base);                  // 不改 size，只改內容
@@ -36,6 +39,7 @@ private:
     QVector<Piece> m_pieces;
     QByteArray m_add; // 所有 insert/replace 的新資料都 append 進這裡
     qint64 m_baseSize = 0;
+    ChunksLite* m_base = nullptr;
 
     void splitAt(qint64 pos);                 // 把 piece 切開
     int  findPieceIndex(qint64 pos) const;    // 找 pos 落在哪個 piece

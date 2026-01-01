@@ -33,7 +33,7 @@ void ChunksLite::clearCache()
     m_chunks.clear();
 }
 
-QByteArray ChunksLite::read(qint64 offset, qint64 length)
+QByteArray ChunksLite::read(qint64 offset, qint64 length) const
 {
     QByteArray out;
     if (!m_dev || offset < 0 || offset >= m_size || length <= 0)

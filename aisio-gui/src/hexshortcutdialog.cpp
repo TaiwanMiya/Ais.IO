@@ -196,13 +196,21 @@ void HexShortcutDialog::populateData()
     addCategory(tr("🔎 Interpret"));
     addRow("Show / Hide Interpret", "Ctrl + D");
 
+    // 📑 比對
+    addCategory(tr("📑 Diff"));
+    addRow("Diff open", "Ctrl + K");
+    addRow("Next diff result", "F6");
+    addRow("Previous diff result", "Shift + F6");
+    addRow("Diff close", "Ctrl + Shift + K");
+
     // 📃 檔案
     addCategory(tr("📃 File"));
     addRow("Create file", "Ctrl + N");
     addRow("Open file", "Ctrl + O");
     addRow("Save file", "Ctrl + S");
     addRow("Save as file", "Ctrl + Shift + S");
-    addRow("Close file", "Ctrl + W");
     addRow("Next tab", "Ctrl + Tab");
     addRow("Previous tab", "Ctrl + Shift + Tab");
+    addRow("Close file", "Ctrl + W");
+    addRow("Exit", "Ctrl + Q");
 }

@@ -2,6 +2,7 @@
 #define HEXVIEW_H
 
 #include "chunkslite.h"
+#include "diffnavigator.h"
 #include "overlaymap.h"
 #include <QString>
 #include <QAbstractScrollArea>
@@ -13,6 +14,9 @@
 #include <QToolButton>
 #include <QLineEdit>
 #include <QTableWidgetItem>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 class QLineEdit;
 class QToolButton;
@@ -20,6 +24,20 @@ class QWidget;
 class QTimer;
 class QTableWidget;
 class QComboBox;
+
+struct HexViewStatus {
+    qint64 cursorOffset   = -1;
+    qint64 fileSize       = 0;
+    qint64 selStart       = -1;
+    qint64 selEnd         = -1;
+    bool   hasSelection   = false;
+    bool   isModified     = false;
+    bool   inDiffSearch   = false;
+    bool   inFindSearch   = false;
+    QString mode;   // "HEX" / "ASCII"
+    QString message;
+};
+Q_DECLARE_METATYPE(HexViewStatus)
 
 class HexView : public QAbstractScrollArea
 {
@@ -32,7 +50,7 @@ public:
 
     // 給外部使用的 API
     qint64 findBytes(const QByteArray &pattern, qint64 start, bool backwards);
-    void   gotoOffset(qint64 offset);
+    void   onGotoOffset(qint64 offset);
     qint64 offsetFromIndex(const QModelIndex &idx) const;
     QModelIndex currentIndex() const;
     qint64 currentOffset() const;
@@ -41,21 +59,51 @@ public:
     QByteArray readBytes(qint64 offset, qint64 len) const;
     QByteArray readBaseBytes(qint64 offset, qint64 len) const;
     bool saveToFile(const QString &fileName);
+    void setCursorOffsetExternal(qint64 off);
     int getaddressChars() { return addressChars(); }
+
+    // diff/overlay 類視覺狀態改變時，需要把 line image cache 清掉
+    void invalidateLineCache();
+    OverlayMap& overlay();            // ⭐ 給 HexDiffWidget 用
+    const OverlayMap& overlay() const;
+    ChunksLite* chunks();
+    const ChunksLite* chunks() const;
 
     // 設定
     enum class FindMode { Hex, Text };
 
     void   setFindMode(FindMode mode);
     void   resetFindState();
-    qint64 findNext(const QString &input);
-    qint64 findPrev(const QString &input);
-    qint64 gotoOffsetFromText(const QString &text);
+
+    void   undo();
+    void   redo();
+    void   copySelectionToClipboard();
+    void   pasteFromClipboard();
+    void   openInterpretPanel();
+
+    void   openSearchPanel();
+    void   findNext();
+    void   findPrev();
+    void   gotoOffset();
+
+    void   diffFindNext();
+    void   diffFindPrev();
+    void   startDiffFlash(qint64 offset);
+    void   diffClose();
+
+    void invalidateAllLines();
+
+    void setDiffNavSources(OverlayMap* left, OverlayMap* right);
 
 signals:
     void cursorChanged(qint64 offset);
     void dataSizeChanged(qint64 size);
     void modifiedChanged(bool modified);
+    void diffFound(qint64 pos);
+    void viewScrolledToOffset(qint64 offset);
+    void statusChanged(const HexViewStatus& status);
+    void diffStarted();
+    void diffFinished();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -77,6 +125,7 @@ private:
     bool       m_editable      = true;
     qint64     m_cursorOffset  = 0;   // 游標所在 byte
     qint64     m_baseOffset    = 0;   // 顯示位址 base（目前先 0）
+    bool       m_isModified = false;  // 是否已編輯
     OverlayMap m_overlay;
 
     // 刻度
@@ -97,6 +146,9 @@ private:
     // 閃爍
     int m_editFlashCounter = 0;
     int m_searchFlashCounter = 0;
+    int m_diffFlashCounter = 0;
+    int    m_errorFlashCounter = 0;
+    QTimer *m_errorFlashTimer = nullptr;
 
     // HEX / ASCII 字元快取（文字）
     QString m_hexCache[256];
@@ -108,8 +160,6 @@ private:
     qint64 m_selAnchor = -1;
     bool   m_dragSelecting = false;
     bool   m_showCursor = true;
-    int    m_errorFlashCounter = 0;
-    QTimer *m_errorFlashTimer = nullptr;
     bool   m_hexHighNibble = true;
     bool   m_mouseSelecting = false;
 
@@ -138,19 +188,22 @@ private:
     };
     QVector<Edit> m_undoStack;
     QVector<Edit> m_redoStack;
+    int m_cleanUndoDepth = 0;  // 代表「未修改」時 undoStack 的深度（load/save 時更新）
 
     // ===== Edit helpers =====
     void pushEdit(Edit::Type type, qint64 offset, const QByteArray &oldData, const QByteArray &newData);
     void pushReplaceByte(qint64 offset, uchar oldByte, uchar newByte);
     void pushInsertBytes(qint64 offset, const QByteArray &data);
     void pushDeletePieces(qint64 offset, const QVector<OverlayMap::Piece>& pieces, qint64 deleteLen);
-    void undo();
-    void redo();
+    void refreshModifiedFlag();
 
     // === Find / Search 狀態 ===
     FindMode   m_findMode    = FindMode::Hex;
     QByteArray m_lastPattern;
     qint64     m_lastPos     = -1;   // 下次搜尋起點（方向決定）
+    qint64 onFindNext(const QString &input);
+    qint64 onFindPrev(const QString &input);
+    qint64 onGotoOffsetFromText(const QString &text);
 
     // 內部搜尋 helper
     QByteArray parseHexString(const QString& s, bool *ok) const;
@@ -183,8 +236,6 @@ private:
 
     // === Clipboard support ===
     enum class PasteMode { Insert, Overwrite };
-    void copySelectionToClipboard();
-    void pasteFromClipboard();
 
     enum class Area { None, Hex, Ascii };
     Area lastClickArea = Area::None;
@@ -235,7 +286,7 @@ private:
     void updateScrollBars();                 // 根據資料與度量更新捲軸範圍
     void recalcBytesPerLineForWidth(int viewportWidth);
     void ensureVisible(qint64 offset);
-    void invalidateAllLines();
+    void emitStatus(QString message = "");
 
     // 行快取相關
     void ensureLineCacheCapacity();          // 依視窗高度調整快取大小
@@ -266,6 +317,14 @@ private:
     void flashError();
     void flashEditError();
     void flashSearchError();
+    void flashDiffError();
+
+    // 比對
+    DiffNavigator m_diffNav;
+    qint64 m_lastDiffPos = -1;
+    bool   m_hasLastDiff = false;
+    QFutureWatcher<qint64> m_diffWatcher;
+    bool m_diffRunning = false;
 
     qint64 effectiveSize() const {
         if (!m_chunks) return 0;

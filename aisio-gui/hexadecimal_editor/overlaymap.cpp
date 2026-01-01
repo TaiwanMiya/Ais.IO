@@ -1,5 +1,7 @@
 #include "overlaymap.h"
 
+#include <algorithm>
+
 void OverlayMap::reset(qint64 baseSize)
 {
     m_baseSize = baseSize;
@@ -7,6 +9,21 @@ void OverlayMap::reset(qint64 baseSize)
     m_add.clear();
     if (m_baseSize > 0)
         m_pieces.push_back(Piece{Piece::Src::Base, 0, m_baseSize});
+}
+
+void OverlayMap::setBase(ChunksLite* base)
+{
+    m_base = base;
+}
+
+ChunksLite* OverlayMap::base() const
+{
+    return m_base;
+}
+
+QByteArray OverlayMap::read(qint64 offset, qint64 len)
+{
+    return read(offset, len, m_base);
 }
 
 void OverlayMap::clear()
