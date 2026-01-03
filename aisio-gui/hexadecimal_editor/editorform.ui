@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HexForm</class>
- <widget class="QMainWindow" name="HexForm">
+ <class>EditorForm</class>
+ <widget class="QMainWindow" name="EditorForm">
   <property name="windowModality">
    <enum>Qt::WindowModality::NonModal</enum>
   </property>

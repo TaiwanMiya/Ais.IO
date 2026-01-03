@@ -94,8 +94,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppDll}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppLib}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppDll}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyAppLib}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\User\Documents\Ais.IO\aisio-gui\build\Desktop_Qt_6_9_2_MSVC2022_64bit-Release\dist\*"; DestDir: "{app}\dist\"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibssl}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Source: "C:\Users\User\Documents\Ais.IO\bin\x64\Release\{#MyLibcrypto}"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

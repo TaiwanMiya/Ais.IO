@@ -19,7 +19,7 @@ void LauncherWindow::on_textEditorPushButton_clicked() {
 
 void LauncherWindow::on_hexadecimalEditorPushButton_clicked() {
     if (!hexform) {
-        hexform = new HexForm(nullptr);
+        hexform = new EditorForm(nullptr);
         hexform->setWindowFlag(Qt::Window, true);
         hexform->setAttribute(Qt::WA_DeleteOnClose);
     }

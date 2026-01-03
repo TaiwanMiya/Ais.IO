@@ -13,9 +13,10 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QProgressBar>
+#include <QFutureWatcher>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class HexForm; }
+namespace Ui { class EditorForm; }
 QT_END_NAMESPACE
 
 // ------------------------------------------------------------
@@ -76,12 +77,12 @@ private:
 
 // ------------------------------------------------------------
 
-class HexForm : public QMainWindow {
+class EditorForm : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit HexForm(QWidget *parent = nullptr);
-    ~HexForm();
+    explicit EditorForm(QWidget *parent = nullptr);
+    ~EditorForm();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -119,11 +120,13 @@ private slots:
     void diffPrev();
     void diffClose();
 
+    void onAsyncSaveFinished();
+
     void dataChanged();
     void shortcutKeyHelper();
 
 private:
-    Ui::HexForm *ui;
+    Ui::EditorForm *ui;
     QTabWidget  *m_tabs         = nullptr;
     QStatusBar  *m_statusBar    = nullptr;
     QLabel *lbAddressName       = nullptr;
@@ -133,16 +136,21 @@ private:
     QComboBox *cbSizeUnit       = nullptr;
     BusyOverlay* m_busyOverlay  = nullptr;
 
+    // background save (one at a time)
+    bool m_saveRunning = false;
+    QFutureWatcher<bool> m_saveWatcher;
+    QWidget* m_savePage = nullptr;
+    HexView*  m_saveView = nullptr;
+    QString   m_saveFinalPath;
+    QString   m_saveTmpPath;
+
     // tab 綁定的檔案資訊都存放在 page widget 的 dynamic property
     //  - "curFile"    : QString
     //  - "isUntitled" : bool
     //  - "isModified" : bool
 
     bool m_isClosingTab = false;
-
-    // 目前連到 statusbar 的 view 訊號（切 tab 時要換綁定）
-    QMetaObject::Connection m_connCursor;
-    QMetaObject::Connection m_connSize;
+    const QString m_windowTitle = "AisIO Editor";
 
     void createStatusBar();
     void createAction();
@@ -158,6 +166,7 @@ private:
     int  addHexTab(QIODevice* dev, const QString& fileName, bool editable);
     void setCurrentFile(QWidget* page, const QString &fileName);
     bool saveFile(QWidget* page, const QString &fileName);
+    bool saveFileAsync(QWidget* page, const QString &fileName);
     void closeTabAt(int index);
 
     // 進度條

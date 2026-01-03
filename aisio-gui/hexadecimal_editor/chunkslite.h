@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QHash>
 #include <QList>
+#include <QMutex>
 
 // 原始檔案 (只讀、不修改)
 class ChunksLite
@@ -33,6 +34,7 @@ private:
     static constexpr int   MAX_CHUNKS  = 64;      // LRU 上限
 
     mutable QList<Chunk> m_chunks; // 簡單 LRU（足夠用）
+    mutable QMutex m_mutex;
 };
 
 #endif // CHUNKS_LITE_H

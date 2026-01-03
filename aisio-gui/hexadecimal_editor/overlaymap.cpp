@@ -1,9 +1,12 @@
 #include "overlaymap.h"
 
 #include <algorithm>
+#include <QReadLocker>
+#include <QWriteLocker>
 
 void OverlayMap::reset(qint64 baseSize)
 {
+    QWriteLocker lk(&m_lock);
     m_baseSize = baseSize;
     m_pieces.clear();
     m_add.clear();
@@ -13,11 +16,13 @@ void OverlayMap::reset(qint64 baseSize)
 
 void OverlayMap::setBase(ChunksLite* base)
 {
+    QWriteLocker lk(&m_lock);
     m_base = base;
 }
 
 ChunksLite* OverlayMap::base() const
 {
+    QReadLocker lk(&m_lock);
     return m_base;
 }
 
@@ -28,11 +33,18 @@ QByteArray OverlayMap::read(qint64 offset, qint64 len)
 
 void OverlayMap::clear()
 {
+    QWriteLocker lk(&m_lock);
     m_pieces.clear();
     m_add.clear();
 }
 
 qint64 OverlayMap::size() const
+{
+    QReadLocker lk(&m_lock);
+    return sizeUnlocked();
+}
+
+qint64 OverlayMap::sizeUnlocked() const
 {
     qint64 total = 0;
     for (const auto &p : m_pieces) total += p.len;
@@ -81,10 +93,11 @@ void OverlayMap::splitAt(qint64 pos)
 
 QByteArray OverlayMap::read(qint64 offset, qint64 len, ChunksLite *base)
 {
+    QReadLocker lk(&m_lock);
     QByteArray out;
     if (len <= 0 || offset < 0) return out;
 
-    qint64 logicalSize = size();
+    qint64 logicalSize = sizeUnlocked();
     if (offset >= logicalSize) return out;
     if (offset + len > logicalSize) len = logicalSize - offset;
 
@@ -121,11 +134,12 @@ QByteArray OverlayMap::read(qint64 offset, qint64 len, ChunksLite *base)
 
 void OverlayMap::insert(qint64 offset, const QByteArray &data)
 {
+    QWriteLocker lk(&m_lock);
     if (data.isEmpty())
         return;
 
     // clamp offset to [0, size]
-    qint64 total = size();
+    qint64 total = sizeUnlocked();
     if (offset < 0) offset = 0;
     if (offset > total) offset = total;
 
@@ -193,6 +207,7 @@ void OverlayMap::insert(qint64 offset, const QByteArray &data)
 
 void OverlayMap::erase(qint64 offset, qint64 len)
 {
+    QWriteLocker lk(&m_lock);
     if (len <= 0 || m_pieces.isEmpty())
         return;
 
@@ -239,6 +254,7 @@ void OverlayMap::erase(qint64 offset, qint64 len)
 
 void OverlayMap::replace(qint64 offset, const QByteArray &data, ChunksLite *base)
 {
+    QWriteLocker lk(&m_lock);
     if (data.isEmpty()) return;
 
     // 確保 piece 邊界正確
@@ -315,6 +331,7 @@ void OverlayMap::mergeAdjacentPieces()
 
 QVector<OverlayMap::Piece> OverlayMap::eraseAndReturnPieces(qint64 offset, qint64 len)
 {
+    QWriteLocker lk(&m_lock);
     QVector<Piece> removed;
     if (len <= 0 || m_pieces.isEmpty())
         return removed;
@@ -380,6 +397,7 @@ QVector<OverlayMap::Piece> OverlayMap::eraseAndReturnPieces(qint64 offset, qint6
 
 void OverlayMap::insertPieces(qint64 offset, const QVector<Piece>& pieces)
 {
+    QWriteLocker lk(&m_lock);
     if (pieces.isEmpty())
         return;
 

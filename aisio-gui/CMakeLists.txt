@@ -44,7 +44,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ui/binary_window.ui
         ui/base_encoder_window.ui
 
-        hexadecimal_editor/hexform.h
+        hexadecimal_editor/editorform.h
         hexadecimal_editor/hexview.h
         hexadecimal_editor/chunkslite.h
         hexadecimal_editor/interpretvaluedelegate.h
@@ -52,14 +52,14 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hexadecimal_editor/hexdiffwidget.h
         hexadecimal_editor/diffnavigator.h
         hexadecimal_editor/tabprogressbar.h
-        hexadecimal_editor/hexform.cpp
+        hexadecimal_editor/editorform.cpp
         hexadecimal_editor/hexview.cpp
         hexadecimal_editor/chunkslite.cpp
         hexadecimal_editor/overlaymap.cpp
         hexadecimal_editor/hexdiffwidget.cpp
         hexadecimal_editor/diffnavigator.cpp
         hexadecimal_editor/tabprogressbar.cpp
-        hexadecimal_editor/hexform.ui
+        hexadecimal_editor/editorform.ui
 
         text_editor/textview.cpp
         text_editor/textview.h

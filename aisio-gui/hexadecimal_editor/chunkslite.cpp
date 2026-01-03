@@ -1,5 +1,7 @@
 #include "chunkslite.h"
 
+#include <QMutexLocker>
+
 ChunksLite::ChunksLite(QIODevice *dev)
 {
     setDevice(dev);
@@ -7,6 +9,7 @@ ChunksLite::ChunksLite(QIODevice *dev)
 
 void ChunksLite::setDevice(QIODevice *dev)
 {
+    QMutexLocker lk(&m_mutex);
     m_dev = dev;
     m_chunks.clear();
 
@@ -25,16 +28,19 @@ void ChunksLite::setDevice(QIODevice *dev)
 
 qint64 ChunksLite::size() const
 {
+    QMutexLocker lk(&m_mutex);
     return m_size;
 }
 
 void ChunksLite::clearCache()
 {
+    QMutexLocker lk(&m_mutex);
     m_chunks.clear();
 }
 
 QByteArray ChunksLite::read(qint64 offset, qint64 length) const
 {
+    QMutexLocker lk(&m_mutex);
     QByteArray out;
     if (!m_dev || offset < 0 || offset >= m_size || length <= 0)
         return out;

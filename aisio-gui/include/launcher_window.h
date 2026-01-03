@@ -39,7 +39,7 @@ private slots:
 
 private:
     Ui::LauncherWindow *ui;
-    QPointer<HexForm> hexform;
+    QPointer<EditorForm> hexform;
     QPointer<BaseEncoderWindow> baseEncoderWin;
     QPointer<BinaryWindow> binaryWin;
 };

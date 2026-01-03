@@ -1,7 +1,7 @@
-#include "hexform.h"
+#include "editorform.h"
 #include "hexview.h"
 #include "../include/hexshortcutdialog.h"
-#include "ui_hexform.h"
+#include "ui_editorform.h"
 
 #include <QFileDialog>
 #include <QLineEdit>
@@ -10,6 +10,7 @@
 #include <QShortcut>
 #include <QMimeData>
 #include <QUrl>
+#include <QtConcurrent>
 
 #include <QDialog>
 #include <QListWidget>
@@ -127,11 +128,11 @@ private:
 
 // ------------------------------------------------------------
 
-HexForm::HexForm(QWidget *parent)
+EditorForm::EditorForm(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::HexForm) {
+    , ui(new Ui::EditorForm) {
     ui->setupUi(this);
-    setWindowTitle(tr("Hexadecimal Editor"));
+    setWindowTitle(m_windowTitle);
 
     // 允許拖曳檔案進來
     setAcceptDrops(true);
@@ -147,7 +148,7 @@ HexForm::HexForm(QWidget *parent)
     m_tabs->show();
 
     // ⭐ 關 tab（含：若有 * 先詢問存檔）
-    connect(m_tabs, &QTabWidget::tabCloseRequested, this, &HexForm::closeTabAt);
+    connect(m_tabs, &QTabWidget::tabCloseRequested, this, &EditorForm::closeTabAt);
 
     // 切 tab 時，statusbar 綁定到新的 HexView
     connect(m_tabs, &QTabWidget::currentChanged, this, [this](int) {
@@ -155,7 +156,7 @@ HexForm::HexForm(QWidget *parent)
         attachStatusToView(view);
 
         if (!view) {
-            setWindowTitle(tr("Hexadecimal Editor"));
+            setWindowTitle(m_windowTitle);
             return;
         }
 
@@ -164,9 +165,9 @@ HexForm::HexForm(QWidget *parent)
         if (!page) return;
         const QString fileName = page->property("curFile").toString();
         if (fileName.isEmpty())
-            setWindowTitle("Hexadecimal Editor");
+            setWindowTitle(m_windowTitle);
         else
-            setWindowTitle(QFileInfo(fileName).fileName() + " - Hexadecimal Editor");
+            setWindowTitle(QFileInfo(fileName).fileName() + " - " + m_windowTitle);
     });
 
     m_busyOverlay = new BusyOverlay(ui->hexViewWidget);
@@ -178,13 +179,17 @@ HexForm::HexForm(QWidget *parent)
     this->createAction();
     this->createActionShortcutsText();
     this->setupShortcuts();
+
+    // async save watcher
+    connect(&m_saveWatcher, &QFutureWatcher<bool>::finished,
+            this, &EditorForm::onAsyncSaveFinished);
 }
 
-HexForm::~HexForm() {
+EditorForm::~EditorForm() {
     delete ui;
 }
 
-void HexForm::createStatusBar() {
+void EditorForm::createStatusBar() {
     m_statusBar = statusBar();
 
     lbAddressName = new QLabel(tr("Address:"), this);
@@ -221,10 +226,10 @@ void HexForm::createStatusBar() {
 
     this->attachStatusToView(currentHexView());
 
-    m_statusBar->showMessage(tr("Ready"), 2000);
+    m_statusBar->showMessage(m_windowTitle + tr(" is Ready!"), 2000);
 }
 
-void HexForm::createAction() {
+void EditorForm::createAction() {
     // File
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(create()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
@@ -260,13 +265,17 @@ void HexForm::createAction() {
     // Other
     connect(cbSizeUnit, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         HexView *view = this->currentHexView();
-        if (view == nullptr)
+        HexDiffWidget *diff = this->currentHexDiffWidget();
+        if (!view && !diff)
             return;
-        this->changeSizeUnit(idx, view->getBaseBytesLength());
+        if (view)
+            this->changeSizeUnit(idx, view->getBaseBytesLength());
+        else if (diff)
+            this->changeSizeUnit(idx, diff->leftView()->getBaseBytesLength());
     });
 }
 
-void HexForm::createActionShortcutsText() {
+void EditorForm::createActionShortcutsText() {
     // File
     ui->actionNew->setText(     ui->actionNew->text()                           + QString("\t%1").arg("Ctrl+N"));
     ui->actionOpen->setText(    ui->actionOpen->text()                          + QString("\t%1").arg("Ctrl+O"));
@@ -297,7 +306,7 @@ void HexForm::createActionShortcutsText() {
     ui->actionDiffClose->setText(ui->actionDiffClose->text()                    + QString("\t%1").arg("Ctrl+Shift+K"));
 }
 
-void HexForm::setupShortcuts() {
+void EditorForm::setupShortcuts() {
     // ⭐ Ctrl+Tab 視覺化切換（含反向 Ctrl+Shift+Tab）
     QShortcut* sw = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Tab), this);
     connect(sw, &QShortcut::activated, this, [this]() { showTabSwitcher(false); });
@@ -306,69 +315,61 @@ void HexForm::setupShortcuts() {
     connect(swr, &QShortcut::activated, this, [this]() { showTabSwitcher(true); });
 
     QShortcut* closeTab = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this);
-    connect(closeTab, &QShortcut::activated, this, &HexForm::closeTab);
+    connect(closeTab, &QShortcut::activated, this, &EditorForm::closeTab);
 
     QShortcut* close = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q), this);
-    connect(close, &QShortcut::activated, this, &HexForm::close);
+    connect(close, &QShortcut::activated, this, &EditorForm::close);
 
     QShortcut* newFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_N), this);
-    connect(newFile, &QShortcut::activated, this, &HexForm::create);
+    connect(newFile, &QShortcut::activated, this, &EditorForm::create);
     // ui->actionNew->setShortcuts(QKeySequence::Open);
 
     QShortcut* openFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_O), this);
-    connect(openFile, &QShortcut::activated, this, &HexForm::open);
+    connect(openFile, &QShortcut::activated, this, &EditorForm::open);
 
     QShortcut* saveFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_S), this);
-    connect(saveFile, &QShortcut::activated, this, &HexForm::save);
+    connect(saveFile, &QShortcut::activated, this, &EditorForm::save);
 
     QShortcut* saveAsFile = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S), this);
-    connect(saveAsFile, &QShortcut::activated, this, &HexForm::saveAs);
+    connect(saveAsFile, &QShortcut::activated, this, &EditorForm::saveAs);
 
     QShortcut* openDiff = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_K), this);
-    connect(openDiff, &QShortcut::activated, this, &HexForm::diffOpen);
+    connect(openDiff, &QShortcut::activated, this, &EditorForm::diffOpen);
 
     QShortcut* closeDiff = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K), this);
-    connect(closeDiff, &QShortcut::activated, this, &HexForm::diffClose);
+    connect(closeDiff, &QShortcut::activated, this, &EditorForm::diffClose);
 }
 
-HexView* HexForm::currentHexView() const {
+HexView* EditorForm::currentHexView() const {
     if (!m_tabs) return nullptr;
     return qobject_cast<HexView*>(m_tabs->currentWidget());
 }
 
-HexDiffWidget* HexForm::currentHexDiffWidget() const {
+HexDiffWidget* EditorForm::currentHexDiffWidget() const {
     if (!m_tabs) return nullptr;
     return qobject_cast<HexDiffWidget*>(m_tabs->currentWidget());
 }
 
-QWidget* HexForm::currentPage() const {
+QWidget* EditorForm::currentPage() const {
     return m_tabs ? m_tabs->currentWidget() : nullptr;
 }
 
-void HexForm::attachStatusToView(HexView* view)
+void EditorForm::attachStatusToView(HexView* view)
 {
-    // 換綁定（避免多重觸發）
-    if (m_connCursor) QObject::disconnect(m_connCursor);
-    if (m_connSize)   QObject::disconnect(m_connSize);
-
     if (!view) {
         lineEditAddress->clear();
         lineEditSize->clear();
         return;
     }
 
-    m_connCursor = connect(view, &HexView::cursorChanged, this, &HexForm::setAddress);
-    m_connSize   = connect(view, &HexView::dataSizeChanged, this, &HexForm::setSize);
-
-
-    connect(view, &HexView::statusChanged, this, &HexForm::updateStatusBar);
+    connect(view, &HexView::statusChanged, this, &EditorForm::updateStatusBar, Qt::UniqueConnection);
 
     view->setFocus();
     setAddress(view->currentOffset());
     setSize(view->getBytesLength());
 }
 
-int HexForm::addHexTab(QIODevice* dev, const QString& fileName, bool editable)
+int EditorForm::addHexTab(QIODevice* dev, const QString& fileName, bool editable)
 {
     auto *view = new HexView(m_tabs);
     view->loadDevice(dev);
@@ -381,29 +382,31 @@ int HexForm::addHexTab(QIODevice* dev, const QString& fileName, bool editable)
 
     view->setFocus();
 
-    connect(view, &HexView::modifiedChanged, this, [this, view](bool modified) {
+    connect(view, &HexView::statusChanged, this, [this, view](const HexViewStatus& st) {
         int idx = m_tabs->indexOf(view);
         if (idx < 0) return;
 
-        view->setProperty("isModified", modified);
+        view->setProperty("isModified", st.isModified);
 
         QString title = m_tabs->tabText(idx);
         bool hasStar = title.endsWith('*');
 
-        if (modified && !hasStar) title += "*";
-        if (!modified && hasStar) title.chop(1);
+        if (st.isModified && !hasStar) title += "*";
+        if (!st.isModified && hasStar) title.chop(1);
 
         m_tabs->setTabText(idx, title);
 
         // 若這個 view 是目前 tab，同步視窗標題（讓 * 也能顯示在 title 的字串裡）
         if (m_tabs->currentWidget() == view) {
-            QString base = "Hexadecimal Editor";
+            QString base = m_windowTitle;
             QString fn = view->property("curFile").toString();
             QString shown = fn.isEmpty() ? base : (QFileInfo(fn).fileName() + " - " + base);
-            if (modified) shown += "*";
+            if (st.isModified) shown += "*";
             setWindowTitle(shown);
         }
     });
+    connect(view,  &HexView::progressStarted,  this, &EditorForm::beginBusy, Qt::UniqueConnection);
+    connect(view,  &HexView::progressFinished, this, &EditorForm::endBusy,   Qt::UniqueConnection);
 
     QString title = fileName.isEmpty() ? tr("Untitled") : QFileInfo(fileName).fileName();
     int idx = m_tabs->addTab(view, title);
@@ -415,7 +418,7 @@ int HexForm::addHexTab(QIODevice* dev, const QString& fileName, bool editable)
     return idx;
 }
 
-void HexForm::setCurrentFile(QWidget* page, const QString &fileName) {
+void EditorForm::setCurrentFile(QWidget* page, const QString &fileName) {
     if (!page) return;
     const QString canonical = fileName.isEmpty() ? QString() : QFileInfo(fileName).canonicalFilePath();
 
@@ -432,24 +435,34 @@ void HexForm::setCurrentFile(QWidget* page, const QString &fileName) {
 
     setWindowModified(false);
     if (canonical.isEmpty()) {
-        setWindowFilePath("Hexadecimal Editor");
-        setWindowTitle("Hexadecimal Editor");
+        setWindowFilePath(m_windowTitle);
+        setWindowTitle(m_windowTitle);
     }
     else {
-        setWindowFilePath(canonical + " - Hexadecimal Editor");
-        setWindowTitle(QFileInfo(canonical).fileName() + " - Hexadecimal Editor");
+        setWindowFilePath(canonical + " - " + m_windowTitle);
+        setWindowTitle(QFileInfo(canonical).fileName() + " - " + m_windowTitle);
     }
 }
 
-bool HexForm::saveFile(QWidget* page, const QString &fileName) {
+bool EditorForm::saveFile(QWidget* page, const QString &fileName) {
     HexView* view = qobject_cast<HexView*>(page);
-    if (!view) return false;
+    HexDiffWidget *diff = qobject_cast<HexDiffWidget *>(page);
+    if (!view && !diff) return false;
 
     QString tmpFileName = fileName + ".~tmp";
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QFile file(tmpFileName);
-    bool ok = view->saveToFile(tmpFileName);
+    bool ok = false;
+    if (view)
+        ok = view->saveToFile(tmpFileName);
+    else if (diff && diff->leftView()->hasFocus())
+        ok = diff->leftView()->saveToFile(tmpFileName);
+    else if (diff && diff->rightView()->hasFocus())
+        ok = diff->rightView()->saveToFile(tmpFileName);
+    else
+        return false;
+
     if (QFile::exists(fileName))
         ok = QFile::remove(fileName);
     if (ok)
@@ -460,7 +473,18 @@ bool HexForm::saveFile(QWidget* page, const QString &fileName) {
             ok = QFile::remove(tmpFileName);
             page->setProperty("isModified", false);
             setWindowModified(false);
-            emit view->modifiedChanged(false);
+            if (view){
+                view->setIsModified(false);
+                view->emitStatus(QString("File '%1' saved.").arg(fileName));
+            }
+            else if (diff && diff->leftView()->hasFocus()){
+                diff->leftView()->setIsModified(false);
+                diff->leftView()->emitStatus(QString("File '%1' saved.").arg(fileName));
+            }
+            else if (diff && diff->rightView()->hasFocus()){
+                diff->rightView()->setIsModified(false);
+                diff->rightView()->emitStatus(QString("File '%1' saved.").arg(fileName));
+            }
         }
     }
     QApplication::restoreOverrideCursor();
@@ -476,11 +500,125 @@ bool HexForm::saveFile(QWidget* page, const QString &fileName) {
     }
 
     setCurrentFile(page, fileName);
-    statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
 
-void HexForm::closeTabAt(int index)
+bool EditorForm::saveFileAsync(QWidget* page, const QString &fileName)
+{
+    if (m_saveRunning)
+        return false;
+
+    HexView* view = qobject_cast<HexView*>(page);
+    HexDiffWidget *diff = qobject_cast<HexDiffWidget *>(page);
+    if (!view && !diff) return false;
+
+    // decide which view to save
+    if (!view) {
+        if (diff && diff->leftView()->hasFocus()) view = diff->leftView();
+        else if (diff && diff->rightView()->hasFocus()) view = diff->rightView();
+        else view = diff->leftView();
+    }
+    if (!view) return false;
+
+    m_saveRunning = true;
+    m_savePage = page;
+    m_saveView = view;
+    m_saveFinalPath = fileName;
+    m_saveTmpPath = fileName + ".~tmp";
+
+    beginBusy();
+
+    // capture pointers for worker (OverlayMap / ChunksLite are now internally locked)
+    OverlayMap* overlay = &view->overlay();
+    ChunksLite* chunks  = view->chunks();
+
+    auto future = QtConcurrent::run([overlay, chunks, tmp = m_saveTmpPath]() -> bool {
+        if (!chunks) return false;
+        QFile file(tmp);
+        if (!file.open(QIODevice::WriteOnly))
+            return false;
+
+        const qint64 totalSize = overlay->size();
+        const qint64 BUF = 0x10000;
+        qint64 written = 0;
+        while (written < totalSize) {
+            qint64 len = qMin<qint64>(BUF, totalSize - written);
+            QByteArray data = overlay->read(written, len, chunks);
+            if (data.size() != len) {
+                file.close();
+                return false;
+            }
+            if (file.write(data) != data.size()) {
+                file.close();
+                return false;
+            }
+            written += len;
+        }
+        file.flush();
+        file.close();
+        return true;
+    });
+
+    m_saveWatcher.setFuture(future);
+    return true;
+}
+
+void EditorForm::onAsyncSaveFinished()
+{
+    const bool okWrite = m_saveWatcher.result();
+    endBusy();
+
+    const QString finalName = m_saveFinalPath;
+    const QString tmpName   = m_saveTmpPath;
+
+    m_saveRunning = false;
+
+    if (!okWrite) {
+        if (!tmpName.isEmpty()) QFile::remove(tmpName);
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Critical);
+        box.setWindowTitle(tr("Save failed"));
+        box.setText(tr("Cannot write file %1.").arg(finalName));
+        box.setStyleSheet("* { background:#222222; color:#f0f0f0; }");
+        box.exec();
+        return;
+    }
+
+    bool ok = true;
+    if (QFile::exists(finalName))
+        ok = QFile::remove(finalName);
+    if (ok) {
+        // try atomic rename
+        ok = QFile::rename(tmpName, finalName);
+        if (!ok) {
+            QFile f(tmpName);
+            ok = f.copy(finalName);
+            if (ok) QFile::remove(tmpName);
+        }
+    }
+
+    if (!ok) {
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Critical);
+        box.setWindowTitle(tr("Save failed"));
+        box.setText(tr("Cannot write file %1.").arg(finalName));
+        box.setStyleSheet("* { background:#222222; color:#f0f0f0; }");
+        box.exec();
+        return;
+    }
+
+    if (m_savePage)
+        m_savePage->setProperty("isModified", false);
+    if (m_saveView) {
+        m_saveView->setIsModified(false);
+        m_saveView->emitStatus(QString("File '%1' saved.").arg(finalName));
+    }
+
+    if (m_savePage)
+        setCurrentFile(m_savePage, finalName);
+}
+
+void EditorForm::closeTabAt(int index)
 {
     // ⭐ 防止 re-entrancy
     if (m_isClosingTab)
@@ -505,7 +643,7 @@ void HexForm::closeTabAt(int index)
     m_isClosingTab = false;
 }
 
-void HexForm::beginBusy() {
+void EditorForm::beginBusy() {
     if (!m_busyOverlay) return;
     m_busyOverlay->setGeometry(ui->hexViewWidget->rect());
     m_busyOverlay->show();
@@ -513,13 +651,13 @@ void HexForm::beginBusy() {
     m_busyOverlay->update();
 }
 
-void HexForm::endBusy() {
+void EditorForm::endBusy() {
     if (!m_busyOverlay) return;
     m_busyOverlay->update();
     m_busyOverlay->hide();
 }
 
-void HexForm::resizeEvent(QResizeEvent *event)
+void EditorForm::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
 
@@ -531,7 +669,7 @@ void HexForm::resizeEvent(QResizeEvent *event)
         m_busyOverlay->setGeometry(ui->hexViewWidget->rect());
 }
 
-void HexForm::showEvent(QShowEvent *event)
+void EditorForm::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
 
@@ -541,7 +679,7 @@ void HexForm::showEvent(QShowEvent *event)
 
 // -------------------- Drag & Drop --------------------
 
-void HexForm::dragEnterEvent(QDragEnterEvent *event)
+void EditorForm::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData() && event->mimeData()->hasUrls()) {
         event->acceptProposedAction();
@@ -550,7 +688,7 @@ void HexForm::dragEnterEvent(QDragEnterEvent *event)
     QMainWindow::dragEnterEvent(event);
 }
 
-void HexForm::dropEvent(QDropEvent *event)
+void EditorForm::dropEvent(QDropEvent *event)
 {
     if (!event->mimeData() || !event->mimeData()->hasUrls()) {
         QMainWindow::dropEvent(event);
@@ -569,17 +707,25 @@ void HexForm::dropEvent(QDropEvent *event)
 
 // ============SLOTS============
 
-void HexForm::setAddress(qint64 address) {
+void EditorForm::setAddress(qint64 address) {
     HexView* view = currentHexView();
-    if (!view) return;
-    lineEditAddress->setText(QString("%1").arg(address, view->getaddressChars(), 16, QLatin1Char('0')).toUpper());
+    HexDiffWidget *diff = currentHexDiffWidget();
+    if (!view && !diff) return;
+    if (view)
+        lineEditAddress->setText(QString("%1").arg(address, view->getaddressChars(), 16, QLatin1Char('0')).toUpper());
+    else if (diff) {
+        qint64 leftLen = diff->leftView()->getBytesLength();
+        qint64 rightLen = diff->rightView()->getBytesLength();
+        int chars = rightLen > leftLen ? diff->rightView()->getaddressChars() : diff->leftView()->getaddressChars();
+        lineEditAddress->setText(QString("%1").arg(address, chars, 16, QLatin1Char('0')).toUpper());
+    }
 }
 
-void HexForm::setSize(qint64 size) {
+void EditorForm::setSize(qint64 size) {
     this->changeSizeUnit(cbSizeUnit->currentIndex(), size);
 }
 
-void HexForm::create() {
+void EditorForm::create() {
     // 初始的 device 也放進第一個 tab
     QString initialName;
     QIODevice *dev = nullptr;
@@ -589,7 +735,7 @@ void HexForm::create() {
     addHexTab(dev, initialName, true);
 }
 
-void HexForm::open() {
+void EditorForm::open() {
     QSettings settings;
     QString lastDir = settings.value("LastDir", QDir::homePath()).toString();
 
@@ -600,7 +746,7 @@ void HexForm::open() {
     }
 }
 
-void HexForm::openFileInNewTab(const QString& fileName) {
+void EditorForm::openFileInNewTab(const QString& fileName) {
     if (fileName.isEmpty())
         return;
 
@@ -612,20 +758,27 @@ void HexForm::openFileInNewTab(const QString& fileName) {
     statusBar()->showMessage(tr("File loaded..."), 2000);
 }
 
-bool HexForm::save() {
+bool EditorForm::save() {
     QWidget* page = currentPage();
     if (!page) return false;
 
     const bool isUntitled = page->property("isUntitled").toBool();
     const QString curFile = page->property("curFile").toString();
 
+    // During close-tab flow we must save synchronously (so the close decision is correct).
+    const bool forceSync = m_isClosingTab;
+
     if (isUntitled)
         return saveAs();
-    else
+
+    if (forceSync)
         return saveFile(page, curFile);
+
+    // Normal Ctrl+S / menu Save: run in background with progress bar.
+    return saveFileAsync(page, curFile);
 }
 
-bool HexForm::saveAs() {
+bool EditorForm::saveAs() {
     QWidget* page = currentPage();
     if (!page) return false;
 
@@ -634,10 +787,12 @@ bool HexForm::saveAs() {
     if (fileName.isEmpty())
         return false;
 
-    return saveFile(page, fileName);
+    if (m_isClosingTab)
+        return saveFile(page, fileName);
+    return saveFileAsync(page, fileName);
 }
 
-void HexForm::nextPage() {
+void EditorForm::nextPage() {
     int idx = m_tabs->currentIndex();
     if (idx < m_tabs->count() - 1)
         m_tabs->setCurrentIndex(idx + 1);
@@ -645,7 +800,7 @@ void HexForm::nextPage() {
         m_tabs->setCurrentIndex(0);
 }
 
-void HexForm::prevPage() {
+void EditorForm::prevPage() {
     int idx = m_tabs->currentIndex();
     if (idx > 0)
         m_tabs->setCurrentIndex(idx - 1);
@@ -653,76 +808,130 @@ void HexForm::prevPage() {
         m_tabs->setCurrentIndex(m_tabs->count() - 1);
 }
 
-void HexForm::closeTab() {
+void EditorForm::closeTab() {
     int idx = m_tabs->currentIndex();
     if (idx >= 0)
         closeTabAt(m_tabs->currentIndex());
 }
 
-void HexForm::openSearchPanel() {
+void EditorForm::openSearchPanel() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->openSearchPanel();
+    if (view)
+        view->openSearchPanel();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->openSearchPanel();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->openSearchPanel();
 }
 
-void HexForm::findNext() {
+void EditorForm::findNext() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->findNext();
+    if (view)
+        view->findNext();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->findNext();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->findNext();
 }
 
-void HexForm::findPrevious() {
+void EditorForm::findPrevious() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->findPrev();
+    if (view)
+        view->findPrev();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->findPrev();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->findPrev();
 }
 
-void HexForm::gotoOffset() {
+void EditorForm::gotoOffset() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->gotoOffset();
+    if (view)
+        view->gotoOffset();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->gotoOffset();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->gotoOffset();
 }
 
-void HexForm::undo() {
+void EditorForm::undo() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->undo();
+    if (view)
+        view->undo();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->undo();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->undo();
 }
 
-void HexForm::redo() {
+void EditorForm::redo() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->redo();
+    if (view)
+        view->redo();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->redo();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->redo();
 }
 
-void HexForm::copy() {
+void EditorForm::copy() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->copySelectionToClipboard();
+    if (view)
+        view->copySelectionToClipboard();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->copySelectionToClipboard();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->copySelectionToClipboard();
 }
 
-void HexForm::paste() {
+void EditorForm::paste() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->pasteFromClipboard();
+    if (view)
+        view->pasteFromClipboard();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->pasteFromClipboard();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->pasteFromClipboard();
 }
 
-void HexForm::interpret() {
+void EditorForm::interpret() {
     HexView *view = this->currentHexView();
-    if (view == nullptr)
+    HexDiffWidget *diff = this->currentHexDiffWidget();
+    if (!view && !diff)
         return;
-    view->openInterpretPanel();
+    if (view)
+        view->openInterpretPanel();
+    else if (diff && diff->leftView()->hasFocus())
+        diff->leftView()->openInterpretPanel();
+    else if (diff && diff->rightView()->hasFocus())
+        diff->rightView()->openInterpretPanel();
 }
 
-void HexForm::dataChanged() {
+void EditorForm::dataChanged() {
     QWidget* page = currentPage();
     if (!page) return;
 
@@ -730,23 +939,27 @@ void HexForm::dataChanged() {
     setWindowModified(true);
 }
 
-void HexForm::shortcutKeyHelper() {
+void EditorForm::shortcutKeyHelper() {
     HexShortcutDialog dlg(this);
     dlg.exec();
 }
 
-void HexForm::diffOpen()
+void EditorForm::diffOpen()
 {
     int idx = m_tabs->currentIndex();
-    if (idx < 0)
+    if (idx < 0) {
+        m_statusBar->showMessage(tr("Please create or open a file first."), 3000);
         return;
+    }
 
     QWidget *w = m_tabs->widget(idx);
 
     // 只允許在「單一 HexView」上啟動 diff
     HexView *left = qobject_cast<HexView*>(w);
-    if (!left)
+    if (!left) {
+        m_statusBar->showMessage(tr("Please close the current diff first."), 3000);
         return;
+    }
 
     // 讓使用者選第二個檔案
     QString path = QFileDialog::getOpenFileName(
@@ -773,13 +986,13 @@ void HexForm::diffOpen()
     diff->rightView()->setDiffNavSources(
         &diff->leftView()->overlay(), &diff->rightView()->overlay());
 
-    // ✅ Diff 模式下：真正跑 diffFindNext/Prev 的是 diff->leftView()，必須把它的 busy 訊號接到 HexForm
-    connect(diff->leftView(),  &HexView::diffStarted,  this, &HexForm::beginBusy, Qt::UniqueConnection);
-    connect(diff->leftView(),  &HexView::diffFinished, this, &HexForm::endBusy,   Qt::UniqueConnection);
+    // ✅ Diff 模式下：真正跑 diffFindNext/Prev 的是 diff->leftView()，必須把它的 busy 訊號接到 EditorForm
+    connect(diff->leftView(),  &HexView::progressStarted,  this, &EditorForm::beginBusy, Qt::UniqueConnection);
+    connect(diff->leftView(),  &HexView::progressFinished, this, &EditorForm::endBusy,   Qt::UniqueConnection);
 
     // （可選）如果你之後右邊也會跑 diff，就也接上
-    connect(diff->rightView(), &HexView::diffStarted,  this, &HexForm::beginBusy, Qt::UniqueConnection);
-    connect(diff->rightView(), &HexView::diffFinished, this, &HexForm::endBusy,   Qt::UniqueConnection);
+    connect(diff->rightView(), &HexView::progressStarted,  this, &EditorForm::beginBusy, Qt::UniqueConnection);
+    connect(diff->rightView(), &HexView::progressFinished, this, &EditorForm::endBusy,   Qt::UniqueConnection);
 
     attachStatusToView(diff->leftView());
     attachStatusToView(diff->rightView());
@@ -796,49 +1009,79 @@ void HexForm::diffOpen()
     m_tabs->removeTab(idx);
     m_tabs->insertTab(idx, diff, QString("%1 / %2").arg(fileName, diffFileName));
     m_tabs->setCurrentIndex(idx);
+
+    diff->leftView()->emitStatus();
 }
 
-void HexForm::diffNext() {
+void EditorForm::diffNext() {
     HexDiffWidget *diff = this->currentHexDiffWidget();
-    if (diff == nullptr)
+    if (!diff) {
+        m_statusBar->showMessage(tr("Diff are not currently enabled."), 3000);
         return;
+    }
     diff->leftView()->diffFindNext();
 }
 
-void HexForm::diffPrev() {
+void EditorForm::diffPrev() {
     HexDiffWidget *diff = this->currentHexDiffWidget();
-    if (diff == nullptr)
+    if (!diff) {
+        m_statusBar->showMessage(tr("Diff are not currently enabled."), 3000);
         return;
+    }
     diff->leftView()->diffFindPrev();
 }
 
-void HexForm::diffClose() {
+void EditorForm::diffClose() {
     QWidget *page = currentPage();
-    if (!page || !page->property("isDiffTab").toBool())
+    if (!page || !page->property("isDiffTab").toBool()) {
+        m_statusBar->showMessage(tr("Diff are not currently enabled."), 3000);
         return;
+    }
     HexDiffWidget *diff = currentHexDiffWidget();
-    if (!diff)
+    if (!diff) {
+        m_statusBar->showMessage(tr("Diff are not currently enabled."), 3000);
         return;
+    }
 
     int idx = m_tabs->currentIndex();
     if (idx < 0)
         return;
 
-    // 移除 diff widget
-    this->closeTab();
-    this->openFileInNewTab(diff->property("curFile").toString());
-    HexView *view = currentHexView();
-    view->diffClose();
+    // 把左邊 view 拿回來（保留它的資料/游標狀態）
+    HexView *left = diff->leftView();
+    left->setParent(m_tabs);
 
-    delete diff;
-    diff = nullptr;
+    // 繼承原 tab 狀態
+    left->setProperty("curFile",    diff->property("curFile"));
+    left->setProperty("isUntitled", diff->property("isUntitled"));
+    left->setProperty("isModified", diff->property("isModified"));
+    left->setProperty("isDiffTab",  false);
 
+    // 用左邊 view 取代 diff tab
+    QString title;
+    const QString curFile = left->property("curFile").toString();
+    if (curFile.isEmpty()) title = tr("Untitled");
+    else title = QFileInfo(curFile).fileName();
+
+    m_tabs->removeTab(idx);
+    m_tabs->insertTab(idx, left, title);
     m_tabs->setCurrentIndex(idx);
+
+    // 離開 diff 時把 diff 狀態 reset（你的 diffClose 只做 lastDiff 清掉，OK）
+    left->diffClose();
+
+    // 刪掉 diff widget（只刪一次！）
+    diff->deleteLater();
+
+    // 重新 attach 狀態列（避免還接在 diff 裡的 view）
+    attachStatusToView(left);
+
+    left->emitStatus();
 }
 
 // -------------------- Close Tab Ask Save --------------------
 
-bool HexForm::maybeSaveTab(int index)
+bool EditorForm::maybeSaveTab(int index)
 {
     QWidget* page = m_tabs->widget(index);
     if (!page) return true;
@@ -889,7 +1132,7 @@ bool HexForm::maybeSaveTab(int index)
 
 // -------------------- Ctrl+Tab Visual Switch --------------------
 
-void HexForm::showTabSwitcher(bool reverse)
+void EditorForm::showTabSwitcher(bool reverse)
 {
     if (!m_tabs || m_tabs->count() <= 1)
         return;
@@ -913,7 +1156,7 @@ void HexForm::showTabSwitcher(bool reverse)
     pop->setFocus();
 }
 
-void HexForm::changeSizeUnit(int idx, qint64 size) {
+void EditorForm::changeSizeUnit(int idx, qint64 size) {
     if (size == 0)
         return;
     QString result = "";
@@ -953,11 +1196,12 @@ void HexForm::changeSizeUnit(int idx, qint64 size) {
     lineEditSize->setText(result);
 }
 
-void HexForm::updateStatusBar(const HexViewStatus& st)
+void EditorForm::updateStatusBar(const HexViewStatus& st)
 {
     this->setAddress(st.cursorOffset);
 
     this->changeSizeUnit(cbSizeUnit->currentIndex(), st.fileSize);
 
-    this->m_statusBar->showMessage(st.message, 3000);
+    if (!st.message.isEmpty())
+        this->m_statusBar->showMessage(st.message, 3000);
 }

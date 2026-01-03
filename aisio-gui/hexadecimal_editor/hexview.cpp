@@ -305,8 +305,7 @@ void HexView::undo()
     }
 
     // 讓游標一定出現在畫面中
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
+    emitStatus();
     refreshModifiedFlag();
     ensureVisible(m_cursorOffset);
 
@@ -374,8 +373,7 @@ void HexView::redo()
     }
 
     // 讓游標一定出現在畫面中
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
+    emitStatus();
     refreshModifiedFlag();
     ensureVisible(m_cursorOffset);
 
@@ -419,8 +417,8 @@ void HexView::redo()
 
 void HexView::refreshModifiedFlag() {
     const bool modified = (m_undoStack.size() != m_cleanUndoDepth);
-    emit modifiedChanged(modified);
     m_isModified = modified;
+    emitStatus();
 }
 
 QByteArray HexView::parseHexString(const QString &s, bool *ok) const
@@ -524,7 +522,7 @@ qint64 HexView::doFindInternal(const QString &input, bool backwards)
         m_searchFlashCounter = 3;
         m_errorFlashTimer->start();
 
-        emit cursorChanged(m_cursorOffset);
+        emitStatus();
 
         // ⭐ 確保畫面捲動到該位置
         ensureVisible(m_cursorOffset);
@@ -623,10 +621,8 @@ void HexView::deleteRanges(const QVector<Range> &ranges)
         ensureVisible(m_cursorOffset);
     }
 
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-    emit modifiedChanged(true);
     m_isModified = true;
+    emitStatus();
 
     clearSelectionRange();
     m_extraSelections.clear();
@@ -843,10 +839,8 @@ void HexView::pasteFromClipboard()
     m_selEnd   = pos + data.size();
     m_selAnchor = m_cursorOffset;
 
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-    emit modifiedChanged(true);
     m_isModified = true;
+    emitStatus();
 
     ensureVisible(m_cursorOffset);
     updateScrollBars();
@@ -931,19 +925,19 @@ void HexView::createSearchPanel()
     connect(m_btnFindNext, &QToolButton::clicked,
             this, [this]() {
                 if (m_findEdit)
-                    onFindNext(m_findEdit->text());
+                    startFindAsync(m_findEdit->text(), false);
             });
     connect(m_btnFindPrev, &QToolButton::clicked,
             this, [this]() {
                 if (m_findEdit)
-                    onFindPrev(m_findEdit->text());
+                    startFindAsync(m_findEdit->text(), true);
             });
 
     // 按 Enter 也等於 Next
     connect(m_findEdit, &QLineEdit::returnPressed,
             this, [this]() {
                 if (m_findEdit)
-                    onFindNext(m_findEdit->text());
+                    startFindAsync(m_findEdit->text(), false);
             });
 
     // Goto
@@ -1149,10 +1143,8 @@ void HexView::loadDevice(QIODevice *dev)
     m_cleanUndoDepth = 0;
 
     m_cursorOffset = 0;
-    emit cursorChanged(m_cursorOffset);
-    emit dataSizeChanged(effectiveSize());
-    emit modifiedChanged(false);
     m_isModified = false;
+    emitStatus();
     verticalScrollBar()->setValue(0);
 
     ensureVisible(m_cursorOffset);
@@ -1518,10 +1510,13 @@ void HexView::moveCursorRelative(qint64 deltaBytes)
 
     m_cursorOffset = newOff;
     ensureVisible(m_cursorOffset);
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     // 游標位置變了，整個行快取無效化，避免殘留高亮
     invalidateAllLines();
     viewport()->update();
+
+    if (m_interpretPanel && m_interpretPanel->isVisible())
+        updateInterpretPanel();
 }
 
 void HexView::moveCursorLineRelative(qint64 deltaLines)
@@ -1594,8 +1589,8 @@ bool HexView::handleHexEdit(QKeyEvent *event)
     if (m_hexHighNibble)
         moveCursorRelative(1);
 
-    emit modifiedChanged(true);
     m_isModified = true;
+    emitStatus();
 
     invalidateAllLines();
     viewport()->update();
@@ -1619,8 +1614,8 @@ bool HexView::handleAsciiEdit(QKeyEvent *event)
     m_overlay.replace(m_cursorOffset, QByteArray(1, char(newByte)), m_chunks);
 
     moveCursorRelative(1);
-    emit modifiedChanged(true);
     m_isModified = true;
+    emitStatus();
 
     invalidateAllLines();
     viewport()->update();
@@ -1631,7 +1626,7 @@ void HexView::moveCursorToStart() {
     qint64 byteCount = effectiveSize();
     if (!m_chunks || byteCount <= 0) return;
     m_cursorOffset = 0;
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     clearSelectionRange();
     m_extraSelections.clear();
     ensureVisible(0);
@@ -1643,7 +1638,7 @@ void HexView::moveCursorToEnd() {
     qint64 byteCount = effectiveSize();
     if (!m_chunks || byteCount <= 0) return;
     m_cursorOffset = byteCount - 1;
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     clearSelectionRange();
     m_extraSelections.clear();
     ensureVisible(m_cursorOffset);
@@ -1841,10 +1836,8 @@ void HexView::keyPressEvent(QKeyEvent *event)
             updateScrollBars();
 
             m_cursorOffset = pos;
-            emit cursorChanged(m_cursorOffset);
-            emit dataSizeChanged(effectiveSize());
-            emit modifiedChanged(true);
             m_isModified = true;
+            emitStatus();
             clearSelectionRange();
             m_extraSelections.clear();
 
@@ -1862,13 +1855,11 @@ void HexView::keyPressEvent(QKeyEvent *event)
                 qint64 delPos = m_cursorOffset - 1;
                 deleteRanges({ { delPos, delPos + 1 } });
 
-                emit dataSizeChanged(effectiveSize());
-
                 m_cursorOffset = delPos;
                 clampCursorToValidRange();
                 ensureVisible(m_cursorOffset);
 
-                emit cursorChanged(m_cursorOffset);
+                emitStatus();
 
                 updateScrollBars();
                 invalidateAllLines();
@@ -1922,7 +1913,7 @@ void HexView::mousePressEvent(QMouseEvent *event)
 
     qint64 oldCursor = m_cursorOffset;
     m_cursorOffset = clickOff;
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     ensureVisible(m_cursorOffset);
     resetFindState();
 
@@ -2060,6 +2051,78 @@ qint64 HexView::findBytes(const QByteArray &pattern, qint64 start, bool backward
     return -1;
 }
 
+qint64 HexView::findBytesChunked(const QByteArray& pattern, qint64 start, bool backwards) {
+    const qint64 size = effectiveSize();
+    const qint64 patLen = pattern.size();
+    if (patLen <= 0 || size < patLen)
+        return -1;
+
+    if (!backwards) {
+        if (start < 0) start = 0;
+
+        for (qint64 blockStart = (start / CHUNK) * CHUNK;
+             blockStart < size;
+             blockStart += CHUNK)
+        {
+            // overlap 是關鍵
+            const qint64 readStart = blockStart;
+            const qint64 readLen =
+                std::min(CHUNK + patLen - 1, size - readStart);
+
+            QByteArray buf = m_overlay.read(readStart, readLen, m_chunks);
+            if (buf.size() < patLen)
+                continue;
+
+            // 起始 offset（避免回頭）
+            qint64 i0 = std::max<qint64>(start - readStart, 0);
+
+            for (qint64 i = i0; i + patLen <= buf.size(); ++i) {
+                if (std::memcmp(buf.constData() + i,
+                                pattern.constData(),
+                                size_t(patLen)) == 0)
+                {
+                    return readStart + i;
+                }
+            }
+        }
+    } else {
+        if (start >= size) start = size - 1;
+        if (start < 0) return -1;
+
+        qint64 lastBlock =
+            (start / CHUNK) * CHUNK;
+
+        for (qint64 blockStart = lastBlock;
+             blockStart >= 0;
+             blockStart -= CHUNK)
+        {
+            const qint64 readStart = blockStart;
+            const qint64 readLen =
+                std::min(CHUNK + patLen - 1, size - readStart);
+
+            QByteArray buf = m_overlay.read(readStart, readLen, m_chunks);
+            if (buf.size() < patLen)
+                continue;
+
+            qint64 i1 = std::min<qint64>(
+                start - readStart,
+                buf.size() - patLen
+                );
+
+            for (qint64 i = i1; i >= 0; --i) {
+                if (std::memcmp(buf.constData() + i,
+                                pattern.constData(),
+                                size_t(patLen)) == 0)
+                {
+                    return readStart + i;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
 void HexView::onGotoOffset(qint64 offset) {
     qint64 byteCount = effectiveSize();
 
@@ -2070,7 +2133,7 @@ void HexView::onGotoOffset(qint64 offset) {
     if (offset >= byteCount) offset = byteCount - 1;
 
     m_cursorOffset = offset;
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
 
     // ⭐ 清除所有選取
     clearSelectionRange();
@@ -2103,6 +2166,10 @@ QModelIndex HexView::currentIndex() const {
 
 qint64 HexView::currentOffset() const {
     return m_cursorOffset;
+}
+
+void HexView::setIsModified(bool isModified) {
+    m_isModified = isModified;
 }
 
 qint64 HexView::getBytesLength() const {
@@ -2175,7 +2242,7 @@ void HexView::setCursorOffsetExternal(qint64 off)
 
     m_cursorOffset = off;
     clampCursorToValidRange();
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     ensureVisible(m_cursorOffset);
 
     invalidateAllLines();
@@ -2240,7 +2307,7 @@ void HexView::openSearchPanel() {
 void HexView::findNext() {
     if (!m_searchPanel) return;
     if (m_findEdit && !m_findEdit->text().isEmpty()) {
-        onFindNext(m_findEdit->text());
+        startFindAsync(m_findEdit->text(), false);
     } else {
         m_searchPanel->show();
         positionSearchPanel();
@@ -2252,13 +2319,119 @@ void HexView::findNext() {
 void HexView::findPrev() {
     if (!m_searchPanel) return;
     if (m_findEdit && !m_findEdit->text().isEmpty()) {
-        onFindPrev(m_findEdit->text());
+        startFindAsync(m_findEdit->text(), true);
     } else {
         m_searchPanel->show();
         positionSearchPanel();
         if (m_findEdit)
             m_findEdit->setFocus();
     }
+}
+
+void HexView::startFindAsync(const QString &input, bool backwards)
+{
+    if (m_findRunning) {
+        // 按住快捷鍵時：先記一筆方向，等當前搜尋結束後再自動續一次。
+        m_findPendingDir = backwards ? -1 : +1;
+        return;
+    }
+
+    QString text = input.trimmed();
+    qint64 byteCount = effectiveSize();
+    if (text.isEmpty() || !m_chunks || byteCount <= 0)
+        return;
+
+    // 1) 依 FindMode 解析 pattern（在 UI thread 做，避免跨 thread 操作 Qt widget 狀態）
+    QByteArray pattern;
+    if (m_findMode == FindMode::Hex) {
+        bool ok = false;
+        pattern = parseHexString(text, &ok);
+        if (!ok || pattern.isEmpty()) {
+            flashLineEditError(m_findEdit);
+            return;
+        }
+    } else {
+        pattern = text.toUtf8();
+        if (pattern.isEmpty()) {
+            flashLineEditError(m_findEdit);
+            return;
+        }
+    }
+
+    // 2) 起點與「延續搜尋」狀態在 UI thread 計算，worker 只負責找位置
+    bool newPattern = m_lastPattern.isEmpty() || (pattern != m_lastPattern);
+
+    auto clampStart = [&](qint64 v) -> qint64 {
+        qint64 sz = effectiveSize();
+        if (sz <= 0) return 0;
+        if (v < 0) return 0;
+        if (v >= sz) return sz - 1;
+        return v;
+    };
+
+    qint64 start = 0;
+    if (!newPattern && m_lastPos >= 0) {
+        start = backwards ? (m_lastPos - 1) : m_lastPos;
+        if (start < 0) start = 0;
+        start = clampStart(start);
+    } else {
+        if (hasSelection())
+            start = backwards ? m_selStart : m_selEnd;
+        else
+            start = m_cursorOffset;
+        start = clampStart(start);
+    }
+
+    m_findRunning = true;
+    m_findPendingDir = 0;
+    emit progressStarted();
+
+    // 3) worker：只做 findBytes（OverlayMap/ChunksLite 已加鎖，避免按住鍵亂跳/讀錯）
+    auto future = QtConcurrent::run([this, pattern, start, backwards]() -> qint64 {
+        // return findBytes(pattern, start, backwards);
+        return findBytesChunked(pattern, start, backwards);
+    });
+
+    m_findWatcher.setFuture(future);
+    QObject::disconnect(&m_findWatcher, nullptr, this, nullptr);
+    connect(&m_findWatcher, &QFutureWatcher<qint64>::finished, this, [this, pattern, backwards]() {
+        m_findRunning = false;
+        qint64 pos = m_findWatcher.result();
+
+        if (pos < 0) {
+            emit progressFinished();
+            flashLineEditError(m_findEdit);
+            emitStatus(backwards ? "No prev find found." : "No next find found.");
+        } else {
+            // 成功：更新狀態（在 UI thread）
+            m_lastPattern = pattern;
+            m_lastPos     = pos + (backwards ? 0 : pattern.size());
+
+            m_cursorOffset = pos;
+            m_selAnchor = pos;
+            m_selStart  = pos;
+            m_selEnd    = pos + pattern.size();
+
+            m_searchFlashCounter = 3;
+            m_errorFlashTimer->start();
+
+            m_hexHighNibble = true;
+            m_extraSelections.clear();
+
+            emitStatus();
+            ensureVisible(m_cursorOffset);
+            invalidateAllLines();
+            viewport()->update();
+            emit progressFinished();
+        }
+
+        // 若使用者按住快捷鍵，結束後自動再跑一次
+        const int pending = m_findPendingDir;
+        m_findPendingDir = 0;
+        if (pending != 0 && m_searchPanel && m_findEdit && !m_findEdit->text().isEmpty()) {
+            startFindAsync(m_findEdit->text(), pending < 0);
+        }
+    });
 }
 
 void HexView::gotoOffset() {
@@ -2278,6 +2451,9 @@ void HexView::diffFindNext() {
     if (byteCount <= 0)
         return;
 
+    m_diffRunning = true;
+    emit progressStarted();
+
     auto clampStart = [&](qint64 v) -> qint64 {
         if (v < 0) return 0;
         if (v >= byteCount) return byteCount - 1;
@@ -2295,9 +2471,6 @@ void HexView::diffFindNext() {
         start = clampStart(m_cursorOffset);
     }
 
-    m_diffRunning = true;
-    emit diffStarted();
-
     auto future = QtConcurrent::run([this, start]() -> qint64 {
         qint64 pos = -1;
         if (m_diffNav.findNext(start, pos))
@@ -2307,35 +2480,35 @@ void HexView::diffFindNext() {
 
     m_diffWatcher.setFuture(future);
 
+    QObject::disconnect(&m_diffWatcher, nullptr, this, nullptr);
+
     connect(&m_diffWatcher, &QFutureWatcher<qint64>::finished,
             this, [this]() {
                 m_diffRunning = false;
 
                 qint64 pos = m_diffWatcher.result();
                 if (pos < 0) {
-                    emit diffFinished();
+                    emit progressFinished();
                     emitStatus("No next diff found.");
                     return;
                 }
 
                 // 回到 UI thread，安全
                 emit diffFound(pos);
-                emit diffFinished();
+                emit progressFinished();
+                emitStatus();
             });
-
-    // qint64 pos = -1;
-    // if (!m_diffNav.findNext(start, pos)) {
-    //     m_hasLastDiff = false;
-    //     m_lastDiffPos = -1;
-    //     return;
-    // }
-    // emit diffFound(pos);
 }
 
 void HexView::diffFindPrev() {
+    if (m_diffRunning)
+        return;
     qint64 byteCount = m_diffNav.size();
     if (byteCount <= 0)
         return;
+
+    m_diffRunning = true;
+    emit progressStarted();
 
     auto clampStart = [&](qint64 v) -> qint64 {
         if (v < 0) return 0;
@@ -2354,9 +2527,6 @@ void HexView::diffFindPrev() {
         start = clampStart(m_cursorOffset);
     }
 
-    m_diffRunning = true;
-    emit diffStarted();
-
     auto future = QtConcurrent::run([this, start]() -> qint64 {
         qint64 pos = -1;
         if (m_diffNav.findPrev(start, pos))
@@ -2366,29 +2536,24 @@ void HexView::diffFindPrev() {
 
     m_diffWatcher.setFuture(future);
 
+    QObject::disconnect(&m_diffWatcher, nullptr, this, nullptr);
+
     connect(&m_diffWatcher, &QFutureWatcher<qint64>::finished,
             this, [this]() {
                 m_diffRunning = false;
 
                 qint64 pos = m_diffWatcher.result();
                 if (pos < 0) {
-                    emit diffFinished();
+                    emit progressFinished();
                     emitStatus("No prev diff found.");
                     return;
                 }
 
                 // 回到 UI thread，安全
                 emit diffFound(pos);
-                emit diffFinished();
+                emit progressFinished();
+                emitStatus();
             });
-
-    // qint64 pos = -1;
-    // if (!m_diffNav.findPrev(start, pos)) {
-    //     m_hasLastDiff = false;
-    //     m_lastDiffPos = -1;
-    //     return;
-    // }
-    // emit diffFound(pos);
 }
 
 void HexView::startDiffFlash(qint64 offset)
@@ -2414,7 +2579,7 @@ void HexView::startDiffFlash(qint64 offset)
     m_diffFlashCounter = 3;
     m_errorFlashTimer->start();
 
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
     ensureVisible(m_cursorOffset);
 
     m_hexHighNibble = true;
@@ -2892,12 +3057,6 @@ void HexView::createInterpretPanel()
                     QGuiApplication::clipboard()->setText(s);
                 }
             });
-    // Ctrl+C Copy raw
-    new QShortcut(Qt::CTRL | Qt::Key_C, m_interpretTable, [this] {
-        auto items = m_interpretTable->selectedItems();
-        if (items.isEmpty()) return;
-        QGuiApplication::clipboard()->setText(interpretRawText(items.first()));
-    });
     m_interpretTable->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
     auto* del = new InterpretValueDelegate(m_interpretTable);
@@ -2928,7 +3087,7 @@ void HexView::createInterpretPanel()
         if (m_interpretPanel) m_interpretPanel->hide();
     });
 
-    connect(this, &HexView::cursorChanged, this, [this](qint64) {
+    connect(this, &HexView::emitStatus, this, [this]() {
         if (m_interpretPanel && m_interpretPanel->isVisible())
             updateInterpretPanel();
     });
@@ -3243,11 +3402,10 @@ void HexView::interpretApplyBytes(qint64 pos, int oldLen, const QByteArray& newB
         m_overlay.insert(pos + oldData.size(), ins);
         pushInsertBytes(pos + oldData.size(), ins);
         updateScrollBars();
-        emit dataSizeChanged(effectiveSize());
     }
 
-    emit modifiedChanged(true);
     m_isModified = true;
+    emitStatus();
 
     // 更新游標/選取/畫面
     clearSelectionRange();
@@ -3256,7 +3414,7 @@ void HexView::interpretApplyBytes(qint64 pos, int oldLen, const QByteArray& newB
     m_cursorOffset = pos;
     clampCursorToValidRange();
     ensureVisible(m_cursorOffset);
-    emit cursorChanged(m_cursorOffset);
+    emitStatus();
 
     invalidateAllLines();
     viewport()->update();

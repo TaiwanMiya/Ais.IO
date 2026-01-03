@@ -23,8 +23,8 @@ HexDiffWidget::HexDiffWidget(QWidget *parent)
     m_left->setDiffNavSources(&m_left->overlay(), &m_right->overlay());
     m_right->setDiffNavSources(&m_left->overlay(), &m_right->overlay());
 
-    connect(m_left,  &HexView::cursorChanged, this, &HexDiffWidget::onLeftCursorChanged);
-    connect(m_right, &HexView::cursorChanged, this, &HexDiffWidget::onRightCursorChanged);
+    connect(m_left,  &HexView::statusChanged, this, &HexDiffWidget::onLeftCursorChanged);
+    connect(m_right, &HexView::statusChanged, this, &HexDiffWidget::onRightCursorChanged);
     connect(m_left,  &HexView::diffFound,     this, &HexDiffWidget::onDiffFound);
     connect(m_right, &HexView::diffFound,     this, &HexDiffWidget::onDiffFound);
 }
@@ -41,21 +41,21 @@ void HexDiffWidget::rebuildDiff()
 HexView* HexDiffWidget::leftView() const  { return m_left; }
 HexView* HexDiffWidget::rightView() const { return m_right; }
 
-void HexDiffWidget::onLeftCursorChanged(qint64 off)
+void HexDiffWidget::onLeftCursorChanged(const HexViewStatus& st)
 {
     if (m_inDiffFlash) return;
     if (m_syncingCursor) return;
     m_syncingCursor = true;
-    m_right->setCursorOffsetExternal(off);
+    m_right->setCursorOffsetExternal(st.cursorOffset);
     m_syncingCursor = false;
 }
 
-void HexDiffWidget::onRightCursorChanged(qint64 off)
+void HexDiffWidget::onRightCursorChanged(const HexViewStatus& st)
 {
     if (m_inDiffFlash) return;
     if (m_syncingCursor) return;
     m_syncingCursor = true;
-    m_left->setCursorOffsetExternal(off);
+    m_left->setCursorOffsetExternal(st.cursorOffset);
     m_syncingCursor = false;
 }
 

@@ -50,10 +50,12 @@ public:
 
     // 給外部使用的 API
     qint64 findBytes(const QByteArray &pattern, qint64 start, bool backwards);
+    qint64 findBytesChunked(const QByteArray& pattern, qint64 start, bool backwards); // 新版 find
     void   onGotoOffset(qint64 offset);
     qint64 offsetFromIndex(const QModelIndex &idx) const;
     QModelIndex currentIndex() const;
     qint64 currentOffset() const;
+    void setIsModified(bool isModified);
     qint64 getBytesLength() const;
     qint64 getBaseBytesLength() const;
     QByteArray readBytes(qint64 offset, qint64 len) const;
@@ -95,15 +97,14 @@ public:
 
     void setDiffNavSources(OverlayMap* left, OverlayMap* right);
 
+    // 狀態變更
+    void emitStatus(QString message = "");
+
 signals:
-    void cursorChanged(qint64 offset);
-    void dataSizeChanged(qint64 size);
-    void modifiedChanged(bool modified);
     void diffFound(qint64 pos);
-    void viewScrolledToOffset(qint64 offset);
     void statusChanged(const HexViewStatus& status);
-    void diffStarted();
-    void diffFinished();
+    void progressStarted();
+    void progressFinished();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -286,7 +287,6 @@ private:
     void updateScrollBars();                 // 根據資料與度量更新捲軸範圍
     void recalcBytesPerLineForWidth(int viewportWidth);
     void ensureVisible(qint64 offset);
-    void emitStatus(QString message = "");
 
     // 行快取相關
     void ensureLineCacheCapacity();          // 依視窗高度調整快取大小
@@ -299,6 +299,10 @@ private:
     QLineEdit *m_lineEditFlashing = nullptr;
     QString m_lineEditOriginalStyle;
     void flashLineEditError(QLineEdit *edit);
+
+    // Find (background)
+    static constexpr qint64 CHUNK = 0x10000;
+    void startFindAsync(const QString& input, bool backwards);
 
     // 游標與編輯
     qint64 lineFromScroll() const;
@@ -323,8 +327,13 @@ private:
     DiffNavigator m_diffNav;
     qint64 m_lastDiffPos = -1;
     bool   m_hasLastDiff = false;
-    QFutureWatcher<qint64> m_diffWatcher;
     bool m_diffRunning = false;
+    QFutureWatcher<qint64> m_diffWatcher;   // diff 非同步處理
+
+    // 搜尋（Find Next/Prev）背景執行：避免大檔案卡 UI
+    bool m_findRunning = false;
+    int  m_findPendingDir = 0;              // +1 next, -1 prev（按住鍵盤可排隊一次）
+    QFutureWatcher<qint64> m_findWatcher;
 
     qint64 effectiveSize() const {
         if (!m_chunks) return 0;

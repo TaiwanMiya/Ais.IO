@@ -4,6 +4,7 @@
 #include "chunkslite.h"
 #include <QByteArray>
 #include <QVector>
+#include <QReadWriteLock>
 #include <QtGlobal>
 
 struct OverlaySegment {
@@ -35,11 +36,19 @@ public:
     qint64 size() const;
     void clear();
 
+    // Thread-safety note:
+    // OverlayMap can be read by background workers (diff/search/save) while UI edits are happening.
+    // All public APIs are guarded by a RW lock.
+
 private:
     QVector<Piece> m_pieces;
     QByteArray m_add; // 所有 insert/replace 的新資料都 append 進這裡
     qint64 m_baseSize = 0;
     ChunksLite* m_base = nullptr;
+
+    mutable QReadWriteLock m_lock;
+
+    qint64 sizeUnlocked() const;
 
     void splitAt(qint64 pos);                 // 把 piece 切開
     int  findPieceIndex(qint64 pos) const;    // 找 pos 落在哪個 piece

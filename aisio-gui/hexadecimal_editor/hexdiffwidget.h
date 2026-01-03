@@ -1,6 +1,8 @@
 #ifndef HEXDIFFWIDGET_H
 #define HEXDIFFWIDGET_H
 
+#include "hexview.h"
+
 #include <QWidget>
 
 class QSplitter;
@@ -18,8 +20,8 @@ public:
     HexView* rightView() const;
 
 private slots:
-    void onLeftCursorChanged(qint64 off);
-    void onRightCursorChanged(qint64 off);
+    void onLeftCursorChanged(const HexViewStatus& st);
+    void onRightCursorChanged(const HexViewStatus& st);
     void onDiffFound(qint64 offset);
 
 private:
