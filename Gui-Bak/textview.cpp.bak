@@ -1,0 +1,108 @@
+#include "textview.h"
+#include <QRegularExpressionMatchIterator>
+#include <QTextBlock>
+#include <QTextFormat>
+
+TextView::TextView(QWidget *parent) : QPlainTextEdit(parent) {
+    lineNumberArea = new LineNumberArea(this);
+
+    connect(this, &TextView::blockCountChanged, this, &TextView::updateLineNumberAreaWidth);
+    connect(this, &TextView::updateRequest, this, &TextView::updateLineNumberArea);
+    connect(this, &TextView::cursorPositionChanged, this, &TextView::highlightCurrentLine);
+
+    updateLineNumberAreaWidth(0);
+    highlightCurrentLine();
+}
+
+void TextView::loadDevice(QIODevice *dev)
+{
+    bool wasOpen = dev->isOpen();
+    if (!wasOpen)
+        dev->open(QIODevice::ReadOnly);
+
+    QByteArray text = dev->readAll();
+    QString data = QString::fromStdString(text.toStdString());
+    this->setPlainText(data);
+
+    if (!wasOpen)
+        dev->close();
+
+    viewport()->update();
+}
+
+int TextView::lineNumberAreaWidth() {
+    int digits = 1;
+    int max = qMax(1, blockCount());
+    while (max >= 10) {
+        max /= 10;
+        ++digits;
+    }
+    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+    return space;
+}
+
+void TextView::updateLineNumberAreaWidth(int /* newBlockCount */) {
+    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+}
+
+void TextView::updateLineNumberArea(const QRect &rect, int dy) {
+    if (dy)
+        lineNumberArea->scroll(0, dy);
+    else
+        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+
+    if (rect.contains(viewport()->rect()))
+        updateLineNumberAreaWidth(0);
+}
+
+void TextView::resizeEvent(QResizeEvent *e) {
+    QPlainTextEdit::resizeEvent(e);
+    QRect cr = contentsRect();
+    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void TextView::paintEvent(QPaintEvent *event) {
+    QPlainTextEdit::paintEvent(event);
+
+    QPainter painter(viewport());
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
+}
+
+void TextView::lineNumberAreaPaintEvent(QPaintEvent *event) {
+    QPainter painter(lineNumberArea);
+    painter.fillRect(event->rect(), QColor(40, 44, 52)); // VSCode風格深灰背景
+
+    QTextBlock block = firstVisibleBlock();
+    int blockNumber = block.blockNumber();
+    int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + static_cast<int>(blockBoundingRect(block).height());
+
+    while (block.isValid() && top <= event->rect().bottom()) {
+        if (block.isVisible() && bottom >= event->rect().top()) {
+            QString number = QString::number(blockNumber + 1);
+            painter.setPen(Qt::lightGray);
+            painter.drawText(0, top, lineNumberArea->width() - 4, fontMetrics().height(),
+                             Qt::AlignRight, number);
+        }
+
+        block = block.next();
+        top = bottom;
+        bottom = top + static_cast<int>(blockBoundingRect(block).height());
+        ++blockNumber;
+    }
+}
+
+void TextView::highlightCurrentLine() {
+    if (!isReadOnly()) {
+        QList<QTextEdit::ExtraSelection> extraSelections;
+        QTextEdit::ExtraSelection selection;
+        QColor lineColor = QColor(56, 60, 74); // 深色高亮背景
+        selection.format.setBackground(lineColor);
+        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+        selection.cursor = textCursor();
+        selection.cursor.clearSelection();
+        extraSelections.append(selection);
+        setExtraSelections(extraSelections);
+    }
+}

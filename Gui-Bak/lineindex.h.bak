@@ -1,0 +1,46 @@
+#ifndef LINEINDEX_H
+#define LINEINDEX_H
+
+#pragma once
+#include <QVector>
+#include <QFutureWatcher>
+#include "../hexadecimal_editor/chunkslite.h"
+
+class LineIndex : public QObject
+{
+    Q_OBJECT
+public:
+    explicit LineIndex(QObject* parent = nullptr);
+
+    void setSource(ChunksLite* chunks);
+
+    // 保證 index 至少建到 targetLine（非同步）
+    void ensureIndexedToLine(qint64 targetLine);
+
+    // 取得某行的 byte offset（假設已 index 到）
+    qint64 offsetOfLine(qint64 line) const;
+
+    qint64 totalLines() const { return m_totalLines; }
+
+signals:
+    void indexUpdated();   // 可用來 refresh viewport / scrollbar
+    void indexFinished();
+
+private:
+    struct Anchor {
+        qint64 line;
+        qint64 offset;
+    };
+
+    void buildUntil(qint64 targetLine);
+
+    ChunksLite* m_chunks = nullptr;
+    QVector<Anchor> m_anchors;
+
+    qint64 m_totalLines = 0;
+    bool m_building = false;
+
+    QFutureWatcher<void> m_watcher;
+};
+
+#endif // LINEINDEX_H

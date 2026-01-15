@@ -5,10 +5,6 @@
 
 #include "textviewport.h"
 
-#include <QWidget>
-
-class QIODevice;
-
 
 class TextView : public QWidget
 {
@@ -22,17 +18,6 @@ public:
     void findNext();
     void findPrev();
     void gotoLine(qint64 line);
-
-    // Ctrl+G helper (focus goto field inside the search bar)
-    void openGotoPanel();
-
-signals:
-    // match HexView signals so EditorForm can share BusyOverlay
-    void progressStarted();
-    void progressFinished();
-
-    // optional feedback hook
-    void findFinished(bool found, qint64 line, qint64 offset);
 
 private:
     TextViewport* m_viewport = nullptr;

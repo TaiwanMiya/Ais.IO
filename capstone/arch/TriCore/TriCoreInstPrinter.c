@@ -1,4 +1,4 @@
-//===- TriCoreInstPrinter.cpp - Convert TriCore MCInst to assembly syntax -===//
+﻿//===- TriCoreInstPrinter.cpp - Convert TriCore MCInst to assembly syntax -===//
 //
 //                     The LLVM Compiler Infrastructure
 //

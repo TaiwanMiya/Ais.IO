@@ -61,8 +61,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hexadecimal_editor/tabprogressbar.cpp
         hexadecimal_editor/editorform.ui
 
-        text_editor/textview.cpp
         text_editor/textview.h
+        text_editor/textviewport.h
+        text_editor/lineindex.h
+        text_editor/textview.cpp
+        text_editor/textviewport.cpp
+        text_editor/lineindex.cpp
 
         resources.qrc
         ${TS_FILES}

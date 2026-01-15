@@ -1,0 +1,21 @@
+代辦：
+
+M1：4GB 文字檔「秒開 + 可滾動 + 行號」
+	1. TextViewport（自繪）
+	2. ChunksLite + OverlayMap.read
+	3. LineIndex（先做 lazy：只建前幾萬行，滾動需要時再建）
+
+M2：Goto line + Find（背景）+ BusyOverlay
+	1. Goto line 用 LineIndex anchors
+	2. Find 走你現有的 async job 模型
+
+M3：可編輯（insert/delete/undo/redo）+ Replace
+	1. 直接用 OverlayMap
+	2. LineIndex 增量更新（掃插入/刪除片段的 '\n'）
+
+M4：語言高亮（Lua/XML/JSON 先做）
+	1. 先做 lexer（可見行）
+	2. 先做 stateless（JSON/XML 比較容易）
+	3. Lua 再做有狀態（字串、多行注解）
+
+M5：折疊 + 自動括號 + Tab 對齊

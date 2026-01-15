@@ -3,6 +3,7 @@
 
 #include "hexdiffwidget.h"
 #include "hexview.h"
+#include "../text_editor/textview.h"
 #include <QMainWindow>
 #include <QWidget>
 #include <QShowEvent>
@@ -81,6 +82,15 @@ class EditorForm : public QMainWindow {
     Q_OBJECT
 
 public:
+    enum class ViewType {
+        NoView,
+        HexView,
+        HexDiff,
+        TextView,
+        TextDiff,
+    };
+    Q_ENUM(ViewType);
+
     explicit EditorForm(QWidget *parent = nullptr);
     ~EditorForm();
 
@@ -148,6 +158,7 @@ private:
     //  - "curFile"    : QString
     //  - "isUntitled" : bool
     //  - "isModified" : bool
+    //  - "viewType"   : ViewType
 
     bool m_isClosingTab = false;
     const QString m_windowTitle = "AisIO Editor";
@@ -158,12 +169,16 @@ private:
     void setupShortcuts();
 
     // tab helpers
+    ViewType currentViewType() const;
     HexView* currentHexView() const;
     HexDiffWidget* currentHexDiffWidget() const;
+    TextView* currentTextView() const;
     QWidget* currentPage() const;
+    ViewType openWith();
     void attachStatusToView(HexView* view);
 
     int  addHexTab(QIODevice* dev, const QString& fileName, bool editable);
+    int  addTextTab(QIODevice* dev, const QString& fileName, bool editable);
     void setCurrentFile(QWidget* page, const QString &fileName);
     bool saveFile(QWidget* page, const QString &fileName);
     bool saveFileAsync(QWidget* page, const QString &fileName);
@@ -174,7 +189,7 @@ private:
     void endBusy();
 
     // 共用開檔（Open / Drop 都走這裡）
-    void openFileInNewTab(const QString& fileName);
+    void openFileInNewTab(const QString& fileName, ViewType type = ViewType::NoView);
 
     // 關 tab 前詢問存檔
     bool maybeSaveTab(int index);
@@ -188,5 +203,6 @@ private:
     // 更新狀態欄
     void updateStatusBar(const HexViewStatus& st);
 };
+Q_DECLARE_METATYPE(EditorForm::ViewType)
 
 #endif // MAINWINDOW_H

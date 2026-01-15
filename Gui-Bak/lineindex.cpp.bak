@@ -1,0 +1,115 @@
+#include "lineindex.h"
+#include <QtConcurrent>
+
+static constexpr qint64 ANCHOR_STEP = 1024;
+static constexpr qint64 CHUNK = 64 * 1024;
+
+LineIndex::LineIndex(QObject* parent)
+    : QObject(parent)
+{
+}
+
+void LineIndex::setSource(ChunksLite* chunks)
+{
+    m_chunks = chunks;
+    m_anchors.clear();
+    m_totalLines = 0;
+
+    if (!m_chunks)
+        return;
+
+    // anchor 0
+    m_anchors.push_back({0, 0});
+    m_totalLines = 1;
+}
+
+void LineIndex::ensureIndexedToLine(qint64 targetLine)
+{
+    if (!m_chunks || m_building)
+        return;
+
+    if (m_totalLines > targetLine)
+        return;
+
+    m_building = true;
+
+    QObject::disconnect(&m_watcher, nullptr, this, nullptr);
+    connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this]() {
+        m_building = false;
+        emit indexUpdated();
+        emit indexFinished();
+    });
+
+    auto future = QtConcurrent::run([this, targetLine]() {
+        buildUntil(targetLine);
+    });
+
+    m_watcher.setFuture(future);
+}
+
+void LineIndex::buildUntil(qint64 targetLine)
+{
+    if (!m_chunks) return;
+
+    qint64 offset = m_anchors.last().offset;
+    qint64 line   = m_anchors.last().line;
+
+    const qint64 size = m_chunks->size();
+
+    while (offset < size && line <= targetLine) {
+        QByteArray buf = m_chunks->read(offset, CHUNK);
+        if (buf.isEmpty())
+            break;
+
+        for (int i = 0; i < buf.size(); ++i) {
+            if (buf[i] == '\n') {
+                ++line;
+                if (line % ANCHOR_STEP == 0) {
+                    m_anchors.push_back({line, offset + i + 1});
+                }
+            }
+        }
+        offset += buf.size();
+    }
+
+    m_totalLines = qMax(m_totalLines, line + 1);
+}
+
+qint64 LineIndex::offsetOfLine(qint64 line) const
+{
+    if (m_anchors.isEmpty())
+        return 0;
+
+    // 找最近 anchor
+    int lo = 0, hi = m_anchors.size() - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (m_anchors[mid].line <= line)
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    int idx = lo > 0 ? lo - 1 : 0;
+    const Anchor& a = m_anchors[idx];
+
+    // 從 anchor 往前掃
+    qint64 offset = a.offset;
+    qint64 curLine = a.line;
+
+    const qint64 size = m_chunks->size();
+    while (offset < size && curLine < line) {
+        QByteArray buf = m_chunks->read(offset, CHUNK);
+        if (buf.isEmpty())
+            break;
+
+        for (int i = 0; i < buf.size(); ++i) {
+            if (buf[i] == '\n') {
+                ++curLine;
+                if (curLine == line)
+                    return offset + i + 1;
+            }
+        }
+        offset += buf.size();
+    }
+    return offset;
+}
